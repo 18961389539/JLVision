@@ -1,0 +1,14 @@
+# 构建输出
+bin/
+obj/
+dist/
+# 本地会话产物（备份/日志/临时脚本），不入库
+.snapshot-*/
+.trash/
+C:SERSSERAPPDATA*
+_check_comments.ps1
+_enc_check.ps1
+*.log
+# IDE
+.vs/
+*.user
