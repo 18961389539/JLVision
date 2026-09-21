@@ -5,24 +5,47 @@ using System.Runtime.Serialization;
 
 namespace JLVisionLib;
 
-/// <summary>卡尺（测量）句柄对象：持有一个原生 measure 句柄，预先定义一条矩形或圆环弧形的扫描带，之后对任意输入图反复沿带提取灰度剖面与边缘。</summary>
-/// <remarks>
-///   <para><b>功能说明</b>本类只是句柄壳（<c>JlHandle</c> 派生），几何参数存于原生侧。矩形卡尺由 <c>GenMeasureRectangle2</c>（原生算子 id 816）准备，圆环弧卡尺由 <c>GenMeasureArc</c>（id 815）准备；随后的 <c>MeasurePos</c>（813）、<c>MeasurePairs</c>（812）、<c>MeasureThresh</c>（803）、<c>MeasureProjection</c>（805）及 Fuzzy 系列在同一条带上找边缘、灰度过渡点或纯剖面。</para>
-///   <para><b>约束或前提</b>坐标一律 row=y（向下为正）、column=x（向右为正），长度单位是像素，角度单位是弧度。<c>width</c>/<c>height</c> 记录的是"后续要处理的图"的尺寸，与实际喂入的图不符时结果位置会整体偏移 [待实测]。所有输出 <c>JlTuple</c> 都是新句柄，用完注意释放。</para>
-///   <para><b>与相邻算子的取舍</b>只想看灰度趋势不做边缘拟合用 <c>MeasureProjection</c>；要带隶属度评分的边缘对用 <c>FuzzyMeasurePos</c>/<c>FuzzyMeasurePairs</c>；跨卡尺批量找成对边界的窄条特征用 <c>MeasurePairs</c>。</para>
-///   <para><b>资源与坑</b>类标了 <c>[Serializable]</c>，二进制序列化走 <c>SerializeMeasure</c>（id 799）/反序列化走 <c>DeserializeMeasure</c>（id 800）。每个实例持有原生引用，用毕 <c>Dispose()</c>。</para>
-/// </remarks>
+/// <summary>表示用于测量距离的工具实例。</summary>
 [Serializable]
 public class JlMeasure : JlHandle, ISerializable, ICloneable
 {
-	/// <summary>构造句柄为 UNDEF 的空壳卡尺对象：纯托管建壳、不发任何原生调用，留作 Read/Create/Deserialize 族原地装入新句柄的接收位。</summary>
+	/// <summary>
+	///   框架与占位用的纯托管空壳构造（带 EditorBrowsable(Never)）：基类句柄值置 UNDEF（IntPtr.Zero），不发任何原生调用，IsInitialized() 为 false，空壳直接送进测量算子会由 PostCall 报错。它是 LoadNew、Clone、静态 Deserialize 与 ISerializable 构造共用的"先建壳再原地装载"起点；业务取可用卡尺应走几何参数构造（矩形二代 816、圆弧环带 815，返回持新句柄的对象）或 ReadMeasure（id 802，先释放旧句柄再原地装入）。
+	/// </summary>
+	/// <remarks>
+	///   <para><b>功能说明</b>base(JlHandleBase.UNDEF) 落到句柄赋值的 UNDEF 分支——跳过原生 CopyHandle，只建一个待装载的托管壳，零原生开销；本类没有文件名构造器，从文件读卡尺要在空壳上调 ReadMeasure。</para>
+	///   <para><b>约束或前提</b>空壳正好充当 DeserializeMeasure（id 800）等原地装载通道的接收位（基类 Load 要求装载前当前值必须是 UNDEF）；用完同样要 Dispose 收尾。</para>
+	///   <para><b>与相邻构造器的取舍</b>要新卡尺用带几何参数的构造器；手里已有原生句柄用 IntPtr 或 JlHandle 包装构造；改卡尺几何不在原地调参，而是重跑 GenMeasureRectangle2/GenMeasureArc（它们先 Dispose 本对象旧句柄再装入重建结果）。</para>
+	///   <para><b>用法</b></para>
+	///   <code>
+	///   JlMeasure shell = new JlMeasure();     // 空壳：无原生卡尺句柄
+	///   bool ready = shell.IsInitialized();    // false
+	///   shell.Dispose();
+	///   </code>
+	///   <para><b>资源与坑</b>本构造与其余三个构造器都标 EditorBrowsable(Never)，常规补全只暴露几何构造；后续 MeasurePos 等测量调用的坐标、幅值输出按 DOUBLE 元组装载。</para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMeasure()
 		: base(JlHandleBase.UNDEF)
 	{
 	}
 
-	/// <summary>包已有原生卡尺句柄→引用计数拷贝（CopyObject），非深拷贝；断言对象类 measure。</summary>
+	/// <summary>
+	///   包装外部裸句柄值的浅拷贝通道（带 EditorBrowsable(Never)）：经基类 Handle 赋值走原生 CopyHandle 另取一份引用——拿到的是同一原生 measure 的第二个名字，不接管原指针所有权，两壳各释各的引用；句柄语义类型必须为 measure，不符抛 JlException("Invalid handle instance passed")，传 IntPtr.Zero（UNDEF）则跳过拷贝与类型校验、直接得空壳；悬垂句柄值在构造阶段就抛 JlOperatorException，不会静默退化成空壳。
+	/// </summary>
+	/// <param name="handle">原生侧当前有效的 measure 句柄值（多来自其他语言接口或非托管层传递）；IntPtr.Zero 视同 UNDEF 得空壳。</param>
+	/// <remarks>
+	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 的 Handle setter：SetHandleInternal 先清本壳旧值再 HLICopyHandle 取引用；随后 AssertSemType 调原生 GetHandleSemType 比对 "measure"，只校验语义类型、不看卡尺内容。</para>
+	///   <para><b>约束或前提</b>引用计数级浅拷贝：一侧原地改写（如 ReadMeasure/DeserializeMeasure 重装载）后另一侧经同一原生对象看到新内容 [共享程度待实测]；要真正独立请走 Clone()（经序列化往返新建对象）。</para>
+	///   <para><b>与相邻构造器的取舍</b>手里是活的 JlHandle 包装对象就写 JlMeasure(JlHandle) 版；要跨进程/跨语言搬内容用序列化通道，别传裸值。</para>
+	///   <para><b>用法</b></para>
+	///   <code>
+	///   using JlMeasure cal = new JlMeasure(256.0, 256.0, 0.0, 100.0, 5.0, 512, 512, "nearest_neighbor");  // 矩形二代卡尺（id 816）
+	///   IntPtr raw = cal.Handle;                    // 裸句柄值
+	///   using JlMeasure alias = new JlMeasure(raw); // 再取一份引用，两个 C# 壳独立
+	///   </code>
+	///   <para><b>资源与坑</b>存 raw 这种裸值不带引用计数：cal 一 Dispose，raw 就成了非 0 的悬垂值，再喂给本构造会在原生拷贝处抛错。</para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMeasure(IntPtr handle)
 		: base(handle)
@@ -30,7 +53,23 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		AssertSemType();
 	}
 
-	/// <summary>包装已有原生 JlHandle，并校验其语义类型为卡尺（measure）。</summary>
+	/// <summary>
+	///   包装任意 JlHandle 派生对象的拷贝构造（带 EditorBrowsable(Never)）：与 IntPtr 版同一基类路径——CopyHandle 引用计数拷贝，C# 壳独立、各须各 Dispose，但不是深拷贝；构造末尾按语义类型 measure 校验，源句柄是 image/ncc_model 等其他类型即抛 JlException("Invalid handle instance passed")；实参传 null 不抛空引用，经 IntPtr 隐式转换归一为 UNDEF、得到空壳且跳过类型校验。
+	/// </summary>
+	/// <param name="handle">源句柄包装对象，语义类型须为 measure；传 null 归一为空壳。</param>
+	/// <remarks>
+	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 拷贝路径后 AssertSemType("measure")；校验发生在包装之后——类型不符时原生引用已多持一份，此时 C# 壳尚未交付、无人替它 Dispose，这份引用是否泄漏与如何回收 [待实测]。</para>
+	///   <para><b>约束或前提</b>拷贝粒度是"第二个名字指向同一原生资源"：一侧原地改写内容另一侧同步可见 [共享程度待实测]；要彻底独立用 Clone()。</para>
+	///   <para><b>与相邻构造器的取舍</b>裸 IntPtr 用上一重载；只在本地多持一个容器用本版，几乎零开销；跨进程传内容走 Serialize/Deserialize 字节通道。</para>
+	///   <para><b>用法</b></para>
+	///   <code>
+	///   JlHandle src = new JlMeasure(256.0, 256.0, 0.0, 100.0, 5.0, 512, 512, "nearest_neighbor");
+	///   JlMeasure cal = new JlMeasure(src);   // 引用拷贝包装；src 换非 measure 句柄即抛 JlException
+	///   cal.Dispose();
+	///   src.Dispose();
+	///   </code>
+	///   <para><b>资源与坑</b>两个壳谁先释放都行（各还各的引用），但在另一壳还活着之前别把 src 置 null 当作"已被接管"。</para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMeasure(JlHandle handle)
 		: base(handle)
@@ -62,33 +101,34 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   构造一个圆环弧卡尺（原生算子 id 815）：以 (centerRow, centerCol) 为圆心、radius 为半径的一段弧上，沿径向逐列提取垂直于弧的直线边缘；结果句柄写入本新建实例。
+	///   以 JlTuple 参数构造圆弧环带卡尺（原生 id 815）：沿半径方向扫描提取直线边缘，构造成功后本对象持有新建的原生 measure 句柄。
 	/// </summary>
-	/// <param name="centerRow">弧的圆心行坐标，像素。Default: 100.0</param>
-	/// <param name="centerCol">弧的圆心列坐标，像素。Default: 100.0</param>
-	/// <param name="radius">弧半径，像素（从圆心到扫描带中心线）。Default: 50.0</param>
-	/// <param name="angleStart">弧起始角，弧度。Default: 0.0</param>
-	/// <param name="angleExtent">弧张角，弧度，默认 6.28318 即整圆。Default: 6.28318</param>
-	/// <param name="annulusRadius">环形扫描带的半宽，像素；灰度沿径向该宽度内平均。Default: 10.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	/// <param name="centerRow">圆弧中心的行坐标。默认值：100.0</param>
+	/// <param name="centerCol">圆弧中心的列坐标。默认值：100.0</param>
+	/// <param name="radius">圆弧的半径。默认值：50.0</param>
+	/// <param name="angleStart">弧的起始角（弧度）。默认值：0.0</param>
+	/// <param name="angleExtent">弧的角度范围（弧度）。默认值：6.28318</param>
+	/// <param name="annulusRadius">环带的半径（半宽）。默认值：10.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与 <c>JlMeasure(double,double,double,double,double,double,int,int,string)</c> 标量构造器走同一个原生 id 815，区别只在装载方式：元组版先 <c>Store</c> 钉住各 <c>JlTuple</c>，调用后逐个 <c>UnpinTuple</c>；标量版 <c>StoreD</c> 直写单元素、无钉固定开销。</para>
-	///   <para><b>约束或前提</b>几何参数在原生侧记为多值元组时能否一次生成多条弧卡尺，本包装层无法判定 [待实测]；输出经 <c>Load</c> 装进本实例（构造时句柄为 UNDEF，满足其"必须先空壳"的前提）。</para>
-	///   <para><b>与相邻构造器的取舍</b>被测边近似直线（宽度、间距类尺寸）用矩形卡尺 <c>GenMeasureRectangle2</c>；边沿圆周分布（外径、圆环壁厚）才用本构造器，半径档位由 <c>radius</c>±<c>annulusRadius</c> 决定。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>构造圆弧环带卡尺（原生算子 id 815）：以 (centerRow, centerCol) 为圆心、radius 为中心线半径、沿半径方向扫描提取直线边缘。构造成功后本对象持有新建的原生 measure 句柄。</para>
+	///   <para><b>与 double 重载的差异</b></para>
+	///   <para>同一原生 id 815。此重载以 Store + UnpinTuple 直接透传已存在的 JlTuple（零拷贝）；double 重载经 StoreD 逐个临时建元组。约定详见 double 重载的注释。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple centerRow = 100.0;                              // double→JlTuple 隐式转换
+	///   JlTuple centerRow = 100.0;
 	///   JlTuple centerCol = 100.0;
 	///   JlTuple radius = 50.0;
 	///   JlTuple angleStart = 0.0;
 	///   JlTuple angleExtent = 6.28318;
 	///   JlTuple annulusRadius = 10.0;
-	///   JlMeasure m = new JlMeasure(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure ring = new JlMeasure(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>本实例持有原生引用，用毕 <c>Dispose()</c>；传入的 <c>JlTuple</c> 在调用内部被钉住又解钉，调用返回后即可安全 <c>Dispose</c> 它们。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>传入多值数组是否会展开为多个卡尺或仅取首元素 [待实测]。句柄用毕请 Dispose（或 CloseMeasure，但见 CloseMeasure 注释中的坑）。</para>
 	/// </remarks>
 	public JlMeasure(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, string interpolation)
 	{
@@ -116,27 +156,35 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   构造一个圆环弧卡尺（原生算子 id 815，标量版）：单值直写，扫描带为沿径向宽 2×annulusRadius 的一段弧，在其中提取垂直于弧的直线边缘；结果句柄写入本新建实例。
+	///   以 double 参数构造圆弧环带卡尺（原生 id 815）：在圆心 (centerRow, centerCol)、半径 radius 的圆环上沿径向扫描提取垂直于弧的直线边缘，angleStart/angleExtent 以弧度界定弧段，本对象持有新建原生句柄。
 	/// </summary>
-	/// <param name="centerRow">弧的圆心行坐标，像素。Default: 100.0</param>
-	/// <param name="centerCol">弧的圆心列坐标，像素。Default: 100.0</param>
-	/// <param name="radius">弧半径，像素（扫描带中心线所在半径）。Default: 50.0</param>
-	/// <param name="angleStart">弧起始角，弧度。Default: 0.0</param>
-	/// <param name="angleExtent">弧张角，弧度，默认 6.28318 即整圆。Default: 6.28318</param>
-	/// <param name="annulusRadius">环形扫描带的半宽，像素；灰度沿径向该宽度内平均。Default: 10.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	/// <param name="centerRow">圆弧中心的行坐标。默认值：100.0</param>
+	/// <param name="centerCol">圆弧中心的列坐标。默认值：100.0</param>
+	/// <param name="radius">圆弧的半径。默认值：50.0</param>
+	/// <param name="angleStart">弧的起始角（弧度）。默认值：0.0</param>
+	/// <param name="angleExtent">弧的角度范围（弧度）。默认值：6.28318</param>
+	/// <param name="annulusRadius">环带的半径（半宽）。默认值：10.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与元组重载同一个原生 id 815；本走位用 <c>StoreD</c>/<c>StoreI</c>/<c>StoreS</c> 直写单元素参数，不钉元组也不 <c>UnpinTuple</c>，单卡尺场景优先用它。角度在 row-down 坐标系中的正方向代码未注明 [待实测]。</para>
-	///   <para><b>约束或前提</b><c>radius</c> 必须落在 <c>width</c>/<c>height</c> 定义的画幅内才有意义；扫描带越出图像边缘时该方向的剖面缺值 [待实测]。</para>
-	///   <para><b>与相邻构造器的取舍</b>只要一条弧的径向边缘序列用本构造器；需要多圆心/多半径一次批量定义时改元组重载 [待实测：原生是否支持多值展开]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>构造圆弧环带卡尺（原生 id 815）：在圆心 (centerRow, centerCol)、半径 radius 的圆环上提取垂直于弧的直线边缘。扫描方向为径向（由内向外），angleStart / angleExtent 以弧度界定弧段；annulusRadius 是环带半宽，扫描时对该宽度内沿圆周方向的灰度取平均。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>width / height 必须与后续传入 MeasurePos 等算子的图像尺寸一致（英文参数说明即 "of the image to be processed subsequently"），否则卡尺区域与图像裁剪基准不符。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>需要测量孔径、轴径等径向边界时：radius 取名义半径，annulusRadius 覆盖位置偏差，angleExtent 用 6.28318 取全周或按可见弧段缩小。interpolation 为灰度采样插值方式，可选值集合 [待实测]。positive/negative 等极性以"沿径向由内向外"为扫描方向定义。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(100.0, 100.0, 50.0, 0.0, 6.28318, 10.0, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure ring = new JlMeasure(256.0, 256.0, 120.0, 0.0, 6.28318, 15.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       ring.MeasurePos(image, 1.0, 30.0, "all", "all",
+	///           out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>构造即建原生对象，弃用前 <c>Dispose()</c>；构造内部末尾 <c>GC.KeepAlive(this)</c>，句柄在原生调用结束前不会被终结器回收。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>对象持有原生句柄，不用的实例要 Dispose；重复建模可直接调 GenMeasureArc（会先释放旧句柄）。径向单点快速定位用本类；要同时拟合整圆并给半径拟合值，用 JlMetrologyModel.AddMetrologyObjectCircleMeasure。</para>
 	/// </remarks>
 	public JlMeasure(double centerRow, double centerCol, double radius, double angleStart, double angleExtent, double annulusRadius, int width, int height, string interpolation)
 	{
@@ -158,31 +206,32 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   构造一个矩形卡尺（原生算子 id 816）：以 (row, column) 为中心、长轴方向为 phi 的矩形带内，沿长轴方向逐列做垂直于长轴的灰度平均，再在其中提取直线边缘；结果句柄写入本新建实例。
+	///   以 JlTuple 参数构造矩形卡尺（原生 id 816）：在矩形内提取垂直于长轴的直线边缘，phi 以弧度定长轴方向，本对象持有新建原生句柄。
 	/// </summary>
-	/// <param name="row">矩形中心的行坐标，像素。Default: 300.0</param>
-	/// <param name="column">矩形中心的列坐标，像素。Default: 200.0</param>
-	/// <param name="phi">矩形长轴与水平方向的夹角，弧度。Default: 0.0</param>
-	/// <param name="length1">矩形长轴方向的半长（扫描方向），像素。Default: 100.0</param>
-	/// <param name="length2">矩形短轴方向的半长（灰度平均方向），像素。Default: 20.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	/// <param name="row">矩形中心的行坐标。默认值：300.0</param>
+	/// <param name="column">矩形中心的列坐标。默认值：200.0</param>
+	/// <param name="phi">矩形长轴相对水平方向的角度（弧度）。默认值：0.0</param>
+	/// <param name="length1">矩形的半宽。默认值：100.0</param>
+	/// <param name="length2">矩形的半高。默认值：20.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与标量重载同一个原生 id 816；元组版 <c>Store</c> 钉固定元组、调用后逐个 <c>UnpinTuple</c>。要检测的边垂直于长轴（phi 方向为扫描方向），把被测边摆成与短轴平行即可最大化剖面梯度。</para>
-	///   <para><b>约束或前提</b>多值元组是否一次展开成多条卡尺带由原生决定，包装层看不到 [待实测]。矩形带越出图像边界时对应列的灰度平均不完整 [待实测]。</para>
-	///   <para><b>与相邻构造器的取舍</b>与 <c>GenMeasureRectangle2</c>（同样 id 816）的区别只在"新建对象"还是"先 Dispose 旧句柄再原地重建本壳"；重复调用本构造器会各自新建实例，不会释放旧实例。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>构造矩形卡尺（原生 id 816）的 JlTuple 重载。几何约定、参数取向详见 double 重载的注释。</para>
+	///   <para><b>与 double 重载的差异</b></para>
+	///   <para>同一原生 id 816。此重载用 Store + UnpinTuple 透传已存在的 JlTuple（零拷贝）；double 重载经 StoreD 逐个临时建元组。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple row = 300.0;                                    // double→JlTuple 隐式转换
-	///   JlTuple column = 200.0;
+	///   JlTuple row = 256.0;
+	///   JlTuple column = 128.0;
 	///   JlTuple phi = 0.0;
-	///   JlTuple length1 = 100.0;
+	///   JlTuple length1 = 60.0;
 	///   JlTuple length2 = 20.0;
-	///   JlMeasure m = new JlMeasure(row, column, phi, length1, length2, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(row, column, phi, length1, length2, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>实例持有原生引用，用毕 <c>Dispose()</c>；传入的元组调用返回后可安全释放。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>传入多值数组是否展开为多个卡尺 [待实测]。句柄用毕请 Dispose。</para>
 	/// </remarks>
 	public JlMeasure(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, int width, int height, string interpolation)
 	{
@@ -208,26 +257,36 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   构造一个矩形卡尺（原生算子 id 816，标量版）：单值直写，在长轴为 phi、半长 length1（扫描方向）、半高 length2（平均方向）的矩形带内提取垂直于长轴的直线边缘；结果句柄写入本新建实例。
+	///   以 double 参数构造矩形卡尺（原生 id 816）：沿长轴（phi 以弧度定向）扫描提取垂直于长轴的直线边缘，length1 定扫描行程、length2 定平均带宽，本对象持有新建原生句柄。
 	/// </summary>
-	/// <param name="row">矩形中心的行坐标，像素。Default: 300.0</param>
-	/// <param name="column">矩形中心的列坐标，像素。Default: 200.0</param>
-	/// <param name="phi">矩形长轴与水平方向的夹角，弧度。Default: 0.0</param>
-	/// <param name="length1">矩形长轴方向的半长（扫描方向），像素。Default: 100.0</param>
-	/// <param name="length2">矩形短轴方向的半长（灰度平均方向），像素。Default: 20.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	/// <param name="row">矩形中心的行坐标。默认值：300.0</param>
+	/// <param name="column">矩形中心的列坐标。默认值：200.0</param>
+	/// <param name="phi">矩形长轴相对水平方向的角度（弧度）。默认值：0.0</param>
+	/// <param name="length1">矩形的半宽。默认值：100.0</param>
+	/// <param name="length2">矩形的半高。默认值：20.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与元组重载同一个原生 id 816；本走位 <c>StoreD</c>/<c>StoreI</c>/<c>StoreS</c> 直写，不钉元组。单条矩形卡尺优先用它。phi 在 row-down 坐标系中的旋转正方向代码未注明 [待实测]。</para>
-	///   <para><b>约束或前提</b><c>length1</c>、<c>length2</c> 为半长且必须为正；扫描分辨率随 2×length1 与图像宽度联动，带越界时平均灰度不完整 [待实测]。</para>
-	///   <para><b>与相邻构造器的取舍</b>每次调用都新建一个原生 measure 对象——热路径里反复改位姿应改用实例方法 <see cref="GenMeasureRectangle2(double,double,double,double,double,int,int,string)"/>（先释放旧句柄再重建，C# 引用不变），否则旧实例要自己负责 <c>Dispose</c>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>构造矩形卡尺（原生 id 816）：在矩形内提取垂直于其长轴的直线边缘。这是 1D 卡尺的主入口。(row, column) 为矩形中心，phi 为长轴相对水平方向的弧度角；length1 是沿长轴的半长——长轴方向就是扫描/搜索方向；length2 是沿短轴的半宽——决定对多宽的灰度带做平均（边缘要横跨这条带）。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>width / height 声明后续待处理图像的尺寸，须与真正传给 MeasurePos / MeasurePairs 的图像一致。被测边缘须大致垂直于长轴（即平行于短轴），否则该次扫描无法定位。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>卡尺位置要随定位结果移动时优先 TranslateMeasure（原地平移、免重建）；重新指定全部几何则用 GenMeasureRectangle2（原地换句柄）或本构造器（新对象）。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>找竖直边缘：phi = 0，length1 覆盖工件位置公差的搜索行程，length2 取边缘沿竖直方向可平均的范围（噪声大取宽）。interpolation 可选值集合 [待实测]。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.MeasurePos(image, 1.0, 30.0, "positive", "all",
+	///           out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>实例持有原生引用，用毕 <c>Dispose()</c>；末尾 <c>GC.KeepAlive(this)</c> 保证句柄活到原生调用结束。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>原生句柄须 Dispose；1D 卡尺只给边缘坐标与灰度幅值，不拟合几何形状，需要直线/圆的完整拟合与不确定度时改用 JlMetrologyModel。</para>
 	/// </remarks>
 	public JlMeasure(double row, double column, double phi, double length1, double length2, int width, int height, string interpolation)
 	{
@@ -253,44 +312,76 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		info.AddValue("data", value, typeof(byte[]));
 	}
 
-	/// <summary>从序列化数据重建卡尺实例（ISerializable 反序列化构造）。</summary>
+	/// <summary>
+	///   ISerializable 反序列化专用构造（供格式化器回调，带 EditorBrowsable(Never)）：先落基类 UNDEF 空壳，再从 info 取出 GetObjectData 以 SerializeMeasure（id 799）写入的键 "data" 的 byte[]，走与 DeserializeMeasure（id 800）相同的通道——先 Dispose 后 Load，把新建的原生卡尺句柄原地装进本实例；"data" 条目缺失或类型不符在 GetValue 处抛，数据非法时段句柄已释放、本对象成空壳 [失败后状态待实测]。
+	/// </summary>
+	/// <param name="info">格式化器回填的序列化数据，本构造只读取其中键 "data"（byte[]，Vision 二进制 serialized_item 格式）。</param>
+	/// <param name="context">序列化流上下文，本构造不读取。</param>
+	/// <remarks>
+	///   <para><b>功能说明</b>方法体一句 DeserializeMeasure((byte[])info.GetValue("data", typeof(byte[])))：字节先包成 JlSerializationBuffer（serialized_item 句柄）再喂原生 id 800，装载结果写回本实例——构造完成即持有新句柄。</para>
+	///   <para><b>约束或前提</b>与本类 GetObjectData（同样键名 "data"）配对；反序列化还原出的卡尺几何即字节流当时的形状，改几何请重跑 GenMeasureRectangle2/GenMeasureArc 原地重建。</para>
+	///   <para><b>与相邻构造器的取舍</b>手上有流用静态 Deserialize(Stream)（内部即空壳加 DeserializeMeasure，与本构造等价）；内存字节直接 new 空壳后调 DeserializeMeasure；从文件读卡尺在空壳上调 ReadMeasure（id 802）。</para>
+	///   <para><b>用法</b></para>
+	///   <code>
+	///   using (JlMeasure src = new JlMeasure(256.0, 256.0, 0.0, 100.0, 5.0, 512, 512, "nearest_neighbor"))
+	///   {
+	///       byte[] blob = src.SerializeMeasure();     // id 799：卡尺转字节数组
+	///       using JlMeasure dst = new JlMeasure();    // 空壳：与 ISerializable 构造同一起点
+	///       dst.DeserializeMeasure(blob);             // id 800：该构造体的同一条原地装载通道
+	///       bool loaded = dst.IsInitialized();        // true
+	///   }
+	///   </code>
+	///   <para><b>资源与坑</b>DeserializeMeasure 是原地替换语义：在已有卡尺上重放会先释放旧句柄，想保留原卡尺必须先 new 空壳再装载。</para>
+	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMeasure(SerializationInfo info, StreamingContext context)
 	{
 		DeserializeMeasure((byte[])info.GetValue("data", typeof(byte[])));
 	}
 
-	/// <summary>把本卡尺对象的完整几何状态以 Vision 二进制格式写入流。</summary>
+	/// <summary>把卡尺序列化为 Vision 格式字节并写入传入的 Stream；只读，不改动也不释放本对象句柄，无返回值。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>实现只有两步：调 <see cref="SerializeMeasure"/>（原生 id 799）拿 byte[]，再经 <c>JlSerializationBuffer.WriteToStream</c> 写入流。<c>new</c> 关键字只是隐藏基类 <c>JlHandle.Serialize</c> 而非重写：经基类引用调用时执行的仍是基类版本。</para>
-	///   <para><b>约束或前提</b>流必须可写；本方法不负责关闭流。<c>using System.IO</c> 已在本文件引入，调用方自行保证。</para>
-	///   <para><b>与相邻方法的取舍</b>落盘用 <see cref="WriteMeasure(string)"/>（原生自己写文件），内存/网络传输用本方法或 <c>SerializeMeasure</c> 裸 byte[]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>把卡尺对象序列化后的字节流写入一个 Stream。内部先调 SerializeMeasure 得到 byte[]，再由 JlSerializationBuffer.WriteToStream 落流。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>stream 须可写。本方法不改动、不释放本对象的句柄，序列化后仍可继续用于 MeasurePos。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>存文件用 WriteMeasure；只要内存字节数组用 SerializeMeasure；跨进程/网络传递用本方法配 JlMeasure.Deserialize。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   using FileStream fs = new FileStream("measure.bin", FileMode.Create, FileAccess.Write);
-	///   m.Serialize(fs);
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (MemoryStream ms = new MemoryStream())
+	///   {
+	///       caliper.Serialize(ms);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>纯导出操作，不改动本句柄，也不 Dispose 自己。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>stream 的生命周期由调用方管理；本类不关闭传入的流。MemoryStream 来自 System.IO。</para>
 	/// </remarks>
 	public new void Serialize(Stream stream)
 	{
 		JlSerializationBuffer.WriteToStream(SerializeMeasure(), stream);
 	}
 
-	/// <summary>从 Vision 二进制流读回一个卡尺对象，返回新句柄的新实例。</summary>
+	/// <summary>静态：从 Stream 读出 Vision 格式数据反序列化为卡尺（原生 id 800），返回持有新原生句柄的 JlMeasure，不修改任何既有实例。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>先 <c>new JlMeasure()</c>（UNDEF 空壳），再把流内容喂给实例方法 <see cref="DeserializeMeasure(byte[])"/>（原生 id 800）装载句柄。流里存的几何参数整体覆盖式生效，与原实例无关（这里根本没有原实例）。</para>
-	///   <para><b>约束或前提</b>流必须可读且内容为 <see cref="Serialize(Stream)"/> 或 <c>SerializeMeasure</c> 产出的 Vision 格式；格式不符时错误由原生侧报出。</para>
-	///   <para><b>与相邻方法的取舍</b>已有实例想换内容用实例方法 <c>DeserializeMeasure</c>/<c>ReadMeasure</c>（原地重建）；本静态版每次给新对象。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>静态方法：从流中读出序列化数据并反序列化（原生 id 800），返回一个持有新原生句柄的 JlMeasure。不修改任何既有实例。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>流内须是由 Serialize / SerializeMeasure 写出的完整 Vision 格式数据；stream 当前位置须处于数据起点（读回前常需 Position = 0）。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   using FileStream fs = new FileStream("measure.bin", FileMode.Open, FileAccess.Read);
-	///   JlMeasure m = JlMeasure.Deserialize(fs);
-	///   m.Dispose();
+	///   JlMeasure original = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   JlMeasure restored;
+	///   using (MemoryStream ms = new MemoryStream())
+	///   {
+	///       original.Serialize(ms);
+	///       ms.Position = 0;
+	///       restored = JlMeasure.Deserialize(ms);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>返回的是新原生句柄，弃用前 <c>Dispose()</c>；本方法不关闭传入的流。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>返回的实例与原实例各自持有独立句柄，须分别 Dispose。</para>
 	/// </remarks>
 	public new static JlMeasure Deserialize(Stream stream)
 	{
@@ -304,18 +395,20 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		return Clone();
 	}
 
-	/// <summary>深拷贝本卡尺对象：经序列化再反序列化产出一个持有独立原生句柄的新实例。</summary>
+	/// <summary>深拷贝当前卡尺，返回持有独立新句柄的副本。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>实现是 <see cref="SerializeMeasure"/>（id 799）拿 byte[]、<c>new JlMeasure()</c> 空壳再 <see cref="DeserializeMeasure(byte[])"/>（id 800）装载——拷贝经由二进制往返，几何参数与原对象完全一致但互不影响。</para>
-	///   <para><b>与相邻成员的取舍</b>与 <c>JlHandle(JlHandle)</c> 那类别名式浅拷贝不同，本方法产生新原生对象，改克隆体的 <c>TranslateMeasure</c>/<c>GenMeasure*</c> 不会波及原对象；只要浅别名反而更省。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>深拷贝当前卡尺：走 SerializeMeasure（id 799）→ DeserializeMeasure（id 800）的字节数组往返，返回持有独立新句柄的 JlMeasure。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>要一份基参数、随后各自平移多个卡尺：Clone 后分别 TranslateMeasure；参数完全不同则直接 new。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   JlMeasure copy = m.Clone();
-	///   copy.Dispose();
-	///   m.Dispose();
+	///   JlMeasure baseCaliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   JlMeasure second = baseCaliper.Clone();
+	///   second.TranslateMeasure(256.0, 320.0);
 	///   </code>
-	///   <para><b>资源与坑</b>返回的新实例持有自己的原生引用，必须单独 <c>Dispose()</c>；<c>ICloneable.Clone</c> 显式实现即转调本方法。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>ICloneable 显式实现走同一 Clone；两份句柄互不影响，须各自 Dispose。</para>
 	/// </remarks>
 	public new JlMeasure Clone()
 	{
@@ -326,19 +419,23 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把本卡尺对象序列化成 Vision 二进制 byte[]（原生算子 id 799）；返回的是纯托管字节，不是句柄。
+	///   把卡尺序列化为 Vision 二进制格式的 byte 数组（原生 id 799）；只读，不释放、不更换本对象句柄，返回纯数据字节数组。
 	/// </summary>
-	/// <returns>序列化后的字节数组；由 <c>JlSerializationBuffer.LoadBytes</c> 直接从输出通道取回。</returns>
+	/// <returns>序列化条目的句柄。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>本句柄经 <c>Store(proc, 0)</c> 装为第 0 个图像型入参，原生侧输出一个序列化项，包装层立刻把它转成 byte[]——英文文档所说的"Handle of the serialized item"在 C# 侧不可见，句柄生命周期被封在 <c>JlSerializationBuffer</c> 里。</para>
-	///   <para><b>与相邻方法的取舍</b>写文件用 <see cref="WriteMeasure(string)"/>（id 801，原生自己落盘）；写流用 <see cref="Serialize(Stream)"/>（内部就是本方法+写流）；只有要自行托管字节（缓存、走自定义协议）才直接用它。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>将卡尺对象序列化为 Vision 二进制格式的 byte 数组（原生 id 799）。注意签名返回的是 byte[]，英文 returns 注释中的 "Handle of the serialized item" 是底层缓冲的表述，C# 侧拿到的是纯数据。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>只读操作，不释放、不更换本对象句柄，调用后卡尺仍可用。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>落盘用 WriteMeasure；写流用 Serialize；内存缓存/跨进程传字节用本方法，配 DeserializeMeasure 还原。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   byte[] data = m.SerializeMeasure();
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   byte[] data = caliper.SerializeMeasure();
 	///   </code>
-	///   <para><b>资源与坑</b>只读导出，不改变本句柄；末尾 <c>GC.KeepAlive(this)</c> 保证原生调用结束前句柄不被回收。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>DeserializeMeasure 是原地替换句柄（见其注释），若要保留原卡尺，先 new JlMeasure() 再对空壳调 DeserializeMeasure。</para>
 	/// </remarks>
 	public byte[] SerializeMeasure()
 	{
@@ -353,23 +450,23 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   用 byte[] 里的内容重建本卡尺对象（原生算子 id 800）：先释放旧句柄，再装入新句柄——C# 引用不变，原生对象是新的。
+	///   从 SerializeMeasure 得到的字节数组还原卡尺（原生 id 800）：先释放本对象旧句柄再装入新句柄，原地替换、不返回新对象，无返回值。
 	/// </summary>
-	/// <param name="serializedItemHandle">由 <see cref="SerializeMeasure"/> 产出的 Vision 二进制字节。</param>
+	/// <param name="serializedItemHandle">序列化条目的句柄。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>方法体第一步 <c>Dispose()</c> 把自身句柄复位为 UNDEF——这是硬前提，基类 <c>Load</c> 遇到非 UNDEF 的壳会直接抛 <c>JlException</c>。字节由 <c>JlSerializationBuffer</c>（using 声明）临时包装成原生序列化项传入。</para>
-	///   <para><b>约束或前提</b>数据损坏或版本不符时装载失败，此时本对象已是空壳（旧句柄先被释放了），后续测量调用不可用 [待实测：失败时异常的确切形态]。</para>
-	///   <para><b>与相邻方法的取舍</b>要新对象用 <c>JlMeasure.Deserialize(Stream)</c> 或 <c>Clone</c>；要换当前实例的内容才用本方法；从文件读用 <see cref="ReadMeasure(string)"/>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>从 SerializeMeasure 得到的字节数组还原卡尺（原生 id 800）。方法体先 Dispose() 释放本对象旧句柄，再把新句柄装入本对象——原地替换，不是返回新对象。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>传入数据必须来自同库的 SerializeMeasure / WriteMeasure，格式校验失败时本对象旧句柄已被释放 [失败后句柄状态待实测]。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure src = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   byte[] data = src.SerializeMeasure();
-	///   JlMeasure dst = new JlMeasure(100.0, 100.0, 50.0, 0.0, 6.28318, 10.0, 512, 512, "nearest_neighbor");
-	///   dst.DeserializeMeasure(data);                        // dst 从圆弧卡尺变为 src 的矩形卡尺
-	///   dst.Dispose();
-	///   src.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   byte[] data = caliper.SerializeMeasure();
+	///   JlMeasure restored = new JlMeasure();
+	///   restored.DeserializeMeasure(data);
 	///   </code>
-	///   <para><b>资源与坑</b>成功后持有的新句柄仍归本实例管，仍需 <c>Dispose()</c>；<c>[Serializable]</c> 的反序列化构造器走的也是本方法。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>Clone / Deserialize(Stream) / ISerializable 构造都经由本方法完成深拷贝。静态 JlMeasure.Deserialize 是它的"返回新对象"包装。</para>
 	/// </remarks>
 	public void DeserializeMeasure(byte[] serializedItemHandle)
 		{
@@ -386,19 +483,21 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把本卡尺对象写到文件（原生算子 id 801）：文件名以 STRING 控制参数传入，落盘由原生侧完成。
+	///   把卡尺以 Vision 二进制格式写入文件（原生 id 801）；不改动本对象句柄，无返回值。
 	/// </summary>
-	/// <param name="fileName">目标文件路径；编码为 ANSI（<c>StoreS</c> 的字符串通道），路径含非 ASCII 字符时能否写对 [待实测]。</param>
+	/// <param name="fileName">文件名。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>本句柄经 <c>Store(proc, 0)</c> 装为第 0 个图像型入参后调用原生 <c>write_measure</c>；无 InitOCT/Load——不产生输出，本对象原样保留。</para>
-	///   <para><b>与相邻方法的取舍</b>想托管流或用自定义目录策略时用 <see cref="Serialize(Stream)"/>；本方法一步落盘且配对 <see cref="ReadMeasure(string)"/>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>把卡尺以 Vision 二进制格式写入文件（原生 id 801）。不改动本对象句柄。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>配 ReadMeasure（id 802，原地换句柄）成对使用；内存中转换用 Serialize / Deserialize。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.WriteMeasure("caliper.dat");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   caliper.WriteMeasure("caliper.mdt");
 	///   </code>
-	///   <para><b>资源与坑</b>目录不存在或磁盘不可写时错误由原生侧报出；调用内部 <c>GC.KeepAlive(this)</c>，返回前句柄安全。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>文件路径由原生层处理，目录不存在时的错误形态 [待实测]。</para>
 	/// </remarks>
 	public void WriteMeasure(string fileName)
 	{
@@ -411,21 +510,21 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   从文件读回卡尺内容并重建本对象（原生算子 id 802）：旧句柄先被释放，成功后本引用指向文件里的新卡尺。
+	///   从文件读取卡尺载入本对象（原生 id 802）：先释放旧句柄再装入文件中的新句柄，原地替换、不返回新对象，无返回值。
 	/// </summary>
-	/// <param name="fileName">由 <see cref="WriteMeasure(string)"/> 写出的文件路径；编码为 ANSI（<c>StoreS</c> 通道）。</param>
+	/// <param name="fileName">文件名。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>方法体第一步 <c>Dispose()</c>——基类 <c>Load</c> 要求自身为 UNDEF 才装载，否则抛 <c>JlException</c>。文件路径是第 0 个控制入参，新句柄从输出通道 0 装入本壳。</para>
-	///   <para><b>约束或前提</b>读失败（文件缺失/格式错）时对象已退化为空壳，卡尺配置回不来了——重要配置先 <c>SerializeMeasure</c> 留 byte[] 兜底。</para>
-	///   <para><b>与相邻方法的取舍</b>要新实例而非改当前实例，用 <c>JlMeasure.Deserialize(Stream)</c> 读文件流；本方法适合"实例长期存活、内容随配方文件热换"的场景。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>从文件读取卡尺（原生 id 802）。方法体先 Dispose() 旧句柄再装入文件中的新句柄——原地替换本对象内容。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>不想动现有对象时用 JlOperatorSet.ReadMeasure(…, out JlTuple measureHandle) 拿裸句柄，或包装成 JlMeasure(handle)。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.WriteMeasure("caliper.dat");
-	///   m.ReadMeasure("caliper.dat");                        // 原地重载，m 引用不变
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure();
+	///   caliper.ReadMeasure("caliper.mdt");
 	///   </code>
-	///   <para><b>资源与坑</b>装载后的新句柄仍归本实例管，最终仍需 <c>Dispose()</c>。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>文件不存在时本对象旧句柄已被释放，对象成为空壳 [失败后状态待实测]。</para>
 	/// </remarks>
 	public void ReadMeasure(string fileName)
 	{
@@ -440,31 +539,33 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   沿卡尺带提取灰度剖面后，返回灰度穿越指定阈值的所有点的亚像素位置（原生算子 id 803）。
+	///   沿卡尺扫描方向输出灰度经过 threshold 的亚像素交点行/列坐标及相邻交点间距（原生 id 803，先按 sigma 高斯平滑）；结果经 out 元组返回，无返回值。
 	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">沿卡尺方向对灰度剖面做高斯平滑的标准差；越大交点位置越稳但越钝化细节。Default: 1.0</param>
-	/// <param name="threshold">被追踪的灰度绝对值，像素灰度单位。Default: 128.0</param>
-	/// <param name="select">点的取舍方式。Default: "all"</param>
-	/// <param name="rowThresh">穿越点的行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnThresh">穿越点的列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="distance">相邻穿越点的间距（像素），长度比前两路少 1；点数不足 2 时内容如何 [待实测]。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="threshold">阈值。默认值：128.0</param>
+	/// <param name="select">点的筛选方式。默认值："all"</param>
+	/// <param name="rowThresh">灰度经过阈值的点的行坐标。</param>
+	/// <param name="columnThresh">灰度经过阈值的点的列坐标。</param>
+	/// <param name="distance">相邻点之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>这是"给定灰度电平找交点"，不做边缘拟合：结果位置只反映剖面与水平线的相交，不反映边缘强弱。图像型与控制型入参各走各的索引通道（本句柄=图像型 0、image=图像型 1；sigma/阈值/select=控制型 1/2/3），两个 index 同为 1 不是覆盖写。</para>
-	///   <para><b>约束或前提</b>剖面先按 <c>sigma</c> 平滑再找交点，故 <c>sigma</c> 直接决定亚像素位置的平滑度；对照度不均的图，单一绝对阈值可能在某些段产生假交点 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要的是边缘（梯度峰值）用 <see cref="MeasurePos"/>；要成对边界用 <see cref="MeasurePairs"/>；只有"固定灰度电平在哪穿过"这类需求（如标定灰度台阶）才用本方法。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>沿卡尺扫描方向（矩形长轴 / 弧的径向）找灰度经过 threshold 的点（原生 id 803）：先按 sigma 做高斯平滑，再取一维灰度曲线与阈值的交点，输出亚像素行/列坐标和相邻交点间距。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>MeasurePos 找的是灰度导数峰值（真实边缘，幅值可判强弱）；本算子找的是等值线交点，会被曲线非单调段或阈值落在平台区干扰，一般只在需要"灰度等于某值的轮廓点"（如干涉条纹、渐变带定位）时使用。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>threshold 是灰度绝对值（默认 128），不是边缘幅值——与 MeasurePos 的 threshold 含义不同。select 取 "all" / "first" / "last"，"first"/"last" 只留一个交点，输出元组长度为 1 [行为待实测]。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.MeasureThresh(img, 1.0, 128.0, "all", out JlTuple rowThresh, out JlTuple colThresh, out JlTuple dist);
-	///   rowThresh.Dispose();
-	///   colThresh.Dispose();
-	///   dist.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.MeasureThresh(image, 1.0, 128.0, "all",
+	///           out JlTuple rowThresh, out JlTuple columnThresh, out JlTuple distance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>三路 out 均为 DOUBLE 型新 <c>JlTuple</c>，用毕各自 <c>Dispose()</c>；原生调用结束前本句柄与 image 均被 <c>GC.KeepAlive</c> 钉住，返回后可安全释放入参。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>三个输出元组等长、按序对应；图像尺寸须与卡尺建模时的 width/height 一致。</para>
 	/// </remarks>
 	public void MeasureThresh(JlImage image, double sigma, double threshold, string select, out JlTuple rowThresh, out JlTuple columnThresh, out JlTuple distance)
 	{
@@ -487,18 +588,18 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   调用原生 delete/close 通道销毁卡尺（原生算子 id 804）。不推荐日常使用——释放本对象请用 <c>Dispose()</c>。
+	///   删除原生卡尺对象并释放其内存（原生 id 804，对应 close_measure）；只调原生删除、不清空托管侧句柄字段，调用后不得再触碰本对象，无返回值。
 	/// </summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>只把本句柄装进第 0 个图像型入参并调用原生算子；包装层没有跟着复位 <c>mHandle</c>，调用后 C# 壳仍持有那个已被原生处理过的句柄值。</para>
-	///   <para><b>约束或前提</b>之后再拿本实例调 <c>MeasurePos</c> 等就是在用一个已销毁的对象；随后再 <c>Dispose()</c> 是否会二次释放（原生 ClearHandle 是减引用还是真销毁）代码看不出来 [待实测]。这正是推荐用 <c>Dispose()</c> 替代本方法的原因：<c>Dispose</c> 会同步把壳复位成 UNDEF。</para>
-	///   <para><b>与相邻方法的取舍</b>只想放弃本实例的一切：直接 <c>Dispose()</c>；本方法仅在需要与原生侧资源统计/脚本互操作的场合有意义。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>删除原生卡尺对象并释放其内存（原生 id 804，对应底层 close_measure；本库的"清空测量对象"入口就是它和 Dispose，没有独立的 ClearMeasure）。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>方法体只调原生删除，不清空托管侧句柄字段：调用后该 JlMeasure 变量仍指向已删除的对象，再次使用行为未定义；其后若再触发 Dispose，是否二次释放原生句柄 [待实测]。常规释放直接用 Dispose() 或 using，CloseMeasure 仅在需要立即归还原生内存且不再触碰该对象时使用。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.CloseMeasure();                                      // 之后 m 不可再用，也不再 Dispose
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   caliper.CloseMeasure(); // 调用后不得再使用该对象
 	///   </code>
-	///   <para><b>资源与坑</b>调用后请丢弃引用；若仍想走 using/Dispose 模式，就不要碰本方法。</para>
 	/// </remarks>
 	public void CloseMeasure()
 	{
@@ -510,23 +611,28 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   沿卡尺带（矩形长轴或弧的径向）提取垂直于边缘方向的平均灰度剖面（原生算子 id 805），不做任何边缘拟合。
+	///   沿卡尺提取一维灰度投影曲线（原生 id 805，把宽度方向灰度平均、不做边缘判断），返回按扫描方向排列的 JlTuple 灰度元组。
 	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <returns>剖面的灰度序列，DOUBLE 型 <c>JlTuple</c> 新句柄；元素个数与卡尺带扫描方向的采样数有关，具体对应关系代码未给出 [待实测]。</returns>
+	/// <returns>灰度值轮廓。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>这是所有 Measure 族算子的第一步：把二维条带压成一维剖面。本方法只把剖面原样交出来，供自行分析（画曲线、找任意特征点）。</para>
-	///   <para><b>与相邻算子的取舍</b>要亚像素边缘坐标用 <see cref="MeasurePos"/>，要灰度交点用 <see cref="MeasureThresh"/>；只有需要自定义判据（如峰值面积、多电平交叉）时才取裸剖面自己算。图像型入参通道里本句柄=0、image=1，与 sigma 等控制参数互不占位。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>沿卡尺提取一维灰度投影轮廓（原生 id 805）：把沿宽度方向（矩形短轴 / 弧的环带宽）的灰度平均成一条曲线返回。不做任何边缘判断。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>只需要边缘坐标时直接用 MeasurePos / MeasurePairs；要自行分析灰度曲线（找拐点、算对比度、判断有无边缘）时先取本算子的曲线。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>返回元组按扫描方向排列（矩形为长轴方向、弧为径向由内向外 [方向序待实测]），采样间隔由建模时的插值方式与尺寸决定。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   JlTuple profile = m.MeasureProjection(img);
-	///   profile.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       JlTuple profile = caliper.MeasureProjection(image);
+	///       int samples = profile.Length;
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>返回元组是 <c>JlTuple.LoadNew</c> 造的新句柄（纯数值元组的 <c>Dispose</c> 只释放句柄类元素，不调也不算漏），但习惯上统一释放。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>图像尺寸须与建模 width/height 一致；返回的 JlTuple 由调用方 Dispose [元组是否需手动释放待实测]。</para>
 	/// </remarks>
 	public JlTuple MeasureProjection(JlImage image)
 	{
@@ -543,20 +649,21 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把本卡尺上用于 Fuzzy 系列算子的模糊隶属度函数复位为默认定义（原生算子 id 806）。
+	///   把卡尺的指定模糊隶属函数复位为默认形状（原生 id 806，setType 选复位哪个模糊集）；原地改内部函数表、不更换句柄，无返回值。
 	/// </summary>
-	/// <param name="setType">要复位的模糊集合名。Default: "contrast"</param>
+	/// <param name="setType">模糊集的选择。默认值："contrast"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>本句柄=图像型入参 0，<c>setType</c> 是控制参数 1；无输出通道，纯状态操作。Fuzzy 算子（<c>FuzzyMeasurePos</c>/<c>FuzzyMeasurePairs</c>/<c>FuzzyMeasurePairing</c>）给出的 fuzzyScore 依赖这套隶属度函数；曾被 <c>add_fuzzy_measure</c> 一类原生接口改过后，可用本方法退回出厂值。</para>
-	///   <para><b>约束或前提</b>配对的"添加/修改隶属度函数"算子（原生 add_fuzzy_measure）在本库不存在（已 Grep 核实），只有从外部途径改过隶属度函数时本方法才有用武之地 [待实测：除 "contrast" 外的合法集合名]。</para>
-	///   <para><b>与相邻方法的取舍</b>不改隶属度函数、只调打分门限的话，动 <c>fuzzyThresh</c> 参数即可，不必用本方法。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>把卡尺对象的模糊隶属函数复位为默认形状（原生 id 806）。setType 选择复位哪个模糊集，默认 "contrast"（按边缘对比度评分），其余可用名 [待实测]。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>FuzzyMeasurePos / FuzzyMeasurePairs / FuzzyMeasurePairing 会按隶属度对边缘评分并以 fuzzyThresh 过滤；自定义隶属函数用 JlOperatorSet.SetFuzzyMeasure / SetFuzzyMeasureNormPair（本类上只有复位入口）。不想用模糊评分就改用普通 MeasurePos / MeasurePairs。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.ResetFuzzyMeasure("contrast");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   caliper.ResetFuzzyMeasure("contrast");
 	///   </code>
-	///   <para><b>资源与坑</b>不影响句柄有效性，前后都可正常测量。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>原地修改本对象内部函数表，不更换句柄。</para>
 	/// </remarks>
 	public void ResetFuzzyMeasure(string setType)
 	{
@@ -572,44 +679,46 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 
 
 	/// <summary>
-	///   在卡尺带内提取带模糊评分的直线边缘对，可按灰度过渡方向与配对约束筛选并截断数量（原生算子 id 809）。
+	///   在卡尺内做带模糊评估与配对约束的边缘对提取（原生 id 809）：输出两边缘坐标/带符号幅值、对中心坐标、fuzzyScore 与对内间距；结果经 out 元组返回，无返回值。
 	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">剖面高斯平滑（求一阶导算梯度前）的标准差。Default: 1.0</param>
-	/// <param name="ampThresh">计入边缘的最小幅值（绝对值意义下）。Default: 30.0</param>
-	/// <param name="fuzzyThresh">边缘对模糊评分的录取门限，取值域与隶属度函数定义有关 [待实测]。Default: 0.5</param>
-	/// <param name="transition">按第一路边沿的灰度过渡方向筛选边缘对（亮暗/暗亮次序）。Default: "all"</param>
-	/// <param name="pairing">两边缘如何配成一对的约束。Default: "no_restriction"</param>
-	/// <param name="numPairs">最多返回的边缘对个数（INTEGER 装载）。Default: 10</param>
-	/// <param name="rowEdgeFirst">第一路边的行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeFirst">第一路边的列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeFirst">第一路边幅值，带符号（正负号即过渡方向）。DOUBLE 元组，新句柄。</param>
-	/// <param name="rowEdgeSecond">第二路边的行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeSecond">第二路边的列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeSecond">第二路边幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="rowPairCenter">边缘对中点的行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnPairCenter">边缘对中点的列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="fuzzyScore">边缘对的模糊评分（隶属度合成，见 ResetFuzzyMeasure）。DOUBLE 元组，新句柄。</param>
-	/// <param name="intraDistance">对内两边缘的间距（像素，沿扫描方向）。DOUBLE 元组，新句柄。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="ampThresh">最小边缘幅值。默认值：30.0</param>
+	/// <param name="fuzzyThresh">最小模糊值。默认值：0.5</param>
+	/// <param name="transition">选择边缘对的第一个灰度值过渡方向。默认值："all"</param>
+	/// <param name="pairing">配对约束。默认值："no_restriction"</param>
+	/// <param name="numPairs">边缘对的数量。默认值：10</param>
+	/// <param name="rowEdgeFirst">第一条边缘的行坐标。</param>
+	/// <param name="columnEdgeFirst">第一条边缘的列坐标。</param>
+	/// <param name="amplitudeFirst">第一条边缘的边缘幅值（带符号）。</param>
+	/// <param name="rowEdgeSecond">第二条边缘的行坐标。</param>
+	/// <param name="columnEdgeSecond">第二条边缘的列坐标。</param>
+	/// <param name="amplitudeSecond">第二条边缘的边缘幅值（带符号）。</param>
+	/// <param name="rowPairCenter">边缘对中心的行坐标。</param>
+	/// <param name="columnPairCenter">边缘对中心的列坐标。</param>
+	/// <param name="fuzzyScore">边缘对的模糊评分。</param>
+	/// <param name="intraDistance">边缘对内两条边缘之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与 <c>FuzzyMeasurePairs</c>（id 810）相比多了 pairing/numPairs 两路控制参数（索引 5/6），输出 10 路给出对中心却不给 interDistance；适合"已知目标宽度、按约束配边"的筛查。</para>
-	///   <para><b>约束或前提</b>十路输出的元素个数一致（按边缘对对齐），哪一路为第 k 对取决于原生排序；排序稳定性代码无法保证 [待实测]。幅值正负约定（由暗到亮为正还是为负）以实测为准 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>不关心隶属度评分要轻量结果时用 <see cref="MeasurePairs"/>；要相邻对间距序列（缝宽检查）用 <c>FuzzyMeasurePairs</c>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>带模糊评估的成对边缘提取（原生 id 809）：在卡尺内找边缘对，除幅值门槛外还按隶属函数给每对打分（fuzzyScore），低于 fuzzyThresh 的被丢弃；pairing 施加配对约束，numPairs 限制返回的对数上限。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>比 FuzzyMeasurePairs 多了 pairing 约束与 pair 中心输出、少了 interDistance；比 MeasurePairs 多了 fuzzy 过滤。测线宽/胶宽且杂边多时选本算子。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>transition 决定以哪个极性作第一边（对扫描方向的灰度上升/下降，"all" 不限 [具体极性定义待实测]）；pairing 除默认 "no_restriction" 外可选值 [待实测]；numPairs 与 10 个输出元组的长度对应——每个元组都是"每对一项"。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.FuzzyMeasurePairing(img, 1.0, 30.0, 0.5, "all", "no_restriction", 10,
-	///       out JlTuple row1, out JlTuple col1, out JlTuple amp1,
-	///       out JlTuple row2, out JlTuple col2, out JlTuple amp2,
-	///       out JlTuple rowC, out JlTuple colC, out JlTuple score, out JlTuple intra);
-	///   row1.Dispose(); col1.Dispose(); amp1.Dispose();
-	///   row2.Dispose(); col2.Dispose(); amp2.Dispose();
-	///   rowC.Dispose(); colC.Dispose(); score.Dispose(); intra.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.FuzzyMeasurePairing(image, 1.0, 30.0, 0.5, "all", "no_restriction", 10,
+	///           out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst,
+	///           out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond,
+	///           out JlTuple rowPairCenter, out JlTuple columnPairCenter,
+	///           out JlTuple fuzzyScore, out JlTuple intraDistance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>十路 out 全是 DOUBLE 型新 <c>JlTuple</c>；原生调用期间本句柄与 image 被 <c>GC.KeepAlive</c> 钉住，返回后即可释放。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>10 个输出元组等长（= 找到的对数），可为 0；未建模（无卡尺句柄）直接调用会报句柄错误 [待实测]。</para>
 	/// </remarks>
 	public void FuzzyMeasurePairing(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, string pairing, int numPairs, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowPairCenter, out JlTuple columnPairCenter, out JlTuple fuzzyScore, out JlTuple intraDistance)
 	{
@@ -649,44 +758,45 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   在卡尺带内提取带模糊评分的直线边缘对，输出除两边界与对中心外还给相邻对间距序列（原生算子 id 810）；无 pairing/numPairs 约束。</summary>
+	///   在卡尺内做带模糊评分过滤的边缘对提取（原生 id 810）：输出两边缘坐标/带符号幅值、对中心坐标、fuzzyScore 与对内/对间间距；结果经 out 元组返回，无返回值。
+	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">剖面高斯平滑（求一阶导算梯度前）的标准差。Default: 1.0</param>
-	/// <param name="ampThresh">计入边缘的最小幅值。Default: 30.0</param>
-	/// <param name="fuzzyThresh">边缘对模糊评分的录取门限。Default: 0.5</param>
-	/// <param name="transition">按第一路边沿的灰度过渡方向筛选边缘对。Default: "all"</param>
-	/// <param name="rowEdgeFirst">第一路边行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeFirst">第一路边列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeFirst">第一路边幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="rowEdgeSecond">第二路边行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeSecond">第二路边列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeSecond">第二路边幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="rowEdgeCenter">边缘对中点行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeCenter">边缘对中点列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="fuzzyScore">边缘对的模糊评分。DOUBLE 元组，新句柄。</param>
-	/// <param name="intraDistance">对内两边缘间距（像素）。DOUBLE 元组，新句柄。</param>
-	/// <param name="interDistance">相邻边缘对之间的间距（像素），长度与对数的关系 [待实测]。DOUBLE 元组，新句柄。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="ampThresh">最小边缘幅值。默认值：30.0</param>
+	/// <param name="fuzzyThresh">最小模糊值。默认值：0.5</param>
+	/// <param name="transition">选择边缘对的第一个灰度值过渡方向。默认值："all"</param>
+	/// <param name="rowEdgeFirst">第一条边缘点的行坐标。</param>
+	/// <param name="columnEdgeFirst">第一条边缘点的列坐标。</param>
+	/// <param name="amplitudeFirst">第一条边缘的边缘幅值（带符号）。</param>
+	/// <param name="rowEdgeSecond">第二条边缘点的行坐标。</param>
+	/// <param name="columnEdgeSecond">第二条边缘点的列坐标。</param>
+	/// <param name="amplitudeSecond">第二条边缘的边缘幅值（带符号）。</param>
+	/// <param name="rowEdgeCenter">边缘对中心的行坐标。</param>
+	/// <param name="columnEdgeCenter">边缘对中心的列坐标。</param>
+	/// <param name="fuzzyScore">边缘对的模糊评分。</param>
+	/// <param name="intraDistance">边缘对内两条边缘之间的距离。</param>
+	/// <param name="interDistance">相邻边缘对之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与 <c>FuzzyMeasurePairing</c>（id 809）互补：本方法没有配对约束与数量截断参数，但多给一路 interDistance；11 路输出全按 DOUBLE 装载（索引 0~10）。</para>
-	///   <para><b>约束或前提</b>过渡方向（transition）指第一路边的明暗次序；两路幅值符号与过渡方向的对应代码未注明 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>需要按宽度约束强制配对或限定对数用 <c>FuzzyMeasurePairing</c>；不需要隶属度评分用 <see cref="MeasurePairs"/>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>带模糊评估的成对边缘提取（原生 id 810）：先按 sigma 平滑、按幅值与 fuzzyThresh 双重过滤边缘，再配成对；输出两边缘坐标/带符号幅值、对中心坐标、fuzzyScore、对内间距 intraDistance 与相邻对间距 interDistance。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>与 MeasurePairs 同构但多了 fuzzy 评分过滤，适合杂边/伪边缘多的场景；需要配对约束或对数上限用 FuzzyMeasurePairing；只要单边缘用 FuzzyMeasurePos。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>transition 选对边缘对做筛选的第一边缘极性（"all"/"positive"/"negative"，极性定义 [待实测]）；11 个输出元组等长 = 对数，intraDistance 即线宽/厚度像素值，乘标定比例得物理尺寸。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.FuzzyMeasurePairs(img, 1.0, 30.0, 0.5, "all",
-	///       out JlTuple row1, out JlTuple col1, out JlTuple amp1,
-	///       out JlTuple row2, out JlTuple col2, out JlTuple amp2,
-	///       out JlTuple rowC, out JlTuple colC, out JlTuple score,
-	///       out JlTuple intra, out JlTuple inter);
-	///   row1.Dispose(); col1.Dispose(); amp1.Dispose();
-	///   row2.Dispose(); col2.Dispose(); amp2.Dispose();
-	///   rowC.Dispose(); colC.Dispose(); score.Dispose();
-	///   intra.Dispose(); inter.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.FuzzyMeasurePairs(image, 1.0, 30.0, 0.5, "all",
+	///           out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst,
+	///           out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond,
+	///           out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter,
+	///           out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>11 路 out 均为新 <c>JlTuple</c> 句柄，用毕释放；本句柄与 image 在调用结束前由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>与单边缘版共享同一套模糊隶属函数（ResetFuzzyMeasure 复位）；interDistance 首元素无相邻对时的取值 [待实测]。</para>
 	/// </remarks>
 	public void FuzzyMeasurePairs(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter, out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance)
 	{
@@ -726,32 +836,37 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   在卡尺带内提取带模糊评分的直线边缘（原生算子 id 811）：与 <c>MeasurePos</c> 同族，但按幅值与隶属度双门限录取。</summary>
+	///   沿卡尺扫描以灰度导数峰值提取单条边缘并按模糊隶属度过滤（原生 id 811）：输出亚像素坐标/带符号幅值/fuzzyScore/间距；结果经 out 元组返回，无返回值。
+	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">剖面高斯平滑（求一阶导算梯度前）的标准差。Default: 1.0</param>
-	/// <param name="ampThresh">计入边缘的最小幅值。Default: 30.0</param>
-	/// <param name="fuzzyThresh">隶属度录取门限。Default: 0.5</param>
-	/// <param name="transition">按明暗过渡方向筛选边缘。Default: "all"</param>
-	/// <param name="rowEdge">边缘点行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdge">边缘点列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitude">边缘幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="fuzzyScore">每条边的模糊评分。DOUBLE 元组，新句柄。</param>
-	/// <param name="distance">相邻边缘间距（像素）。DOUBLE 元组，新句柄。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="ampThresh">最小边缘幅值。默认值：30.0</param>
+	/// <param name="fuzzyThresh">最小模糊值。默认值：0.5</param>
+	/// <param name="transition">选择由亮到暗或由暗到亮的边缘。默认值："all"</param>
+	/// <param name="rowEdge">边缘点的行坐标。</param>
+	/// <param name="columnEdge">边缘点的列坐标。</param>
+	/// <param name="amplitude">边缘的边缘幅值（带符号）。</param>
+	/// <param name="fuzzyScore">边缘的模糊评分。</param>
+	/// <param name="distance">相邻边缘之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>控制参数索引：sigma=1、ampThresh=2、fuzzyThresh=3、transition=4；输出 5 路（索引 0~4）全 DOUBLE。与 <see cref="MeasurePos"/> 的关键差异是多一路 fuzzyScore，且用隶属度函数（见 <see cref="ResetFuzzyMeasure"/>）而非纯幅值筛选——边缘"形似而神不似"（如渐晕下的宽缓边）会被压低分。</para>
-	///   <para><b>约束或前提</b>fuzzyScore 的取值域取决于隶属度函数定义 [待实测]；先 Reset 再比较不同工位分数才有意义。</para>
-	///   <para><b>与相邻算子的取舍</b>只要位置不要评分用 <c>MeasurePos</c>；要成对边界用 <c>FuzzyMeasurePairs</c>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>带模糊评估的单边缘提取（原生 id 811）：语义同 MeasurePos（导数峰值找边），另按隶属函数给每条边缘打 fuzzyScore，低于 fuzzyThresh 的被剔除。扫描与输出约定详见 MeasurePos 注释。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>普通场景用 MeasurePos 即可；反光、阴影导致伪边缘时用本算子加 fuzzy 过滤；成对测宽用 FuzzyMeasurePairs。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>ampThresh 是最小边缘幅值（不是灰度值）；fuzzyThresh 在 0–1 的隶属度域内过滤（默认 0.5）；transition 极性定义 [待实测]。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.FuzzyMeasurePos(img, 1.0, 30.0, 0.5, "all",
-	///       out JlTuple rowEdge, out JlTuple colEdge, out JlTuple amp, out JlTuple score, out JlTuple dist);
-	///   rowEdge.Dispose(); colEdge.Dispose(); amp.Dispose(); score.Dispose(); dist.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.FuzzyMeasurePos(image, 1.0, 30.0, 0.5, "all",
+	///           out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude,
+	///           out JlTuple fuzzyScore, out JlTuple distance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>5 路 out 均为新 <c>JlTuple</c> 句柄；image 与本句柄在原生调用期间被保活。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>5 个输出元组等长 = 边缘数；fuzzyScore 可用于把最强边缘之外的结果做置信度排序。</para>
 	/// </remarks>
 	public void FuzzyMeasurePos(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple fuzzyScore, out JlTuple distance)
 	{
@@ -779,39 +894,42 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   在卡尺带内提取直线边缘并把它们两两配成边缘对，返回两侧亚像素位置、带符号幅值与组内/组间距离（原生算子 id 812）；非 fuzzy 版，无隶属度评分。</summary>
+	///   在卡尺内按 MeasurePos 方式找边再依 transition 极性配对（原生 id 812）：输出两边缘亚像素坐标/带符号幅值与对内/对间间距（像素）；结果经 out 元组返回，无返回值。
+	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">剖面高斯平滑（求一阶导算梯度前）的标准差。Default: 1.0</param>
-	/// <param name="threshold">计入边缘的最小幅值。Default: 30.0</param>
-	/// <param name="transition">决定哪些明暗过渡序对允许配成边缘对。Default: "all"</param>
-	/// <param name="select">边缘对的取舍方式。Default: "all"</param>
-	/// <param name="rowEdgeFirst">第一边中点行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeFirst">第一边中点列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeFirst">第一边幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="rowEdgeSecond">第二边中点行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdgeSecond">第二边中点列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitudeSecond">第二边幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="intraDistance">组内两边缘间距（像素）。DOUBLE 元组，新句柄。</param>
-	/// <param name="interDistance">相邻边缘对间距（像素）。DOUBLE 元组，新句柄。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="threshold">最小边缘幅值。默认值：30.0</param>
+	/// <param name="transition">灰度值过渡类型，决定边缘如何组合为边缘对。默认值："all"</param>
+	/// <param name="select">边缘对的选择。默认值："all"</param>
+	/// <param name="rowEdgeFirst">第一条边缘中心的行坐标。</param>
+	/// <param name="columnEdgeFirst">第一条边缘中心的列坐标。</param>
+	/// <param name="amplitudeFirst">第一条边缘的边缘幅值（带符号）。</param>
+	/// <param name="rowEdgeSecond">第二条边缘中心的行坐标。</param>
+	/// <param name="columnEdgeSecond">第二条边缘中心的列坐标。</param>
+	/// <param name="amplitudeSecond">第二条边缘的边缘幅值（带符号）。</param>
+	/// <param name="intraDistance">边缘对内两条边缘之间的距离。</param>
+	/// <param name="interDistance">相邻边缘对之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>控制参数索引 sigma=1、threshold=2、transition=3、select=4；8 路输出索引 0~7 全 DOUBLE。配对的成败由 transition 决定（如 "all" 不限、"positive" 只收某一种明暗序对 [待实测]），"找到几对"直接受其影响。</para>
-	///   <para><b>约束或前提</b>需要评分筛选（宽缓边、脏污边降权）时本方法给不了，改 <c>FuzzyMeasurePairs</c>；只量一条边用 <see cref="MeasurePos"/> 更省事。</para>
-	///   <para><b>与相邻算子的取舍</b>测缝宽/线宽取 intraDistance，测节距取 interDistance；两者都是沿扫描方向的弧长/轴向距离而非欧氏弦距（弧卡尺时差异明显）[待实测]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>在卡尺内提取边缘并配对（原生 id 812）：先按 MeasurePos 的方式找边，再按 transition 规定的极性把边缘两两配成对。输出两条边缘的亚像素坐标与带符号幅值、对内间距 intraDistance（= 宽度/厚度，像素）、相邻对间距 interDistance。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>只要单条边用 MeasurePos；本库无 add_measure_pair/成对边界建模算子 [Grep 确认 JlMeasure 无 AddMeasurePair]，卡尺级成对定位就是本算子；需要模糊过滤选 FuzzyMeasurePairs。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>threshold 是最小边缘幅值而非灰度值；transition 以扫描方向的灰度变化定义（"positive"/"negative" 何者对应暗→亮 [待实测]），"all" 允许两种起始极性；select 取 "all"/"first"/"last" 控制返回的对数——"first"/"last" 时全部输出元组长度为 1。8 个输出元组等长 = 对数。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.MeasurePairs(img, 1.0, 30.0, "all", "all",
-	///       out JlTuple row1, out JlTuple col1, out JlTuple amp1,
-	///       out JlTuple row2, out JlTuple col2, out JlTuple amp2,
-	///       out JlTuple intra, out JlTuple inter);
-	///   row1.Dispose(); col1.Dispose(); amp1.Dispose();
-	///   row2.Dispose(); col2.Dispose(); amp2.Dispose();
-	///   intra.Dispose(); inter.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.MeasurePairs(image, 1.0, 30.0, "all", "all",
+	///           out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst,
+	///           out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond,
+	///           out JlTuple intraDistance, out JlTuple interDistance);
+	///       double lineWithPx = intraDistance.D; // 第一对的宽度
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>8 路 out 均为新 <c>JlTuple</c> 句柄，用毕释放；0 条边缘时各路为空元组而非 null [待实测]。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>图像尺寸须与建模 width/height 一致；幅值带符号，符号表示极性——校验"黑→白→黑"这类结构时按 amplitudeFirst 的符号筛选。</para>
 	/// </remarks>
 	public void MeasurePairs(JlImage image, double sigma, double threshold, string transition, string select, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple intraDistance, out JlTuple interDistance)
 	{
@@ -845,31 +963,38 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   在卡尺带内提取直线边缘的亚像素位置与带符号幅值（原生算子 id 813）：Measure 族最常用、最轻量的"找边"。</summary>
+	///   沿卡尺扫描方向对灰度投影做高斯导数、按过零点提取亚像素直线边缘（原生 id 813）：每条边输出坐标、带符号幅值与与上一条边的间距；结果经 out 元组返回，无返回值。
+	/// </summary>
 	/// <param name="image">输入图像。</param>
-	/// <param name="sigma">剖面高斯平滑（求一阶导算梯度前）的标准差。Default: 1.0</param>
-	/// <param name="threshold">计入边缘的最小幅值；调它比调 select 更能控制误检。Default: 30.0</param>
-	/// <param name="transition">按明暗过渡方向筛选边缘。Default: "all"</param>
-	/// <param name="select">边缘的取舍方式（按序/按幅值截取等）。Default: "all"</param>
-	/// <param name="rowEdge">边缘中点行坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="columnEdge">边缘中点列坐标（像素），DOUBLE 元组，新句柄。</param>
-	/// <param name="amplitude">边缘幅值，带符号。DOUBLE 元组，新句柄。</param>
-	/// <param name="distance">相邻边缘间距（像素）。DOUBLE 元组，新句柄。</param>
+	/// <param name="sigma">高斯平滑的 sigma 值。默认值：1.0</param>
+	/// <param name="threshold">最小边缘幅值。默认值：30.0</param>
+	/// <param name="transition">由亮到暗或由暗到亮的边缘。默认值："all"</param>
+	/// <param name="select">端点的选择。默认值："all"</param>
+	/// <param name="rowEdge">边缘中心的行坐标。</param>
+	/// <param name="columnEdge">边缘中心的列坐标。</param>
+	/// <param name="amplitude">边缘的边缘幅值（带符号）。</param>
+	/// <param name="distance">相邻边缘之间的距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>控制参数索引 sigma=1、threshold=2、transition=3、select=4；4 路输出索引 0~3 全 DOUBLE。幅值符号即过渡方向（由暗到亮/由亮到暗其一为正），拿它当"边强"用要取绝对值 [待实测：符号约定]。</para>
-	///   <para><b>约束或前提</b>边缘位置是剖面一阶导过零点的二次拟合结果，宽度小于 2×sigma 平滑核的毛刺会合并 [待实测]；卡尺带没入图像外时对应位置缺失 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要"一对边"的宽度用 <see cref="MeasurePairs"/>；要灰度交点用 <see cref="MeasureThresh"/>；要评分筛边用 <c>FuzzyMeasurePos</c>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>1D 卡尺找边的主算子（原生 id 813）：沿扫描方向（矩形长轴 / 弧径向）对灰度投影曲线做高斯导数，返回过零点对应的亚像素边缘。每条边缘给出坐标（垂直于长轴方向的分辨率由导数插值给出）、带符号幅值和与上一条边缘的距离。</para>
+	///   <para><b>约束或前提</b></para>
+	///   <para>图像尺寸须与卡尺建模时的 width/height 一致；卡尺句柄有效（构造后未被 CloseMeasure）。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>要宽度/厚度用 MeasurePairs（成对）；伪边缘多时先 ResetFuzzyMeasure 再走 FuzzyMeasurePos；只看灰度曲线用 MeasureProjection。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>threshold 是最小边缘幅值（灰度跳变强度），不是灰度阈值——对比度低就调小它而不是调 MeasureThresh 那套。transition 按扫描方向的极性选边："all" 两种都要，"positive"/"negative" 各取一种（暗→亮的对应关系以现场标定为准 [待实测]）；select 取 "all"/"first"/"last"。本库未暴露 set_measure_param（无 SetMeasureParam，Grep 确认），因此 num_measures 上限与 measure_selection 无法另行配置；输出元组 rowEdge/columnEdge/amplitude/distance 四者等长，长度 = 过滤后边缘数，"first"/"last" 时恒为 1。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlImage img = new JlImage("part.png");
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.MeasurePos(img, 1.0, 30.0, "all", "all",
-	///       out JlTuple rowEdge, out JlTuple colEdge, out JlTuple amp, out JlTuple dist);
-	///   rowEdge.Dispose(); colEdge.Dispose(); amp.Dispose(); dist.Dispose();
-	///   m.Dispose();
-	///   img.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.MeasurePos(image, 1.0, 30.0, "all", "first",
+	///           out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance);
+	///       double edgeColumn = columnEdge.D; // 最强/最早一条边缘的列坐标
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>out 元组为新句柄，用毕释放；结果顺序即原生给出的顺序，跨版本不保证稳定，别按下标写死期望 [待实测]。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>找不到边缘时返回空元组（长度为 0）而非报错 [待实测]；distance 首元素表示第一条边缘到卡尺起点的距离还是无效值 [待实测]。</para>
 	/// </remarks>
 	public void MeasurePos(JlImage image, double sigma, double threshold, string transition, string select, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance)
 	{
@@ -895,22 +1020,31 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把卡尺带整体平移到新的参考点（原生算子 id 814）：row/column 是新中心坐标而非位移量；无输出参数，改动直接发生在句柄内部。</summary>
-	/// <param name="row">新参考点的行坐标（像素）。Default: 50.0</param>
-	/// <param name="column">新参考点的列坐标（像素）。Default: 100.0</param>
+	///   把卡尺整体平移到新参考点 (row, column)（原生 id 814，图像坐标非偏移量）：矩形改中心、弧改圆心，其余参数不变；原地修改、不更换句柄，无返回值。
+	/// </summary>
+	/// <param name="row">新参考点的行坐标。默认值：50.0</param>
+	/// <param name="column">新参考点的列坐标。默认值：100.0</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>元组版经 <c>Store</c> 钉住两路参数、调用后 <c>UnpinTuple</c>。方法体没有 InitOCT/Load——原生在句柄内就地改写几何，C# 侧对象与句柄值都不换，调用后继续可用，不需要额外 Dispose。</para>
-	///   <para><b>约束或前提</b>要"平移 d 像素"得自己先读当前中心再加 [待实测：GetMeasureParam 能否读回当前中心]；圆弧卡尺平移的是圆心。</para>
-	///   <para><b>与相邻方法的取舍</b>位姿+形状一起大改，用 <c>GenMeasureRectangle2</c>/<c>GenMeasureArc</c> 重建（会先释放旧句柄）；只是跟件挪位置，用本方法（保留句柄、开销小）。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>把卡尺整体平移到新参考点 (row, column)（原生 id 814）：矩形卡尺改中心、圆弧卡尺改圆心，长度/宽度/角度/环带等其余参数不变。原地修改本对象的测量对象，不更换句柄、不返回新对象。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>跟随定位结果每帧搬卡尺：本算子最省，不需要重新给全部建模参数；要改角度或尺寸就得 GenMeasureRectangle2 / GenMeasureArc 重建。多个位姿共享同一套参数：Clone 出多份后各自 Translate。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>row/column 是图像坐标（新参考点），不是偏移量 [绝对性由原生语义决定，若需相对平移以实测为准]。double 重载与本重载同 id：本重载 Store+UnpinTuple 透传 JlTuple，double 重载走 StoreD。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple row = 320.0;                                    // double→JlTuple 隐式转换
-	///   JlTuple column = 210.0;
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.TranslateMeasure(row, column);
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   JlTuple newRow = 256.0;
+	///   JlTuple newColumn = 320.0;
+	///   caliper.TranslateMeasure(newRow, newColumn);
+	///   using (JlImage image = new JlImage("byte", 512, 512))
+	///   {
+	///       caliper.MeasurePos(image, 1.0, 30.0, "all", "all",
+	///           out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance);
+	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>连续调用不会叠加位移——每次都是把中心设为该次的绝对坐标，最后一次说了算。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>平移后卡尺区域可能部分越出图像边界，越界处的采样行为 [待实测]。</para>
 	/// </remarks>
 	public void TranslateMeasure(JlTuple row, JlTuple column)
 	{
@@ -926,19 +1060,18 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把卡尺带平移到新的绝对参考点（原生算子 id 814，标量版）：与元组版同一算子，经 <c>StoreD</c> 直写两路 DOUBLE 控制参数（索引 1/2），无钉固定开销。</summary>
-	/// <param name="row">新参考点的行坐标（像素），非位移量。Default: 50.0</param>
-	/// <param name="column">新参考点的列坐标（像素），非位移量。Default: 100.0</param>
+	///   TranslateMeasure 的 double 重载：与 JlTuple 重载同原生 id 814，原地把卡尺平移到新参考点 (row, column)、不更换句柄，无返回值。
+	/// </summary>
+	/// <param name="row">新参考点的行坐标。默认值：50.0</param>
+	/// <param name="column">新参考点的列坐标。默认值：100.0</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>无 InitOCT/Load：句柄值不变、原生侧就地改写几何，调用后实例照常可用；本方法也不会替你 Dispose 任何东西。</para>
-	///   <para><b>与相邻方法的取舍</b>单点平移用本重载；给一批卡尺各配一个参考点（若原生支持多值 [待实测]）才需要元组重载。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>TranslateMeasure 的 double 重载：语义与 JlTuple 重载完全一致（同原生 id 814，原地改参考点），差异仅在标量参数经 StoreD 临时建元组、无需 UnpinTuple。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.TranslateMeasure(320.0, 210.0);
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   caliper.TranslateMeasure(256.0, 320.0);
 	///   </code>
-	///   <para><b>资源与坑</b>连续调用以最后一次为准（绝对坐标语义，不叠加）。</para>
 	/// </remarks>
 	public void TranslateMeasure(double row, double column)
 	{
@@ -952,33 +1085,35 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   用圆弧卡尺参数就地重建本对象（原生算子 id 815）：先 <c>Dispose()</c> 释放旧句柄，再把新圆弧卡尺句柄装入同一个 C# 引用。</summary>
-	/// <param name="centerRow">弧的圆心行坐标，像素。Default: 100.0</param>
-	/// <param name="centerCol">弧的圆心列坐标，像素。Default: 100.0</param>
-	/// <param name="radius">弧半径，像素（扫描带中心线所在半径）。Default: 50.0</param>
-	/// <param name="angleStart">弧起始角，弧度。Default: 0.0</param>
-	/// <param name="angleExtent">弧张角，弧度，默认 6.28318 即整圆。Default: 6.28318</param>
-	/// <param name="annulusRadius">环形扫描带的半宽，像素。Default: 10.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	///   在既有 JlMeasure 对象上重建圆弧环带卡尺（原生 id 815，与构造器同一算子）：先 Dispose 旧句柄再装入新句柄，原地换柄，无返回值。
+	/// </summary>
+	/// <param name="centerRow">圆弧中心的行坐标。默认值：100.0</param>
+	/// <param name="centerCol">圆弧中心的列坐标。默认值：100.0</param>
+	/// <param name="radius">圆弧的半径。默认值：50.0</param>
+	/// <param name="angleStart">弧的起始角（弧度）。默认值：0.0</param>
+	/// <param name="angleExtent">弧的角度范围（弧度）。默认值：6.28318</param>
+	/// <param name="annulusRadius">环带的半径（半宽）。默认值：10.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与构造器同一原生 id 815；差别是方法体开头那句 <c>Dispose()</c>——基类 <c>Load</c> 要求自身 UNDEF，否则抛 <c>JlException</c>，所以先自弃旧句柄再装载。外部拿着的引用不换，无需重新赋值。</para>
-	///   <para><b>约束或前提</b>重建失败时对象已退化为空壳（旧卡尺回不来）；调用前如旧配置金贵，先 <c>SerializeMeasure</c> 备份。</para>
-	///   <para><b>与相邻方法的取舍</b>旧对象没用了、想新建就调 <c>JlMeasure(JlTuple,…)</c> 构造器（记得 Dispose 旧的）；想在固定实例上换圆弧参数用本方法。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>在既有 JlMeasure 对象上重建圆弧卡尺（原生 id 815，与构造器同一算子）。方法体先 Dispose() 旧句柄再 Load 新句柄入本对象——原地换柄，几何约定见构造器注释。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>JlTuple 与 double 重载同 id：本重载透传已建好的 JlTuple（Store + UnpinTuple），double 重载走 StoreD。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple centerRow = 100.0;                              // double→JlTuple 隐式转换
-	///   JlTuple centerCol = 100.0;
-	///   JlTuple radius = 60.0;
+	///   JlMeasure ring = new JlMeasure();
+	///   JlTuple centerRow = 256.0;
+	///   JlTuple centerCol = 256.0;
+	///   JlTuple radius = 120.0;
 	///   JlTuple angleStart = 0.0;
-	///   JlTuple angleExtent = 3.14159;
-	///   JlTuple annulusRadius = 8.0;
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.GenMeasureArc(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlTuple angleExtent = 6.28318;
+	///   JlTuple annulusRadius = 15.0;
+	///   ring.GenMeasureArc(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>新句柄仍归本实例管，最终 <c>Dispose()</c> 一次即可（旧的已在本方法内部释放）。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>调用即丢弃原卡尺配置；若同一原生句柄还被其它 JlMeasure 变量引用（如 JlMeasure(handle) 包装所得），旧句柄被释放后的共享行为 [待实测]。</para>
 	/// </remarks>
 	public void GenMeasureArc(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, string interpolation)
 	{
@@ -1007,27 +1142,25 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   用圆弧卡尺参数就地重建本对象（原生算子 id 815，标量版）：先释放旧句柄再把新句柄装入同一个 C# 引用，参数经 <c>StoreD</c>/<c>StoreI</c>/<c>StoreS</c> 直写。</summary>
-	/// <param name="centerRow">弧的圆心行坐标，像素。Default: 100.0</param>
-	/// <param name="centerCol">弧的圆心列坐标，像素。Default: 100.0</param>
-	/// <param name="radius">弧半径，像素（扫描带中心线所在半径）。Default: 50.0</param>
-	/// <param name="angleStart">弧起始角，弧度。Default: 0.0</param>
-	/// <param name="angleExtent">弧张角，弧度，默认 6.28318 即整圆。Default: 6.28318</param>
-	/// <param name="annulusRadius">环形扫描带的半宽，像素。Default: 10.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	///   GenMeasureArc 的 double 重载：与 JlTuple 重载同原生 id 815，先 Dispose 旧句柄再原地装入新圆弧卡尺，无返回值。
+	/// </summary>
+	/// <param name="centerRow">圆弧中心的行坐标。默认值：100.0</param>
+	/// <param name="centerCol">圆弧中心的列坐标。默认值：100.0</param>
+	/// <param name="radius">圆弧的半径。默认值：50.0</param>
+	/// <param name="angleStart">弧的起始角（弧度）。默认值：0.0</param>
+	/// <param name="angleExtent">弧的角度范围（弧度）。默认值：6.28318</param>
+	/// <param name="annulusRadius">环带的半径（半宽）。默认值：10.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>方法体顺序是 <c>Dispose()</c>→存参→调用→<c>Load</c>：句柄值换新、对象引用不变。单条弧的重定位/重定径用本重载，省掉元组钉固定。</para>
-	///   <para><b>约束或前提</b>调用失败即空壳（旧句柄已释放且不可恢复）；参数含义与圆弧构造器一致，径向扫描、边垂直于弧。</para>
-	///   <para><b>与相邻方法的取舍</b>只想挪圆心得用 <c>TranslateMeasure</c>（不换句柄、开销更小）；要换半径/角度/带宽这类形状参数才用本方法。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>GenMeasureArc 的 double 重载：与 JlTuple 重载同原生 id 815，同样先 Dispose() 旧句柄再原地装入新圆弧卡尺。差异仅在标量参数经 StoreD 临时建元组。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.GenMeasureArc(100.0, 100.0, 50.0, 0.0, 6.28318, 10.0, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure ring = new JlMeasure();
+	///   ring.GenMeasureArc(256.0, 256.0, 120.0, 0.0, 6.28318, 15.0, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>重建后的实例只需一次 <c>Dispose()</c>；不要对本方法的结果再配 <c>CloseMeasure</c>。</para>
 	/// </remarks>
 	public void GenMeasureArc(double centerRow, double centerCol, double radius, double angleStart, double angleExtent, double annulusRadius, int width, int height, string interpolation)
 	{
@@ -1050,31 +1183,33 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   用矩形卡尺参数就地重建本对象（原生算子 id 816，元组版）：先 <c>Dispose()</c> 释放旧句柄，新句柄装入同一个 C# 引用；参数经 <c>Store</c> 钉固定、调用后逐个 <c>UnpinTuple</c>。</summary>
-	/// <param name="row">矩形中心的行坐标，像素。Default: 300.0</param>
-	/// <param name="column">矩形中心的列坐标，像素。Default: 200.0</param>
-	/// <param name="phi">矩形长轴与水平方向的夹角，弧度。Default: 0.0</param>
-	/// <param name="length1">矩形长轴方向的半长（扫描方向），像素。Default: 100.0</param>
-	/// <param name="length2">矩形短轴方向的半长（灰度平均方向），像素。Default: 20.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	///   在既有 JlMeasure 对象上重建矩形卡尺（原生 id 816，与构造器同一算子）：先 Dispose 旧句柄再装入新句柄，原地换柄，无返回值。
+	/// </summary>
+	/// <param name="row">矩形中心的行坐标。默认值：300.0</param>
+	/// <param name="column">矩形中心的列坐标。默认值：200.0</param>
+	/// <param name="phi">矩形长轴相对水平方向的角度（弧度）。默认值：0.0</param>
+	/// <param name="length1">矩形的半宽。默认值：100.0</param>
+	/// <param name="length2">矩形的半高。默认值：20.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与构造器同一原生 id 816；开头 <c>Dispose()</c> 是基类 <c>Load</c> 的硬前提（非 UNDEF 会抛 <c>JlException</c>）。适合实例被下游长期持有、只需换位姿/尺寸的场合。</para>
-	///   <para><b>约束或前提</b>失败即空壳，旧卡尺不可恢复；phi 为弧度、边垂直于长轴（沿 phi 方向扫描）。</para>
-	///   <para><b>与相邻方法的取舍</b>只挪中心不转不缩放 → <c>TranslateMeasure</c>（不换句柄）；要一次改全套几何 → 本方法；连圆弧带都要换 → <c>GenMeasureArc</c>。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>在既有 JlMeasure 对象上重建矩形卡尺（原生 id 816，与构造器同一算子）。方法体先 Dispose() 旧句柄再 Load 新句柄入本对象——原地换柄；长轴=扫描方向、length1/length2 约定见构造器注释。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>只挪位置用 TranslateMeasure；本算子用于中心+角度+尺寸任一都要换的重建模。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple row = 320.0;                                    // double→JlTuple 隐式转换
-	///   JlTuple column = 210.0;
-	///   JlTuple phi = 0.1;
-	///   JlTuple length1 = 90.0;
-	///   JlTuple length2 = 15.0;
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.GenMeasureRectangle2(row, column, phi, length1, length2, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure();
+	///   JlTuple row = 256.0;
+	///   JlTuple column = 128.0;
+	///   JlTuple phi = 1.5708;
+	///   JlTuple length1 = 60.0;
+	///   JlTuple length2 = 20.0;
+	///   caliper.GenMeasureRectangle2(row, column, phi, length1, length2, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>重建后的实例仍只需一次 <c>Dispose()</c>。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>JlTuple 与 double 重载同 id，仅传参路径不同（Store+UnpinTuple 对 StoreD）；调用即丢弃原配置，共享旧句柄的其它变量受影响 [待实测]。</para>
 	/// </remarks>
 	public void GenMeasureRectangle2(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, int width, int height, string interpolation)
 	{
@@ -1101,26 +1236,24 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   用矩形卡尺参数就地重建本对象（原生算子 id 816，标量版）：先释放旧句柄再装入新句柄，C# 引用不变；参数 <c>StoreD</c>/<c>StoreI</c>/<c>StoreS</c> 直写。</summary>
-	/// <param name="row">矩形中心的行坐标，像素。Default: 300.0</param>
-	/// <param name="column">矩形中心的列坐标，像素。Default: 200.0</param>
-	/// <param name="phi">矩形长轴与水平方向的夹角，弧度。Default: 0.0</param>
-	/// <param name="length1">矩形长轴方向的半长（扫描方向），像素。Default: 100.0</param>
-	/// <param name="length2">矩形短轴方向的半长（灰度平均方向），像素。Default: 20.0</param>
-	/// <param name="width">后续要处理的图像的宽度，像素。Default: 512</param>
-	/// <param name="height">后续要处理的图像的高度，像素。Default: 512</param>
-	/// <param name="interpolation">重采样插值类型。Default: "nearest_neighbor"</param>
+	///   GenMeasureRectangle2 的 double 重载：与 JlTuple 重载同原生 id 816，先 Dispose 旧句柄再原地装入新矩形卡尺，无返回值。
+	/// </summary>
+	/// <param name="row">矩形中心的行坐标。默认值：300.0</param>
+	/// <param name="column">矩形中心的列坐标。默认值：200.0</param>
+	/// <param name="phi">矩形长轴相对水平方向的角度（弧度）。默认值：0.0</param>
+	/// <param name="length1">矩形的半宽。默认值：100.0</param>
+	/// <param name="length2">矩形的半高。默认值：20.0</param>
+	/// <param name="width">后续待处理图像的宽度。默认值：512</param>
+	/// <param name="height">后续待处理图像的高度。默认值：512</param>
+	/// <param name="interpolation">使用的插值方式。默认值："nearest_neighbor"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>跟件循环里每帧换位姿/换尺寸的推荐入口：避开每次 new 新对象再Dispose 旧对象的往复，直接复用本壳（方法体开头 <c>Dispose()</c> 释放旧句柄是基类 <c>Load</c> 的硬前提）。</para>
-	///   <para><b>约束或前提</b>调用失败即空壳；扫描沿 phi 方向、边垂直于长轴；<c>length2</c> 越大平均越强、对细线会糊。</para>
-	///   <para><b>与相邻方法的取舍</b>单点平移用 <c>TranslateMeasure</c>；元组批量形态用同名元组重载 [待实测：多值是否展开多条卡尺]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>GenMeasureRectangle2 的 double 重载：与 JlTuple 重载同原生 id 816，同样先 Dispose() 旧句柄再原地装入新矩形卡尺。差异仅在标量参数经 StoreD 临时建元组。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   m.GenMeasureRectangle2(320.0, 210.0, 0.1, 90.0, 15.0, 512, 512, "nearest_neighbor");
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure();
+	///   caliper.GenMeasureRectangle2(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
 	///   </code>
-	///   <para><b>资源与坑</b>重建后的实例只需一次 <c>Dispose()</c>。</para>
 	/// </remarks>
 	public void GenMeasureRectangle2(double row, double column, double phi, double length1, double length2, int width, int height, string interpolation)
 	{
@@ -1142,21 +1275,25 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   查询本卡尺句柄的参数/属性值（原生算子 id 2153，远离本类其余算子的 799~816 编号段）。</summary>
-	/// <param name="genParamName">参数名的 JlTuple（可钉多元素批量查询 [待实测]）。Default: "type"</param>
-	/// <returns>参数值的新 <c>JlTuple</c> 句柄；装载未指定目标类型（<c>JlTuple.LoadNew</c> 无 <c>JlTupleType</c> 走位），类型随原生返回——几何类查询多为数值、"type" 多为串 [待实测]。</returns>
+	///   按参数名数组批量读取卡尺对象的参数/属性值（原生 id 2153，只读、不改动句柄），返回值顺序与传入名对应。
+	/// </summary>
+	/// <param name="genParamName">要返回的参数名称。默认值："type"</param>
+	/// <returns>参数值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>元组版把参数名整串钉住传入、调用后解钉。可查名字的全集在原生侧，本文件代码只能证实默认 "type"。</para>
-	///   <para><b>与相邻方法的取舍</b>单查一个名用 <see cref="GetMeasureParam(string)"/>（走 <c>StoreS</c>，不钉元组，更省）；本重载存在的意义是配合名列表批量查询 [待实测]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>读取卡尺对象的参数/属性（原生 id 2153），只读、不改动句柄。常用名（沿用底层惯例，取值集合 [待实测]）："type" 返回卡尺类型（rectangle2 / arc）、"num_measures"、"measure_len_1" / "measure_len_2"、"measure_phi"、"measure_row" / "measure_column" 等。</para>
+	///   <para><b>与相邻算子的取舍</b></para>
+	///   <para>本类无 SetMeasureParam：查询到的 num_measures / measure_threshold / measure_selection 之类只能读不能改，需要改就重建卡尺。</para>
+	///   <para><b>参数取向</b></para>
+	///   <para>JlTuple 重载可按名数组批量取多个参数，返回值顺序与传入名对应 [批量语义待实测]；单名用 string 重载（同 id，StoreS 传参）。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlTuple names = "type";                                   // string→JlTuple 隐式转换
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   JlTuple values = m.GetMeasureParam(names);
-	///   values.Dispose();
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   JlTuple names = new string[] { "type", "measure_len_1" };
+	///   JlTuple values = caliper.GetMeasureParam(names);
 	///   </code>
-	///   <para><b>资源与坑</b>返回元组是新句柄，用毕释放；查询不改动本卡尺状态。</para>
+	///   <para><b>资源与坑</b></para>
+	///   <para>对空句柄对象（默认构造的 UNDEF 壳）调用会出错 [错误形态待实测]。</para>
 	/// </remarks>
 	public JlTuple GetMeasureParam(JlTuple genParamName)
 	{
@@ -1173,20 +1310,18 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   按单个名字查询本卡尺句柄的参数/属性值（原生算子 id 2153，标量版）。</summary>
-	/// <param name="genParamName">参数名，经 <c>StoreS</c> 以 STRING 控制参数（索引 1）直传，不钉元组。Default: "type"</param>
-	/// <returns>参数值的新 <c>JlTuple</c> 句柄；<c>LoadNew</c> 不带类型强转，实际元素类型随原生答复（"type" 预期为串，数值参数预期为数 [待实测]）。</returns>
+	///   GetMeasureParam 的 string 重载：按单个参数名读取卡尺的参数/属性值（原生 id 2153，StoreS 传参，只读、不改句柄），返回该参数的值。
+	/// </summary>
+	/// <param name="genParamName">要返回的参数名称。默认值："type"</param>
+	/// <returns>参数值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>与本句柄（图像型入参 0）配合，把问名换成答值；纯读，不改变卡尺状态，也不需要重新 Dispose 句柄。</para>
-	///   <para><b>与相邻方法的取舍</b>字符串字面量查询用本重载最顺（string→直接 <c>StoreS</c>）；手里已有 <c>JlTuple</c> 名列表才用 <see cref="GetMeasureParam(JlTuple)"/>。问当前中心位姿以便做增量平移，也归本方法管 [待实测：可查名字全集]。</para>
-	///   <para><b>用法</b></para>
+	///   <para><b>功能说明</b></para>
+	///   <para>GetMeasureParam 的 string 重载：同原生 id 2153，取单个参数名（StoreS 传参）；参数名清单与只读语义见 JlTuple 重载注释。</para>
+	///   <para><b>可编译用例</b></para>
 	///   <code>
-	///   JlMeasure m = new JlMeasure(300.0, 200.0, 0.0, 100.0, 20.0, 512, 512, "nearest_neighbor");
-	///   JlTuple typeInfo = m.GetMeasureParam("type");
-	///   typeInfo.Dispose();
-	///   m.Dispose();
+	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
+	///   JlTuple type = caliper.GetMeasureParam("type");
 	///   </code>
-	///   <para><b>资源与坑</b>返回元组是新句柄，用毕释放（纯数值/字符串元组的 <c>Dispose</c> 只处理句柄类元素，不调也不构成句柄泄漏）。</para>
 	/// </remarks>
 	public JlTuple GetMeasureParam(string genParamName)
 	{
