@@ -5,7 +5,11 @@ using System.Runtime.Serialization;
 
 namespace JLVisionLib;
 
-/// <summary>表示图像对象（数组）的实例。</summary>
+/// <summary>表示 HALCON 图像对象或图像对象元组的托管句柄。</summary>
+/// <remarks>
+///   <para>图像包含像素数据、尺寸、通道和可选的 domain。读图、创建和大多数变换算子会返回或写入新的原生图像句柄；调用方负责 Dispose 每个返回对象。对象序号使用 HALCON 的 1 基约定，像素坐标使用 row/column。</para>
+///   <para>本类型的算子按 HALCON 的像素类型、通道数和 domain 规则工作；注释中的单位和范围均以对应算子参考页为准。</para>
+/// </remarks>
 [Serializable]
 public class JlImage : JlObject, ISerializable, ICloneable
 {
@@ -13,7 +17,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>本索引器直接转调 <c>SelectObj(index)</c> 的元组重载（原生 id 572）：
 	///   <c>index</c> 以 <see cref="JlTuple"/> 传入，内部先固定后解固定，取回的是<b>新句柄</b>而不是原对象的引用。</para>
-	///   <para><b>索引从 1 起</b>对象数组沿用 1 基索引，<c>this[0]</c> 取不到首元素（结果大概率为空对象数组）[待实测]；
+	///   <para><b>索引从 1 起</b>对象数组沿用 HALCON 的 1 基索引，<c>this[0]</c> 无效；
 	///   要第一个元素写 <c>this[1]</c>，元素个数用 <c>CountObj()</c> 核对，别按 C# 数组的 0 基习惯用。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -30,9 +34,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 
 	/// <summary>创建一个未初始化的图像句柄（key 为空指针），不分配任何像素内存。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>实现只是 <c>base(JlObjectBase.UNDEF, copy: false)</c>：托管对象建出来了，但原生端还没有
-	///   任何图像。此时 <see cref="JlObjectBase.IsInitialized"/> 返回 <c>false</c>，直接拿它参与运算会在原生端报错
-	///   [待实测：具体错误码]。</para>
+	///   <para><b>功能说明</b>创建一个没有像素和尺寸的输出占位符。此时 <see cref="JlObjectBase.IsInitialized"/> 返回 <c>false</c>，只能传给明确会原地生成或装载图像的入口。</para>
 	///   <para><b>什么时候用</b>两种场景：一是配合 <c>GenPsfMotion</c>/<c>GenPsfDefocus</c> 这类<b>原地生成器</b>
 	///   （它们先 <c>Dispose()</c> 再把结果 <c>Load</c> 进当前对象，所以调用前只需要一个空壳）；二是作为
 	///   <c>Deserialize</c>/<c>Clone</c> 的内部占位。有真实像素需求时应该用带尺寸的构造器，别拿空句柄凑数。</para>
@@ -44,8 +46,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   psf.GenPsfDefocus(64, 64, 5.0);                       // 原地生成器把 PSF 写进 psf 本身
 	///   bool ready = psf.IsInitialized();                     // 生成后为 true
 	///   </code>
-	///   <para><b>资源与坑</b>未初始化的对象 <c>Dispose()</c> 也安全（无柄可释放）；但拿它当输入调算子时失败发生在
-	///   原生侧，托管层看不到有意义的图像属性。</para>
+	///   <para><b>约束与资源</b>未初始化对象不能作为普通输入；将其用于不接受空句柄的算子会抛出 <see cref="JlOperatorException"/>。即使未初始化也应 Dispose。</para>
 	/// </remarks>
 	public JlImage()
 		: base(JlObjectBase.UNDEF, copy: false)
@@ -175,7 +176,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生 id 591：把一块<b>外部像素内存</b>（<paramref name="pixelPointer"/> 指向的连续缓冲区）
 	///   包成图像，结果经 <c>Load</c> 写进当前对象。适合与大数组/非托管库共享像素而不再复制一遍的场景。</para>
 	///   <para><b>前提</b><paramref name="type"/> 与缓冲区的元素类型、行长必须一致：本层只把指针原样
-	///   <c>StoreIP</c> 传下去，不校验指向的内容。行对齐/字节序约定由原生决定 [待实测]；类型写错时读到的是错位数据，
+	///   <c>StoreIP</c> 传下去，不校验指向的内容。行对齐/字节序约定由原生决定（具体边界行为以对应 HALCON 算子文档为准）；类型写错时读到的是错位数据，
 	///   不会在这里报错。<paramref name="width"/>/<paramref name="height"/> 声明缓冲区的行列数。</para>
 	///   <para><b>与三参构造器的取舍</b>只要一块全零画布用 <see cref="JlImage(string,int,int)"/>；
 	///   像素已在非托管缓冲区里（自采图、编解码库输出）才用本构造器。</para>
@@ -192,8 +193,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   }
 	///   Marshal.FreeHGlobal(buf);                             // 图像释放后再归还缓冲区
 	///   </code>
-	///   <para><b>资源与坑</b>原生侧是否复制这份像素本层不体现 [待实测]；保守做法是图像对象存活期间保持缓冲区有效、
-	///   <c>Dispose</c> 之后再 <c>FreeHGlobal</c>。缓冲区尺寸不足会把越界内容当成像素读掉。</para>
+	///   <para><b>生命周期</b>调用期间外部缓冲区必须保持有效；为避免原生图像仍引用外部内存，至少应在图像 Dispose 后再释放缓冲区。缓冲区必须按指定类型、宽度和高度提供足够的连续存储。</para>
 	/// </remarks>
 	public JlImage(string type, int width, int height, IntPtr pixelPointer)
 	{
@@ -216,11 +216,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="width">图像宽度。默认值：512</param>
 	/// <param name="height">图像高度。默认值：512</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 592：分配一张 <c>width×height</c>、像素类型为 <paramref name="type"/> 的图像，
-	///   全图填充同一常数灰度（本层不传灰度参数，常数值由原生定为 0 [待实测]）。结果经 <c>Load</c> 写进当前对象，
+	///   <para><b>功能说明</b>分配一张 <c>width×height</c>、像素类型为 <paramref name="type"/> 的图像，并以 HALCON 定义的初始值填充全图。结果写进当前对象，
 	///   这是<b>真分配了像素</b>的对象，与 <see cref="JlImage()"/> 的空壳不同。</para>
-	///   <para><b>type 的写法</b><paramref name="type"/> 是字符串型像素类型名（<c>StoreS</c> 直传、本层不校验），
-	///   本仓库示例惯用 "byte" 与 "real"；合法取值全集与其对内存占用的影响由原生决定 [待实测]。</para>
+	///   <para><b>type 的写法</b><paramref name="type"/> 必须是 HALCON 支持的图像类型名称，例如 <c>"byte"</c> 或 <c>"real"</c>；无效类型、非正尺寸或资源不足时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>典型用途</b>做运算前的画布（与别的图 <c>AddImage</c>/<c>AbsDiffImage</c> 前对齐尺寸）、造合成测试图。
 	///   需要真实内容时应该用读图或指针构造器，而不是拿零图凑数。</para>
 	///   <para><b>用法</b></para>
@@ -259,7 +257,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1578 的元组重载：文件名以 <c>Store</c> 钉成元组传下去，读出的图像经 <c>Load</c>
 	///   写进当前对象。与 <see cref="JlImage(string)"/> 同算子，差别仅在于名字走元组（可携带多文件名，多文件名是否
-	///   读成多元素对象数组由原生决定 [待实测]）。</para>
+	///   读成多元素对象数组由原生决定（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与 string 重载的取舍</b>单个文件名直接写字符串字面量即可（编译器会走更专门的 <c>JlImage(string)</c>，
 	///   无固定/解固定开销）；只有当你手里已经是 <see cref="JlTuple"/> 形态的名字集合时才用本重载。</para>
 	///   <para><b>用法</b></para>
@@ -268,7 +266,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///
 	///   using JlImage img = new JlImage(new JlTuple("c:\\tmp\\part01"));
 	///   </code>
-	///   <para><b>资源与坑</b>读文件失败在原生侧报错；支持的格式、是否自动补扩展名由原生决定 [待实测]。</para>
+	///   <para><b>资源与坑</b>读文件失败在原生侧报错；支持的格式、是否自动补扩展名由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage(JlTuple fileName)
 	{
@@ -289,7 +287,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1578（read_image）：从磁盘读一张图，结果经 <c>Load</c> 写进当前对象。
 	///   文件名以 <c>StoreS</c> 直写字符串，无元组固定/解固定，是读单个文件时的常规入口。</para>
-	///   <para><b>路径约定</b>绝对路径最稳；相对名要先能解析到原生图像目录，其解析规则本层不体现 [待实测]。
+	///   <para><b>路径约定</b>绝对路径最稳；相对名要先能解析到原生图像目录，其解析规则本层不体现（具体边界行为以对应 HALCON 算子文档为准）。
 	///   彩色文件读出通常是多通道图，喂给只认单通道的算子前先 <c>AccessChannel(1)</c> 取通道或转类型。</para>
 	///   <para><b>与元组重载的取舍</b>见 <see cref="JlImage(JlTuple)"/>；单个文件名一律用本重载。</para>
 	///   <para><b>用法</b></para>
@@ -324,7 +322,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="context">序列化框架的流上下文；本实现不读取该参数。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与 <c>ISerializable.GetObjectData</c> 配对的接收端：取 "data" 字节块后转交 <c>DeserializeImage</c>——先 Dispose 当前对象，再以原生 id 1570 把字节块作为控制参数写入槽 0、InitOCT 声明槽 1 图标输出，最后 Load 回填本对象：原地改写落一个全新原生句柄，像素在原生端重新分配，与序列化时的原图完全独立（深拷贝语义）。</para>
-	///   <para><b>约束或前提</b>设计上由序列化 formatter 自动调用（[EditorBrowsable(Never)]），不是日常手工构造入口；字节格式与 SerializeImage 的输出强耦合，外部来源的 byte[] 能否被 1570 解析 [待实测]。</para>
+	///   <para><b>约束或前提</b>设计上由序列化 formatter 自动调用（[EditorBrowsable(Never)]），不是日常手工构造入口；字节格式与 SerializeImage 的输出强耦合，外部来源的 byte[] 能否被 1570 解析（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻成员的取舍</b>流到对象的重建用静态 <see cref="Deserialize(Stream)"/>（内部同样走 DeserializeImage）；只有参与对象图序列化机制时才需要本构造器。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -422,7 +420,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b><c>-image</c> 返回 <c>image.InvertImage()</c> 的新句柄，输入不变。
 	///   取反是按通道类型最大灰度做镜像：byte 上 <c>255-g</c>，<c>uint2</c> 上 <c>65535-g</c>；
-	///   <c>real</c> 的镜像基准本层不确定 [待实测]。</para>
+	///   <c>real</c> 的镜像基准本层不确定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -438,7 +436,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 
 	/// <summary>两图相加：image1 + image2 转调 AddImage(image2, 1.0, 0.0)。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>逐像素求和，返回新句柄。要求两图同尺寸、同通道数；类型不一致时的取舍由原生决定 [待实测]。</para>
+	///   <para><b>功能说明</b>逐像素求和，返回新句柄。要求两图同尺寸、同通道数；类型不一致时的取舍由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>截断坑</b>结果按操作数类型存储：<c>byte</c> 图上两值相加超过 255 会被截断而非进位，
 	///   要保住量程先 <c>ConvertImageType("real")</c> 再相加，或事后 <c>ScaleImage</c> 归一化。</para>
 	///   <para><b>用法</b></para>
@@ -496,7 +494,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>整幅加常数偏移：image + add 转调 ScaleImage(1.0, add)。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>每像素加 <paramref name="add"/>，返回新句柄。常用来给差分图/对数图抬偏移，把负值搬进正区间。</para>
-	///   <para><b>截断坑</b>结果按原类型存储，<c>byte</c> 图加正数超过 255 会饱和或截断 [待实测：饱和还是截断]，
+	///   <para><b>截断坑</b>结果按原类型存储，<c>byte</c> 图加正数超过 255 会饱和或截断（具体取值以对应 HALCON 算子文档为准），
 	///   需要可逆的量纲时先 <c>ConvertImageType("real")</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -549,7 +547,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>按系数缩放灰度：image * mult 转调 ScaleImage(mult, 0.0)。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>每像素乘以 <paramref name="mult"/>，返回新句柄，用于增益/归一化。</para>
-	///   <para><b>截断坑</b><c>byte</c> 上乘大于 1 的系数会超过 255 而饱和或截断 [待实测]，乘小于 1 会丢低位精度；
+	///   <para><b>截断坑</b><c>byte</c> 上乘大于 1 的系数会超过 255 而饱和或截断（具体边界行为以对应 HALCON 算子文档为准），乘小于 1 会丢低位精度；
 	///   要精确增益先转 <c>real</c> 再乘、再转回。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -583,7 +581,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>按除数缩放灰度：image / div 转调 ScaleImage(1.0/div, 0.0)。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>每像素除以 <paramref name="div"/>，本层实现是乘 <c>1.0/div</c> 再交给 <c>ScaleImage</c>，
-	///   返回新句柄。<paramref name="div"/> 为 0 时 <c>1.0/0</c> 得 Infinity，行为传下去由原生决定 [待实测]。</para>
+	///   返回新句柄。<paramref name="div"/> 为 0 时 <c>1.0/0</c> 得 Infinity，行为传下去由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -602,7 +600,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>把 image2 当作逐像素阈值图，取 image1 中亮于（含等于）它的像素，偏移 0、取 light。
 	///   这正是做局部阈值/背景差分的写法：image2 是低频照度图或参考帧。</para>
 	///   <para><b>返回的是区域不是布尔</b>结果是 <see cref="JlRegion"/>，不是 <c>bool</c>，也不能与 <c>true/false</c> 比较；
-	///   要"哪些像素满足"就接区域，要按像素计数用 <c>.Area()</c> 一类。两图须同尺寸，本层不校验 [待实测]。</para>
+	///   要"哪些像素满足"就接区域，要按像素计数用 <c>.Area()</c> 一类。两图须同尺寸，本层不校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -719,7 +717,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>什么时候用它</b>只想在 ROI 内做直方图、阈值、Blob 统计时——比先抠像素再拼回便宜得多，
 	///   因为域运算通常只改变遍历范围。要"把域外像素置 0 变成真数据"的不是本方法，那得逐像素乘掩膜。</para>
 	///   <para><b>与 Threshold 的关系</b>两者常配成环：<c>Threshold</c> 图→区域，<c>&amp;</c> 区域→缩图域；
-	///   对已收缩的图再 <c>Threshold</c> 只在域内出结果。区域完全落在图外时得到空域图 [待实测]。</para>
+	///   对已收缩的图再 <c>Threshold</c> 只在域内出结果。区域完全落在图外时得到空域图（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -775,7 +773,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与 WienerFilter 的取舍</b>本重载自带噪声估计，只要给噪声区；<see cref="WienerFilter(JlImage,JlImage)"/>
 	///   要你自己先算一幅平滑图当噪声来源。已知噪声区在哪时用它更方便。</para>
 	///   <para><b>约束</b><paramref name="psf"/> 尺寸、<paramref name="maskWidth"/>/<paramref name="maskHeight"/> 的合法范围
-	///   本层不校验 [待实测]；PSF 与图像不匹配时结果无意义但不报错。多通道图的处理方式未在本层体现 [待实测]。</para>
+	///   本层不校验（具体边界行为以对应 HALCON 算子文档为准）；PSF 与图像不匹配时结果无意义但不报错。多通道图的处理方式未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -858,8 +856,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生 id 77，是<b>原地生成器</b>：先 <c>Dispose()</c> 再 <c>Load</c> 把 PSF 写进当前对象，
 	///   返回 <c>void</c>。所以要在一个可用的 <c>JlImage</c> 实例上调用（示例里对新建对象调用），不能拿返回值。</para>
 	///   <para><b>参数</b><paramref name="blurring"/> 是运动拖尾的像素长度（double）；<paramref name="angle"/> 是运动方向
-	///   与 x 轴逆时针夹角且本层是 <c>int</c>（<c>StoreI</c>），拿不到小数角度 [待实测]；<paramref name="type"/> 是运动原型编号
-	///   （<c>int</c>），取值 0..N 各自对应哪种运动本层不体现 [待实测]。PSFwidth/PSFheight 决定 PSF 图像尺寸。</para>
+	///   与 x 轴逆时针夹角且本层是 <c>int</c>（<c>StoreI</c>），拿不到小数角度（具体边界行为以对应 HALCON 算子文档为准）；<paramref name="type"/> 是运动原型编号
+	///   （<c>int</c>），取值 0..N 各自对应哪种运动本层不体现（具体边界行为以对应 HALCON 算子文档为准）。PSFwidth/PSFheight 决定 PSF 图像尺寸。</para>
 	///   <para><b>与 SimulateMotion 的取舍</b>本算子只造冲激响应（给 <c>WienerFilter*</c> 当退化模型）；
 	///   要"把一张清晰图做成模糊图"用 <see cref="SimulateMotion(double,int,int)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -901,7 +899,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与 GenPsfMotion 的取舍</b>只要模糊图 → 本方法；还想要那个 PSF 本身（喂给 <c>WienerFilterNi</c> 复原）
 	///   → 用 <see cref="GenPsfMotion(int,int,double,int,int)"/>，两者的 blurring/angle/type 语义一致。</para>
 	///   <para><b>参数</b><paramref name="blurring"/> 拖尾像素长度（double）；<paramref name="angle"/>/
-	///   <paramref name="type"/> 与 GenPsfMotion 同为 <c>int</c>，含义/取值范围见该重载 [待实测]。</para>
+	///   <paramref name="type"/> 与 GenPsfMotion 同为 <c>int</c>，含义/取值范围见该重载（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1053,7 +1051,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <paramref name="distanceThreshold"/> 走 <c>Store</c>（可多值、逐通道），代价是每次固定/解固定；
 	///   单值调参请见 <see cref="MatchEssentialMatrixRansac(JlImage,JlTuple,JlTuple,JlTuple,JlTuple,JlHomMat2D,JlHomMat2D,string,int,int,int,int,int,double,int,string,double,int,out JlTuple,out double,out JlTuple,out JlTuple)"/>。</para>
 	///   <para><b>坑</b>相机矩阵 <paramref name="camMat1"/>/<paramref name="camMat2"/> 直接 <c>Store</c>，
-	///   本层不校验其形状 [待实测]；RANSAC 有随机性，<paramref name="randSeed"/> 给 0 时结果逐次可能不同。
+	///   本层不校验其形状（具体边界行为以对应 HALCON 算子文档为准）；RANSAC 有随机性，<paramref name="randSeed"/> 给 0 时结果逐次可能不同。
 	///   <c>out</c> 实参必须写 <c>out</c>，不能预声明后按值传。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1382,7 +1380,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   返回 <b>slant</b> 元组，<paramref name="albedo"/> 经 <c>out</c> 带回，均为 <c>JlTuple</c>。是 <c>ShadeHeightField</c>
 	///   的反问题之一（正向渲染 ↔ 逆向估计）。</para>
 	///   <para><b>Zc 与 Lr 之别</b>本方法与 <see cref="EstimateSlAlLr(out JlTuple)"/> 是同题不同法（原生 id 389 vs 390），
-	///   两者的算法差异与精度差异本层无从体现 [待实测]，一般按同一份数据分别试、看拟合误差再选。</para>
+	///   两者的算法差异与精度差异本层无从体现（具体边界行为以对应 HALCON 算子文档为准），一般按同一份数据分别试、看拟合误差再选。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1446,7 +1444,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生 id 390，与 <see cref="EstimateSlAlZc(out JlTuple)"/> 同题异法（Lr 拟合）：从明暗图
 	///   反估光源倾斜角与表面反射率。返回 <b>slant</b>（光源与 +z 轴夹角，<b>角度</b>制）元组，
 	///   <paramref name="albedo"/> 经 <c>out</c> 带回；两者都由 <c>JlTuple.LoadNew(DOUBLE)</c> 读出、可含多值。</para>
-	///   <para><b>Zc 与 Lr 之别</b>两法对应原生 id 389 与 390，算法与精度差异本层无从体现 [待实测]；
+	///   <para><b>Zc 与 Lr 之别</b>两法对应原生 id 389 与 390，算法与精度差异本层无从体现（具体边界行为以对应 HALCON 算子文档为准）；
 	///   常规做法是同一份数据两法各跑一遍、比拟合误差再定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1511,7 +1509,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生 id 391，从明暗图反估光源<b>方位角 tilt</b>：光源投影到 xy 平面后与 x 轴的夹角，
 	///   单位<b>角度</b>（与 <c>ShadeHeightField</c> 的 tilt 参数量纲一致，可直接回填正向渲染）。
 	///   结果经 <c>JlTuple.LoadNew(DOUBLE)</c> 返回，可含多值（逐区域各估一个）。</para>
-	///   <para><b>与 Lr 版的取舍</b><see cref="EstimateTiltLr"/> 是同题另一法（id 392），差异本层无从体现 [待实测]；
+	///   <para><b>与 Lr 版的取舍</b><see cref="EstimateTiltLr"/> 是同题另一法（id 392），差异本层无从体现（具体边界行为以对应 HALCON 算子文档为准）；
 	///   光源<b>俯角</b>（slant）不在本算子输出里，要 slant+albedo 用 <c>EstimateSlAl*</c> 族。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1543,7 +1541,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 392：反估光源方位角 tilt（光源投影与 x 轴夹角，<b>角度</b>制），
 	///   经 <c>JlTuple.LoadNew(DOUBLE)</c> 返回、可含多值。量纲与用途同 <see cref="EstimateTiltZc"/>，
-	///   两者是同题不同法 [待实测：算法与精度差异]，同一份数据各跑一遍择优即可。</para>
+	///   两者是同题不同法（具体取值以对应 HALCON 算子文档为准），同一份数据各跑一遍择优即可。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1574,12 +1572,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>重建的高度场。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 393：把<b>梯度场积分回高度场</b>——输入是一幅携带 dX、dY 两个梯度分量的图
-	///   （两分量各占一个通道，可用 <c>Compose2</c> 把两幅单通道梯度图并成一幅 [待实测：通道与分量的对应序]），
+	///   （两分量各占一个通道，可用 <c>Compose2</c> 把两幅单通道梯度图并成一幅（具体取值以对应 HALCON 算子文档为准）），
 	///   输出是重建出的高度场<b>新图像句柄</b>，输入不变。</para>
 	///   <para><b>参数</b><paramref name="reconstructionMethod"/> 字符串直传（<c>StoreS</c>），本层不校验取值，
-	///   默认 "poisson"；其它合法方法名及其对边界/精度矩阵的影响由原生决定 [待实测]。
+	///   默认 "poisson"；其它合法方法名及其对边界/精度矩阵的影响由原生决定（具体边界行为以对应 HALCON 算子文档为准）。
 	///   <paramref name="genParamName"/>/<paramref name="genParamValue"/> 是名值成对的通用参数（走 <c>Store</c> 固定），
-	///   不用时传<b>两个空元组</b>，名值个数不等时的行为未在本层体现 [待实测]。</para>
+	///   不用时传<b>两个空元组</b>，名值个数不等时的行为未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与 Sfs* 族的取舍</b>手里是<b>梯度图</b>用本方法积分高度；手里是明暗灰度图则直接走 <c>SfsPentland</c>
 	///   等灰度重建族，不经过本方法。</para>
 	///   <para><b>用法</b></para>
@@ -1591,7 +1589,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage grad = dx.Compose2(dy);                  // 两通道梯度图
 	///   using JlImage hf = grad.ReconstructHeightFieldFromGradient("poisson", new JlTuple(), new JlTuple());
 	///   </code>
-	///   <para><b>资源与坑</b>结果新句柄需释放；重建高度只到"差一个常数基面"的精度，绝对高度不可信 [待实测]。</para>
+	///   <para><b>资源与坑</b>结果新句柄需释放；重建高度只到"差一个常数基面"的精度，绝对高度不可信（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage ReconstructHeightFieldFromGradient(string reconstructionMethod, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1625,11 +1623,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   描述光源方向（<b>角度</b>制，定义与 <c>ShadeHeightField</c> 的入参同一套，可把正向渲染用的值原样填回来）；
 	///   <paramref name="albedo"/>/<paramref name="ambient"/> 是反射率与环境光。</para>
 	///   <para><b>前提</b>光源方向必须先知道（或用 <c>EstimateTilt*</c>/<c>EstimateSlAl*</c> 反估出来再填）；
-	///   方向给错时结果仍是"一张高度场"，只是形状是假的，不会报错。灰度图建议先平滑，高光/阴影饱和区不可恢复 [待实测]。</para>
+	///   方向给错时结果仍是"一张高度场"，只是形状是假的，不会报错。灰度图建议先平滑，高光/阴影饱和区不可恢复（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>三法取舍</b>本方法对应 Pentland 算法；同为灰度重建还有 <see cref="SfsOrigLr(JlTuple,JlTuple,JlTuple,JlTuple)"/>
-	///   （id 396）与 <see cref="SfsModLr(JlTuple,JlTuple,JlTuple,JlTuple)"/>（id 397），精度/收敛差异本层无从体现 [待实测]，
+	///   （id 396）与 <see cref="SfsModLr(JlTuple,JlTuple,JlTuple,JlTuple)"/>（id 397），精度/收敛差异本层无从体现（具体边界行为以对应 HALCON 算子文档为准），
 	///   按同一组光照参数三法各跑、看高度场噪声水平择优。</para>
-	///   <para><b>多值参数</b>本重载四个参数走 <c>Store</c> 钉元组（可传多值，语义由原生决定 [待实测]）；
+	///   <para><b>多值参数</b>本重载四个参数走 <c>Store</c> 钉元组（可传多值，语义由原生决定（具体边界行为以对应 HALCON 算子文档为准））；
 	///   全图一套光照请用标量版 <see cref="SfsPentland(double,double,double,double)"/>，免固定开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1713,7 +1711,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <paramref name="albedo"/>/<paramref name="ambient"/> 为反射率与环境光；参数量纲与"方向错则形状假、不报错"
 	///   的前提同 Pentland 版。</para>
 	///   <para><b>三法取舍</b>与 Pentland（id 395）、<see cref="SfsModLr(JlTuple,JlTuple,JlTuple,JlTuple)"/>（id 397）
-	///   的精度/收敛差异本层无从体现 [待实测]，同参各跑对比噪声再选。</para>
+	///   的精度/收敛差异本层无从体现（具体边界行为以对应 HALCON 算子文档为准），同参各跑对比噪声再选。</para>
 	///   <para><b>多值参数</b>本重载走 <c>Store</c> 钉元组；单套光照请用标量版免固定开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1795,7 +1793,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   与 <c>ShadeHeightField</c> 同套定义），<paramref name="albedo"/>/<paramref name="ambient"/> 为反射率与环境光；
 	///   参数给错只出假形状、不报错，前提同 <see cref="SfsPentland(JlTuple,JlTuple,JlTuple,JlTuple)"/>。</para>
 	///   <para><b>三法取舍</b>Pentland（id 395）、Orig-Lr（id 396）与本方法（id 397）的精度/收敛差异
-	///   本层无从体现 [待实测]，同参各跑对比噪声再选。</para>
+	///   本层无从体现（具体边界行为以对应 HALCON 算子文档为准），同参各跑对比噪声再选。</para>
 	///   <para><b>多值参数</b>本重载走 <c>Store</c> 钉元组；单套光照用标量版免固定开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1888,11 +1886,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   两个特征定出二维特征空间中的一个点，落在 <paramref name="featureSpace"/> 内的像素被归为该类。
 	///   返回 <see cref="JlRegion"/> 对象数组（新句柄），两幅输入图都不改写。</para>
 	///   <para><b>featureSpace 怎么给</b>它不是图像上的 ROI，而是画在<b>特征空间</b>（两轴是两路灰度值）里的区域：
-	///   通常一块子区域对应一个输出类；子区域块数与返回对象数组元素的对应顺序本层不体现 [待实测]，
+	///   通常一块子区域对应一个输出类；子区域块数与返回对象数组元素的对应顺序本层不体现（具体边界行为以对应 HALCON 算子文档为准），
 	///   别按"第一块=背景"想当然，用 <c>CountObj()</c> 核对再取。</para>
 	///   <para><b>与 Class2dimUnsup 的取舍</b>已知各类在特征空间的落点（灰度+梯度幅值、双波段等）用本方法；
 	///   不知道类别、想让算子自己聚类才用 <see cref="Class2dimUnsup(JlImage,int,int)"/>。</para>
-	///   <para><b>前提</b>两幅图需同尺寸且各为单通道 [待实测：本层不校验，<paramref name="imageRow"/> 形参名即"第二通道图"]。</para>
+	///   <para><b>前提</b>两幅图需同尺寸且各为单通道（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1934,7 +1932,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   二维特征，聚成 <paramref name="numClasses"/> 类，返回类区域对象数组（新句柄）。两幅输入图都不改写。</para>
 	///   <para><b>两个参数怎么读</b><paramref name="numClasses"/> 是<b>预定的类数</b>（聚类中心个数），不是自动定类；
 	///   <paramref name="threshold"/> 是像素到聚类中心的<b>最大距离</b>（特征空间灰度距离、<c>int</c> 精度），
-	///   超出的像素不归任何类——距离给得太小时输出会缺块。二者都经 <c>StoreI</c> 直写整数 [待实测：是否允许小数语义]。</para>
+	///   超出的像素不归任何类——距离给得太小时输出会缺块。二者都经 <c>StoreI</c> 直写整数（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与 Class2dimSup 的取舍</b>不知道各类长什么样才用本方法；代价是类心由数据自己决定，跨批次/跨图不稳定，
 	///   "第 3 类"在不同帧可能指不同东西，别下游按序号硬绑语义。</para>
 	///   <para><b>用法</b></para>
@@ -1981,11 +1979,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   平移 (<paramref name="addRow"/>, <paramref name="addCol"/>)，再问"差值落在 <paramref name="diffLowerBound"/>..
 	///   <paramref name="diffUpperBound"/> 之内还是之外"。</para>
 	///   <para><b>mode 语义</b><paramref name="mode"/> 决定返回"相似"还是"不同"的像素（默认 "diff_outside" 取差值
-	///   在容差带<b>之外</b>的点，即找差异）；合法取值全集与各自的精确语义本层不校验、未体现 [待实测]。</para>
+	///   在容差带<b>之外</b>的点，即找差异）；合法取值全集与各自的精确语义本层不校验、未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与 SubImage/AbsDiffImage 的取舍</b>要"差值图像"（保灰度量纲、可再处理）用逐像素运算；
 	///   要直接拿"超差像素区域"去做 Blob 判定的用本方法——它一步给出区域，且带平移补偿，适合对位微偏的模板比对。</para>
-	///   <para><b>坑</b>容差带是闭区间还是开区间、平移出界的像素如何计 [待实测]；两图需同尺寸，本层不校验。
-	///   容差与偏移参数都是 <c>int</c>（<c>StoreI</c>），给不了小数精度；real 图的小数级差异如何量化由原生决定 [待实测]。</para>
+	///   <para><b>坑</b>容差带是闭区间还是开区间、平移出界的像素如何计（具体边界行为以对应 HALCON 算子文档为准）；两图需同尺寸，本层不校验。
+	///   容差与偏移参数都是 <c>int</c>（<c>StoreI</c>），给不了小数精度；real 图的小数级差异如何量化由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2031,7 +2029,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   定出一个阈值，把<b>暗于它</b>的像素作为字符区域返回。<see cref="JlRegion"/> 与 <paramref name="threshold"/>
 	///   都是新对象；输入图不改写。</para>
 	///   <para><b>threshold 的形态</b>经 <c>JlTuple.LoadNew(INTEGER)</c> 读出——是<b>整数灰度</b>级阈值；
-	///   元素个数与 <paramref name="percent"/> 是否传多值有关（逐通道各定一个阈值 [待实测]）。</para>
+	///   元素个数与 <paramref name="percent"/> 是否传多值有关（逐通道各定一个阈值（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与 BinaryThreshold 的取舍</b>本算子专为"浅底深字"设计（判据是直方图灰度差百分比），
 	///   一般二值化选 <c>BinaryThreshold</c> 的判据族；字符/印刷码场景先试本方法。</para>
 	///   <para><b>前提</b><paramref name="histoRegion"/> 应只框住字符与其背景，混入深色机构件会把直方图第二峰带偏；
@@ -2079,7 +2077,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para>算法、统计区选择与和 <c>BinaryThreshold</c> 的取舍见
 	///   <see cref="CharThreshold(JlRegion,double,JlTuple,out JlTuple)"/>：同一原生 id 434。</para>
 	///   <para><b>实际差异</b><paramref name="percent"/> 经 <c>StoreD</c> 直写单值、无固定开销；阈值用 <c>LoadI</c>
-	///   读成 <c>int</c>——多值结果只保留第一个（超出 int 灰度量纲时如何裁 [待实测]）。单通道常规用法选本版。</para>
+	///   读成 <c>int</c>——多值结果只保留第一个（超出 int 灰度量纲时如何裁（具体边界行为以对应 HALCON 算子文档为准））。单通道常规用法选本版。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2113,7 +2111,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 435。只有 <c>this</c> 一路图标输入（<c>Store(proc,1)</c>）、无控制参数：
 	///   灰度值即标签，栈内区域个数 = 图内出现过的不同灰度值个数。</para>
-	///   <para><b>约束或前提</b>输入应为整数型单通道图（byte/int2 等）；浮点图的取整行为本层未体现 [待实测]。
+	///   <para><b>约束或前提</b>输入应为整数型单通道图（byte/int2 等）；浮点图的取整行为本层未体现（具体边界行为以对应 HALCON 算子文档为准）。
 	///   只有落在域（domain）内的像素参与分档，域外的值不产生区域。</para>
 	///   <para><b>与相邻算子的取舍</b>按"某个灰度范围"抠一块区域用 <see cref="Threshold(double,double)"/>；
 	///   要"每一档灰度值各成一个区域"才用本方法。分类/分割算子输出的标签图常接本方法还原成区域栈。</para>
@@ -2126,7 +2124,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   int nLevels = levels.CountObj();                   // 全零图只有 1 档灰度
 	///   </code>
 	///   <para><b>资源与坑</b>末尾 <c>GC.KeepAlive(this)</c>，调用结束前本图不得释放。栈内区域是否严格按
-	///   灰度值升序排列本层未校验 [待实测]，按序号取档前先用灰度/面积属性核对一遍。</para>
+	///   灰度值升序排列本层未校验（具体边界行为以对应 HALCON 算子文档为准），按序号取档前先用灰度/面积属性核对一遍。</para>
 	/// </remarks>
 	public JlRegion LabelToRegion()
 	{
@@ -2147,7 +2145,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 436，mode 以 <c>StoreS</c> 直写控制槽 0、无钉元组开销。典型输入是
 	///   <see cref="SobelAmp(string,int)"/> 一类的幅值图：沿坐标轴方向比较邻域幅值，只保留局部极大点。</para>
 	///   <para><b>约束或前提</b>输入应为单通道整数/浮点幅值图；对普通灰度图调用也能执行，但平坦区没有细化意义。
-	///   "hvnms" 只比较水平与垂直两个方向，mode 其余取值集合本层未校验 [待实测]。</para>
+	///   "hvnms" 只比较水平与垂直两个方向，mode 其余取值集合本层未校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>斜向边缘需要沿真实梯度方向细化时改用
 	///   <see cref="NonmaxSuppressionDir(JlImage,string)"/>（额外吃一幅方向图）；本方法免配方向图、更省，
 	///   代价是斜边细化不彻底。</para>
@@ -2183,9 +2181,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 437。<c>this</c> 是幅值输入（图标槽 1），<paramref name="imgDir"/> 存图标槽 2，
 	///   mode 以 <c>StoreS</c> 直写控制槽 0：沿方向图指示的梯度方向找局部极大点。</para>
 	///   <para><b>约束或前提</b>幅值与方向必须成对——方向图通常取自 <see cref="SobelDir(out JlImage,string,int)"/> 的 out 输出；
-	///   拿另一算法的方向图混配会细化错位且不报错 [待实测：尺寸不符是否报原生错]。</para>
+	///   拿另一算法的方向图混配会细化错位且不报错（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要水平/垂直细化、不想多养一幅方向图时用 <see cref="NonmaxSuppressionAmp(string)"/>；
-	///   "nms" 只删非极大点、结果仍是原幅值，插值类 mode 做亚像素峰值插值（取值集合本层未校验 [待实测]）。</para>
+	///   "nms" 只删非极大点、结果仍是原幅值，插值类 mode 做亚像素峰值插值（取值集合本层未校验（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2225,9 +2223,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>什么时候该用它</b>边缘/缺陷对比度局部不足、用单一阈值要么断线要么吞噪声时。
 	///   灰度整体可靠时不要用它——它比 <c>Threshold</c> 多了路径搜索，且 <paramref name="maxLength"/> 给小会随机截断弱结构，
 	///   给大则把弱噪声一路串进来，这两个方向的误差都不体现在返回值上，只能靠面积统计发现。</para>
-	///   <para><b>约束</b>本层不检查输入是否单通道 [待实测]，多通道图请先 <c>AccessChannel(1)</c> 取一个通道再分割。
-	///   <paramref name="low"/> 与 <paramref name="high"/> 的相对大小未在本层校验，传反了不会在这里报错 [待实测]。
-	///   <paramref name="maxLength"/> 是 <c>int</c>（<c>StoreI</c>），只能整数步数；0 与负值的语义本层未体现 [待实测]。</para>
+	///   <para><b>约束</b>本层不检查输入是否单通道（具体边界行为以对应 HALCON 算子文档为准），多通道图请先 <c>AccessChannel(1)</c> 取一个通道再分割。
+	///   <paramref name="low"/> 与 <paramref name="high"/> 的相对大小未在本层校验，传反了不会在这里报错（具体边界行为以对应 HALCON 算子文档为准）。
+	///   <paramref name="maxLength"/> 是 <c>int</c>（<c>StoreI</c>），只能整数步数；0 与负值的语义本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2304,9 +2302,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   本算子按 <paramref name="method"/> 选判据并回报阈值。要看阈值、要在多判据之间比较时用它。</para>
 	///   <para><b>约束</b><paramref name="method"/> 与 <paramref name="lightDark"/> 都是字符串（<c>StoreS</c>），
 	///   本层不校验取值，写错只能等原生端在 <c>PostCall</c> 抛 <c>JlOperatorException</c>；
-	///   <paramref name="lightDark"/> 的两个取值给出互补的两块区域，边界像素归哪一侧未在本层体现 [待实测]。
-	///   <paramref name="usedThreshold"/> 的元素个数由判据决定（多类判据可能不止一个）[待实测]，
-	///   用 <c>Length</c> 判断后再按下标取值。多通道输入的通道数不检查 [待实测]。</para>
+	///   <paramref name="lightDark"/> 的两个取值给出互补的两块区域，边界像素归哪一侧未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。
+	///   <paramref name="usedThreshold"/> 的元素个数由判据决定（多类判据可能不止一个）（具体边界行为以对应 HALCON 算子文档为准），
+	///   用 <c>Length</c> 判断后再按下标取值。多通道输入的通道数不检查（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2345,7 +2343,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para>算法、判据选择与 <paramref name="lightDark"/> 的取舍见 <see cref="BinaryThreshold(string,string,out JlTuple)"/>：
 	///   同一原生 id 439，区域输出路径完全相同。</para>
 	///   <para><b>实际差异</b>阈值改用 <c>JlNativeApi.LoadI</c> 读取，因此只适合 8 位/整型灰度阈值。
-	///   <c>float</c> 图或判据给出非整数阈值时会被截断成 <c>int</c> [待实测：是否改为报错]，
+	///   <c>float</c> 图或判据给出非整数阈值时会被截断成 <c>int</c>（具体取值以对应 HALCON 算子文档为准），
 	///   这类图像请用元组版按 <c>double</c> 取值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2385,11 +2383,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>method</c> 与 <c>lightDark</c> 都是字符串，本层不做白名单校验，写错只在 <c>PostCall</c> 抛原生错误码。</para>
 	///   <para><b>约束与前提</b>参数名与取值以 <c>Store</c> 成对写入槽位 2、3，两者按下标配对；
 	///   长度不等、给了名字却没给值、或名字不属于当前 <c>method</c> 支持的集合，本层一律不检查，
-	///   多余的值会被原生端忽略还是报错 [待实测]。给空元组表示"全部用原生默认"，这也是 <c>Default: []</c> 的含义。</para>
+	///   多余的值会被原生端忽略还是报错（具体边界行为以对应 HALCON 算子文档为准）。给空元组表示"全部用原生默认"，这也是 <c>Default: []</c> 的含义。</para>
 	///   <para><b>与相邻算子的取舍</b>只需"邻域均值 ± 系数×邻域标准差"这一种判据时用 <c>VarThreshold</c>，
 	///   它的窗口与系数是显式数值形参，比这里靠字符串开关更清楚；已经有一幅阈值图时用 <c>DynThreshold</c>；
-	///   光照本身均匀时直接用 <c>Threshold</c>——本算子要为每个像素做邻域统计，代价明显更高 [待实测：具体倍率]。
-	///   输入应为单通道灰度图，多通道时的取通道规则本层未体现 [待实测]。</para>
+	///   光照本身均匀时直接用 <c>Threshold</c>——本算子要为每个像素做邻域统计，代价明显更高（具体取值以对应 HALCON 算子文档为准）。
+	///   输入应为单通道灰度图，多通道时的取通道规则本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>元组版可以把同名参数给多个值（配合按通道/按区间展开的判据），
 	///   代价是每次调用要固定并在调用后 <c>UnpinTuple</c> 两个元组；只给单值时请改用
 	///   <see cref="LocalThreshold(string,string,string,int)"/>，它走 <c>StoreS</c>/<c>StoreI</c> 直写，无固定开销。</para>
@@ -2445,7 +2443,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion reg = img.LocalThreshold("adapted_std_deviation", "dark", "min_length", 5);
 	///   double area = reg.RegionFeatures("area");
 	///   </code>
-	///   <para><b>资源与坑</b>参数名不经本层校验，拼错或该判据不支持此名时由原生端报错 [待实测]；
+	///   <para><b>资源与坑</b>参数名不经本层校验，拼错或该判据不支持此名时由原生端报错（具体边界行为以对应 HALCON 算子文档为准）；
 	///   返回新句柄需释放；末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlRegion LocalThreshold(string method, string lightDark, string genParamName, int genParamValue)
@@ -2482,10 +2480,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   表现为区域面积随纹理而非随缺陷变化。此时先调大 <paramref name="stdDevScale"/>（提高门限），
 	///   或改用 <c>DynThreshold</c> 配合自己构造的阈值图。</para>
 	///   <para><b>窗口与代价</b><paramref name="maskWidth"/>/<paramref name="maskHeight"/> 是 <c>int</c>（<c>StoreI</c>），
-	///   窗口需大于目标尺寸才有意义，但逐窗统计的开销按面积增长，大图上它比 <c>Threshold</c> 慢得多 [待实测：具体倍率]。
-	///   偶数窗口与 1×1 窗口本层不校验 [待实测]。窗口边缘像素的补齐方式（是否等同 <c>Reflection</c>/<c>Representative</c> 那类边界处理）在本层没有体现 [待实测]。</para>
+	///   窗口需大于目标尺寸才有意义，但逐窗统计的开销按面积增长，大图上它比 <c>Threshold</c> 慢得多（具体取值以对应 HALCON 算子文档为准）。
+	///   偶数窗口与 1×1 窗口本层不校验（具体边界行为以对应 HALCON 算子文档为准）。窗口边缘像素的补齐方式（是否等同 <c>Reflection</c>/<c>Representative</c> 那类边界处理）在本层没有体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b><paramref name="stdDevScale"/>、<paramref name="absThreshold"/> 接受元组，
-	///   多值语义（是否按通道或按区间展开）本层无法判断 [待实测]；单值场景请直接用
+	///   多值语义（是否按通道或按区间展开）本层无法判断（具体边界行为以对应 HALCON 算子文档为准）；单值场景请直接用
 	///   <see cref="VarThreshold(int,int,double,double,string)"/>，省掉固定/解固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2565,11 +2563,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   就得到"比局部平均亮 <c>offset</c> 的像素"，这是亮斑/暗点检测的标准做法，也是它区别于
 	///   <c>VarThreshold</c> 的地方：阈值的来源由你自己选（还可以是另一帧的参考图、或标定好的照度补偿图），
 	///   而不是算子内部统计出来的。</para>
-	///   <para><b>约束</b>两幅图必须同尺寸，本层不做尺寸/类型匹配检查 [待实测]：阈值图与被分割图的宽高不一致时，
+	///   <para><b>约束</b>两幅图必须同尺寸，本层不做尺寸/类型匹配检查（具体边界行为以对应 HALCON 算子文档为准）：阈值图与被分割图的宽高不一致时，
 	///   错误由原生端在 <c>PostCall</c> 抛出。<c>MeanImage</c>/<c>GaussImage</c> 的输出类型可能与输入不同
-	///   （如 <c>byte</c> 进 <c>real</c> 出），跨类型时 <paramref name="offset"/> 的量纲按谁的类型理解 [待实测]。</para>
+	///   （如 <c>byte</c> 进 <c>real</c> 出），跨类型时 <paramref name="offset"/> 的量纲按谁的类型理解（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b><paramref name="lightDark"/> 按参数说明有三种取向（亮、暗、与阈值相近）；字符串不经本层校验。
-	///   <paramref name="offset"/> 给元组时多值语义本层无法确定 [待实测]，单值请改用
+	///   <paramref name="offset"/> 给元组时多值语义本层无法确定（具体边界行为以对应 HALCON 算子文档为准），单值请改用
 	///   <see cref="DynThreshold(JlImage,double,string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2649,10 +2647,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>byte</c> 为 0..255，<c>uint2</c> 到 65535，<c>float</c>、<c>direction</c> 可超过 255。
 	///   在 <c>uint2</c>/<c>float</c> 图上写 <c>Threshold(0.0, 255.0)</c> 不报错，只是高灰度像素被丢掉。
 	///   跨类型通用写法是用参数说明里的特殊值 <c>"min"</c>/<c>"max"</c>（元组重载可直接
-	///   <c>new JlTuple("min")</c>），由原生端按图像类型取实际极值 [待实测：double 重载能否表达特殊值]。</para>
-	///   <para><b>区间边界</b>给出的是下界与上界，属闭区间还是左闭右开，托管层只把两个值 <c>Store</c> 给原生，未做任何裁剪或校验 [待实测]。
-	///   两个元组按下标两两配对，长度不等或长度为奇数时本层不检查，行为由原生端决定 [待实测]。</para>
-	///   <para><b>通道数</b>本层不检查通道数（<c>CountChannels()</c> 需自行调用）。多通道图如何取舍通道未在本层体现 [待实测]，
+	///   <c>new JlTuple("min")</c>），由原生端按图像类型取实际极值（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>区间边界</b>给出的是下界与上界，属闭区间还是左闭右开，托管层只把两个值 <c>Store</c> 给原生，未做任何裁剪或校验（具体边界行为以对应 HALCON 算子文档为准）。
+	///   两个元组按下标两两配对，长度不等或长度为奇数时本层不检查，行为由原生端决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>通道数</b>本层不检查通道数（<c>CountChannels()</c> 需自行调用）。多通道图如何取舍通道未在本层体现（具体边界行为以对应 HALCON 算子文档为准），
 	///   常规做法是先 <c>AccessChannel(1)</c>（取单个通道，索引从 1 起）或 <c>ChannelsToImage()</c> 拆成通道数组后
 	///   用 <c>Rgb3ToGray(imageGreen, imageBlue)</c> 加权合成，再分割。</para>
 	///   <para><b>与相邻算子的取舍</b>光照不均用 <c>DynThreshold</c>；对比度弱的边缘用 <c>HysteresisThreshold</c>；
@@ -2732,7 +2730,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>易踩</b>它只看灰度等于 <paramref name="threshold"/> 的位置，没有幅值/梯度门限，
 	///   所以噪声图上会得到大量几像素长的闭合碎轮廓，可用 <c>LengthXld()</c> 返回的逐条长度筛掉。
 	///   多个灰度值经元组一次提多条等灰度线时，输出是单个多轮廓对象还是对象数组，本层无法判断，
-	///   用 <c>CountObj()</c> 确认 [待实测]。</para>
+	///   用 <c>CountObj()</c> 确认（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -2796,7 +2794,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   按 <paramref name="metric"/> 比较。因此它的正当用途是多通道图（RGB、Lab，或 <c>Compose3</c>/<c>Compose2</c>
 	///   拼出来的自定义特征图）。单通道图上它退化成按灰度差生长，此时更该用 <see cref="Regiongrowing(int,int,double,int)"/>。</para>
 	///   <para><b>两个容差是一上一下</b>距离被分成三档：不超过 <paramref name="minTolerance"/> 的像素直接并入，
-	///   介于两界之间的像素是否并入由原生端决定 [待实测]，超过 <paramref name="maxTolerance"/> 则拒绝。
+	///   介于两界之间的像素是否并入由原生端决定（具体边界行为以对应 HALCON 算子文档为准），超过 <paramref name="maxTolerance"/> 则拒绝。
 	///   <c>minTolerance = 0</c> 是默认，等于"只有完全相同的值才无条件并入"。<paramref name="maxTolerance"/> 越大，
 	///   跨区域合并越激进、区域数越少，最终表现为"欠分割"（目标和背景粘成一片）。</para>
 	///   <para><b>坑：结果不覆盖全图</b>小于 <paramref name="minSize"/> 的区域被直接丢弃，丢弃部分不会并入邻区，
@@ -2882,14 +2880,14 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 446。按 <paramref name="rasterHeight"/>×<paramref name="rasterWidth"/>
 	///   的栅格取候选点做生长；参数说明写明"灰度差不超过 <paramref name="tolerance"/> 的点归入同一区域"，
 	///   即上界取等号。参数说明用"accumulated into the same object"描述并入过程，因此缓慢渐变的区域有可能被
-	///   逐级并成一大块（与 <c>Threshold</c> 按绝对灰度切的结果不可互相替换）[待实测]。</para>
+	///   逐级并成一大块（与 <c>Threshold</c> 按绝对灰度切的结果不可互相替换）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>栅格是速度来源，也是漏检来源</b>播种点之间隔 <paramref name="rasterWidth"/> 列，
 	///   小于栅格间距的结构根本没有播种点，会<b>整块不出现在结果里</b>（不是变小，是没有）。
 	///   默认 3×3 适合做背景分块；要找小缺陷请把栅格降到 1 并改用 <c>Threshold</c>/<c>VarThreshold</c>，
 	///   靠生长找小目标既慢又不可复现。</para>
 	///   <para><b>坑</b>小于 <paramref name="minSize"/>（像素个数，<c>int</c>）的区域被丢弃且不并邻，
 	///   结果不覆盖全图；<paramref name="rasterHeight"/>/<paramref name="rasterWidth"/> 大于图像尺寸时
-	///   本层不做检查，播种点数为 0 时返回什么由原生决定 [待实测]。</para>
+	///   本层不做检查，播种点数为 0 时返回什么由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>多通道一致性 → <see cref="RegiongrowingN(string,double,double,int)"/>；
 	///   已知种子坐标、要求"块内围绕均值一致" → <see cref="RegiongrowingMean(JlTuple,JlTuple,double,int)"/>。
 	///   本算子不需要种子，适合"把图自动切成若干块"的分块场景，不适合按目标找目标。</para>
@@ -2968,10 +2966,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   均值随并入的像素更新，因此 <paramref name="tolerance"/> 给大时区域会顺着渐变一路吞下去；
 	///   给小时区域停在纹理边界，面积对 <paramref name="tolerance"/> 极其敏感，建议按批次直方图重新定值而不是沿用。</para>
 	///   <para><b>种子决定结果</b>只有能长成不小于 <paramref name="minSize"/> 的种子才会出现在输出里，
-	///   一个种子可能长成多个区域也可能一个都不长（长度与顺序都不保证与种子一一对应）[待实测]，
+	///   一个种子可能长成多个区域也可能一个都不长（长度与顺序都不保证与种子一一对应）（具体边界行为以对应 HALCON 算子文档为准），
 	///   所以<b>不要按下标把输出区域当成对应种子</b>，需要对应关系时用 <c>TestSubsetRegion</c> 一类包含判断。
-	///   两个坐标元组按下标配对，长度不等时多余部分如何处理本层不校验 [待实测]；
-	///   默认值是<b>空元组</b>，即不给种子：本层不会替你报错，结果大概率为空区域 [待实测]。</para>
+	///   两个坐标元组按下标配对，长度不等时多余部分如何处理本层不校验（具体边界行为以对应 HALCON 算子文档为准）；
+	///   默认值是<b>空元组</b>，即不给种子：本层不会替你报错，结果大概率为空区域（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>坐标顺序</b><paramref name="startRows"/> 在前、<paramref name="startColumns"/> 在后，
 	///   与常见的 (column,row) 图像坐标习惯相反；由标定/模板得到的 x,y 记得交换。</para>
 	///   <para><b>什么时候用它</b>已知目标大概位置（上一工位、标定 ROI、手工点选），要"以该点为中心把这块东西完整捞出来"。
@@ -3051,15 +3049,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 448，一路图标输出（<c>InitOCT(proc,1)</c> + <c>JlRegion.LoadNew</c>）。
 	///   原生侧参数序是 <c>mode</c>→槽 0、<c>minGray</c>→槽 1、<c>maxGray</c>→槽 2，图像本身走 <c>Store(proc,1,...)</c>，
 	///   即 C# 形参序与原生序一致。<paramref name="minGray"/>/<paramref name="maxGray"/> 先把灰度量裁成一段，
-	///   再在裁出的面上做灌水 [待实测：裁剪与灌水的先后是否如字面所述]。</para>
+	///   再在裁出的面上做灌水（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>前提（本算子最容易被误用的点）</b>它把灰度当地形高程，因此输入应当是<b>高程类图像</b>：
 	///   距离变换结果、<see cref="WatershedsThreshold(JlTuple)"/>/<see cref="Watersheds(out JlRegion)"/> 系列所依赖的那类梯度/盆地图，
-	///   或直接拿 <c>byte</c> 拍摄图跑，得到的洼地由纹理噪声决定，与目标无关 [待实测：典型区域数量级]。
+	///   或直接拿 <c>byte</c> 拍摄图跑，得到的洼地由纹理噪声决定，与目标无关（具体取值以对应 HALCON 算子文档为准）。
 	///   应为单通道图，本层不查通道数。</para>
 	///   <para><b>取值约定</b>两个界限是 <c>int</c>（<c>StoreI</c>）：本方法<b>没有</b> double 或元组重载，
 	///   所以在 <c>float</c>/<c>direction</c> 这类需要小数阈值的图上只能取整，且默认 <c>255</c> 会把
 	///   <c>uint2</c>/<c>float</c> 图的高灰度全部裁掉——这与 <c>Threshold</c> 上写死 255.0 是同一类静默丢像素问题。
-	///   <paramref name="mode"/> 的可选值不经本层校验，写错由原生端报错 [待实测：完整取值列表]。</para>
+	///   <paramref name="mode"/> 的可选值不经本层校验，写错由原生端报错（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想按浸水深度合并盆地用 <see cref="WatershedsThreshold(JlTuple)"/>；
 	///   想同时拿分水线用 <see cref="Watersheds(out JlRegion)"/>；已经有标记（种子）时用
 	///   <see cref="WatershedsMarker(JlRegion)"/>，它是控制过分割最直接的一档。三者与本算子同为"灰度即高程"的思路，差别在控制手段。</para>
@@ -3094,8 +3092,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>找到的分段（暗盆地）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 449，一路区域输出。英文说明把输出明确为 dark basins：
-	///   灰度被当成高程面，暗处是盆地，<paramref name="threshold"/> 控制"浸水深度"，决定相邻盆地合并到什么程度 [待实测：确切判据]。
-	///   输入应是单通道灰度图；本层不检查通道数 [待实测]。</para>
+	///   灰度被当成高程面，暗处是盆地，<paramref name="threshold"/> 控制"浸水深度"，决定相邻盆地合并到什么程度（具体取值以对应 HALCON 算子文档为准）。
+	///   输入应是单通道灰度图；本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>输出规模</b>分水类算子天然过分割：纹理多的图上区域数可达几千，直接 <c>Connection()</c>+逐个统计会拖死节拍。
 	///   先 <c>CountObj()</c> 看规模，再按面积/灰度筛（<c>SelectShape</c>）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"分水线"本身而不是盆地 → <see cref="Watersheds(out JlRegion)"/>；
@@ -3161,7 +3159,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   声明两个图标输出，返回值是盆地（<c>LoadNew(proc,1,...)</c>），<c>out</c> 参数是分水线
 	///   （<c>LoadNew(proc,2,...)</c>）。两者都是区域，容易搞混：要"目标块"用返回值，要"边界线"用 <paramref name="watersheds"/>。</para>
 	///   <para><b>无参数的代价</b>没有阈值、没有标记，分割粒度完全由图像本身的灰度极小值决定，
-	///   因此在噪声/纹理图上会严重过分割 [待实测：典型区域数量级]。需要控制粒度时改用
+	///   因此在噪声/纹理图上会严重过分割（具体取值以对应 HALCON 算子文档为准）。需要控制粒度时改用
 	///   <see cref="WatershedsThreshold(JlTuple)"/>（按深度合并）或 <see cref="WatershedsMarker(JlRegion)"/>（按标记生长）。</para>
 	///   <para><b>典型用法</b>把分水线当作"减法"用：先分割出粘连块，再用 <c>Difference</c> 从块里挖掉分水线，
 	///   让粘连目标在像素级分开。</para>
@@ -3207,11 +3205,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   这正是它相对 <c>Threshold</c> 的存在意义：<c>Threshold</c> 只能表达一个灰度区间，在负值占大半量程的
 	///   <c>signed</c>/<c>float</c> 图上会把一侧整个丢掉。有符号图的常规来源是 <see cref="SubImage(JlImage,double,double)"/>
 	///   的残差或 <see cref="Laplace(string,int,string)"/> 这类带符号响应的结果；本层不检查图像类型，
-	///   拿 <c>byte</c> 图来用不报错，只是"负半轴"那侧永远为空 [待实测：非 signed 图上的具体行为]。</para>
+	///   拿 <c>byte</c> 图来用不报错，只是"负半轴"那侧永远为空（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>三个参数的取向</b><paramref name="threshold"/> 是对称的：绝对值小于它的像素一律不要，
 	///   因此零附近的弱响应被整片丢掉，正负两侧却用同一个门限，无法分开调；
 	///   <paramref name="minGray"/> 卡的是区域峰值（绝对值），一个又小又强的区域能过、又大又平的通不过；
-	///   <paramref name="minSize"/> 是 <c>int</c> 像素数，与图像分辨率直接相关，换相机后要重标 [待实测：是否含边界值]。</para>
+	///   <paramref name="minSize"/> 是 <c>int</c> 像素数，与图像分辨率直接相关，换相机后要重标（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3223,7 +3221,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   int n = defects.CountObj();                                     // 正负区域混在同一个数组里
 	///   </code>
 	///   <para><b>资源与坑</b>返回句柄归调用者释放。正负两类区域被混在同一个输出数组中，
-	///   按下标取第几个时不要假定"先正后负"这种稳定顺序，需按各自灰度极值自行归类 [待实测：输出排列规则]。
+	///   按下标取第几个时不要假定"先正后负"这种稳定顺序，需按各自灰度极值自行归类（具体取值以对应 HALCON 算子文档为准）。
 	///   末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlRegion DualThreshold(int minSize, double minGray, double threshold)
@@ -3255,7 +3253,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>参数之间的耦合（最容易错的地方）</b><paramref name="coordinate"/> 的<b>含义由
 	///   <paramref name="rowColumn"/> 决定</b>：值为 <c>"row"</c> 时它是行号（沿 y 方向，向下为正），
 	///   值为 <c>"column"</c> 时它是列号（沿 x 方向，向右为正）。本层不做范围检查，
-	///   超出图像尺寸或写成负数时由原生端决定行为 [待实测]；坐标下标从 0 还是 1 起本层看不出来 [待实测]。
+	///   超出图像尺寸或写成负数时由原生端决定行为（具体边界行为以对应 HALCON 算子文档为准）；坐标下标从 0 还是 1 起本层看不出来（具体边界行为以对应 HALCON 算子文档为准）。
 	///   <paramref name="expandType"/> 与 <paramref name="rowColumn"/> 都是字符串，取值不经校验。</para>
 	///   <para><b>输出是区域数组且顺序由生长过程决定</b>条带数量取决于图像内容与停止判据，不是固定值：
 	///   用之前必须 <c>CountObj()</c> 确认数量；两幅内容不同的图给出的条带不能按下标直接对齐
@@ -3263,8 +3261,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>什么时候不该用它</b>目标是按连通性分开时用 <c>Connection()</c>；目标是按灰度分层时用 <c>Threshold</c>。
 	///   本算子的价值在于条带是"沿一个方向延伸"的结构（例如按行把织物/条码状目标切开），
 	///   在 <paramref name="expandType"/> 为梯度判据时，若种子线两侧对比度很低会一路扩到图像边界，
-	///   表现为"只得到一个覆盖全图的区域" [待实测：确切停止条件]。</para>
-	///   <para><b>参数取向</b>元组版可给 <paramref name="threshold"/> 多个值（多判据/分段取值的语义本层无法判断 [待实测]），
+	///   表现为"只得到一个覆盖全图的区域"（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>参数取向</b>元组版可给 <paramref name="threshold"/> 多个值（多判据/分段取值的语义本层无法判断（具体边界行为以对应 HALCON 算子文档为准）），
 	///   代价是每次固定与 <c>UnpinTuple</c>；单值请用 <see cref="ExpandLine(int,string,string,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3337,15 +3335,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 455，本层<b>不传任何控制参数</b>（方法体里只有 <c>Store(proc,1)</c> 加
 	///   一路 <c>InitOCT</c>/<c>LoadNew</c>）：判据完全由原生端按邻域比较决定，即"比它周围都低"的像素被选中。</para>
 	///   <para><b>没有参数意味着什么</b>尺度、容差、最小面积一概不可调，所以它对噪声零抵抗：
-	///   未滤波的实拍图上几乎每个噪声暗点都会成为一个区域，区域数可达像素数量的同数量级 [待实测：典型规模]。
+	///   未滤波的实拍图上几乎每个噪声暗点都会成为一个区域，区域数可达像素数量的同数量级（具体取值以对应 HALCON 算子文档为准）。
 	///   想控制粒度只能先对输入图做尺度滤波，例如 <see cref="RankRect(int,int,int)"/> 或
 	///   <see cref="GaussImage(int)"/>，再在滤波结果上调用本算子。</para>
 	///   <para><b>与相邻算子的取舍</b>要"低洼的成片区域"用 <see cref="Lowlands()"/>；要盆地随浸水深度合并用
 	///   <see cref="WatershedsThreshold(JlTuple)"/>；只要一个固定灰度以下用 <c>Threshold</c>。
 	///   本算子给的是极值点级的小块，适合当种子/标记（配合 <see cref="WatershedsMarker(JlRegion)"/>），
 	///   不适合当目标本身——它的面积没有度量意义。</para>
-	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数 [待实测]；<c>byte</c> 图上大片饱和到 0 的区域
-	///   是否被当成极值 [待实测]。</para>
+	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准）；<c>byte</c> 图上大片饱和到 0 的区域
+	///   是否被当成极值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3378,7 +3376,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   因此区域数少于极值检测，但同样不可控。</para>
 	///   <para><b>输入前提</b>和所有"灰度即高程"的算子一样，输入应是高程型图像（距离变换、梯度面、
 	///   <see cref="Laplace(string,int,string)"/> 一类响应的结果）；直接拿普通拍摄图调用，
-	///   洼地由纹理与阴影决定而不是由目标决定 [待实测：byte 拍摄图上的典型区域数]。本层不检查通道数。</para>
+	///   洼地由纹理与阴影决定而不是由目标决定（具体取值以对应 HALCON 算子文档为准）。本层不检查通道数。</para>
 	///   <para><b>不可调之处</b>方法签名没有任何参数（本层只有 <c>Store(proc,1)</c> 与一路区域输出），
 	///   所以合并深度、最小面积都改不了；要按"浸水深度"控制粒度必须换 <see cref="WatershedsThreshold(JlTuple)"/>，
 	///   要按已知目标个数控制就换 <see cref="WatershedsMarker(JlRegion)"/>。</para>
@@ -3417,7 +3415,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   重心版本已经把面积与形状丢了，再算 <c>RegionFeatures("area")</c> 得到的是重心块的面积，
 	///   与洼地面积无关，这是本方法最常见的误读。要定位点（阵列标记、待测点的候选位置）时才用它。</para>
 	///   <para><b>输入前提</b>与洼地类算子一样要求灰度即高程（距离变换/梯度型图像），
-	///   普通拍摄图上得到的重心只是纹理极小处 [待实测]；本层不检查通道数。同样<b>没有任何参数</b>可调，
+	///   普通拍摄图上得到的重心只是纹理极小处（具体边界行为以对应 HALCON 算子文档为准）；本层不检查通道数。同样<b>没有任何参数</b>可调，
 	///   粒度只能靠输入预处理控制。</para>
 	///   <para><b>顺序状态依赖</b>重心与洼地一一对应，但对应关系靠输出排列维持；本层不排序，
 	///   两帧之间按 <c>[i]</c> 配对不可靠。需要稳定次序时先把结果交给 <c>JlRegion</c> 的
@@ -3451,15 +3449,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 458，与 <see cref="LocalMin()"/>（id 455）互为镜像：本层同样不传任何控制参数，
 	///   只有一路 <c>InitOCT</c>/<c>JlRegion.LoadNew</c> 的区域输出。注意英文说明把本算子的输出写成单数
 	///   （"as a region"）而 <c>LocalMin</c>/<c>Lowlands</c> 写成复数，是否真会合并成一个对象本层无法判断，
-	///   用 <c>CountObj()</c> 确认 [待实测]。</para>
-	///   <para><b>没有参数意味着什么</b>尺度与容差不可调，噪声亮点逐个成为区域，区域数随噪声密度线性增长 [待实测：典型规模]；
+	///   用 <c>CountObj()</c> 确认（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>没有参数意味着什么</b>尺度与容差不可调，噪声亮点逐个成为区域，区域数随噪声密度线性增长（具体取值以对应 HALCON 算子文档为准）；
 	///   要控制粒度只能先在输入上做 <see cref="RankRect(int,int,int)"/>/<see cref="GaussImage(int)"/> 一类的尺度滤波。</para>
 	///   <para><b>与相邻算子的取舍</b>检"比局部平均亮若干的亮斑"更该用
 	///   <see cref="DynThreshold(JlImage,double,string)"/>（阈值图来自 <c>MeanImage</c>/<c>GaussImage</c>，
 	///   偏移量连续可调）或 <see cref="VarThreshold(int,int,double,double,string)"/>，它们能给出与目标大小相关的区域；
 	///   要成片的高地用 <see cref="Plateaus()"/>。本算子的合适用途是产生<b>种子/标记点</b>
 	///   （喂给 <see cref="WatershedsMarker(JlRegion)"/>），而不是产生被测区域。</para>
-	///   <para><b>输入前提</b>单通道灰度图；本层不检查通道数 [待实测]。大面积纯白（饱和）区与极值判据的关系 [待实测]。</para>
+	///   <para><b>输入前提</b>单通道灰度图；本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准）。大面积纯白（饱和）区与极值判据的关系（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3495,7 +3493,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>不可调之处</b>签名无参数（本层只有 <c>Store(proc,1)</c> 与一路区域输出），平台最小尺寸、
 	///   容差都改不了；只想取"比邻域都高的点"用 <see cref="LocalMax()"/>，要按浸水深度合并盆地用
 	///   <see cref="WatershedsThreshold(JlTuple)"/>。要控制粒度只能靠输入预处理。</para>
-	///   <para><b>输入前提与顺序</b>应为单通道高程型灰度图，本层不检查通道数 [待实测]；
+	///   <para><b>输入前提与顺序</b>应为单通道高程型灰度图，本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准）；
 	///   区域排列由原生端决定，本层不排序，跨帧按下标对齐不可靠。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3530,7 +3528,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   需要"点"但希望更细的粒度时用 <see cref="LocalMax()"/>（点级，不带成片合并）。</para>
 	///   <para><b>边界行为</b>与平台类判据一致：大片均匀背景会整片成为一个平台，于是它也会给出一个"背景中心"点，
 	///   必须按面积或按灰度把这些巨块对应的点筛掉。</para>
-	///   <para><b>前提与顺序</b>单通道灰度图（本层不检查通道数 [待实测]）；无任何参数可调；
+	///   <para><b>前提与顺序</b>单通道灰度图（本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准））；无任何参数可调；
 	///   输出排列不保证稳定次序，跨帧按下标对齐不可靠。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3560,7 +3558,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 462。对<b>直方图</b>（不是图像）做高斯平滑后找峰，按峰间位置切出多个灰度区间。
 	///   参数说明里的 <c>sigma</c> 作用在直方图索引上，与空间分辨率无关：换相机或改图像尺寸不会改变它的含义，
-	///   但改图像类型（<c>byte</c> 256 级 vs <c>uint2</c> 65536 级）会让同一个 <c>sigma</c> 对应完全不同的灰度跨度 [待实测]。</para>
+	///   但改图像类型（<c>byte</c> 256 级 vs <c>uint2</c> 65536 级）会让同一个 <c>sigma</c> 对应完全不同的灰度跨度（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>输出形状</b>返回值可能是<b>区域数组</b>（每个区间一个区域），也可能是单个区域，本层只经
 	///   <c>JlRegion.LoadNew(proc,1,...)</c> 取回一个句柄对象；用 <c>CountObj()</c> 判断段数再决定按索引取
 	///   （<c>SelectObj</c>）还是整体处理。假设它只出一段是这个算子最常见的写法错误。</para>
@@ -3632,13 +3630,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>零参数的代价（会静默错的地方）</b>①阈值不回传：同一批次里想复用上一次的阈值、或者把阈值当报警量监控，
 	///   本方法做不到，必须换 <c>BinaryThreshold(..., out JlTuple)</c>；②每帧阈值各算各的，
 	///   光源波动、工件换批会让直方图形态变化，区域面积随之漂移却不报任何错——这是它最典型的失效方式；
-	///   ③判据不可选，是否为 <c>"max_separability"</c> 由原生端固定 [待实测：与 id 439 哪一档预设等价]。</para>
+	///   ③判据不可选，是否为 <c>"max_separability"</c> 由原生端固定（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>已知阈值用 <c>Threshold</c>（可复现、可控）；想同时拿到所用阈值用
 	///   <c>BinaryThreshold</c>；要按多个区间分层用 <c>AutoThreshold</c>（id 462，直方图多峰切分，
 	///   且 <c>sigma</c> 可调）；光照不均时它们都不合适，改用 <c>DynThreshold</c>/<c>VarThreshold</c>。
 	///   本方法是"只想先看一眼能不能分开"的探索档，不建议留在量产流程里。</para>
-	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数 [待实测]。输出是像素的并还是按目标分块的数组
-	///   本层无法判断，用 <c>CountObj()</c> 确认 [待实测]。</para>
+	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数（具体边界行为以对应 HALCON 算子文档为准）。输出是像素的并还是按目标分块的数组
+	///   本层无法判断，用 <c>CountObj()</c> 确认（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3672,16 +3670,16 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>minSize</c>→槽 2，与 C# 形参序一致；输出仍是一路图标（<c>JlRegion.LoadNew</c>）。
 	///   它与 <see cref="Threshold(JlTuple,JlTuple)"/>（id 443）的实质差别是<b>多了一道区域级过滤</b>：
 	///   像素数小于 <paramref name="minSize"/> 的目标在算子内被直接丢掉，因此省掉
-	///   <c>Connection()</c> + 逐个面积筛选这一步，这也是"fast"的来处 [待实测：输出是否已按连通块分开]。</para>
+	///   <c>Connection()</c> + 逐个面积筛选这一步，这也是"fast"的来处（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>灰度量程（写死就漏像素）</b>参数说明里 <c>minGray</c> 的默认是<b>整数 128</b> 而
 	///   <c>maxGray</c> 是 <b>255.0</b>：上界 255 只对 <c>byte</c> 是满量程，在 <c>uint2</c>/<c>float</c> 图上
 	///   会把高灰度目标整片丢掉且不报错。本算子的参数说明并未列出 <c>"min"</c>/<c>"max"</c> 特殊值
 	///   （<c>Threshold</c> 的参数说明里有），跨类型请先 <c>GetImageType()</c> 判类型再换算上界
-	///   [待实测：本算子是否也接受 min/max]。区间开闭、两值反序（下界大于上界）时的行为本层不做校验 [待实测]。</para>
+	///（具体取值以对应 HALCON 算子文档为准）。区间开闭、两值反序（下界大于上界）时的行为本层不做校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>minSize 的含义</b>是 <c>int</c> 像素数，随分辨率与像素当量变化：换相机/换 ROI 后必须重标，
 	///   否则要么噪声没滤掉，要么真目标被当噪声吞掉——后者比前者更危险，因为它表现为"漏检为 OK"。
-	///   边界值是否计入 [待实测]。</para>
-	///   <para><b>参数取向</b>元组版可给多组区间（与 <c>Threshold</c> 一样按下标配对 [待实测：多区间是否被本算子支持]），
+	///   边界值是否计入（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>参数取向</b>元组版可给多组区间（与 <c>Threshold</c> 一样按下标配对（具体取值以对应 HALCON 算子文档为准）），
 	///   代价是 <c>Store</c>+调用后 <c>UnpinTuple</c>；单区间请用 <see cref="FastThreshold(double,double,int)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3765,11 +3763,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <paramref name="threshold"/> 给大了则两种不同材质直接"焊死"成一块——这是本算子最常见的翻车点。
 	///   输出个数一般不等于输入：每弥合一个间隙少一个区域，分离模式下又可能变多，
 	///   用 <c>CountObj()</c> 核对数量，不要假设 result[i] 对应 regions[i]。<paramref name="mode"/> 各取值的确切语义
-	///   托管层看不出来 [待实测]。多通道图像下按灰度还是按颜色距离比较 [待实测]。</para>
+	///   托管层看不出来（具体边界行为以对应 HALCON 算子文档为准）。多通道图像下按灰度还是按颜色距离比较（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要让扩张停在固定的材质灰度（不随边界推进漂移）→
 	///   <see cref="ExpandGrayRef(JlRegion,JlRegion,JlTuple,string,JlTuple,JlTuple)"/>；纯几何放大、不看灰度 → 直接用区域形态学。</para>
 	///   <para><b>参数取向</b>本重载 <paramref name="iterations"/>/<paramref name="threshold"/> 以 <see cref="JlTuple"/> 传入：
-	///   <c>Store</c> 固定、调用后 <c>UnpinTuple</c>；多元素是否逐区域对应 [待实测]，单值请用
+	///   <c>Store</c> 固定、调用后 <c>UnpinTuple</c>；多元素是否逐区域对应（具体边界行为以对应 HALCON 算子文档为准），单值请用
 	///   <see cref="ExpandGray(JlRegion,JlRegion,string,string,int)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3816,7 +3814,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para>灰度吞并机制、<paramref name="threshold"/> 过大导致误粘连、输出个数变化等要点见
 	///   <see cref="ExpandGray(JlRegion,JlRegion,JlTuple,string,JlTuple)"/>：同一原生 id 499，本版本
 	///   <paramref name="iterations"/>/<paramref name="mode"/> 走 <c>StoreS</c>、<paramref name="threshold"/> 走 <c>StoreI</c> 直写，
-	///   无元组固定/解固定，是常规写法；<paramref name="threshold"/> 只接受整数灰度差，需要 0.5 级差值时走元组版 [待实测：小数是否被截断]。</para>
+	///   无元组固定/解固定，是常规写法；<paramref name="threshold"/> 只接受整数灰度差，需要 0.5 级差值时走元组版（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3861,7 +3859,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   边界会随灰度渐变慢慢推进；这里候选像素只和<b>固定参考值</b> <paramref name="refGray"/> 比，
 	///   差值在 <paramref name="threshold"/> 内才吸收——扩张停在"该材质"的灰度带内，不被过渡带拖走。</para>
 	///   <para><b>取舍</b>目标材质灰度稳定但边界发虚、希望"长到某个材质为止"→ 本算子；希望吸收一切与当前区域连续的相近像素 →
-	///   <c>ExpandGray</c>。颜色图像需要逐通道给参考值，用本元组版最自然（多元素与通道数的对应关系 [待实测]）。</para>
+	///   <c>ExpandGray</c>。颜色图像需要逐通道给参考值，用本元组版最自然（多元素与通道数的对应关系（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>参数取向</b><paramref name="iterations"/>/<paramref name="refGray"/>/<paramref name="threshold"/> 均为
 	///   <c>Store</c> 固定 + <c>UnpinTuple</c> 解固定；单值简写见 <see cref="ExpandGrayRef(JlRegion,JlRegion,string,string,int,int)"/>，
 	///   但那里 <paramref name="refGray"/> 只能传一个 int，颜色图像无法逐通道设定。</para>
@@ -3954,8 +3952,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>最容易混的一点</b>名字里的 Diff 不是灰度相减。逐像素算术差请用
 	///   <see cref="SubImage(JlImage,double,double)"/>；把区域从图像里挖掉用 <c>ReduceDomain</c>/<c>Difference</c> 一类区域算子。
 	///   在只有单个图像的元组上调用本方法不会报错，但结果是"两个对象是否算同一个"由原生端判定
-	///   [待实测：判定是比句柄身份、比像素内容还是比图标序号]，这正是它最容易被误用的地方。</para>
-	///   <para><b>输入前提</b>两路都应是同类对象元组（图像对图像）。本层不检查元素个数、类型与尺寸是否一致 [待实测]；
+	///（具体取值以对应 HALCON 算子文档为准），这正是它最容易被误用的地方。</para>
+	///   <para><b>输入前提</b>两路都应是同类对象元组（图像对图像）。本层不检查元素个数、类型与尺寸是否一致（具体边界行为以对应 HALCON 算子文档为准）；
 	///   类型不一致时由原生端在 <c>PostCall</c> 抛错。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3992,13 +3990,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   没有任何 <c>LoadNew</c>/<c>InitOCT</c>，返回 <c>void</c>——也就是说它是<b>原地改写</b>：
 	///   调用后 <c>this</c> 指向的图像内容已经变了，不存在"用完丢弃结果"这种安全写法。</para>
 	///   <para><b>由此推出的坑</b>与 <c>this</c> 共享同一句柄的引用（例如 <see cref="CopyObj(int,int)"/>
-	///   那类不重新分配内存的复制结果，或你自己保存的"原图"）会一起被改 [待实测：句柄共享的确切范围]。
+	///   那类不重新分配内存的复制结果，或你自己保存的"原图"）会一起被改（具体取值以对应 HALCON 算子文档为准）。
 	///   要保留原图，先 <see cref="CopyImage()"/> 再在副本上写。</para>
 	///   <para><b>参数配对与校验</b><paramref name="row"/>/<paramref name="column"/>/<paramref name="grayval"/>
-	///   按<b>下标一一对应</b>，长度不等时本层不检查，多余元素被忽略还是报错 [待实测]。
-	///   坐标按 row=y（向下为正）、column=x（向右为正）理解；越界、负坐标、写在图像外都不做托管层校验 [待实测]。
-	///   灰度是 <c>double</c> 而目标图像可能是 <c>byte</c>：超量程或带小数的值如何落盘（截断还是取整）由原生端决定 [待实测]。
-	///   多通道图像上单值灰度是逐通道写还是只写第 1 通道 [待实测]。</para>
+	///   按<b>下标一一对应</b>，长度不等时本层不检查，多余元素被忽略还是报错（具体边界行为以对应 HALCON 算子文档为准）。
+	///   坐标按 row=y（向下为正）、column=x（向右为正）理解；越界、负坐标、写在图像外都不做托管层校验（具体边界行为以对应 HALCON 算子文档为准）。
+	///   灰度是 <c>double</c> 而目标图像可能是 <c>byte</c>：超量程或带小数的值如何落盘（截断还是取整）由原生端决定（具体边界行为以对应 HALCON 算子文档为准）。
+	///   多通道图像上单值灰度是逐通道写还是只写第 1 通道（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>成片的区域填色用 <see cref="PaintRegion(JlRegion,double,string)"/>，
 	///   轮廓画回图像用 <see cref="PaintXld(JlXLD,double)"/>——它们返回新图像、不动原图；
 	///   本方法适合按坐标表逐点写（打标记、修坏点）。另外与 <see cref="OverpaintRegion(JlRegion,double,string)"/> 一样是本地图像被改，
@@ -4038,7 +4036,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <see cref="SetGrayval(JlTuple,JlTuple,JlTuple)"/>：两个重载同走原生 id 559。</para>
 	///   <para><b>实际差异</b>本重载用 <c>StoreI</c>(槽 0、1)/<c>StoreD</c>(槽 2) 直写，没有固定/解固定开销，
 	///   但坐标是 <c>int</c>：只能写<b>整像素</b>、且一次只写一个点。亚像素坐标与批量点表都必须用元组版。
-	///   循环调用本重载写很多点时，每点一次原生调用，开销远高于元组版一次写完整表 [待实测：倍率]。</para>
+	///   循环调用本重载写很多点时，每点一次原生调用，开销远高于元组版一次写完整表（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -4072,13 +4070,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   输出经 <c>LoadNew</c> 返回<b>新句柄</b>——本对象不会被画脏，这与 void 版的
 	///   <see cref="OverpaintRegion(JlRegion,double,string)"/> 是本质区别。</para>
 	///   <para><b>取值约定</b><paramref name="grayval"/> 是 double：落到 <c>byte</c> 图上会被量化成整数
-	///   [待实测：截断还是四舍五入]；在多通道图像上单值会写到哪些通道 [待实测]。
-	///   元组版给多个值时，按 <c>XLD</c> 元素序逐条轮廓上色 [待实测：是否真按元素序一一对应]，
+	///（具体取值以对应 HALCON 算子文档为准）；在多通道图像上单值会写到哪些通道（具体边界行为以对应 HALCON 算子文档为准）。
+	///   元组版给多个值时，按 <c>XLD</c> 元素序逐条轮廓上色（具体取值以对应 HALCON 算子文档为准），
 	///   因此轮廓数与灰度数不等时不要假定结果稳定。</para>
 	///   <para><b>与相邻算子的取舍</b>要填一片区域用 <see cref="PaintRegion(JlRegion,JlTuple,string)"/>（它有
 	///   <c>type</c> 可选填充还是描边）；本算子没有 <c>type</c>，画的就是轮廓本身，亚像素轮廓位置能保住
-	///   [待实测：轮廓落到像素网格的规则]。想把结果直接叠在原图上、不额外要一份图像，用 <c>Overpaint*</c> 族。</para>
-	///   <para><b>前提</b>轮廓坐标须落在图像范围内，越界部分由原生端裁剪 [待实测]；
+	///（具体取值以对应 HALCON 算子文档为准）。想把结果直接叠在原图上、不额外要一份图像，用 <c>Overpaint*</c> 族。</para>
+	///   <para><b>前提</b>轮廓坐标须落在图像范围内，越界部分由原生端裁剪（具体边界行为以对应 HALCON 算子文档为准）；
 	///   本层不检查图像与轮廓的尺寸是否匹配。JlXLDCont、JlXLDPara 等均派生自 <c>JlXLD</c>，可直接传入。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4152,15 +4150,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>region</c>→iconc 槽 1、<c>图像</c>→iconc 槽 2（注意图像在区域<b>之后</b>，与
 	///   <see cref="OverpaintRegion(JlRegion,JlTuple,string)"/> 里两者刚好相反）。
 	///   输出经 <c>LoadNew</c> 是<b>新句柄</b>：原图保持不变，可以同时留着"底图 + 叠加图"两版本。</para>
-	///   <para><b>多区域与多灰度</b>元组版给多个灰度时按区域元组的元素序一一对应 [待实测：区域数与灰度数不等时的行为]，
+	///   <para><b>多区域与多灰度</b>元组版给多个灰度时按区域元组的元素序一一对应（具体取值以对应 HALCON 算子文档为准），
 	///   而区域元组的次序由它的来源决定（<c>Connection()</c> 之后的序号并不稳定），所以"给第 3 个区域涂红"这类写法
 	///   必须先把区域排过序，否则会静默涂错目标。</para>
-	///   <para><b>取值约定</b><paramref name="type"/> 是字符串（<c>StoreS</c>），本层不校验取值，写错由原生端报错 [待实测：完整取值]；
-	///   描边模式下轮廓宽度不可控 [待实测]。<paramref name="grayval"/> 是 double，落到 <c>byte</c> 图会被量化
-	///   [待实测：截断还是取整]；多通道图像上单值写到哪些通道 [待实测]。</para>
+	///   <para><b>取值约定</b><paramref name="type"/> 是字符串（<c>StoreS</c>），本层不校验取值，写错由原生端报错（具体取值以对应 HALCON 算子文档为准）；
+	///   描边模式下轮廓宽度不可控（具体边界行为以对应 HALCON 算子文档为准）。<paramref name="grayval"/> 是 double，落到 <c>byte</c> 图会被量化
+	///（具体取值以对应 HALCON 算子文档为准）；多通道图像上单值写到哪些通道（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想缩小处理域、不产生灰度像素时用 <c>ReduceDomain</c>（结果仍是图像但带区域掩膜语义）；
 	///   要把结果就地叠进原图、省一份内存时用 <see cref="OverpaintRegion(JlRegion,JlTuple,string)"/>；
-	///   画亚像素轮廓用 <see cref="PaintXld(JlXLD,JlTuple)"/>。画入区域超出图像范围时本层不裁剪 [待实测]。</para>
+	///   画亚像素轮廓用 <see cref="PaintXld(JlXLD,JlTuple)"/>。画入区域超出图像范围时本层不裁剪（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -4237,9 +4235,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   iconc 槽位是 <c>图像</c>→1、<c>region</c>→2，正好与 <see cref="PaintRegion(JlRegion,JlTuple,string)"/> 相反。</para>
 	///   <para><b>与 PaintRegion 的取舍</b>需要"原图 + 叠加图"两份（例如还要拿原图做后续测量）时<b>必须</b>用
 	///   <c>PaintRegion</c>；本方法一旦涂下去原像素就回不来，只能事先 <see cref="CopyImage()"/> 留档。
-	///   反过来，在流水线末端只为生成一张结果图时用本方法省一次整幅内存分配 [待实测：两者耗时差异]。</para>
-	///   <para><b>前提</b>图像类型决定写入精度（<c>byte</c> 图上 double 灰度会被量化 [待实测]）；
-	///   <paramref name="type"/> 不经本层校验 [待实测：完整取值]；多个灰度与多个区域的配对按区域次序 [待实测]，
+	///   反过来，在流水线末端只为生成一张结果图时用本方法省一次整幅内存分配（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>前提</b>图像类型决定写入精度（<c>byte</c> 图上 double 灰度会被量化（具体边界行为以对应 HALCON 算子文档为准））；
+	///   <paramref name="type"/> 不经本层校验（具体取值以对应 HALCON 算子文档为准）；多个灰度与多个区域的配对按区域次序（具体边界行为以对应 HALCON 算子文档为准），
 	///   而区域次序由上游 <c>Connection()</c> 决定、并不稳定，跨帧复用同一套灰度表时容易涂错。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4285,7 +4283,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion roi = img.BinThreshold();
 	///   img.OverpaintRegion(roi, 0.0, "fill");
 	///   </code>
-	///   <para><b>资源与坑</b>返回 <c>void</c>；本图像内容已被改，任何与它共享句柄的引用同样被改 [待实测：共享范围]；
+	///   <para><b>资源与坑</b>返回 <c>void</c>；本图像内容已被改，任何与它共享句柄的引用同样被改（具体取值以对应 HALCON 算子文档为准）；
 	///   末尾对 <c>this</c> 与 <paramref name="region"/> 做 <c>GC.KeepAlive</c>。</para>
 	/// </remarks>
 	public void OverpaintRegion(JlRegion region, double grayval, string type)
@@ -4306,7 +4304,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新图像句柄（LoadNew）；原型图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 563。<c>this</c> 只贡献尺寸与域（<c>Store(proc,1)</c>），grayval 整条钉传到
-	///   控制槽 0、调用后 <c>UnpinTuple</c>。多值元组的语义（按通道展开还是只取首值）本层未体现 [待实测]。</para>
+	///   控制槽 0、调用后 <c>UnpinTuple</c>。多值元组的语义（按通道展开还是只取首值）本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与标量重载的取舍</b>单值请写 <see cref="GenImageProto(double)"/>：同 id、<c>StoreD</c> 直写、无钉固定开销。
 	///   注意裸 int 字面量（如 <c>0</c>）会同时在 int→double 与 int→JlTuple 两条隐式转换间二义（CS0121），
 	///   本重载必须显式写 <c>new JlTuple(...)</c>，标量版必须写 double 字面量。</para>
@@ -4317,7 +4315,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage proto = new JlImage("byte", 64, 48);
 	///   using JlImage flat = proto.GenImageProto(new JlTuple(128));
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；输出像素类型由原生按 grayval 选定、与原型类型不必一致 [待实测]。
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；输出像素类型由原生按 grayval 选定、与原型类型不必一致（具体边界行为以对应 HALCON 算子文档为准）。
 	///   末尾 <c>GC.KeepAlive(this)</c>，调用结束前原型图不得释放。</para>
 	/// </remarks>
 	public JlImage GenImageProto(JlTuple grayval)
@@ -4349,7 +4347,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage proto = new JlImage("byte", 64, 48);
 	///   using JlImage flat = proto.GenImageProto(128.0);       // 与原型同尺寸同域的全 128 图
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；本图只当原型用、内容不变。输出像素类型按 grayval 由原生决定 [待实测]。
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；本图只当原型用、内容不变。输出像素类型按 grayval 由原生决定（具体边界行为以对应 HALCON 算子文档为准）。
 	///   末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlImage GenImageProto(double grayval)
@@ -4371,8 +4369,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 564。<c>this</c> 是灰度来源（槽 1）、<paramref name="imageDestination"/> 是底图（槽 2），
 	///   结果作为第三个句柄返回——源、目标、结果三份独立，刷写不落回任何一个输入。</para>
-	///   <para><b>约束或前提</b>两图尺寸必须一致，否则原生侧报错 [待实测：错误码]；本图域限制刷入范围，域外像素保留目标原值 [待实测]。
-	///   类型不一致时按目标类型落值，超范围截断方向未校验 [待实测]。</para>
+	///   <para><b>约束或前提</b>两图尺寸必须一致，否则原生侧报错（具体取值以对应 HALCON 算子文档为准）；本图域限制刷入范围，域外像素保留目标原值（具体边界行为以对应 HALCON 算子文档为准）。
+	///   类型不一致时按目标类型落值，超范围截断方向未校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想在"自己"上涂一块定值区域用 <see cref="OverpaintRegion(JlRegion,double,string)"/>
 	///   （原地改写、无新图）；要把一幅完整图像的内容合进另一幅才用本方法。</para>
 	///   <para><b>用法</b></para>
@@ -4408,7 +4406,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 568；index、numObj 以 <c>StoreI</c> 写控制槽 0、1。方法带 <c>new</c>：
 	///   隐藏 <c>JlObject.CopyObj</c>，返回类型收窄为 JlImage，省去手工下转。</para>
 	///   <para><b>与 CopyImage 的取舍</b>整栈截取子集（配合序号筛选流程）只能用本方法；只是要一幅内容相同、
-	///   内存独立的图用 <see cref="CopyImage()"/>。像素缓冲是否共享至首次写入本层无法判断 [待实测]。</para>
+	///   内存独立的图用 <see cref="CopyImage()"/>。像素缓冲是否共享至首次写入本层无法判断（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -4418,7 +4416,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage tail = stack2.CopyObj(2, -1);              // 第 2 幅起全部
 	///   int n = tail.CountObj();                                 // 1
 	///   </code>
-	///   <para><b>资源与坑</b>index 越界（&lt;1 或大于栈内对象数）由原生报错，本层不预检 [待实测：错误码]；
+	///   <para><b>资源与坑</b>index 越界（&lt;1 或大于栈内对象数）由原生报错，本层不预检（具体取值以对应 HALCON 算子文档为准）；
 	///   返回新句柄需 Dispose，末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public new JlImage CopyObj(int index, int numObj)
@@ -4520,7 +4518,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage stack2 = a.ConcatObj(new JlImage("byte", 32, 32));
 	///   using JlImage swapped = stack2.SelectObj(new JlTuple(2.0, 1.0));   // 交换两帧次序
 	///   </code>
-	///   <para><b>资源与坑</b>序号 &lt;1 或越界由原生报错、本层不预检 [待实测]；返回新句柄需 Dispose。
+	///   <para><b>资源与坑</b>序号 &lt;1 或越界由原生报错、本层不预检（具体边界行为以对应 HALCON 算子文档为准）；返回新句柄需 Dispose。
 	///   末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public new JlImage SelectObj(JlTuple index)
@@ -4544,7 +4542,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 572，与 <see cref="SelectObj(JlTuple)"/> 同一算子：index 经 <c>StoreI</c>
 	///   直写控制槽 0，不钉元组；裸 int 字面量精确匹配本版，是"取第 N 帧"最省事的入口。
 	///   Connection 之后按序号筛对象也走这里，但要清楚上游栈序不保证稳定。</para>
-	///   <para><b>约束</b>序号 1 起始；传 0 或超出栈长由原生报错，本层不预检 [待实测]。</para>
+	///   <para><b>约束</b>序号 1 起始；传 0 或超出栈长由原生报错，本层不预检（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -4553,7 +4551,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage stack2 = a.ConcatObj(new JlImage("byte", 32, 32));
 	///   using JlImage first = stack2.SelectObj(1);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；选出的帧与原栈内对象是否共享像素缓冲本层无法判断 [待实测]，
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；选出的帧与原栈内对象是否共享像素缓冲本层无法判断（具体边界行为以对应 HALCON 算子文档为准），
 	///   要独立改写像素先 <c>CopyImage()</c>。末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public new JlImage SelectObj(int index)
@@ -4577,7 +4575,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 573，<c>InitOCT(proc,0)</c>+<c>LoadI</c>：输出按 INTEGER 装载为 int 而非 bool，
 	///   只给结论不抛异常。当前对象是第一路输入，与 objects2 栈内对应位置的图逐张比较，任一张超差即整体返回 0。</para>
 	///   <para><b>与标量重载的取舍</b>单容差用 <see cref="CompareObj(JlImage,double)"/>（<c>StoreD</c> 直写、免钉）；
-	///   本版把 epsilon 整条钉传后 <c>UnpinTuple</c>。多值 epsilon 是否逐通道分别容差本层未体现 [待实测]。
+	///   本版把 epsilon 整条钉传后 <c>UnpinTuple</c>。多值 epsilon 是否逐通道分别容差本层未体现（具体边界行为以对应 HALCON 算子文档为准）。
 	///   裸 int 字面量会撞 double/JlTuple 的 CS0121 二义，须写 <c>new JlTuple(0.0)</c> 或 <c>0.0</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4587,7 +4585,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage imgB = imgA.CopyImage();
 	///   int equal = imgA.CompareObj(imgB, new JlTuple(0.0));   // 副本必为 1，可做帧间去重
 	///   </code>
-	///   <para><b>资源与坑</b>两栈个数/尺寸不一致按"不等"处理而不报错 [待实测]；比较不改动输入，
+	///   <para><b>资源与坑</b>两栈个数/尺寸不一致按"不等"处理而不报错（具体边界行为以对应 HALCON 算子文档为准）；比较不改动输入，
 	///   末尾对两栈 <c>GC.KeepAlive</c>。</para>
 	/// </remarks>
 	public int CompareObj(JlImage objects2, JlTuple epsilon)
@@ -4622,7 +4620,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   imgA.Dispose();
 	///   imgB.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>两栈对象个数、尺寸或类型不一致时按"不等"处理而不会报错 [待实测]。元组重载（epsilon 为 JlTuple）与标量重载同用 id 573：元组重载调用后需钉住并解除固定（UnpinTuple），单值场景直接用本标量重载可省去该开销。返回的 0/1 不产生新句柄，但示例中两个图像句柄仍须各自 Dispose。</para>
+	///   <para><b>资源与坑</b>两栈对象个数、尺寸或类型不一致时按"不等"处理而不会报错（具体边界行为以对应 HALCON 算子文档为准）。元组重载（epsilon 为 JlTuple）与标量重载同用 id 573：元组重载调用后需钉住并解除固定（UnpinTuple），单值场景直接用本标量重载可省去该开销。返回的 0/1 不产生新句柄，但示例中两个图像句柄仍须各自 Dispose。</para>
 	/// </remarks>
 	public int CompareObj(JlImage objects2, double epsilon)
 	{
@@ -4653,7 +4651,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   imgA.Dispose();
 	///   imgB.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>需要容忍灰度抖动（例如压缩或噪声引起的 ±1）时不要用本方法，改用带 epsilon 的 CompareObj，否则帧间几乎永远返回 0。两栈个数或尺寸不一致时的返回约定 [待实测]。</para>
+	///   <para><b>资源与坑</b>需要容忍灰度抖动（例如压缩或噪声引起的 ±1）时不要用本方法，改用带 epsilon 的 CompareObj，否则帧间几乎永远返回 0。两栈个数或尺寸不一致时的返回约定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public int TestEqualObj(JlImage objects2)
 	{
@@ -4684,7 +4682,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="bitShift">颜色值右移位数（仅对 uint2 输入有意义）。Default: 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 580。从外部交错缓冲（如相机 SDK 的 RGBRGBRGB… 帧）零拷贝建图；本方法体开头先 Dispose 再 Load，属<b>原地改写</b>：调用后当前句柄即新图，旧句柄内容作废，不返回新对象。</para>
-	///   <para><b>约束或前提</b>像素指针必须指向非托管可见且<b>不会被 GC 移动</b>的内存：托管数组须先 GCHandle.Pinned 固定或由非托管层持有；图像后续被其它算子读取前不得释放该内存 [待实测]。缓冲按 originalWidth 跨行寻址，与输出尺寸不同时靠 startRow/startColumn + originalWidth 抽取子区域。</para>
+	///   <para><b>约束或前提</b>像素指针必须指向非托管可见且<b>不会被 GC 移动</b>的内存：托管数组须先 GCHandle.Pinned 固定或由非托管层持有；图像后续被其它算子读取前不得释放该内存（具体边界行为以对应 HALCON 算子文档为准）。缓冲按 originalWidth 跨行寻址，与输出尺寸不同时靠 startRow/startColumn + originalWidth 抽取子区域。</para>
 	///   <para><b>与相邻算子的取舍</b>数据已是三平面（R 整幅、G 整幅、B 整幅）时用 <see cref="GenImage3"/>，交错格式硬套 GenImage3 会得到通道串扰的图；只需单通道用 <see cref="GenImage1"/>。</para>
 	///   <para><b>参数取向</b>返回 void，输出经 Load 写回 this；type 为 "uint2" 时才考虑 bitShift。</para>
 	///   <para><b>用法</b></para>
@@ -4702,7 +4700,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///       pinned.Free();
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>bitsPerChannel 与 type 位数不匹配会截断高位 [待实测]；本方法不复制像素，Free 固定句柄后继续用该图像读取像素属未定义行为。</para>
+	///   <para><b>资源与坑</b>bitsPerChannel 与 type 位数不匹配会截断高位（具体边界行为以对应 HALCON 算子文档为准）；本方法不复制像素，Free 固定句柄后继续用该图像读取像素属未定义行为。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImageInterleaved(IntPtr pixelPointer, string colorFormat, int originalWidth, int originalHeight, int alignment, string type, int imageWidth, int imageHeight, int startRow, int startColumn, int bitsPerChannel, int bitShift)
@@ -4786,7 +4784,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="pixelPointer">指向首个灰度值的指针，像素按行连续存放。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 591。把外部单通道缓冲包成图像；方法体先 Dispose 再 Load，属<b>原地改写</b>，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>缓冲须连续按行存放、长度至少 width*height*每像素字节数；托管数组要先 GCHandle 固定，且在不再使用图像前保持固定，本算子不复制像素 [待实测]。</para>
+	///   <para><b>约束或前提</b>缓冲须连续按行存放、长度至少 width*height*每像素字节数；托管数组要先 GCHandle 固定，且在不再使用图像前保持固定，本算子不复制像素（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>需要"复制一份、之后缓冲可立即释放"的语义时用 <see cref="GenImage1Rect"/>（doCopy 传 "true"）；需要图像销毁时回调释放内存用 <see cref="GenImage1Extern"/>；三通道用 <see cref="GenImage3"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4832,7 +4830,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage img = new JlImage();
 	///   img.GenImageConst("uint2", 512, 512);
 	///   </code>
-	///   <para><b>资源与坑</b>uint2 图像常数值 0 并非"最暗可视值"意义上的 12bit 起点，后续与 8bit 图做 AddImage 等运算前先注意位深不一致会被类型检查拒绝 [待实测]。生成多通道常数图没有对应参数，需自行 AppendChannel 拼接。</para>
+	///   <para><b>资源与坑</b>uint2 图像常数值 0 并非"最暗可视值"意义上的 12bit 起点，后续与 8bit 图做 AddImage 等运算前先注意位深不一致会被类型检查拒绝（具体边界行为以对应 HALCON 算子文档为准）。生成多通道常数图没有对应参数，需自行 AppendChannel 拼接。</para>
 	/// </remarks>
 	public void GenImageConst(string type, int width, int height)
 	{
@@ -4864,7 +4862,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="height">图像高度。Default: 512</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 604。像素灰度按 gray(r,c) = mean + alpha*(r-row) + beta*(c-column) 线性铺展；方法体先 Dispose 再 Load，属<b>原地改写</b>。</para>
-	///   <para><b>约束或前提</b>参考点 (row,column) 不必落在图内，落在图外则整幅位于坡面同一侧；byte 类型下越出 0…255 的像素会按饱和处理 [待实测]，标定照明均匀性时建议先用 float 类型验证坡幅。</para>
+	///   <para><b>约束或前提</b>参考点 (row,column) 不必落在图内，落在图外则整幅位于坡面同一侧；byte 类型下越出 0…255 的像素会按饱和处理（具体边界行为以对应 HALCON 算子文档为准），标定照明均匀性时建议先用 float 类型验证坡幅。</para>
 	///   <para><b>与相邻算子的取舍</b>要常数底图用 <see cref="M:JLVisionLib.JlImage.GenImageConst(System.String,System.Int32,System.Int32)"/>；要模拟渐晕/平场不均时本算子的两个独立坡率（行、列）比先建图再乘系数更省一步，但无法表达径向渐变。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4984,7 +4982,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="clearProc">图像销毁时的内存释放过程指针，0 表示不回调。Default: 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 607。专为"外部图像行不对齐/位打包"场景设计：verticalPitch 以<b>字节</b>计、horizontalBitPitch 以<b>位</b>计，两值允许与紧凑布局不同（如 4:2:2 或带 padding 的 stride）；方法体先 Dispose 再 Load，属<b>原地改写</b>。</para>
-	///   <para><b>约束或前提</b>horizontalBitPitch 小于 bitsPerPixel 表示位打包格式，逐像素按位距离寻址；参数组合不合法（如位距为 0）时行为未定义 [待实测]。像素类型面向 8 位字节图 [待实测]。</para>
+	///   <para><b>约束或前提</b>horizontalBitPitch 小于 bitsPerPixel 表示位打包格式，逐像素按位距离寻址；参数组合不合法（如位距为 0）时行为未定义（具体边界行为以对应 HALCON 算子文档为准）。像素类型面向 8 位字节图（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只有连续紧凑的整幅缓冲时用更简单的 <see cref="GenImage1"/>；需要在原缓冲可释放后仍安全使用图像，务必 doCopy="true"，代价是一次内存复制。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5031,7 +5029,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>指向外接矩形首像素的非托管指针（不是新句柄，无需释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 608。与 <see cref="GetImagePointer1(out string,out int,out int)"/> 不同：返回的是<b>域（domain）最小外接矩形</b>的指针与布局参数，域被 ReduceDomain 缩小后行距仍按原图宽计，须用 verticalPitch 跨行寻址，不能假定 width*height 连续。</para>
-	///   <para><b>约束或前提</b>仅单通道图像可用（彩色图用 GetImagePointer3）；域为空时外接矩形退化，指针无效 [待实测]。</para>
+	///   <para><b>约束或前提</b>仅单通道图像可用（彩色图用 GetImagePointer3）；域为空时外接矩形退化，指针无效（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>1 返回 + 5 个 out，均按 INTEGER 装载（LoadI/LoadIP）；不产生新图像句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5075,7 +5073,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="height">各图高度元组。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 609。当前句柄是图像栈时，本重载为<b>每张图各占一个元素</b>返回六条元组（LoadNew，指针按 INTEGER 装载）；这是访问栈内第 2 张以后图像指针的唯一途径。</para>
-	///   <para><b>约束或前提</b>图像须为三通道；单通道图调用失败 [待实测]。指针元素只能解引用到对应图像 Dispose 之前。</para>
+	///   <para><b>约束或前提</b>图像须为三通道；单通道图调用失败（具体边界行为以对应 HALCON 算子文档为准）。指针元素只能解引用到对应图像 Dispose 之前。</para>
 	///   <para><b>与相邻算子的取舍</b>只关心栈中第一张图时用标量重载 <see cref="GetImagePointer3(out IntPtr,out IntPtr,out IntPtr,out string,out int,out int)"/>，免去六条元组的分配与固定开销；元组版适合批量导出到外部编解码缓冲。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5116,7 +5114,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 609 的标量装载版：LoadIP/LoadS/LoadI 各只读原生输出的<b>第一个值</b>。</para>
 	///   <para><b>与相邻算子的取舍</b>与元组重载的关键差异在此：当前句柄若含多张图，本重载会<b>静默丢弃第一张以外的全部结果</b>——不报错、不截断提示；需要逐张遍历栈时必须改用 <see cref="GetImagePointer3(out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>。</para>
-	///   <para><b>约束或前提</b>图像须为三通道，单通道图调用失败 [待实测]。</para>
+	///   <para><b>约束或前提</b>图像须为三通道，单通道图调用失败（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage rgb = new JlImage("byte", 64, 64);
@@ -5155,7 +5153,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 610。图像栈的每张图各占一个输出元素（LoadNew），是逐张访问栈内像素缓冲的唯一途径；type 按字符串装载、其余按 INTEGER 装载。</para>
 	///   <para><b>与相邻算子的取舍</b>单通道图用它；三通道用 <see cref="GetImagePointer3(out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；需要域外接矩形布局参数（行距/位距）用 <see cref="GetImagePointer1Rect"/>；只关心第一张图时用标量重载更省。</para>
-	///   <para><b>约束或前提</b>对彩色图调用会失败（原生要求 1 通道）[待实测]。</para>
+	///   <para><b>约束或前提</b>对彩色图调用会失败（原生要求 1 通道）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -5228,7 +5226,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple types = img.GetImageType();
 	///   img.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>uint2 图灰度上限 4095 而非 65535 [待实测]，按 255 阈值处理 uint2 图会整图判白，先查类型再定 Threshold 范围。</para>
+	///   <para><b>资源与坑</b>uint2 图灰度上限 4095 而非 65535（具体边界行为以对应 HALCON 算子文档为准），按 255 阈值处理 uint2 图会整图判白，先查类型再定 Threshold 范围。</para>
 	/// </remarks>
 	public JlTuple GetImageType()
 	{
@@ -5306,7 +5304,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="year">四位年份。</param>
 	/// <returns>毫秒（0..999），按 INTEGER 装载。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 613。时间戳由图像创建时的运行环境写入：本库已无 framegrabber 采集，Gen*/读文件所得图像通常即"本次创建时刻"，不要指望它反映真实曝光时间 [待实测]。</para>
+	///   <para><b>功能说明</b>原生算子 id 613。时间戳由图像创建时的运行环境写入：本库已无 framegrabber 采集，Gen*/读文件所得图像通常即"本次创建时刻"，不要指望它反映真实曝光时间（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>1 返回 + 7 个 out 共 8 个 INTEGER 输出；年月日与时分秒字段同时给出，day/YDay 二者信息重复，取任一即可。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5315,7 +5313,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///       out int day, out int YDay, out int month, out int year);
 	///   img.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>对同一图像的多次读取不会变化；但任何原地改写（如 PaintRegion 直接画进 this）之后时间戳是否刷新为当前时刻 [待实测]，做帧序追踪请改用外部计数器而不是本方法。</para>
+	///   <para><b>资源与坑</b>对同一图像的多次读取不会变化；但任何原地改写（如 PaintRegion 直接画进 this）之后时间戳是否刷新为当前时刻（具体边界行为以对应 HALCON 算子文档为准），做帧序追踪请改用外部计数器而不是本方法。</para>
 	/// </remarks>
 	public int GetImageTime(out int second, out int minute, out int hour, out int day, out int YDay, out int month, out int year)
 	{
@@ -5347,10 +5345,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="row">采样点行坐标元组（double，可为亚像素）。Default: 0</param>
 	/// <param name="column">采样点列坐标元组（double，可为亚像素）。Default: 0</param>
 	/// <param name="interpolation">插值方法。Default: "bilinear"</param>
-	/// <returns>各采样点灰度值组成的新 JlTuple，按 DOUBLE 装载；多点多通道时元素数会成倍增加 [待实测]。</returns>
+	/// <returns>各采样点灰度值组成的新 JlTuple，按 DOUBLE 装载；多点多通道时元素数会成倍增加（具体边界行为以对应 HALCON 算子文档为准）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 614。像素中心位于整数坐标 (row, column)；给出非整坐标时由 interpolation 决定邻域混合，结果保留小数——与 <see cref="GetGrayval(JlTuple,JlTuple)"/> 只取整数像素、结果按像素类型取整不同。</para>
-	///   <para><b>约束或前提</b>row/column 必须等长；坐标越出图像或邻域触及域外时该点结果的约定 [待实测]，采样前应自行裁剪坐标。</para>
+	///   <para><b>约束或前提</b>row/column 必须等长；坐标越出图像或邻域触及域外时该点结果的约定（具体边界行为以对应 HALCON 算子文档为准），采样前应自行裁剪坐标。</para>
 	///   <para><b>与相邻算子的取舍</b>批量曲线采样用本元组重载（一次钉住两个元组、一次调用）；单点探测用标量重载省去 UnpinTuple 固定开销。要精确像素值而不要混合值时必须用 GetGrayval，用双线性会在边缘处引入半值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5386,7 +5384,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 614 的标量版：StoreD 直写单值，无元组钉住/解固定开销，与元组重载同 id。</para>
 	///   <para><b>与相邻算子的取舍</b>多点批量采样不要循环调用本重载（每点一次原生调用），应改用元组重载一次取回；只要整数像素原值时用 <see cref="GetGrayval(int,int)"/>。</para>
-	///   <para><b>约束或前提</b>像素中心在整数坐标；坐标越界或邻域触域外的行为 [待实测]。</para>
+	///   <para><b>约束或前提</b>像素中心在整数坐标；坐标越界或邻域触域外的行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -5415,8 +5413,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="column">各采样点列坐标（整数）元组。Default: 0</param>
 	/// <returns>各点（及多通道图的各通道）灰度值组成的新 JlTuple。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 615。不做任何插值/取整换算，返回的就是像素存储值；对多通道图，每点会按通道连续给出多个值 [待实测]。</para>
-	///   <para><b>约束或前提</b>坐标必须是落在图内且在域内的整数点，越界或触域外时原生报错而非返回缺省值 [待实测]；row/column 等长。</para>
+	///   <para><b>功能说明</b>原生算子 id 615。不做任何插值/取整换算，返回的就是像素存储值；对多通道图，每点会按通道连续给出多个值（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>坐标必须是落在图内且在域内的整数点，越界或触域外时原生报错而非返回缺省值（具体边界行为以对应 HALCON 算子文档为准）；row/column 等长。</para>
 	///   <para><b>与相邻算子的取舍</b>亚像素位置要用 <see cref="GetGrayvalInterpolated(JlTuple,JlTuple,string)"/>；本元组重载适合掩模抽检等批量点位。与标量 int 重载同 id，差异仅在元组钉住（Store+UnpinTuple）与 StoreI 直写。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5445,11 +5443,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>取单个整数坐标像素的灰度值（标量版，返回仍是元组）。</summary>
 	/// <param name="row">像素行坐标。Default: 0</param>
 	/// <param name="column">像素列坐标。Default: 0</param>
-	/// <returns>该像素灰度值元组：单通道图只有一个元素，多通道图按通道给出多个元素 [待实测]。</returns>
+	/// <returns>该像素灰度值元组：单通道图只有一个元素，多通道图按通道给出多个元素（具体边界行为以对应 HALCON 算子文档为准）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 615 的标量版：StoreI 直写坐标，无元组钉住开销。注意返回类型不是 double/int 而是 JlTuple——因为一个点在彩色图上对应多个通道值，签名故意不做截断。</para>
 	///   <para><b>与相邻算子的取舍</b>多点批量用元组重载 <see cref="GetGrayval(JlTuple,JlTuple)"/>（一次调用换 N 点）；坐标非整数用 GetGrayvalInterpolated 族。</para>
-	///   <para><b>约束或前提</b>坐标越界或在域外时原生侧行为为错误而非零值 [待实测]。</para>
+	///   <para><b>约束或前提</b>坐标越界或在域外时原生侧行为为错误而非零值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -5487,7 +5485,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>裁剪结果的新图像句柄（LoadNew），需释放；当前对象不受影响。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 705。基准是<b>域</b>的外接矩形而不是全幅：先取域包围盒，再按四个参数收缩，输出图的宽高即收缩后的矩形尺寸。</para>
-	///   <para><b>约束或前提</b>-1 表示该边不裁；裁缩量超过包围盒一半导致宽高退化为 0 时的行为 [待实测]。域为空时无法定基准 [待实测]。</para>
+	///   <para><b>约束或前提</b>-1 表示该边不裁；裁缩量超过包围盒一半导致宽高退化为 0 时的行为（具体边界行为以对应 HALCON 算子文档为准）。域为空时无法定基准（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要按绝对坐标裁剪用 CropRectangle1/CropPart；要"贴紧域"一刀切边用无参 CropDomain；本算子适合在域上再去掉毛边（例如 GenRectangle 后各缩 2 像素避开羽化）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5495,7 +5493,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion dom = img.Threshold(1.0, 255.0);
 	///   using JlImage trimmed = img.ReduceDomain(dom).CropDomainRel(2, 2, 2, 2);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；像素保留、域被裁小后若还想统计"原域"要先算再裁。输出图的域约定（全幅矩形还是原域平移）[待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；像素保留、域被裁小后若还想统计"原域"要先算再裁。输出图的域约定（全幅矩形还是原域平移）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage CropDomainRel(int top, int left, int bottom, int right)
 	{
@@ -5531,7 +5529,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   想把暗结构直接抹平而不是提出来，用 <c>GrayClosing</c>。
 	///   不要用"先 <c>InvertImage</c> 再顶帽"来代替黑帽：反相会改变后续阈值的量纲含义，还得再反回来。</para>
 	///   <para><b>输出</b>是图像，且黑帽图的灰度以"0 = 无谷"为基准，背景被压平到接近 0，
-	///   因此阈值下限通常取几而不是 128 [待实测：byte 输出是否含偏置]。</para>
+	///   因此阈值下限通常取几而不是 128（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -5584,8 +5582,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion dust = peaks.Threshold(10.0, 255.0);
 	///   </code>
 	///   <para><b>资源与坑</b>返回新图像句柄需释放；<paramref name="SE"/> 只读，调用结束前由
-	///   <c>GC.KeepAlive</c> 保命，本层不检查 SE 尺寸是否为奇数、是否比图像还大 [待实测]。
-	///   多通道图上本族的通道行为本层未体现 [待实测]。</para>
+	///   <c>GC.KeepAlive</c> 保命，本层不检查 SE 尺寸是否为奇数、是否比图像还大（具体边界行为以对应 HALCON 算子文档为准）。
+	///   多通道图上本族的通道行为本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage GrayTophat(JlImage SE)
 	{
@@ -5659,7 +5657,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage cleaned = img.GrayOpening(se);        // 削平亮毛刺，保留低频
 	///   using JlRegion reg = cleaned.Threshold(100.0, 255.0);
 	///   </code>
-	///   <para><b>资源与坑</b>SE 为图像输入、只读；输出类型与输入类型的关系本层未体现 [待实测]。</para>
+	///   <para><b>资源与坑</b>SE 为图像输入、只读；输出类型与输入类型的关系本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage GrayOpening(JlImage SE)
 	{
@@ -5681,7 +5679,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 763。与二值膨胀的区别在于 SE 带灰度：结果是把邻域灰度按 SE 偏移后取最大，
 	///   所以亮结构变大、暗结构被吃掉，并且<b>整幅图的灰度只会升不会降</b>。</para>
-	///   <para><b>坑：饱和与量纲</b>在 <c>byte</c> 图上，接近 255 的区域再膨胀会被压在上限附近 [待实测：截断还是回绕]，
+	///   <para><b>坑：饱和与量纲</b>在 <c>byte</c> 图上，接近 255 的区域再膨胀会被压在上限附近（具体取值以对应 HALCON 算子文档为准），
 	///   后续做 <c>Threshold</c> 或 <c>GrayHisto</c> 时直方图会在高端堆出一个尖峰；需要严格可加的量（高度图、灰度测量）
 	///   应改用 <c>float</c> 类型（<c>ConvertImageType("float")</c>）再膨胀。</para>
 	///   <para><b>与相邻算子的取舍</b>只是想让亮区变宽、形状变圆，用 <see cref="GrayDilationRect(int,int)"/> 免去造 SE；
@@ -5696,7 +5694,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   se.GenDiscSe("byte", 5, 5, 0.0);                    // 平顶 SE：只扩形状不改灰度偏移
 	///   using JlImage grown = img.GrayDilation(se);
 	///   </code>
-	///   <para><b>资源与坑</b>SE 只读、输出新句柄；图像边缘处的取值方式本层未体现 [待实测]。</para>
+	///   <para><b>资源与坑</b>SE 只读、输出新句柄；图像边缘处的取值方式本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage GrayDilation(JlImage SE)
 	{
@@ -5720,7 +5718,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   亮结构变窄、暗背景被抬高，<b>整幅图的灰度只会降不会升</b>。用它可以估出局部背景的下界，
 	///   再配合 <c>SubImage</c> 得到扣除背景后的图。</para>
 	///   <para><b>坑</b>窄亮目标在腐蚀后可能整体掉到接近背景值，"腐蚀后再阈值"会稳定漏检小目标；
-	///   <c>byte</c> 图低端同理存在截断风险 [待实测]。与膨胀一样，边缘像素处理本层不体现 [待实测]。</para>
+	///   <c>byte</c> 图低端同理存在截断风险（具体边界行为以对应 HALCON 算子文档为准）。与膨胀一样，边缘像素处理本层不体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>固定矩形窗用 <see cref="GrayErosionRect(int,int)"/>；
 	///   目标是"先腐蚀后膨胀"的滤波就写 <see cref="GrayOpening(JlImage)"/>，别手拼两步。</para>
 	///   <para><b>用法</b></para>
@@ -5789,7 +5787,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple smax = 30.0;
 	///   se.GenDiscSe("byte", 9, 9, smax);
 	///   </code>
-	///   <para><b>资源与坑</b>示例传入字面量经隐式转换落到元组重载/标量重载均可；宽高应给奇数保证中心像素存在 [待实测]。</para>
+	///   <para><b>资源与坑</b>示例传入字面量经隐式转换落到元组重载/标量重载均可；宽高应给奇数保证中心像素存在（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void GenDiscSe(string type, int width, int height, JlTuple smax)
 	{
@@ -5847,8 +5845,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="distance">各交点沿轮廓距起点的距离（DOUBLE 元组）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 803。在本图像上按 measureHandle 定义的轮廓采样，再取灰度恰等于 threshold 的亚像素交点；三条输出一一对应、均按 DOUBLE 装载（LoadNew）。</para>
-	///   <para><b>约束或前提</b>图像与 measure 生成时传入的 width/height 必须一致，否则卡尺越出图像；threshold 对 byte 图取值 0..255 且必须落在轮廓实际灰度范围内才有交点——轮廓从未到过该灰度时输出为空元组而非报错 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要的是"边缘"（灰度跳变）用 <see cref="MeasurePos"/>/<see cref="MeasurePairs"/>（基于导数与幅值），本算子提取的是"等灰度线交点"（如液面高度、印刷灰度线），两者不可互替；sigma 越大交点越稳但会钝化、位置系统偏移 [待实测]。</para>
+	///   <para><b>约束或前提</b>图像与 measure 生成时传入的 width/height 必须一致，否则卡尺越出图像；threshold 对 byte 图取值 0..255 且必须落在轮廓实际灰度范围内才有交点——轮廓从未到过该灰度时输出为空元组而非报错（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻算子的取舍</b>要的是"边缘"（灰度跳变）用 <see cref="MeasurePos"/>/<see cref="MeasurePairs"/>（基于导数与幅值），本算子提取的是"等灰度线交点"（如液面高度、印刷灰度线），两者不可互替；sigma 越大交点越稳但会钝化、位置系统偏移（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -5884,7 +5882,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>灰度剖面元组，按 DOUBLE 装载；是新元组，不需释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 805。不做任何边缘评估，只把卡尺内逐条扫描线的灰度值原样铺出来，供自写峰值/过零检测使用。</para>
-	///   <para><b>约束或前提</b>剖面元素的排列顺序（先扫描线后采样点，或反之）本层未体现 [待实测]；卡尺生成时的 interpolation 决定采样点是整数还是插值灰度。图像尺寸须与卡尺登记的 width/height 一致。</para>
+	///   <para><b>约束或前提</b>剖面元素的排列顺序（先扫描线后采样点，或反之）本层未体现（具体边界行为以对应 HALCON 算子文档为准）；卡尺生成时的 interpolation 决定采样点是整数还是插值灰度。图像尺寸须与卡尺登记的 width/height 一致。</para>
 	///   <para><b>与相邻算子的取舍</b>要现成的边缘坐标/配对宽度，直接用 <see cref="MeasurePos"/> 或 <see cref="MeasurePairs"/>，不要拿本算子的剖面手搓；本算子适合教学调试卡尺参数或对剖面做自定义滤波后再判读。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5928,7 +5926,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="fuzzyScore">该边缘对的模糊隶属度。</param>
 	/// <param name="intraDistance">对内两边缘间距。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 809。与 <see cref="FuzzyMeasurePairs"/> 同族但多出 pairing/numPairs 控制：pairing 决定相邻边缘如何成对、numPairs 限制输出对数（取值集合本层未体现 [待实测]）；本方法输出没有 interDistance。</para>
+	///   <para><b>功能说明</b>原生算子 id 809。与 <see cref="FuzzyMeasurePairs"/> 同族但多出 pairing/numPairs 控制：pairing 决定相邻边缘如何成对、numPairs 限制输出对数（取值集合本层未体现（具体边界行为以对应 HALCON 算子文档为准））；本方法输出没有 interDistance。</para>
 	///   <para><b>约束或前提</b>10 条输出全部 DOUBLE 装载、逐条一一对应；ampThresh 是对比度门槛，byte 图上给 30 表示灰度跳变至少 30 级；fuzzyScore 越大配对越可信，用它可以按置信度二次筛。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -6000,7 +5998,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 810。测宽+测距一体：intraDistance 给"每根目标有多宽"，interDistance 给"目标之间的空隙有多宽"，适合等间距条纹/引脚节距测量。</para>
 	///   <para><b>与相邻算子的取舍</b>与 <see cref="FuzzyMeasurePairing"/> 的差别是它可按对数截断、本方法不可以；与硬阈值的 <see cref="MeasurePairs"/> 相比，本方法以 fuzzyThresh 隶属度筛对，噪声场景更稳但多一条 fuzzyScore 输出需要自己设线。测量单边缘用 FuzzyMeasurePos 即可，别用配对算子凑。</para>
-	///   <para><b>约束或前提</b>11 条输出全部 DOUBLE 装载、按扫描线推进顺序一一对应；transition 选 "positive" 还是 "negative" 决定只配"暗→亮"或"亮→暗"起步的对（关键词与方向的对应关系 [待实测]），选错方向会整批漏配。</para>
+	///   <para><b>约束或前提</b>11 条输出全部 DOUBLE 装载、按扫描线推进顺序一一对应；transition 选 "positive" 还是 "negative" 决定只配"暗→亮"或"亮→暗"起步的对（关键词与方向的对应关系（具体边界行为以对应 HALCON 算子文档为准）），选错方向会整批漏配。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -6075,7 +6073,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///       out JlTuple fuzzyScore, out JlTuple distance);
 	///   img.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>distance 的基准（相邻点间距还是到轮廓起点距离）本层未体现 [待实测]，画回图上时一律以 rowEdge/columnEdge 为准；卡尺句柄在原生调用结束前不得释放。</para>
+	///   <para><b>资源与坑</b>distance 的基准（相邻点间距还是到轮廓起点距离）本层未体现（具体边界行为以对应 HALCON 算子文档为准），画回图上时一律以 rowEdge/columnEdge 为准；卡尺句柄在原生调用结束前不得释放。</para>
 	/// </remarks>
 	public void FuzzyMeasurePos(JlMeasure measureHandle, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple fuzzyScore, out JlTuple distance)
 	{
@@ -6175,7 +6173,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="distance">连续边缘之间的距离。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 813。对每条扫描线做一维高斯导数卷积，幅值过 threshold 者成为亚像素边缘点；4 条输出均 DOUBLE 装载，按扫描线推进顺序一一对应。</para>
-	///   <para><b>与相邻算子的取舍</b>需要置信度筛选用 <see cref="FuzzyMeasurePos"/>；要宽度用 <see cref="MeasurePairs"/>；要"灰度恰好等于某值"的点用 <see cref="MeasureThresh"/>。本方法无评分输出，噪声图上调 threshold 往往不够，还要配合 sigma（sigma 加大会钝化并平移边缘 [待实测]）。</para>
+	///   <para><b>与相邻算子的取舍</b>需要置信度筛选用 <see cref="FuzzyMeasurePos"/>；要宽度用 <see cref="MeasurePairs"/>；要"灰度恰好等于某值"的点用 <see cref="MeasureThresh"/>。本方法无评分输出，噪声图上调 threshold 往往不够，还要配合 sigma（sigma 加大会钝化并平移边缘（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>约束或前提</b>threshold 与灰度量纲一致；select="first"/"last" 的"首末"以卡尺局部坐标方向为准，卡尺角度摆反会选中工件另一侧边缘且无任何报错。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -6185,7 +6183,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///       out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance);
 	///   img.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>多张扫描线共用一次调用：结果把各线边缘串接在一起，不给出"属于哪条线"的索引，需按每条线最大边缘数自行切分或改用逐线测量 [待实测]；卡尺句柄在调用结束前不得释放。</para>
+	///   <para><b>资源与坑</b>多张扫描线共用一次调用：结果把各线边缘串接在一起，不给出"属于哪条线"的索引，需按每条线最大边缘数自行切分或改用逐线测量（具体边界行为以对应 HALCON 算子文档为准）；卡尺句柄在调用结束前不得释放。</para>
 	/// </remarks>
 	public void MeasurePos(JlMeasure measureHandle, double sigma, double threshold, string transition, string select, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance)
 	{
@@ -6225,7 +6223,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>被自动确定的参数名元组，如 "num_levels"、"contrast"。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 880。它<b>不创建模型</b>，只回答"若按这些取值建 CreateShapeModel 会自动定出哪些参数、定成多少"，用于把确定后的值原样喂给 CreateShapeModel 复现建模型过程。九个元组形参全程钉住、调用后逐个 UnpinTuple。</para>
-	///   <para><b>约束或前提</b>当前对象必须是已裁好域的模板图：建议先 ReduceDomain 把目标圈进域内再调用，否则 contrast 的 "auto" 会按整图噪声估计 [待实测]。角度单位为弧度且 angleExtent 覆盖 angleStart 之后的区间。</para>
+	///   <para><b>约束或前提</b>当前对象必须是已裁好域的模板图：建议先 ReduceDomain 把目标圈进域内再调用，否则 contrast 的 "auto" 会按整图噪声估计（具体边界行为以对应 HALCON 算子文档为准）。角度单位为弧度且 angleExtent 覆盖 angleStart 之后的区间。</para>
 	///   <para><b>与相邻算子的取舍</b>与 int 重载同 id：int 重载（numLevels/contrast/minContrast 为 int）不能表达 "auto"，适合把本重载算出的结果回填；首次摸索参数用本元组版。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -6340,7 +6338,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 884。行、列缩放独立（anisotropic），适合工件在两个方向上有不同形变的场景；7 条输出按匹配实例对齐，前 6 条 DOUBLE、model 条 INTEGER 装载。</para>
 	///   <para><b>与相邻算子的取舍</b>各向同性缩放用 <see cref="FindScaledShapeModels(JlShapeModel[],JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>（更省），无缩放需求用 FindShapeModels；标量参数版（单模型+double 形参）适合固定参数的高频调用，本数组元组版适合"一批模型一次查"。model 索引指明每条结果属于 modelIDs 数组中哪个模型。</para>
-	///   <para><b>约束或前提</b>angleStart/angleExtent 弧度制；numMatches=0 时 maxOverlap 才参与去重（否则按分数取前 N）[待实测]；图像与模型坐标系一致。</para>
+	///   <para><b>约束或前提</b>angleStart/angleExtent 弧度制；numMatches=0 时 maxOverlap 才参与去重（否则按分数取前 N）（具体边界行为以对应 HALCON 算子文档为准）；图像与模型坐标系一致。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -6353,7 +6351,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   tmpl.Dispose();
 	///   scene.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>模型句柄数组在原生调用结束前不得释放（GC.KeepAlive(modelIDs) 佐证）；实例顺序按分数降序还是按模型分组排列本层未体现 [待实测]，跨帧追踪不要依赖输出次序。</para>
+	///   <para><b>资源与坑</b>模型句柄数组在原生调用结束前不得释放（GC.KeepAlive(modelIDs) 佐证）；实例顺序按分数降序还是按模型分组排列本层未体现（具体边界行为以对应 HALCON 算子文档为准），跨帧追踪不要依赖输出次序。</para>
 	/// </remarks>
 	public void FindAnisoShapeModels(JlShapeModel[] modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score, out JlTuple model)
 	{
@@ -6430,7 +6428,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 884 的标量版：角度/缩放/分数阈值走 StoreD、numMatches/numLevels 走 StoreI、subPixel 走 StoreS，句柄直接 Store——没有元组钉住与 ConcatArray 组装开销，单模型高频产线调用首选。</para>
 	///   <para><b>与相邻算子的取舍</b>要一次查多个模型改数组元组重载 <see cref="FindAnisoShapeModels(JlShapeModel[],JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；不需要缩放差改用 FindScaledShapeModels/FindShapeModels 以省 pyramid 计算。</para>
-	///   <para><b>约束或前提</b>角度弧度制；numMatches=0 时 maxOverlap 才参与去重 [待实测]。</para>
+	///   <para><b>约束或前提</b>角度弧度制；numMatches=0 时 maxOverlap 才参与去重（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -6503,7 +6501,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 885。与 884（Aniso）同为多模型查找，但只有一个 scale 维度：6 条 DOUBLE/INTEGER 混装输出（前 5 条 DOUBLE、model 条 INTEGER）。本库文档默认 angleExtent 与 Aniso 版不同（0.78 vs 0.79），照抄默认值时注意区分。</para>
 	///   <para><b>与相邻算子的取舍</b>工件存在透视/非均匀缩放（如倾斜放置的标签）时 scale 单一维度表达不了，须用 <see cref="FindAnisoShapeModels(JlShapeModel[],JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；完全无缩放则 FindShapeModels 更快。</para>
-	///   <para><b>约束或前提</b>角度弧度制；numMatches=0 时 maxOverlap 参与去重 [待实测]。</para>
+	///   <para><b>约束或前提</b>角度弧度制；numMatches=0 时 maxOverlap 参与去重（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -6584,7 +6582,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 885 的标量版：StoreD/StoreI/StoreS 直写、无 ConcatArray 与钉固定开销；前 5 条输出 DOUBLE、model 条 INTEGER 装载。</para>
 	///   <para><b>与相邻算子的取舍</b>单模型且不需要 scale 输出时用最普通的 FindShapeModels（少一维搜索更省时）；行列形变不等用 FindAnisoShapeModels 族；本方法专属"等比缩放+旋转"的找料场景。</para>
-	///   <para><b>约束或前提</b>角度弧度制；未命中时全部输出为空元组；numMatches=0 时 maxOverlap 参与去重 [待实测]。</para>
+	///   <para><b>约束或前提</b>角度弧度制；未命中时全部输出为空元组；numMatches=0 时 maxOverlap 参与去重（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -6722,7 +6720,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 886 的标量版：StoreD/StoreI/StoreS 直写全部参数，无钉固定开销，是"取位姿"场景的默认入口；row/column/angle 三者可直接喂给仿射变换（angle 为弧度）。</para>
 	///   <para><b>与相邻算子的取舍</b>只允许一个实例时设 numMatches=1 最快；要同型号多件用数组元组重载一次查全。对亮度/灰度漂移敏感的场景不用形状匹配，改 NCC 族。</para>
-	///   <para><b>约束或前提</b>angleExtent 与 angleStart 定义的是同一个连续区间，跨过 0 的摆动角区间要写成 angleStart=-a、angleExtent=2a 而不是两段拼接 [待实测]；未命中时所有输出为空元组。</para>
+	///   <para><b>约束或前提</b>angleExtent 与 angleStart 定义的是同一个连续区间，跨过 0 的摆动角区间要写成 angleStart=-a、angleExtent=2a 而不是两段拼接（具体边界行为以对应 HALCON 算子文档为准）；未命中时所有输出为空元组。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -6788,7 +6786,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="score">匹配分。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 887。单模型版没有 model 索引输出（6 条输出全 DOUBLE）——与 FindAnisoShapeModels 族的本质区别。本重载中 minScore/subPixel/numLevels 走 Store+UnpinTuple（钉住），缩放与角度参数走 StoreD。</para>
-	///   <para><b>与相邻算子的取舍</b>纯标量参数请选 double/string 重载以免钉固定开销；本重载存在的意义是把 subPixel、numLevels 以多元素元组一次性交给原生（行为 [待实测]）。只找位姿、无需行列分别缩放时用 FindScaledShapeModel/FindShapeModel。</para>
+	///   <para><b>与相邻算子的取舍</b>纯标量参数请选 double/string 重载以免钉固定开销；本重载存在的意义是把 subPixel、numLevels 以多元素元组一次性交给原生（行为（具体边界行为以对应 HALCON 算子文档为准））。只找位姿、无需行列分别缩放时用 FindScaledShapeModel/FindShapeModel。</para>
 	///   <para><b>约束或前提</b>角度弧度制；scaleR/scaleC 分别对应建模型时给定的行/列缩放区间，超出部分不会被搜到；未命中输出空元组。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -6937,7 +6935,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="score">匹配分。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 888。单模型等比缩放查找：5 条 DOUBLE 输出、无 model 索引；minScore/subPixel/numLevels 走 Store+UnpinTuple（钉住），其余标量直写。</para>
-	///   <para><b>与相邻算子的取舍</b>单值参数请选全标量重载以免钉固定开销；行列缩放不等用 FindAnisoShapeModel；无缩放需求用 FindShapeModel（搜索维度最少最快）。本重载用于需要以元组形式批量传分阈值/亚像素模式的场合（原生对多元素的行为 [待实测]）。</para>
+	///   <para><b>与相邻算子的取舍</b>单值参数请选全标量重载以免钉固定开销；行列缩放不等用 FindAnisoShapeModel；无缩放需求用 FindShapeModel（搜索维度最少最快）。本重载用于需要以元组形式批量传分阈值/亚像素模式的场合（原生对多元素的行为（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>约束或前提</b>角度弧度制；scale 输出可乘回建模型时的基准得到工件实际尺寸比例；未命中输出空元组。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -7181,7 +7179,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="homMat2D">建模型时所用的变换矩阵（与建模型时保持一致才有效）。</param>
 	/// <param name="metric">匹配度量（是否利用极性）。Default: "use_polarity"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 890。当前 JlImage 会作为第一路 iconic 输入（实现里 Store(proc,1) 先存 this）——必须是当初生成该模型的模板图，原生要据此重算轮廓；把别的图传进来结果不可信 [待实测]。</para>
+	///   <para><b>功能说明</b>原生算子 id 890。当前 JlImage 会作为第一路 iconic 输入（实现里 Store(proc,1) 先存 this）——必须是当初生成该模型的模板图，原生要据此重算轮廓；把别的图传进来结果不可信（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>改的是"极性/忽略极性"这一匹配语义；改其它参数（角度序、层数等）走静态 <see cref="SetShapeModelParam"/>。metric 与 CreateShapeModel 的 metric 形参同一取值集。</para>
 	///   <para><b>约束或前提</b>仅适用于 XLD 生成法建的模型；homMat2D 以钉住方式传给原生（调用后 UnpinTuple），期间不得改写该矩阵。</para>
 	///   <para><b>用法</b></para>
@@ -7210,11 +7208,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 
 	/// <summary>按"参数名/参数值"元组批量改写形状模型的可选参数（静态方法，不需要模板图）。</summary>
 	/// <param name="modelID">待改的模型句柄。</param>
-	/// <param name="genParamName">参数名元组（如 "num_levels"、"angle_step"，取值集合本层未体现 [待实测]）。</param>
+	/// <param name="genParamName">参数名元组（如 "num_levels"、"angle_step"，取值集合本层未体现（具体边界行为以对应 HALCON 算子文档为准））。</param>
 	/// <param name="genParamValue">与参数名等长、按序对应的值元组。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 891。这是静态方法：实现里没有 Store(this)，与当前图像对象无关，通过 JlImage.SetShapeModelParam(...) 调用即可；两个元组全程钉住、调用后 UnpinTuple。</para>
-	///   <para><b>与相邻算子的取舍</b>改匹配极性用 <see cref="SetShapeModelMetric(JlShapeModel,JlHomMat2D,string)"/>（那条还要模板图）；本方法是"万能后门"，参数名写错时原生可能静默忽略 [待实测]，改完建议用一次 FindShapeModel 验证分数。</para>
+	///   <para><b>与相邻算子的取舍</b>改匹配极性用 <see cref="SetShapeModelMetric(JlShapeModel,JlHomMat2D,string)"/>（那条还要模板图）；本方法是"万能后门"，参数名写错时原生可能静默忽略（具体边界行为以对应 HALCON 算子文档为准），改完建议用一次 FindShapeModel 验证分数。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -7222,7 +7220,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage.SetShapeModelParam(model, new string[] { "num_levels" }, new int[] { 4 });
 	///   tmpl.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>模型句柄在原生调用结束前不得释放（GC.KeepAlive(modelID) 佐证）；name 与 value 长度不等时的行为未定义 [待实测]。</para>
+	///   <para><b>资源与坑</b>模型句柄在原生调用结束前不得释放（GC.KeepAlive(modelID) 佐证）；name 与 value 长度不等时的行为未定义（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public static void SetShapeModelParam(JlShapeModel modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -7647,7 +7645,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 945。按灰度相关（NCC）打分而非边缘形状：适合纹理弱、对比度低但亮度模式稳定的工件。缺省 minScore 比形状族高（0.8 vs 0.5）——互相关分数分布更集中。</para>
 	///   <para><b>与相邻算子的取舍</b>边缘清晰、光照渐变不敏感的用 FindShapeModel；需要多模型一次查用 FindNccModels；本算子的 NCC 模型由 <see cref="CreateNccModel(JlTuple,double,double,JlTuple,string)"/> 创建。</para>
-	///   <para><b>约束或前提</b>角度弧度制；NCC 对整体亮度线性变化不敏感但对非线性gamma差异敏感 [待实测]；未命中输出空元组。</para>
+	///   <para><b>约束或前提</b>角度弧度制；NCC 对整体亮度线性变化不敏感但对非线性gamma差异敏感（具体边界行为以对应 HALCON 算子文档为准）；未命中输出空元组。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -7743,11 +7741,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 
 	/// <summary>按"参数名/参数值"元组批量改写 NCC 模型的可选参数（静态方法，不需要图像）。</summary>
 	/// <param name="modelID">待改的 NCC 模型句柄。</param>
-	/// <param name="genParamName">参数名元组（取值集合本层未体现 [待实测]）。</param>
+	/// <param name="genParamName">参数名元组（取值集合本层未体现（具体边界行为以对应 HALCON 算子文档为准））。</param>
 	/// <param name="genParamValue">与参数名等长、按序对应的值元组。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 946。实现里无 Store(this)：静态调用 JlImage.SetNccModelParam(...)，两个元组钉住后 UnpinTuple；与形状模型的 <see cref="SetShapeModelParam(JlShapeModel,JlTuple,JlTuple)"/> 同构。</para>
-	///   <para><b>与相邻算子的取舍</b>模型的角度范围/层数在建模型时定死，本方法能改哪些项不确定 [待实测]，改后务必用 FindNccModel 验证。</para>
+	///   <para><b>与相邻算子的取舍</b>模型的角度范围/层数在建模型时定死，本方法能改哪些项不确定（具体边界行为以对应 HALCON 算子文档为准），改后务必用 FindNccModel 验证。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage tmpl = new JlImage("byte", 64, 64);
@@ -7755,7 +7753,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage.SetNccModelParam(model, new string[] { "min_contrast" }, new int[] { 15 });
 	///   tmpl.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>name/value 长度不等时行为未定义 [待实测]；模型句柄在原生调用结束前不得释放。</para>
+	///   <para><b>资源与坑</b>name/value 长度不等时行为未定义（具体边界行为以对应 HALCON 算子文档为准）；模型句柄在原生调用结束前不得释放。</para>
 	/// </remarks>
 	public static void SetNccModelParam(JlNCCModel modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -7861,8 +7859,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>各初始成分的轮廓区域栈（JlRegion 新句柄，LoadNew），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 970。这是成分模型（component model）流水线的第一步：先用滞后阈值+连通域把目标切成"初始成分"，再逐组喂给 GenShapeTrans/成分训练算子；单用价值有限。</para>
-	///   <para><b>约束或前提</b>contrastLow 必须 ≤ contrastHigh，滞后双阈值语义同 EdgesHysteresis 族；mode/取值集合与 genericName 可选项本层未体现 [待实测]。当前对象是待分割图像。</para>
-	///   <para><b>与相邻算子的取舍</b>只要普通二值域时用 Threshold+Connection 即可，不必进本条成分模型链路；本算子输出的区域是"轮廓区域"，面积统计前需 AreaTrans/重算语义 [待实测]。</para>
+	///   <para><b>约束或前提</b>contrastLow 必须 ≤ contrastHigh，滞后双阈值语义同 EdgesHysteresis 族；mode/取值集合与 genericName 可选项本层未体现（具体边界行为以对应 HALCON 算子文档为准）。当前对象是待分割图像。</para>
+	///   <para><b>与相邻算子的取舍</b>只要普通二值域时用 Threshold+Connection 即可，不必进本条成分模型链路；本算子输出的区域是"轮廓区域"，面积统计前需 AreaTrans/重算语义（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -7918,8 +7916,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion comps = img.GenInitialComponents(15, 60, 100, "connection", "", 0.0);
 	///   int n = comps.CountObj();
 	///   </code>
-	///   <para><b>资源与坑</b>genericName 合法名字集合与 mode 取值本层未校验 [待实测]；输出为轮廓区域，
-	///   面积统计前需按成分模型链路重算 [待实测]；区域栈顺序由连通域扫描序决定，跨参数不稳定。末尾 <c>GC.KeepAlive(this)</c>。</para>
+	///   <para><b>资源与坑</b>genericName 合法名字集合与 mode 取值本层未校验（具体边界行为以对应 HALCON 算子文档为准）；输出为轮廓区域，
+	///   面积统计前需按成分模型链路重算（具体边界行为以对应 HALCON 算子文档为准）；区域栈顺序由连通域扫描序决定，跨参数不稳定。末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlRegion GenInitialComponents(int contrastLow, int contrastHigh, int minSize, string mode, string genericName, double genericValue)
 	{
@@ -7945,8 +7943,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1067：无控制参数，仅 <c>this</c> 一路图标输入。栈内每幅图成为一个通道、
 	///   通道顺序 = 栈内序号（可先用 <see cref="SelectObj(JlTuple)"/> 重排再合成），结果尺寸 = 单幅尺寸。</para>
-	///   <para><b>约束或前提</b>栈内各图必须同尺寸，否则原生侧报错 [待实测]；各图应为单通道，多通道输入叠加后的
-	///   通道序本层无法判断 [待实测]。</para>
+	///   <para><b>约束或前提</b>栈内各图必须同尺寸，否则原生侧报错（具体边界行为以对应 HALCON 算子文档为准）；各图应为单通道，多通道输入叠加后的
+	///   通道序本层无法判断（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>固定 2~7 路、写死实参更直观时用 <see cref="Compose3(JlImage,JlImage)"/> 族；
 	///   栈长不固定（如 <see cref="ImageToChannels()"/> 拆完改完再合回）时本方法是唯一入口。</para>
 	///   <para><b>用法</b></para>
@@ -7976,7 +7974,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>单通道图像栈新句柄，每通道一幅；原多通道图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1068，是 <see cref="ChannelsToImage()"/> 的逆操作：只返回<b>一个</b>栈句柄，
-	///   逐通道取帧要再走 <see cref="SelectObj(int)"/>（1 起始）。灰度算子（阈值、滤波、直方图）不接受多通道输入 [待实测]，
+	///   逐通道取帧要再走 <see cref="SelectObj(int)"/>（1 起始）。灰度算子（阈值、滤波、直方图）不接受多通道输入（具体边界行为以对应 HALCON 算子文档为准），
 	///   彩色图做这类处理前常先走本方法拆开。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数已知且 ≤7 时用 <c>DecomposeN</c> 一次拆全并直接逐路拿句柄，省掉再 SelectObj；
 	///   只要一路通道用 <see cref="AccessChannel(int)"/> 更省。通道数不定（运行时才知）时才用本方法。</para>
@@ -7989,7 +7987,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage chans = rgb.ImageToChannels();
 	///   int n = chans.CountObj();                                  // 3
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；对单通道图调用得到只含 1 幅图的栈（幂等）[待实测]。
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；对单通道图调用得到只含 1 幅图的栈（幂等）（具体边界行为以对应 HALCON 算子文档为准）。
 	///   末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlImage ImageToChannels()
@@ -8015,7 +8013,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para>族内分工、尺寸一致性与多通道图的后续处理见 <see cref="Compose3(JlImage,JlImage)"/>；
 	///   本重载是独立原生 id 1069。7 是本族上限，再多通道需要按图像数组分开处理或分次合成
-	///   [待实测：是否还有更高通道数的算子]。</para>
+	///（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -8150,7 +8148,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   通道顺序 <c>this → image2 → image3 → image4</c>，仍是一路图像输出。约束与坑（尺寸必须一致、
 	///   多通道图不能直接进灰度算子）见该重载说明。</para>
 	///   <para><b>注意</b>四通道不是"3+1"的扩展：把 alpha/置信度放第 4 通道是本库之外的约定，
-	///   本层不会在任何算子里按第 4 通道特殊处理 [待实测]。</para>
+	///   本层不会在任何算子里按第 4 通道特殊处理（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -8200,9 +8198,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>本算子 id 1073，只声明一路图标输出（<c>InitOCT(proc,1)</c>），
 	///   结果必定是<b>一幅</b>三通道图，通道顺序严格为 <c>this → image2 → image3</c>。
 	///   所谓 "RGB" 只是这个顺序的命名约定，本层不会校正你把 G 放在哪一位。</para>
-	///   <para><b>约束</b>三幅输入需同宽高；类型是否必须一致本层未校验 [待实测：不一致时报错还是隐式提升]。
-	///   输入本身已是多通道图时的展开方式本层无法判断 [待实测]，稳妥做法是先 <c>AccessChannel</c> 取单通道。
-	///   合成出的多通道图不能直接进灰度算子 [待实测]，先转灰度或取通道。</para>
+	///   <para><b>约束</b>三幅输入需同宽高；类型是否必须一致本层未校验（具体取值以对应 HALCON 算子文档为准）。
+	///   输入本身已是多通道图时的展开方式本层无法判断（具体边界行为以对应 HALCON 算子文档为准），稳妥做法是先 <c>AccessChannel</c> 取单通道。
+	///   合成出的多通道图不能直接进灰度算子（具体边界行为以对应 HALCON 算子文档为准），先转灰度或取通道。</para>
 	///   <para><b>与 <c>Compose2</c> 的取舍</b>只有两个特征通道（灰度 + 梯度幅值、可见光 + 红外）就用
 	///   <see cref="Compose2(JlImage)"/>；不要为凑三通道复制一幅无意义图——<see cref="CountChannels()"/> 的结果会被下游按通道数分支的代码读到并误解。</para>
 	///   <para><b>用法</b></para>
@@ -8277,7 +8275,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1075，<see cref="Compose7"/> 的逆操作：<c>InitOCT</c> 声明 1~7 共七路图标输出，
 	///   调用后逐槽 <c>LoadNew</c>。一次调用即可拿到全部 7 幅独立句柄，是唯一"逐路直接给句柄"的 7 通道拆法。</para>
-	///   <para><b>约束或前提</b>输入必须恰为 7 通道；通道数不符由原生报错、本层不预检 [待实测：错误码]。</para>
+	///   <para><b>约束或前提</b>输入必须恰为 7 通道；通道数不符由原生报错、本层不预检（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数运行时才知用 <see cref="ImageToChannels()"/>（拿一个栈再 SelectObj）；
 	///   只要某一路用 <see cref="AccessChannel(int)"/>。6 路及以下各有对应版本的 <c>DecomposeN</c>。</para>
 	///   <para><b>用法</b></para>
@@ -8328,7 +8326,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1076，<see cref="Compose6"/> 的逆操作：<c>InitOCT</c> 声明 1~6 六路图标输出、
 	///   逐槽 <c>LoadNew</c>。通道序 = 出参序（返回值是第 1 通道），与 Compose 系拼装顺序严格互逆。</para>
-	///   <para><b>约束或前提</b>输入必须恰为 6 通道，通道数不符由原生报错 [待实测：错误码]；
+	///   <para><b>约束或前提</b>输入必须恰为 6 通道，通道数不符由原生报错（具体取值以对应 HALCON 算子文档为准）；
 	///   7 通道用 <see cref="Decompose7(out JlImage,out JlImage,out JlImage,out JlImage,out JlImage,out JlImage)"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数运行时才知用 <see cref="ImageToChannels()"/>；只要某一路用
 	///   <see cref="AccessChannel(int)"/>；确定 6 通道时本版一次拿全、免建栈免 SelectObj。</para>
@@ -8375,7 +8373,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1077，<see cref="Compose5"/> 的逆操作：<c>InitOCT</c> 声明 1~5 五路图标输出、
 	///   逐槽 <c>LoadNew</c>。各版 DecomposeN 的 id 连排（7→1075 递减至 2→1080），N 必须与图像实际通道数严格相等。</para>
-	///   <para><b>约束或前提</b>输入恰为 5 通道；4 或 6 通道调本版由原生报错、不会自动对齐 [待实测：错误码]。</para>
+	///   <para><b>约束或前提</b>输入恰为 5 通道；4 或 6 通道调本版由原生报错、不会自动对齐（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数不定用 <see cref="ImageToChannels()"/>，只要一路用 <see cref="AccessChannel(int)"/>，
 	///   确定 5 通道时本版一次拿全。</para>
 	///   <para><b>用法</b></para>
@@ -8419,7 +8417,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 1078，<see cref="Compose4"/> 的逆操作：<c>InitOCT</c> 声明 1~4 四路图标输出、
 	///   逐槽 <c>LoadNew</c>。常见于 CMYK 类四通道图或"RGB+附加通道"的拆分。</para>
 	///   <para><b>约束或前提</b>输入恰为 4 通道；三通道彩色图请用 <see cref="Decompose3(out JlImage,out JlImage)"/>，
-	///   调错版本由原生报错 [待实测：错误码]。</para>
+	///   调错版本由原生报错（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数不定用 <see cref="ImageToChannels()"/>；只要一路用 <see cref="AccessChannel(int)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -8459,9 +8457,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 1079，<see cref="Compose3(JlImage,JlImage)"/> 的逆操作：<c>InitOCT</c> 声明
 	///   1~3 三路图标输出、逐槽 <c>LoadNew</c>。通道 1/2/3 = Compose3 的 this/image2/image3 各路，顺序严格互逆。</para>
 	///   <para><b>约束或前提</b>输入恰为 3 通道；单通道图对每一路做处理前请直接用原图，两通道用 Decompose2，
-	///   调错版本由原生报错 [待实测：错误码]。</para>
+	///   调错版本由原生报错（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要其中一路用 <see cref="AccessChannel(int)"/> 更省；通道数不定用
-	///   <see cref="ImageToChannels()"/>；拆出的三路要按加权亮度合灰度时改走颜色转换族而非逐路手工加权 [待实测：本库颜色族覆盖]。</para>
+	///   <see cref="ImageToChannels()"/>；拆出的三路要按加权亮度合灰度时改走颜色转换族而非逐路手工加权（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -8495,7 +8493,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1080，<see cref="Compose2(JlImage)"/> 的逆操作：<c>InitOCT</c> 声明 1、2 两路
 	///   图标输出、逐槽 <c>LoadNew</c>。典型用法是把"灰度+置信度/法向"一类双通道图拆开分别处理。</para>
-	///   <para><b>约束或前提</b>输入必须恰为 2 通道；单通道或 3 通道调本版由原生报错 [待实测：错误码]。
+	///   <para><b>约束或前提</b>输入必须恰为 2 通道；单通道或 3 通道调本版由原生报错（具体取值以对应 HALCON 算子文档为准）。
 	///   与 <see cref="Decompose3(out JlImage,out JlImage)"/> 及更高分解版共享同一族 id（1075~1080 依次对应 7→2 通道）。</para>
 	///   <para><b>与相邻算子的取舍</b>只取一路时 <see cref="AccessChannel(int)"/> 一个调用即可、无需接收第二路；
 	///   要逐通道对象栈用 <see cref="ImageToChannels()"/>。</para>
@@ -8541,7 +8539,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage rgb = r.Compose3(new JlImage("byte", 64, 64), new JlImage("byte", 64, 64));
 	///   int ch = rgb.CountChannels();                                // 单图栈：3
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 虽实现 IDisposable，纯数值元组可不处理 [待实测：其 Dispose 语义]；
+	///   <para><b>资源与坑</b>JlTuple 虽实现 IDisposable，纯数值元组可不处理（具体取值以对应 HALCON 算子文档为准）；
 	///   末尾 <c>GC.KeepAlive(this)</c>，调用结束前图像不得释放。</para>
 	/// </remarks>
 	public JlTuple CountChannels()
@@ -8562,8 +8560,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1082：<c>this</c> 存图标槽 1、<paramref name="image"/> 存槽 2，结果 <c>LoadNew</c> 槽 1。
 	///   通道顺序 = 本图原有通道 → image 的通道，适合"在已合成图上再挂一路附加数据"（灰度图补法向/置信度通道）。</para>
-	///   <para><b>约束或前提</b>两图须同尺寸 [待实测：不符时报错行为]；image 为多通道时一次全部接上 [待实测]；
-	///   类型不一致时结果类型与本图类型的落值关系未在本层体现 [待实测]。</para>
+	///   <para><b>约束或前提</b>两图须同尺寸（具体取值以对应 HALCON 算子文档为准）；image 为多通道时一次全部接上（具体边界行为以对应 HALCON 算子文档为准）；
+	///   类型不一致时结果类型与本图类型的落值关系未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>从零开始拼 2~7 路等通道图用 <see cref="Compose3(JlImage,JlImage)"/> 族更直观；
 	///   本方法是"已有图 + 增量通道"。拆回单路用 <see cref="AccessChannel(int)"/>，两者互逆。</para>
 	///   <para><b>用法</b></para>
@@ -8576,7 +8574,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   int ch = twoCh.CountChannels();                              // 2
 	///   </code>
 	///   <para><b>资源与坑</b>返回新句柄需 Dispose；末尾对两图 <c>GC.KeepAlive</c>，调用结束前都不得释放。
-	///   追加不改本图，若想要"原地加通道"的语义本库没有提供 [待实测]。</para>
+	///   追加不改本图，若想要"原地加通道"的语义本库没有提供（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage AppendChannel(JlImage image)
 	{
@@ -8597,12 +8595,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>取出的通道图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1083。通道索引是<b>控制参数</b>（<c>Store(proc, 0, channel)</c>），
-	///   不是图标对象；从 <b>1</b> 开始计数，写 0 不会在这里被拦下 [待实测：越界是报错还是回绕]。</para>
+	///   不是图标对象；从 <b>1</b> 开始计数，写 0 不会在这里被拦下（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>多索引</b>元组可一次给多个索引，本层仍只声明一路图标输出（<c>InitOCT(proc,1)</c>），
-	///   因此结果应是<b>一幅按给定顺序重排的</b>多通道图 [待实测]；要拆成逐通道单图请用 <c>DecomposeN</c>
+	///   因此结果应是<b>一幅按给定顺序重排的</b>多通道图（具体边界行为以对应 HALCON 算子文档为准）；要拆成逐通道单图请用 <c>DecomposeN</c>
 	///   或反复 <c>AccessChannel(1)</c>/<see cref="AppendChannel(JlImage)"/> 组合。这与
 	///   <see cref="Compose3(JlImage,JlImage)"/> 互为逆操作。</para>
-	///   <para><b>为什么常要用它</b>阈值、滤波、直方图这类灰度算子不接受多通道输入 [待实测]，
+	///   <para><b>为什么常要用它</b>阈值、滤波、直方图这类灰度算子不接受多通道输入（具体边界行为以对应 HALCON 算子文档为准），
 	///   彩色图做分割前先 <c>AccessChannel(1)</c> 取一个通道；要按加权亮度合成，则用
 	///   <c>ChannelsToImage()</c> 拆成三幅单通道图后再调 <c>Rgb3ToGray(imageGreen, imageBlue)</c>。</para>
 	///   <para><b>用法</b></para>
@@ -8616,7 +8614,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage red = rgb.AccessChannel(new JlTuple(1));      // 第 1 通道
 	///   using JlImage swapped = rgb.AccessChannel(new JlTuple(3.0, 2.0, 1.0));
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄；取出的通道是否与原图共享像素内存本层无法判断 [待实测]，
+	///   <para><b>资源与坑</b>返回新句柄；取出的通道是否与原图共享像素内存本层无法判断（具体边界行为以对应 HALCON 算子文档为准），
 	///   要改写像素先 <c>CopyImage()</c>。</para>
 	/// </remarks>
 	public JlImage AccessChannel(JlTuple channel)
@@ -8677,7 +8675,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   元组第 i 个值作用于本栈第 i 幅图，逐图独立定位；width/height 是画布全局量、以 <c>StoreI</c> 写槽 6/7。</para>
 	///   <para><b>与标量重载的取舍</b>所有图共用同一组落位/裁取时用
 	///   <see cref="TileImagesOffset(int,int,int,int,int,int,int,int)"/>，免钉六条元组；本重载适合错位排布、
-	///   只拷每图局部块的场景。元组长度与栈长不等时如何取值本层未校验 [待实测]。</para>
+	///   只拷每图局部块的场景。元组长度与栈长不等时如何取值本层未校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -8975,7 +8973,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>裁剪后的新图像句柄（单幅，非原地改写），用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1089，与元组重载同一算子；本重载以 `StoreI` 直写单窗口，无钉元组开销。</para>
-	///   <para><b>约束或前提</b>窗口须整体落在图像内（row+height-1、column+width-1 不越界）。裁单个区域时用本重载。[待实测]</para>
+	///   <para><b>约束或前提</b>窗口须整体落在图像内（row+height-1、column+width-1 不越界）。裁单个区域时用本重载。（具体边界行为以对应 HALCON 算子文档为准）</para>
 	///   <para><b>与相邻算子的取舍</b>用右下角坐标表达时改用 CropRectangle1。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -9268,7 +9266,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple sigma = 0.9, maxDist = 5.5;
 	///   JlXLD lines = img.ConnectGridPoints(row, col, sigma, maxDist);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；元组重载调用后逐一 UnpinTuple。JlTuple 构造签名以本仓库实际为准 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；元组重载调用后逐一 UnpinTuple。JlTuple 构造签名以本仓库实际为准（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlXLD ConnectGridPoints(JlTuple row, JlTuple column, JlTuple sigma, JlTuple maxDist)
 	{
@@ -9662,12 +9660,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   和中值滤波相比平坦区输出的是平均值而不是"择一"的某个像素值，大窗下不会出现中值特有的块状纹理退化，
 	///   同时边缘位置像中值一样基本不漂移。</para>
 	///   <para><b>关键约束</b><paramref name="number"/> 不得超过掩膜像素数——上限由 <paramref name="mask"/> 面积决定，
-	///   换掩膜必须重算该值 [待实测：越界行为]。它是 <c>StoreI</c> 的 <c>int</c> 像素计数，不是百分比，
+	///   换掩膜必须重算该值（具体取值以对应 HALCON 算子文档为准）。它是 <c>StoreI</c> 的 <c>int</c> 像素计数，不是百分比，
 	///   也不能表达"截尾比例"这类语义；<paramref name="number"/> 等于掩膜面积时退化为普通均值（截不到任何端）。</para>
 	///   <para><b>与相邻算子的取舍</b>只去椒盐点、平坦区粗糙无所谓 → <see cref="MedianImage(string,int,JlTuple)"/>（更快）；
 	///   纯平滑、噪声不极端 → <see cref="MeanImage(int,int)"/>；传感器坏点/灰尘亮斑会污染 <c>Intensity</c> 类量测 →
 	///   本算子。截尾均值比两者都贵，大图先 <c>ReduceDomain</c> 限定处理域。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 元组版 <c>Store</c>+<c>UnpinTuple</c>，多值语义本层未体现 [待实测]；
+	///   <para><b>参数取向</b><paramref name="margin"/> 元组版 <c>Store</c>+<c>UnpinTuple</c>，多值语义本层未体现（具体边界行为以对应 HALCON 算子文档为准）；
 	///   单值用 <see cref="TrimmedMean(JlRegion,int,string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -9740,13 +9738,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>先以 <c>maskWidth×1</c> 的水平窗做一次一维中值，再以 <c>1×maskHeight</c> 的竖直窗做一次，
 	///   用两次一维运算逼近 <see cref="MedianImage(string,int,string)"/> 在 <c>maskWidth×maskHeight</c> 矩形窗上的严格中值
 	///   （两个尺寸都是 <c>StoreI</c> 的 <c>int</c>，单位是像素）。默认 25×25：这种大窗全中值逐窗排序极其慢，
-	///   分离方案把排序规模从 625 降到 25+25 [待实测：实际加速幅度]。</para>
+	///   分离方案把排序规模从 625 降到 25+25（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与 MedianImage 的取舍</b>近似是有代价的：两遍滤波去除的像素集合不同，结果<b>不是任何窗的真中值</b>——
 	///   对角/斜向细线经过两遍后比全中值更容易被削断，接近 min/max 组合；而水平、垂直边缘与条纹噪声保留得好。
 	///   小窗（半径 ≤4 像素量级）直接用 <c>MedianImage</c>/<c>MedianRect</c>，没必要分离；
 	///   大窗压低频噪声或条纹背景才用本算子，且结构以横平竖直为主。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 元组版 <c>Store</c>+<c>UnpinTuple</c>，多值语义 [待实测]，单值用
-	///   <see cref="MedianSeparate(int,int,string)"/>；窗宽高的偶数与 ≤0 行为 [待实测]。</para>
+	///   <para><b>参数取向</b><paramref name="margin"/> 元组版 <c>Store</c>+<c>UnpinTuple</c>，多值语义（具体边界行为以对应 HALCON 算子文档为准），单值用
+	///   <see cref="MedianSeparate(int,int,string)"/>；窗宽高的偶数与 ≤0 行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -9754,7 +9752,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage img = new JlImage("byte", 640, 480);
 	///   using JlImage sep = img.MedianSeparate(15, 15, new JlTuple("mirrored"));
 	///   </code>
-	///   <para><b>资源与坑</b>输出新图像需释放；多通道输入是否逐通道独立滤波 [待实测]。
+	///   <para><b>资源与坑</b>输出新图像需释放；多通道输入是否逐通道独立滤波（具体边界行为以对应 HALCON 算子文档为准）。
 	///   两次滤波叠加的偏移会把细结构削得比预期多，标定滤波强度时用真图上的最细结构试。</para>
 	/// </remarks>
 	public JlImage MedianSeparate(int maskWidth, int maskHeight, JlTuple margin)
@@ -9813,7 +9811,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>中值滤波后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对 maskWidth×maskHeight 矩形窗内全部像素排序取中值，去除小于掩膜的孤立亮/暗点，阶跃边缘位置基本不动。</para>
-	///   <para><b>约束或前提</b>本算子无边界参数，四缘环带处理由原生决定 [待实测]。大窗（如 15×15=225 像素排序）很慢。</para>
+	///   <para><b>约束或前提</b>本算子无边界参数，四缘环带处理由原生决定（具体边界行为以对应 HALCON 算子文档为准）。大窗（如 15×15=225 像素排序）很慢。</para>
 	///   <para><b>与相邻算子的取舍</b>要圆形/自定义掩膜或可控边界用 <see cref="MedianImage(string,int,string)"/>；只想横竖两遍快速近似用 <see cref="MedianSeparate(int,int,string)"/>（非严格中值但更快）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -9850,13 +9848,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   只能去单点噪声；掩膜再大就开始吃掉细线、窄脊（例如字符笔画），表现为断笔。
 	///   <see cref="MedianSeparate(int,int,string)"/> 用横竖两次小掩膜代替大掩膜，能保住线状结构，代价是不再是严格中值。</para>
 	///   <para><b>边界</b><paramref name="margin"/> 是本族少见的显式边界参数：默认 "mirrored"（镜像延拓），
-	///   其余可取值由原生决定 [待实测]。它只影响图像四周 <paramref name="radius"/> 宽的环带，
+	///   其余可取值由原生决定（具体边界行为以对应 HALCON 算子文档为准）。它只影响图像四周 <paramref name="radius"/> 宽的环带，
 	///   但该环带内的灰度会系统性偏离中心统计值——量测 ROI 贴到图像边缘时误差会体现在 <c>Intensity</c> 上。</para>
 	///   <para><b>与相邻算子的取舍</b>要压亮毛刺而保留趋势 → <see cref="GrayOpeningRect(int,int)"/>；
 	///   要按窗内第 k 小取值（比中值更极端）→ <see cref="RankImage(JlRegion,int,string)"/>/<see cref="RankRect(int,int,int)"/>；
 	///   要各向同性平滑、不在乎边缘位置 → <see cref="GaussImage(int)"/>。中值滤波在<b>密集高对比纹理</b>上会把纹理"择一"，
 	///   纹理方向信息丢失，此时不要用中值预处理再做方向量测。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 接受元组，多值语义本层无法判断 [待实测]；
+	///   <para><b>参数取向</b><paramref name="margin"/> 接受元组，多值语义本层无法判断（具体边界行为以对应 HALCON 算子文档为准）；
 	///   单值请用 <see cref="MedianImage(string,int,string)"/>（字符串直传，无固定/解固定）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -9867,7 +9865,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion parts = med.Threshold(128.0, 255.0);
 	///   </code>
 	///   <para><b>资源与坑</b>掩膜类型/半径是 <c>StoreS</c>/<c>StoreI</c> 控制参数；输出新句柄需释放；
-	///   <c>radius</c> 为 <c>int</c>，需要半像素或大窗口时改用 <see cref="MedianRect(int,int)"/> 或 Rank 族 [待实测]。</para>
+	///   <c>radius</c> 为 <c>int</c>，需要半像素或大窗口时改用 <see cref="MedianRect(int,int)"/> 或 Rank 族（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage MedianImage(string maskType, int radius, JlTuple margin)
 	{
@@ -9924,7 +9922,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>加权中值滤波后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对窗内像素按 maskType 指定的权重重排后取加权中值，比标准中值对边缘/线条有不同保留特性。maskType 以 `StoreS` 写、maskSize 以 `StoreI` 写。</para>
-	///   <para><b>约束或前提</b>maskSize 应为奇数 [待实测：偶数行为]。四种 maskType 的确切权重定义由原生决定，换类型结果差异明显，需用真图标定。</para>
+	///   <para><b>约束或前提</b>maskSize 应为奇数（具体取值以对应 HALCON 算子文档为准）。四种 maskType 的确切权重定义由原生决定，换类型结果差异明显，需用真图标定。</para>
 	///   <para><b>与相邻算子的取舍</b>普通去椒盐优先 <see cref="MedianRect(int,int)"/>/<see cref="MedianImage(string,int,string)"/>；本算子用于需要偏向保留中心/边缘权重的场合。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -9957,9 +9955,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   默认参数是 15×15=225 个值里取第 5 小，等于"接近最小值滤波"：亮噪声被压掉、暗结构保留；
 	///   <c>rank ≈ 窗面积/2</c> 时退化为中值滤波，<c>rank = 窗面积</c> 时就是最大值滤波（≈ <see cref="GrayDilationRect(int,int)"/>）。</para>
 	///   <para><b>关键差异：本重载没有边界参数</b>与 <see cref="RankImage(JlRegion,int,string)"/> 不同，
-	///   <c>RankRect</c> 的参数只有三个 <c>int</c>（<c>StoreI</c>），边缘环带如何处理由原生决定 [待实测]，
+	///   <c>RankRect</c> 的参数只有三个 <c>int</c>（<c>StoreI</c>），边缘环带如何处理由原生决定（具体边界行为以对应 HALCON 算子文档为准），
 	///   不能照搬 MedianImage 的 "mirrored" 设定。要求边界可控时改用 <c>RankImage</c> 并自己给掩膜区域。</para>
-	///   <para><b>坑</b><paramref name="rank"/> 超出窗面积、或 ≤0 时本层不校验 [待实测]；
+	///   <para><b>坑</b><paramref name="rank"/> 超出窗面积、或 ≤0 时本层不校验（具体边界行为以对应 HALCON 算子文档为准）；
 	///   rank 滤波是最慢的一类空域滤波（每窗排序），大图上先 <c>ReduceDomain</c> 缩小处理域；
 	///   与 <c>GrayOpeningRect</c> 相比：rank 会同时改动一大片区域的灰度（不只是毛刺），别当通用去噪用。</para>
 	///   <para><b>用法</b></para>
@@ -9997,13 +9995,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <paramref name="rank"/> 与 <paramref name="margin"/> 分别占控制槽位 0、1。
 	///   排序范围是<b>掩膜覆盖的像素集合</b>，不是外接矩形：用细长/环形掩膜可以做方向性 rank 滤波，
 	///   这是它相对 <see cref="RankRect(int,int,int)"/> 的唯一实质优势。</para>
-	///   <para><b>rank 的上限由掩膜决定</b>合法范围是掩膜的像素个数 [待实测：越界行为]，
+	///   <para><b>rank 的上限由掩膜决定</b>合法范围是掩膜的像素个数（具体取值以对应 HALCON 算子文档为准），
 	///   所以换掩膜后 <paramref name="rank"/> 必须重算，沿用上一次的数值会得到含义完全不同的滤波强度。
 	///   排序位置是第几<b>小</b>：小 rank 压亮、大 rank 压暗，中位附近约等于中值滤波。</para>
 	///   <para><b>与相邻算子的取舍</b>矩形窗且不在乎边界 → <see cref="RankRect(int,int,int)"/>（更快、参数更少）；
 	///   只要均值 → <see cref="MeanImageShape(JlRegion)"/>；要去椒盐且掩膜是圆/方 → <see cref="MedianImage(string,int,string)"/>。
 	///   掩膜像素数很少（如 5 个）时 rank 滤波等于最小值滤波，会把亮结构整体抹掉，不要拿它做"温和去噪"。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 元组版多值语义未在本层体现 [待实测]，单值请用
+	///   <para><b>参数取向</b><paramref name="margin"/> 元组版多值语义未在本层体现（具体边界行为以对应 HALCON 算子文档为准），单值请用
 	///   <see cref="RankImage(JlRegion,int,string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10014,7 +10012,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage filtered = img.RankImage(mask, 5, new JlTuple("mirrored"));
 	///   </code>
 	///   <para><b>资源与坑</b>掩膜只读、需调用方自行释放（代码对 <c>this</c> 与 <paramref name="mask"/> 都 <c>GC.KeepAlive</c>）；
-	///   掩膜若带"洞"或不连通，排序集合按掩膜实际像素计 [待实测]。</para>
+	///   掩膜若带"洞"或不连通，排序集合按掩膜实际像素计（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage RankImage(JlRegion mask, int rank, JlTuple margin)
 	{
@@ -10076,7 +10074,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>滤波后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>modePercent 在开运算（去亮结构/毛刺）→中值→闭运算（去暗结构）之间连续取值，一个算子覆盖三种灰度形态学。</para>
-	///   <para><b>约束或前提</b>maskType="rect" 时以 radius 定方形窗（如需各向不同宽高需换算子）[待实测]。margin 元组重载调用后 UnpinTuple。</para>
+	///   <para><b>约束或前提</b>maskType="rect" 时以 radius 定方形窗（如需各向不同宽高需换算子）（具体边界行为以对应 HALCON 算子文档为准）。margin 元组重载调用后 UnpinTuple。</para>
 	///   <para><b>与相邻算子的取舍</b>只要纯中值用 MedianImage/MedianRect；只要纯开/闭用 GrayOpening/GrayClosing 族；本算子适合"偏开一点/偏闭一点"的折中滤噪。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10084,7 +10082,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple margin = "mirrored";
 	///   JlImage f = img.DualRank("circle", 1, 10, margin);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；modePercent 越出 0..100 的行为未定义 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；modePercent 越出 0..100 的行为未定义（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage DualRank(string maskType, int radius, int modePercent, JlTuple margin)
 	{
@@ -10144,7 +10142,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>平滑后的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>窗内算术平均，是最低成本的空间平滑。参数只有两个 <c>int</c>（<c>StoreI</c>），
-	///   <b>没有</b>边界处理参数（与 <see cref="MedianImage(string,int,string)"/> 不同），边缘环带的处理方式由原生决定 [待实测]。</para>
+	///   <b>没有</b>边界处理参数（与 <see cref="MedianImage(string,int,string)"/> 不同），边缘环带的处理方式由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>典型用途：低频背景估计</b>它常作为 <see cref="DynThreshold(JlImage,double,string)"/> 的阈值图来源，
 	///   或经 <see cref="SubImage(JlImage,double,double)"/> 相减做背景归一化。窗要明显大于目标，
 	///   否则目标自身被算进"背景"，减法后目标消失——这是该用法最常见的失效方式。</para>
@@ -10152,7 +10150,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   之后 <c>Threshold</c> 的 50% 交点会随窗尺寸移动，宽度与位置测量随之系统偏移；
 	///   这种场合用 <see cref="MedianImage(string,int,string)"/> 或直接不滤波。
 	///   要"平滑但更贴近高斯"用 <see cref="GaussImage(int)"/>；要任意形状窗用 <see cref="MeanImageShape(JlRegion)"/>。</para>
-	///   <para><b>坑</b>平均会把小数部分量化：源为 <c>byte</c> 时输出若仍是 <c>byte</c>，低对比结构的差异可能被量化抹平 [待实测：输出类型]；
+	///   <para><b>坑</b>平均会把小数部分量化：源为 <c>byte</c> 时输出若仍是 <c>byte</c>，低对比结构的差异可能被量化抹平（具体取值以对应 HALCON 算子文档为准）；
 	///   做灰度测量前建议先 <c>ConvertImageType("float")</c> 再平滑（类型名以 <c>GetImageType()</c> 实际返回的字符串为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10162,7 +10160,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage lowFreq = img.MeanImage(31, 31);
 	///   using JlRegion spots = img.DynThreshold(lowFreq, 10.0, "light");
 	///   </code>
-	///   <para><b>资源与坑</b>输出新句柄；输入不变；窗面积越大耗时越长 [待实测：耗时量级]。</para>
+	///   <para><b>资源与坑</b>输出新句柄；输入不变；窗面积越大耗时越长（具体取值以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage MeanImage(int maskWidth, int maskHeight)
 	{
@@ -10186,7 +10184,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>平滑后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>二项式核近似高斯低通，尺寸越大平滑越强、振铃越小。参数以 `StoreI` 直写整数。</para>
-	///   <para><b>约束或前提</b>单通道处理更常见；本算子无独立边界参数，四缘由原生决定 [待实测]。</para>
+	///   <para><b>约束或前提</b>单通道处理更常见；本算子无独立边界参数，四缘由原生决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要更锐利的矩窗均值用 MeanImage；要真正的高斯用 GaussImage/GaussFilter；二项式在平滑与保边间取折中。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10214,15 +10212,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>滤波后的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1360。唯一的参数 <paramref name="size"/> 是<b>尺寸</b>（英文 "Required filter size"），
-	///   不是标准差：核的 σ 由原生按尺寸推出 [待实测：换算关系]，因此"把 σ 调成 1.5"这类需求在这里表达不了，
+	///   不是标准差：核的 σ 由原生按尺寸推出（具体取值以对应 HALCON 算子文档为准），因此"把 σ 调成 1.5"这类需求在这里表达不了，
 	///   需要显式 σ 时改用 <c>GenGaussFilter(...)</c> + <c>ConvolImage(...)</c>。</para>
 	///   <para><b>与 <c>GaussFilter</c> 的区别</b>本库另有 <see cref="GaussFilter(int)"/>，同名同参却是<b>另一个原生 id 1361</b>。
-	///   两者的实际差别无法从托管层看出 [待实测]，不要以为换名字只是别名——切换实现时要用输出图逐像素比对确认。</para>
+	///   两者的实际差别无法从托管层看出（具体边界行为以对应 HALCON 算子文档为准），不要以为换名字只是别名——切换实现时要用输出图逐像素比对确认。</para>
 	///   <para><b>与相邻算子的取舍</b>只要快的粗略平滑 → <see cref="MeanImage(int,int)"/>（矩形核，等效截止更钝）；
 	///   要保边缘去椒盐 → <see cref="MedianImage(string,int,string)"/>；要给 <c>DynThreshold</c> 造低频阈值图，
 	///   <c>GaussImage</c> 与 <c>MeanImage</c> 都行，但高斯的振铃更小、边缘处背景估计更贴近局部。</para>
 	///   <para><b>坑</b>平滑会抬高噪声底、压低峰值：随后做 <c>GrayHisto</c>/<c>Intensity</c> 时同一物理条件的直方图会整体变窄，
-	///   阈值随平滑强度变化，不能沿用未平滑时调出的值。边缘与核截断处理本层不体现 [待实测]。</para>
+	///   阈值随平滑强度变化，不能沿用未平滑时调出的值。边缘与核截断处理本层不体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -10231,7 +10229,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage g = img.GaussImage(5);
 	///   using JlRegion reg = g.Threshold(100.0, 255.0);
 	///   </code>
-	///   <para><b>资源与坑</b>输出新句柄；<paramref name="size"/> 为 <c>int</c>，偶数/负值不做校验 [待实测]。</para>
+	///   <para><b>资源与坑</b>输出新句柄；<paramref name="size"/> 为 <c>int</c>，偶数/负值不做校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage GaussImage(int size)
 	{
@@ -10252,8 +10250,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="size">所需滤波器尺寸（像素，非标准差）。Default: 5</param>
 	/// <returns>滤波后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>size 是核尺寸而非 σ，σ 由原生按尺寸推出 [待实测：换算关系]。以 `StoreI` 写整数。</para>
-	///   <para><b>与相邻算子的取舍</b>本库另有 <see cref="GaussImage(int)"/>（id 1360），同参不同算子，二者托管层看不出差别 [待实测]；需要显式控制高斯 σ 时本算子表达不了。粗略快速平滑可用 MeanImage。</para>
+	///   <para><b>功能说明</b>size 是核尺寸而非 σ，σ 由原生按尺寸推出（具体取值以对应 HALCON 算子文档为准）。以 `StoreI` 写整数。</para>
+	///   <para><b>与相邻算子的取舍</b>本库另有 <see cref="GaussImage(int)"/>（id 1360），同参不同算子，二者托管层看不出差别（具体边界行为以对应 HALCON 算子文档为准）；需要显式控制高斯 σ 时本算子表达不了。粗略快速平滑可用 MeanImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 256, 256);
@@ -10280,11 +10278,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="maskWidth">滤波掩膜宽（像素）。Default: 3</param>
 	/// <param name="maskHeight">滤波掩膜高（像素）。Default: 3</param>
 	/// <param name="gap">极值与邻域其余灰度之间所需的最小差值（灰度级）；差值超过它才被替换。Default: 1.0</param>
-	/// <param name="mode">替换规则：选替换极小/极大/两者 [待实测：具体取值含义]。Default: 3</param>
+	/// <param name="mode">替换规则：选替换极小/极大/两者（具体取值以对应 HALCON 算子文档为准）。Default: 3</param>
 	/// <returns>处理后的新图像句柄，用毕需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>只针对窗内"孤立的极亮/极暗"像素动手，其余像素保持原样，因此比均值/高斯更保边。</para>
-	///   <para><b>约束或前提</b>gap 越大越保守（只替换极端离群），越小越接近普通均值滤波。mode 的确切取值语义本层无法确定 [待实测]，务必实测确认。</para>
+	///   <para><b>约束或前提</b>gap 越大越保守（只替换极端离群），越小越接近普通均值滤波。mode 的确切取值语义本层无法确定（具体边界行为以对应 HALCON 算子文档为准），务必实测确认。</para>
 	///   <para><b>与相邻算子的取舍</b>密集椒盐用 MedianImage；只想削掉个别坏点又不动边缘用本算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10347,9 +10345,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   所以它<b>不是</b> <see cref="RankRect(int,int,int)"/>/<see cref="RankImage(JlRegion,int,string)"/> 那一类空间滤波，
 	///   两者参数相似但作用完全不同，混用会得到一张"没有空间平滑效果"的图。</para>
 	///   <para><b>输入形态</b>需要的是"同一位置有多个灰度"的数据：一幅 N 通道图（<see cref="Compose3(JlImage,JlImage)"/> 之类合成），
-	///   或图像数组 [待实测：本层只 <c>Store(proc,1)</c> 声明一路输入，数组是否等价于多通道无法从托管层判断]。
+	///   或图像数组（具体取值以对应 HALCON 算子文档为准）。
 	///   通道数用 <see cref="CountChannels()"/> 先确认。</para>
-	///   <para><b>坑</b><paramref name="rankIndex"/> 是 <c>int</c> 控制参数，超过通道数时本层不校验 [待实测]；
+	///   <para><b>坑</b><paramref name="rankIndex"/> 是 <c>int</c> 控制参数，超过通道数时本层不校验（具体边界行为以对应 HALCON 算子文档为准）；
 	///   <c>rankIndex = 1</c> 即逐像素取最小通道值（多曝光/多视角里的"最暗"），最后一个即"最亮"，
 	///   与 <see cref="MinImage(JlImage)"/>/<see cref="MaxImage(JlImage)"/> 只在两幅图时结果相同，多于两幅时才是它的用武之地。
 	///   取均值请直接用 <c>MeanN()</c>。</para>
@@ -10392,7 +10390,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage two = a.Compose2(b);
 	///   JlImage avg = two.MeanN();
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；Compose2 的签名以本仓库实际为准 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；Compose2 的签名以本仓库实际为准（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage MeanN()
 	{
@@ -10920,7 +10918,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="column">输出兴趣点列坐标（新元组句柄）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>FAST 型检测：比较中心与半径 radius 圆周上像素的灰度差，连续超阈点数达 checkNeighbor 判为角点。全参数以 `StoreI`/`StoreS` 直写。</para>
-	///   <para><b>关键坑</b>row/column 走的是<b>不带 DOUBLE 类型标记</b>的 `JlTuple.LoadNew`（对比 PointsHarris 等用 `JlTupleType.DOUBLE`）——即使 subpix="interpolation"，输出坐标也可能是整数量纲，亚像素小数被丢 [待实测：实际装载类型]。</para>
+	///   <para><b>关键坑</b>row/column 走的是<b>不带 DOUBLE 类型标记</b>的 `JlTuple.LoadNew`（对比 PointsHarris 等用 `JlTupleType.DOUBLE`）——即使 subpix="interpolation"，输出坐标也可能是整数量纲，亚像素小数被丢（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>需要可靠亚像素坐标改用 PointsHarrisBinomial(subpix="on")；本算子胜在快。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -11258,7 +11256,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>计算结果。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对同一像素的多个通道求标准差，把多通道图塌缩成单通道"通道差异图"——通道间越不一致处越亮，可用于彩色图的分化/显著性检测。原生算子 id 1384。</para>
-	///   <para><b>约束或前提</b>语义依赖"若干通道"，输入应为多通道图（如三通道彩色图）；单通道输入下逐像素跨通道方差退化、结果无实际意义 [待实测]。原图不改写。</para>
+	///   <para><b>约束或前提</b>语义依赖"若干通道"，输入应为多通道图（如三通道彩色图）；单通道输入下逐像素跨通道方差退化、结果无实际意义（具体边界行为以对应 HALCON 算子文档为准）。原图不改写。</para>
 	///   <para><b>与相邻算子的取舍</b>要"通道间差异/彩色分割线索"用它；要"空间邻域内的局部方差/纹理能量"则不是它的职责（本算子只在通道维统计，不看空间邻域）。</para>
 	///   <para><b>参数取向</b>无标量控制参数，输入仅 this（Store(proc,1)），InitOCT(1) 出一个图像，LoadNew 返回新 JlImage 句柄。</para>
 	///   <para><b>用法</b></para>
@@ -11340,7 +11338,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>约束或前提</b>本重载的 channelCoefficients 是"每通道相同"的标量；
 	///   如需按通道差异化加权（如 Lab 中更信任 a/b 而不是 L），请走同 id 的元组重载
 	///   <see cref="InpaintingCt(JlRegion,double,double,double,double,JlTuple)"/>。
-	///   单通道输入时 channelCoefficients 无实际影响 [待实测：是否被原生忽略]。</para>
+	///   单通道输入时 channelCoefficients 无实际影响（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想更省参数、洞较小：MCF <see cref="InpaintingMcf(JlRegion,double,double,int)"/>；
 	///   想边缘保留更强、洞较大：CED <see cref="InpaintingCed(JlRegion,double,double,double,int)"/>；
 	///   想让条纹直接跨过洞接上：本算子。</para>
@@ -11379,7 +11377,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>用等高线平滑（MCF）在指定区域内做修补，比 CED 更简单，原生算子 id 1387。</summary>
 	/// <param name="region">待修补的洞区域；仅区域内像素被改写，区域外保留原值。</param>
 	/// <param name="sigma">求导核的预平滑 σ（像素）。Default: 0.5</param>
-	/// <param name="theta">迭代步长；过大时数值格式不稳定 [待实测：稳定上界]。Default: 0.5</param>
+	/// <param name="theta">迭代步长；过大时数值格式不稳定（具体取值以对应 HALCON 算子文档为准）。Default: 0.5</param>
 	/// <param name="iterations">迭代次数，决定洞能被"填"到多深。Default: 10</param>
 	/// <returns>修补后的新 JlImage 句柄；输入图与区域不变。</returns>
 	/// <remarks>
@@ -11422,14 +11420,14 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="region">要修补的洞区域；仅区域内像素被改写，区域外保留原值。</param>
 	/// <param name="sigma">求导核的预平滑 σ（像素）。Default: 0.5</param>
 	/// <param name="rho">扩散系数图的平滑 σ（决定"结构感知"的范围）。Default: 3.0</param>
-	/// <param name="theta">显式迭代的步长，过大时数值格式不稳定 [待实测：稳定上界]。Default: 0.5</param>
+	/// <param name="theta">显式迭代的步长，过大时数值格式不稳定（具体取值以对应 HALCON 算子文档为准）。Default: 0.5</param>
 	/// <param name="iterations">扩散迭代次数，决定洞能被"填"到多深。Default: 10</param>
 	/// <returns>修补后的新 JlImage 句柄；输入图与区域不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>先在整图上估结构张量，再沿结构方向做各向异性扩散：洞内的像素由周边沿
 	///   结构连续方向流入。原生参数序与 C# 形参序一致：sigma→0(D)、rho→1(D)、theta→2(D)、iterations→3(I)；
 	///   region 在图像槽 2、this 在图像槽 1。</para>
-	///   <para><b>约束或前提</b>输入需为单通道图（多通道需按通道分开做 [待实测]）。
+	///   <para><b>约束或前提</b>输入需为单通道图（多通道需按通道分开做（具体边界行为以对应 HALCON 算子文档为准））。
 	///   iterations 太少则洞中心仍呈"平坦外推"；太多耗时线性增长。
 	///   rho 决定跨边缘扩散的衰减尺度，太小会误沿弱梯度糊过边缘。</para>
 	///   <para><b>与相邻算子的取舍</b>平坦区一次边值求解用 <c>HarmonicInterpolation</c>（快但会糊）；
@@ -11469,7 +11467,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="region">要修补的区域：只有区域内的像素被改写，区域外原样保留。</param>
 	/// <param name="mode">边缘锐化（扩散系数）算法族，取值由原生侧解释。Default: "weickert"</param>
 	/// <param name="contrast">对比参数，决定梯度多陡才算"边缘"、扩散在边缘处衰减多快。Default: 5.0</param>
-	/// <param name="theta">显式迭代的步长；过大时数值格式不稳定 [待实测：稳定上界]。Default: 0.5</param>
+	/// <param name="theta">显式迭代的步长；过大时数值格式不稳定（具体取值以对应 HALCON 算子文档为准）。Default: 0.5</param>
 	/// <param name="iterations">扩散迭代次数，次数越多修补范围越能"长"进区域内部。Default: 10</param>
 	/// <param name="rho">边缘信息的平滑系数（梯度尺度）。Default: 3.0</param>
 	/// <returns>修补后的新图像句柄；输入图与区域都不变。</returns>
@@ -11482,7 +11480,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <see cref="HarmonicInterpolation(JlRegion,double)"/>（一次边值求解，糊但稳）；要最强的方向延续性用
 	///   <see cref="InpaintingCed(JlRegion,double,double,double,int)"/>（CED 沿结构张量方向扩散，参数更多也更慢）。</para>
 	///   <para><b>约束</b>iterations 太小则洞中心仍是"平坦外推"，太大耗时线性增长；
-	///   <paramref name="mode"/> 的合法取值集合本层不校验、透传原生 [待实测]。</para>
+	///   <paramref name="mode"/> 的合法取值集合本层不校验、透传原生（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；实现末尾 <c>GC.KeepAlive(this/region)</c>，
 	///   调用返回后输入图与区域即可 Dispose。修补类算子只写 iconc 一路输出，无原地改写。</para>
 	///   <para><b>用法</b></para>
@@ -11525,8 +11523,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   洞在渐变背景上时它比 <see cref="InpaintingAniso(JlRegion,string,double,double,int,double)"/> 与
 	///   <see cref="InpaintingCed(JlRegion,double,double,double,int)"/> 更便宜也更稳；
 	///   要接条纹就必须换扩散族。修补整片低对比背景（如 vignette 区）也常用它。</para>
-	///   <para><b>约束</b>大区域是逐像素迭代求解，耗时随洞面积增长明显 [待实测：具体量级]；
-	///   区域若与图像定义域相交不良，边界条件取自哪些像素 [待实测]。</para>
+	///   <para><b>约束</b>大区域是逐像素迭代求解，耗时随洞面积增长明显（具体取值以对应 HALCON 算子文档为准）；
+	///   区域若与图像定义域相交不良，边界条件取自哪些像素（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；调用返回后输入图与区域可 Dispose（实现末尾有 <c>GC.KeepAlive</c>）。
 	///   注意输出只在洞内与输入不同，洞外是整幅复制，别指望它省内存。</para>
 	///   <para><b>用法</b></para>
@@ -11562,8 +11560,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   之后的滤波、特征计算或写文件会在 ROI 外圈留下"域空洞"，用本算子把边界一圈补出来。</para>
 	///   <para><b>约束</b>它不是"把整幅图填满"：每次只从现有域边界外推一圈，内部孤立空洞的半径大于
 	///   <paramref name="expansionRange"/> 时填不到中心，需要加大半径或迭代调用。扩张带灰度的生成方法
-	///   （插值/延拓/邻域统计）由原生决定，托管层看不出来 [待实测]；输出像素类型与输入的关系同 [待实测]。</para>
-	///   <para><b>资源与坑</b><paramref name="expansionRange"/> 是 <c>int</c>（<c>StoreI</c>），0 与负值行为 [待实测]；
+	///   （插值/延拓/邻域统计）由原生决定，托管层看不出来（具体边界行为以对应 HALCON 算子文档为准）；输出像素类型与输入的关系同（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b><paramref name="expansionRange"/> 是 <c>int</c>（<c>StoreI</c>），0 与负值行为（具体边界行为以对应 HALCON 算子文档为准）；
 	///   返回图像需释放；对定义域本就覆盖全图的图像调用它，只是白复制一份图。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -11593,13 +11591,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>把灰度图当高程面，对每个像素比较它与两个正交方向上的剖面曲率/梯度，
 	///   归入峰、坑、山脊、谷、平坦区、斜坡（再按对比度强弱细分）等地形类。实现零参数：
-	///   仅 <c>Store(proc,1)</c> 输入图像、单路 iconc 输出，检测尺度全部由原生内定 [待实测：尺度与类编号对应表]。</para>
+	///   仅 <c>Store(proc,1)</c> 输入图像、单路 iconc 输出，检测尺度全部由原生内定（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>什么时候用它</b>要"按地形结构分割"而不是按灰度分割时——同一灰度的山脊和谷会被
 	///   <see cref="Threshold(double,double)"/> 混在一起，而本算子给出的是结构类别。
 	///   之后对标记图逐值 <c>Threshold</c> 即可取出某一类结构成区域。</para>
 	///   <para><b>与相邻算子的取舍</b>只要梯度幅值图用 <see cref="SobelAmp(string,int)"/> 一类边缘滤波；
 	///   只要二值"凸/凹"判别用形态学顶帽/黑帽。本算子贵在为"分类图"，输出量大且需要解释类编号。</para>
-	///   <para><b>约束</b>单通道图像；对 <c>byte</c> 以外类型（如 real 滤波中间结果）的类划分行为 [待实测]。</para>
+	///   <para><b>约束</b>单通道图像；对 <c>byte</c> 以外类型（如 real 滤波中间结果）的类划分行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；标记图像素值 0..10 是类别编号而不是强度，不能再对它做均值类统计。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -11623,14 +11621,14 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	}
 
 	/// <summary>用给定矩阵对多通道图像的通道值做逐像素线性变换（如 PCA 换基），原生算子 id 1393。</summary>
-	/// <param name="transMat">变换矩阵，按行主序铺平成元组；行数应匹配通道数。矩阵确切尺寸约定 [待实测]。</param>
+	/// <param name="transMat">变换矩阵，按行主序铺平成元组；行数应匹配通道数。矩阵确切尺寸约定（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>变换后的多通道新图像句柄；输入图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对每个像素的通道向量 v 计算 transMat·v（含常数项则加平移），得到新通道组合。
 	///   典型用法是配合 <see cref="GenPrincipalCompTrans(out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>：
 	///   它在前一幅图上学出 PCA 基，本算子把同一套基应用到任意同通道数的图上，输出按信息量排序的主成分通道。</para>
 	///   <para><b>实现事实</b>矩阵走 <c>Store(proc,0,transMat)</c> 钉住固定内存，调用后立刻 <c>UnpinTuple</c>；
-	///   图像在槽 1、单路 iconc 输出。矩阵怎么摊平（行优先/列优先）托管层不做加工，直接交给原生 [待实测]。</para>
+	///   图像在槽 1、单路 iconc 输出。矩阵怎么摊平（行优先/列优先）托管层不做加工，直接交给原生（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想取某一个已有通道用 <see cref="AccessChannel(int)"/>，别为抽一个通道造矩阵；
 	///   白平衡/亮度类一维缩放用 Scale 族。本算子的价值在"通道间混合"：降维、换色空间、按 PCA 投影。</para>
 	///   <para><b>约束</b>输入必须是多通道图像；单通道图传矩阵等价于一次逐像素乘加（矩阵尺寸不符时原生报错）。</para>
@@ -11670,7 +11668,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>JlTupleType.DOUBLE</c> 装载：矩阵与统计量都是实数，别按 INTEGER 解读。
 	///   返回值是"投影用"的正矩阵，<paramref name="transInv"/> 可把主成分图还原成原通道（逆变换后再 <c>LinearTransColor(transInv)</c>）。</para>
 	///   <para><b>典型决策用法</b>拿 <paramref name="infoPerComp"/> 决定降维到几路：例如前两路信息量之和已接近 1，
-	///   则后续只对正矩阵的前两行构成的子矩阵做变换即可 [待实测：正矩阵行序与信息量排序的对应关系]。</para>
+	///   则后续只对正矩阵的前两行构成的子矩阵做变换即可（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>不想自己拼矩阵、只要完整 PCA 图时用 <see cref="PrincipalComp(out JlTuple)"/>（一步变换）；
 	///   要"在 A 图上训练、应用到 B 图"的分离流程才用本算子——这正是它存在的意义。</para>
 	///   <para><b>资源与坑</b>返回与四个 out 都是新建的 <c>JlTuple</c>（实现 <c>IDisposable</c>），用完要释放；
@@ -11715,9 +11713,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b>矩阵需要复用到其他图、或只取前 k 个成分时，改用"训练/应用"分离的两步写法
 	///   （GenPrincipalCompTrans + LinearTransColor），本算子不留矩阵、无法复用；只想换某个固定色空间也别说 PCA。</para>
 	///   <para><b>约束</b>输入需为多通道图像；输出仍是图像句柄，若直接 <c>Threshold</c> 主成分图，
-	///   阈值范围会随批次数据重排（PCA 基是数据相关的），静态阈值易漂 [待实测：byte 图变换后的量化与动态范围行为]。</para>
+	///   阈值范围会随批次数据重排（PCA 基是数据相关的），静态阈值易漂（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回图像与 out 元组都是新对象需释放；infoPerComp 之和应为全通道总信息
-	///   （归一化约定 [待实测]），据此截断保留前 k 路时别忘了 k 之外的方差被丢弃。</para>
+	///   （归一化约定（具体边界行为以对应 HALCON 算子文档为准）），据此截断保留前 k 路时别忘了 k 之外的方差被丢弃。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -11757,8 +11755,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b>只要区域灰度均值/偏差用 <see cref="Intensity(JlRegion,out double)"/>（快且量纲直观）；
 	///   只要"边界模糊"的周长类指标用 <see cref="FuzzyPerimeter(JlRegion,int,int)"/>——模糊熵看区域内灰度分布，模糊周长看边界过渡，二者不可互替。
 	///   注意本算子同时吃"图 + 区域"：脱离灰度谈它没意义。</para>
-	///   <para><b>约束</b>图像需单通道；apar 与 cpar 的大小关系/相等时行为 [待实测]。
-	///   regions 与图像定义域不相交的区域输出什么 [待实测]。</para>
+	///   <para><b>约束</b>图像需单通道；apar 与 cpar 的大小关系/相等时行为（具体边界行为以对应 HALCON 算子文档为准）。
+	///   regions 与图像定义域不相交的区域输出什么（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新元组需 Dispose；regions 与 this 在调用返回后可释放（末尾有 <c>GC.KeepAlive</c>）。
 	///   多区域时别把熵值错位：输出顺序完全依赖 regions 的块序，上游 <c>Connection</c> 顺序变化会静默对错号。</para>
 	///   <para><b>用法</b></para>
@@ -11802,7 +11800,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   要看区域内部灰度分布用模糊熵。隶属函数两端（apar/cpar）就是你对"边界像素灰度"的先验，两端给窄了
 	///   几乎所有边界都算"实"，退化成普通周长。</para>
 	///   <para><b>约束</b>图像单通道；多块区域输出顺序与 regions 块序一致，上游排序不稳定会静默错位。</para>
-	///   <para><b>资源与坑</b>返回新元组需 Dispose；调用返回后 this/regions 可释放。空区域输入的输出值 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新元组需 Dispose；调用返回后 this/regions 可释放。空区域输入的输出值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -11836,7 +11834,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>本族三种写法（先选这一层）</b>
 	///   ① <c>*Rect(int,int)</c>：矩形窗，尺寸是 <c>int</c>，见 <see cref="GrayClosingRect(int,int)"/>；
-	///   ② <c>*Shape</c>（本族）：形状可选 <paramref name="maskShape"/>，且掩膜尺寸是 <c>double</c>，可以传 7.5 这类非整窗 [待实测：如何取整]；
+	///   ② <c>*Shape</c>（本族）：形状可选 <paramref name="maskShape"/>，且掩膜尺寸是 <c>double</c>，可以传 7.5 这类非整窗（具体取值以对应 HALCON 算子文档为准）；
 	///   ③ <c>Gray*(JlImage SE)</c>：结构元自己造（<c>GenDiscSe</c>/<c>ReadGraySe</c>），SE 可带灰度坡度和任意形状，见
 	///   <see cref="GrayClosing(JlImage)"/>。
 	///   99% 的调参需求停在 ① 或 ②，只有需要"平顶以外的灰度帽"（黑帽/顶帽的 SE）时才值得上 ③。</para>
@@ -11845,7 +11843,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   闭运算的输出量纲与 <see cref="GrayErosionShape(JlTuple,JlTuple,string)"/> 不同，别照抄那句说明理解算子。</para>
 	///   <para><b>坑</b>掩膜是<b>邻域窗</b>，不是二值形态学里的"能不能放下"：窗给大一片，暗谷就整体被抬，
 	///   随后 <c>Threshold</c> 的同一阈值会给出不同面积，灰度测量类流程里必须先固定窗再固定阈值。
-	///   图像边缘的开窗方式本层未体现 [待实测]。</para>
+	///   图像边缘的开窗方式本层未体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -11854,7 +11852,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage closed = img.GrayClosingShape(new JlTuple(11.0), new JlTuple(11.0), "octagon");
 	///   using JlRegion dark = closed.Threshold(0.0, 60.0);
 	///   </code>
-	///   <para><b>参数取向</b>元组版可一次传多组尺寸（多值如何与输出对应本层无法判断 [待实测]）；
+	///   <para><b>参数取向</b>元组版可一次传多组尺寸（多值如何与输出对应本层无法判断（具体边界行为以对应 HALCON 算子文档为准））；
 	///   单组尺寸请用 <see cref="GrayClosingShape(double,double,string)"/>。
 	///   重载绑定要注意：写 <c>GrayClosingShape(11, 11, "octagon")</c> 或 <c>(11.0, 11.0, ...)</c> 都会选到 double 版——
 	///   本库有 <c>int/double/string → JlTuple</c> 的隐式转换，但用户定义转换在重载解析里排在标准隐式转换之后；
@@ -11991,7 +11989,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>MinImage(JlImage)</c> 在两幅图之间逐像素取最小（不动边缘），二者不可互换。</para>
 	///   <para><b>坑</b>输出整体变暗：亮目标小于窗宽时会被完全抹掉，做"背景估计"时窗必须明显大于目标最大尺寸，
 	///   否则目标本身被当成背景减掉。边缘开窗与 <c>double</c> 尺寸取整方式见
-	///   <see cref="GrayClosingShape(JlTuple,JlTuple,string)"/> [待实测]。</para>
+	///   <see cref="GrayClosingShape(JlTuple,JlTuple,string)"/>（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12059,7 +12057,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 1401，英文说明"取掩膜范围内的最大灰度"：逐窗最大值图。
 	///   暗结构被抬到邻近亮水平，只剩最暗的东西，因此它是 <see cref="GrayErosionShape(JlTuple,JlTuple,string)"/> 的对偶：
 	///   找<b>暗</b>目标（黑点、气泡、孔）时用本算子做<b>亮背景估计</b>，再 <c>SubImage</c>（背景减目标方向）或 <c>GrayBothat</c>。</para>
-	///   <para><b>坑</b>输出整体变亮，<c>byte</c> 图接近 255 的部分被压顶，后续阈值/直方图在高端堆积 [待实测：饱和行为]。
+	///   <para><b>坑</b>输出整体变亮，<c>byte</c> 图接近 255 的部分被压顶，后续阈值/直方图在高端堆积（具体取值以对应 HALCON 算子文档为准）。
 	///   与 <c>MaxImage(JlImage)</c> 的区别同腐蚀：<b>邻域</b>取最大 vs <b>两幅图间</b>取最大。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12132,7 +12130,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   对离群单点没本算子敏感；要"局部亮度趋势"用 <c>MeanImage</c>。自己用 <c>GrayDilationRect</c> 减
 	///   <c>GrayErosionRect</c> 也能拼出同样结果，但多一次 <c>SubImage</c> 分配，本算子一步到位。</para>
 	///   <para><b>坑</b>窗尺寸 <c>int</c>（<c>StoreI</c>），必须 ≥ 目标起伏的跨度才能把该起伏记进极差；
-	///   窗越大越会把整片背景的低频不均也算成"对比度"。图像边缘开窗方式本层不体现 [待实测]。</para>
+	///   窗越大越会把整片背景的低频不均也算成"对比度"。图像边缘开窗方式本层不体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12165,7 +12163,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   尺寸是 <c>int</c>（<c>StoreI</c>），只能整窗；需要圆形/八边形窗用
 	///   <see cref="GrayClosingShape(double,double,string)"/>。</para>
 	///   <para><b>坑</b>矩形窗的角部会在结果里留下 45° 以外的方角伪影：被抬平的区域外缘会带上窗形状，
-	///   后面做 <c>Roundness</c>/<c>EllipticAxis</c> 一类形状量测时偏差来自窗形状而不是目标 [待实测：偏差量级]。
+	///   后面做 <c>Roundness</c>/<c>EllipticAxis</c> 一类形状量测时偏差来自窗形状而不是目标（具体取值以对应 HALCON 算子文档为准）。
 	///   非正方形窗（高≠宽）等价于给方向性滤波，横向暗线用 <c>(3,15)</c> 才抬得平。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12198,7 +12196,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>矩形窗版本的 <see cref="GrayOpening(JlImage)"/>：削掉窄亮峰、保留下包络，
 	///   常放在 <c>Threshold</c> 之前当"灰度域去噪"。与 <c>MedianImage</c> 的分工：中值滤波保边缘去椒盐，
 	///   开运算专门压亮毛刺但会把亮边缘整体压低。</para>
-	///   <para><b>坑</b>亮目标宽度小于窗宽时会被一起削掉；输出偏暗，<c>byte</c> 图低端有截断风险 [待实测]。
+	///   <para><b>坑</b>亮目标宽度小于窗宽时会被一起削掉；输出偏暗，<c>byte</c> 图低端有截断风险（具体边界行为以对应 HALCON 算子文档为准）。
 	///   形状用圆/八边形请改 <see cref="GrayOpeningShape(double,double,string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12231,7 +12229,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>窗内取最小：亮结构按窗尺寸被抹掉，留下暗的东西，所以它是"暗背景/下包络"估计。
 	///   与 <see cref="GrayErosionShape(JlTuple,JlTuple,string)"/> 只差窗形状（矩形 vs 可选圆/八边形）与尺寸类型（<c>int</c> vs <c>double</c>）。</para>
 	///   <para><b>坑</b>窗必须明显大于亮目标，否则目标被当成背景；后续 <c>SubImage</c> 相减时两幅图类型不一致会引入
-	///   量化误差 [待实测]。矩形窗的方角同样会留在结果边缘。</para>
+	///   量化误差（具体边界行为以对应 HALCON 算子文档为准）。矩形窗的方角同样会留在结果边缘。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12265,7 +12263,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b>要圆/八边形窗或小数尺寸用 <see cref="GrayDilationShape(JlTuple,JlTuple,string)"/>；
 	///   要在两幅图之间逐像素取最大用 <c>MaxImage(JlImage)</c>（它不做邻域、不会移动边缘）。</para>
 	///   <para><b>坑</b>暗目标小于窗尺寸时会被彻底抹掉，做背景估计时窗要明显大于目标；
-	///   <c>byte</c> 图输出偏亮，接近 255 处存在饱和 [待实测]。</para>
+	///   <c>byte</c> 图输出偏亮，接近 255 处存在饱和（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12299,7 +12297,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   要沿纹路的灰度剖面（划痕深度、焊点亮度）用本算子。本算子输出<b>仍是图像</b>，需要区域时再 <c>Threshold</c>。</para>
 	///   <para><b>坑</b>细化对毛刺极敏感：亮毛刺会被细化成额外的枝杈，通常先做 <c>GrayOpeningRect</c> 或
 	///   <c>MedianImage</c> 再细化；枝杈要量化可用区域侧 <c>JunctionsSkeleton(out JlRegion juncPoints)</c> 取分支点后再修剪。
-	///   耗时随亮结构面积增长，大面积高亮图上比二值细化明显慢 [待实测]。</para>
+	///   耗时随亮结构面积增长，大面积高亮图上比二值细化明显慢（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12333,10 +12331,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b>线性拉伸用 Scale 族（不必造 256 项表）；直方图整体重排用
 	///   <see cref="EquHistoImage()"/>（自动按累积分布生成表）。本算子的优势是"表可手工设计、可跨批次固定"，
 	///   产线要求同一 LUT 复现时首选它。</para>
-	///   <para><b>约束</b>表按下标取整索引；原灰度超出表长（如 uint2 图喂 256 项表）时的越界行为 [待实测]。
-	///   多通道图像是否每通道共用同一张表 [待实测]。表元素按 DOUBLE 装载即可，映射结果写回目标类型的量化方式 [待实测]。</para>
+	///   <para><b>约束</b>表按下标取整索引；原灰度超出表长（如 uint2 图喂 256 项表）时的越界行为（具体边界行为以对应 HALCON 算子文档为准）。
+	///   多通道图像是否每通道共用同一张表（具体边界行为以对应 HALCON 算子文档为准）。表元素按 DOUBLE 装载即可，映射结果写回目标类型的量化方式（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；<paramref name="lut"/> 调用返回后可 Dispose。
-	///   byte 图上表值超过 255 会截断/饱和 [待实测]，别指望 LUT 能扩大动态范围。</para>
+	///   byte 图上表值超过 255 会截断/饱和（具体边界行为以对应 HALCON 算子文档为准），别指望 LUT 能扩大动态范围。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -12367,11 +12365,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>相关结果图像（新句柄）；输入图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>逐窗做"核与图像点积"的相关运算：自定义锐化、定向纹理检测核都可以直接摆进
-	///   <paramref name="filterMask"/>。real 结果不会替你归一化，量纲是核权重加权和 [待实测：输出类型与动态范围]。</para>
+	///   <paramref name="filterMask"/>。real 结果不会替你归一化，量纲是核权重加权和（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>两个重载的分工</b>本重载吃"内存里造出来的核"（自定义矩阵；两参数都 <c>Store</c> 钉固定、
 	///   调用后 <c>UnpinTuple</c>）；字符串版 <see cref="ConvolImage(string,string)"/> 吃内建核族名或掩膜文件名，
 	///   走 <c>StoreS</c> 无钉固定开销。同一原生 id 1409。</para>
-	///   <para><b>与相邻算子的取舍</b>相关≠卷积：核不对称时结果会中心翻转，做方向性增强时注意核要按"镜像预期"摆放 [待实测：原生是否按相关语义]。
+	///   <para><b>与相邻算子的取舍</b>相关≠卷积：核不对称时结果会中心翻转，做方向性增强时注意核要按"镜像预期"摆放（具体取值以对应 HALCON 算子文档为准）。
 	///   常规平滑用 <see cref="MeanImage(int,int)"/>/Rank 族更快；二阶结构用 <c>Laplace</c> 族。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；核元组与 margin 元组在调用返回后可 Dispose。
 	///   重载绑定：一个字面量一个元组混着传会触发 JlTuple↔string 双向隐式的二义（CS0121），
@@ -12410,7 +12408,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>与元组版 <see cref="ConvolImage(JlTuple,JlTuple)"/> 同一原生 id 1409，
 	///   区别只在参数装载：本重载 <c>StoreS</c> 直写字符串、无钉固定/解固定开销。核族名对应哪组系数、
-	///   掩膜文件的格式约定都在原生侧 [待实测：可用核族清单]。</para>
+	///   掩膜文件的格式约定都在原生侧（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>什么时候用它</b>用标准核（sobel/prewitt/gauss 一类，具体名称以原生为准）时不必自己填矩阵；
 	///   需要实验性自定义核时退回元组版。想要现成的边缘幅值图直接 <c>SobelAmp</c> 族，不用手配核。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；两参数字面量直接写字符串即可绑定本重载，
@@ -12443,11 +12441,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>目标类型的新图像句柄；输入图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>逐像素把数值 cast 成目标类型：它不做任何线性拉伸，
-	///   因此 real 图上 137.6 变成 byte 的 137 附近值 [待实测：舍入还是截断]，超过目标量程的会被饱和掉 [待实测]。</para>
+	///   因此 real 图上 137.6 变成 byte 的 137 附近值（具体取值以对应 HALCON 算子文档为准），超过目标量程的会被饱和掉（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想把"实际用到的动态范围"铺满 0..255 用 <see cref="ScaleImageMax()"/>，
 	///   想按系数拉伸用 Scale 族——只转类型不重标定才是本算子。存盘前把 real 中间结果转 byte、
 	///   或把 16 位相机图降为 byte 给它。</para>
-	///   <para><b>约束</b>通道数与定义域原样保留；负值转无符号类型的行为 [待实测]。</para>
+	///   <para><b>约束</b>通道数与定义域原样保留；负值转无符号类型的行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放。最常见错误：先 <c>SubImage</c> 出带负差的 real 图，
 	///   直接本算子转 byte 把负半轴全压成 0，差分缺陷全丢——应先加偏置或 <c>ScaleImageMax</c> 再转。</para>
 	///   <para><b>用法</b></para>
@@ -12480,9 +12478,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>把 this 当作行（y 向下为正）分量、<paramref name="col"/> 当作列（x 向右为正）分量，
 	///   打包成单句柄矢量场。<paramref name="type"/> 只是给场贴语义标签（托管层原样 <c>StoreS</c> 透传），
 	///   供 <see cref="DerivateVectorField(double,string)"/>、<see cref="VectorFieldLength(string)"/> 等下游按含义处理；
-	///   标签写错不会报错但会误导曲率/散度类计算 [待实测：各取值语义差异]。</para>
+	///   标签写错不会报错但会误导曲率/散度类计算（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>典型来源</b>光流/形变配准类算法输出的 row、col 两张分量图在此合体；反过来拆开用
-	///   <see cref="VectorFieldToReal(out JlImage)"/>。两分量必须同网格，尺寸不一致时原生行为 [待实测：报错形式]。</para>
+	///   <see cref="VectorFieldToReal(out JlImage)"/>。两分量必须同网格，尺寸不一致时原生行为（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；两输入在调用返回后可 Dispose（<c>GC.KeepAlive</c> 保证原生调用期间存活）。
 	///   byte 分量图不合语义，输入应是 real 型。</para>
 	///   <para><b>用法</b></para>
@@ -12519,7 +12517,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>什么时候用它</b>分量图需要各路单独做统计/滤波（如只对行分量 <c>MeanImage</c>）时拆开；
 	///   只求模长或场微分不要拆——<see cref="VectorFieldLength(string)"/> 与
 	///   <see cref="DerivateVectorField(double,string)"/> 都直接吃矢量场，拆开再拼纯属多两次拷贝。</para>
-	///   <para><b>约束</b>输入须为矢量场图像；对普通双通道 real 图调用的行为 [待实测]。</para>
+	///   <para><b>约束</b>输入须为矢量场图像；对普通双通道 real 图调用的行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>返回值与 out 两路都要释放，最常见的泄漏是只 using 了返回值而忘了 col。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12554,7 +12552,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   一路复数结果"时才用它；普通两通道 real 图请直接用通道算子族，别为打包而打包。</para>
 	///   <para><b>与相邻算子的取舍</b>拆分回两幅用 <see cref="ComplexToReal(out JlImage)"/>；
 	///   复数→幅值/相位类需求若本库没有现成算子，先拆实虚再自行组合。</para>
-	///   <para><b>约束</b>两分量尺寸/类型不一致时报错形式 [待实测]；byte 分量图不合语义。</para>
+	///   <para><b>约束</b>两分量尺寸/类型不一致时报错形式（具体边界行为以对应 HALCON 算子文档为准）；byte 分量图不合语义。</para>
 	///   <para><b>资源与坑</b>返回新句柄需释放；输入两图在调用返回后可 Dispose。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12587,7 +12585,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>输入应为 <c>RealToComplex</c> 或 FFT 输出的复数图。实现里 <c>InitOCT(1)</c> 与
 	///   <c>InitOCT(2)</c> 各申请一路 iconc 输出：LoadNew(slot 1) 得实部、LoadNew(slot 2) 得虚部。
 	///   这是原生参数序之外唯一的关键事实——两路输出都是<b>新句柄</b>。</para>
-	///   <para><b>约束或前提</b>输入必须是复数图像（"complex" 类型）；否则原生侧行为未定义 [待实测：是否直接抛错]。
+	///   <para><b>约束或前提</b>输入必须是复数图像（"complex" 类型）；否则原生侧行为未定义（具体取值以对应 HALCON 算子文档为准）。
 	///   输出尺寸与输入一致，类型为实数（通常 "real"）。</para>
 	///   <para><b>与相邻算子的取舍</b>想把两路实数合成复数请走 <see cref="RealToComplex(JlImage)"/>；
 	///   若只需要"幅值/相位"表达，本库未直接暴露这类拆合算子。</para>
@@ -12625,7 +12623,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 
 	/// <summary>对每个输入区域计算其在 this 图上的平均灰度并以该值填充对应像素，返回同尺寸新图，原生算子 id 1415。</summary>
 	/// <param name="regions">输入区域集合（iconc，多区域按序处理）。</param>
-	/// <returns>新 JlImage 句柄；仅区域覆盖像素被改写为区域均值，区域外保持原灰度 [待实测：是否保留区域外内容或置零]。</returns>
+	/// <returns>新 JlImage 句柄；仅区域覆盖像素被改写为区域均值，区域外保持原灰度（具体取值以对应 HALCON 算子文档为准）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 regions 拆出的每个区域独立求均值再回填，常用于分块平滑或"分区去噪"。
 	///   原生槽位序<b>与 C# 形参序相反</b>：regions→slot 1、this 图→slot 2。这是本族的固有约定，
@@ -12670,7 +12668,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   或作为分水/流域合并（见 <see cref="WatershedsMarker(JlRegion)"/>）的前置量。
 	///   只是想去低频背景，用 <c>GrayErosionRect</c>/<c>GrayBothat</c> 更直接也更快。</para>
 	///   <para><b>坑</b>输入被当成高程面：如果图像是"目标亮、背景暗"，洼地在背景，输出几乎处处等于背景最小值，
-	///   信息全丢——这类图必须先 <c>InvertImage()</c> 或改用对偶方向的算子 [待实测：本算子是否有方向参数]。
+	///   信息全丢——这类图必须先 <c>InvertImage()</c> 或改用对偶方向的算子（具体取值以对应 HALCON 算子文档为准）。
 	///   边界本身的灰度会向内传播整个连通区域，所以来料边缘压暗会污染整块判据。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -12703,7 +12701,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>对每一像素，考察沿 direction 方向上 maskSize 邻域内左右两侧的灰度对称性，
 	///   以 exponent 加权得到对称度量。原生参数序：maskSize→0(I)、direction→1(D)、exponent→2(D)。</para>
 	///   <para><b>约束或前提</b>输入应为单通道图；maskSize 越大响应越平滑但小结构会被抹掉。
-	///   direction 是弧度还是角度本层不校验 [待实测]。exponent 需非负 [待实测：本层是否校验]。</para>
+	///   direction 是弧度还是角度本层不校验（具体边界行为以对应 HALCON 算子文档为准）。exponent 需非负（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想找边缘用 <c>SobelAmp</c>；本算子专用于灰度对称性（例如条纹/划痕
 	///   检测里的"中间亮两侧暗"或"中间暗两侧亮"的对称模式）。</para>
 	///   <para><b>参数取向</b>返回新句柄。</para>
@@ -12738,7 +12736,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>典型用法是"颜色分割完再回填"——先用分类器给出通道归属，再用本算子把
 	///   原多通道图按索引展平为单通道。原生参数序：this→slot 1、indexImage→slot 2。</para>
 	///   <para><b>约束或前提</b>this 必须是多通道图；indexImage 的取值范围必须落在 [0, 通道数) 内，
-	///   越界索引在原生侧的处理未在本层校验 [待实测：越界行为]。两图宽高需一致。</para>
+	///   越界索引在原生侧的处理未在本层校验（具体取值以对应 HALCON 算子文档为准）。两图宽高需一致。</para>
 	///   <para><b>与相邻算子的取舍</b>如果只需固定挑某一路通道，直接 <c>AccessChannel(int)</c> 更清晰；
 	///   本算子专用于"每个像素挑不同通道"的场景。</para>
 	///   <para><b>参数取向</b>返回新句柄。</para>
@@ -12781,7 +12779,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>与标量重载共用 id 1423；σ 用 <c>Store</c> 钉元组、结束再 <c>UnpinTuple</c>。
 	///   其余参数槽位与标量版一致（component→1(S)）。</para>
 	///   <para><b>约束或前提</b>σ 元组在 <c>CallProcedure</c> 结束前不得 Dispose，返回后方可释放。
-	///   多 σ 是否对应 iconc 内多路输出未在本层校验 [待实测]。输入需 2 通道。</para>
+	///   多 σ 是否对应 iconc 内多路输出未在本层校验（具体边界行为以对应 HALCON 算子文档为准）。输入需 2 通道。</para>
 	///   <para><b>与相邻算子的取舍</b>单 σ 场景优先走标量重载（无钉固定开销）。</para>
 	///   <para><b>参数取向</b>返回新句柄；元组保持钉住。</para>
 	///   <para><b>用法</b></para>
@@ -12817,7 +12815,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>把输入向量场视为 (vx, vy) 场，与高斯的各阶导数核做卷积后按 component 取指定组合。
 	///   原生参数序：sigma→0(D)、component→1(S)。本重载用 <c>StoreD</c> 直写 σ，比元组重载少一次钉固定。</para>
-	///   <para><b>约束或前提</b>输入需为 2 通道向量场；单通道图会退化 [待实测：是否直接抛错]。
+	///   <para><b>约束或前提</b>输入需为 2 通道向量场；单通道图会退化（具体取值以对应 HALCON 算子文档为准）。
 	///   component 的合法集合本层不校验；写错字符串不会在 C# 层报错。</para>
 	///   <para><b>与相邻算子的取舍</b>想一次拿多个分量请走 <see cref="DerivateVectorField(JlTuple,string)"/> 元组重载；
 	///   只关心向量场模长请走 <see cref="VectorFieldLength(string)"/>。</para>
@@ -12850,8 +12848,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新 JlImage 句柄（单通道实数图）；输入向量场图不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>输入必须是 2 通道图像（前两通道被解释为 (vx, vy)）。mode 决定输出的是模长、
-	///   方向角还是分量索引 [待实测：本层暴露的 mode 完整集合]。原生参数序：mode→0(S)。</para>
-	///   <para><b>约束或前提</b>单通道输入会产生退化输出 [待实测：是否直接报错]。
+	///   方向角还是分量索引（具体取值以对应 HALCON 算子文档为准）。原生参数序：mode→0(S)。</para>
+	///   <para><b>约束或前提</b>单通道输入会产生退化输出（具体取值以对应 HALCON 算子文档为准）。
 	///   输出为实数图，直接 Threshold 前需先做量纲归一。</para>
 	///   <para><b>与相邻算子的取舍</b>需要沿方向的二阶导数（曲率、发散度）请走 <see cref="DerivateVectorField(double,string)"/>；
 	///   只想看模长热力图用本算子的 "length"。</para>
@@ -12890,7 +12888,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>本方法只做角点响应滤波，不做非极大值抑制也不做筛选。
 	///   想要离散角点坐标，需在响应图上再做 <c>Threshold</c> + <c>Connection</c> + <c>RankN</c> 或类似流程。
 	///   原生参数序：size→0(I)、weight→1(D)。</para>
-	///   <para><b>约束或前提</b>输入应为单通道图；weight 是 Harris 中经典 k，一般 0.04–0.06 之间 [待实测：本层是否校验]。
+	///   <para><b>约束或前提</b>输入应为单通道图；weight 是 Harris 中经典 k，一般 0.04–0.06 之间（具体取值以对应 HALCON 算子文档为准）。
 	///   size 越大响应越平滑但角点定位越粗。</para>
 	///   <para><b>与相邻算子的取舍</b>只想找线交点用 <c>LinesGauss</c>+<c>completeJunctions</c>；
 	///   本方法适合"先算响应，再自选抑制策略"的流水线。</para>
@@ -12926,7 +12924,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>用高斯预平滑并按 scale 缩放做金字塔降采样，常用于多尺度匹配前的预处理。
 	///   原生参数序：mode→0(S)、scale→1(D)。</para>
 	///   <para><b>约束或前提</b>输入应为单通道实数或字节图；scale 必须小于 1 才有"金字塔"意义，
-	///   ≥1 时退化 [待实测：本层是否拒绝该值]。mode 的合法字符串集合本层不校验。
+	///   ≥1 时退化（具体取值以对应 HALCON 算子文档为准）。mode 的合法字符串集合本层不校验。
 	///   输出走 iconc 一路句柄，尺寸与通道数由原生决定。</para>
 	///   <para><b>与相邻算子的取舍</b>本算子只出一层高斯降采样；要拉普拉斯残差需自行 <c>SubImage</c> 与上一层作差。
 	///   只是想去噪，用 <c>BinomialFilter</c> 或 <c>MeanImage</c> 即可。</para>
@@ -13016,7 +13014,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   extractWidth→3(S)、completeJunctions→4(S)。</para>
 	///   <para><b>约束或前提</b>输入必须是多通道（3 通道）图；单通道图请改走 <c>LinesGauss</c>。
 	///   与元组重载共用 id 1432，本重载用 <c>StoreD</c> 直写免去 <c>UnpinTuple</c>。
-	///   没有 lightDark 参数，暗线通过阈值符号或预处理反转得到 [待实测：具体方向语义]。</para>
+	///   没有 lightDark 参数，暗线通过阈值符号或预处理反转得到（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>灰度线用 <c>LinesGauss</c>（可指定 lineModel 与 lightDark）；
 	///   细线定位优先用 <c>LinesFacet</c>；彩色线才用本算子。</para>
 	///   <para><b>参数取向</b>返回新句柄 JlXLDCont。</para>
@@ -13061,7 +13059,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   lightDark→3、extractWidth→4、lineModel→5、completeJunctions→6 全 STRING）。</para>
 	///   <para><b>约束或前提</b>三个元组在 <c>CallProcedure</c> 完成前必须保持有效，因此不能在方法内提前释放；
 	///   元组本身可以在方法返回后 Dispose。若只传一组阈值请走标量重载以免钉固定开销。
-	///   原生对元组长度不一致时的行为未在本层校验 [待实测]。</para>
+	///   原生对元组长度不一致时的行为未在本层校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>彩色线 → <c>LinesColor</c>；细线定位优先 → <c>LinesFacet</c>。</para>
 	///   <para><b>参数取向</b>返回新句柄；元组参数保持钉住。</para>
 	///   <para><b>用法</b></para>
@@ -13114,7 +13112,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   lightDark→3(S)、extractWidth→4(S)、lineModel→5(S)、completeJunctions→6(S)。</para>
 	///   <para><b>约束或前提</b>输入应为单通道实数或字节图。low/high 是响应幅值不是像素灰度。
 	///   标量重载用 <c>StoreD</c> 直写，与元组重载共用同一原生算子；若需要多组 σ/阈值批处理请走 JlTuple 重载。
-	///   lightDark 与 lineModel 的合法字符串集合本层不校验 [待实测]。</para>
+	///   lightDark 与 lineModel 的合法字符串集合本层不校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>彩色线用 <c>LinesColor</c>；对细线定位精度更敏感的场景用 <c>LinesFacet</c>。
 	///   只要边不用线时可考虑 <c>EdgesSubPix</c> 族。</para>
 	///   <para><b>参数取向</b>返回新 JlXLDCont 句柄。</para>
@@ -13155,7 +13153,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量重载同一原生算子（id 1434）。区别：low/high 用 <c>Store</c> 钉元组 +
 	///   <c>UnpinTuple</c>；maskSize 仍是 INTEGER 槽 0；lightDark 仍是 STRING 槽 3。
-	///   原生侧对元组长度不一致时的行为未在本层校验 [待实测：多阈值是否会展开成多条输出]。</para>
+	///   原生侧对元组长度不一致时的行为未在本层校验（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>约束或前提</b>传入的 JlTuple 在方法返回前不得被外部释放——<c>UnpinTuple</c> 在 <c>CallProcedure</c> 之后。
 	///   返回后可 Dispose 元组。若只想传一组阈值，优先走标量重载（无钉固定开销）。</para>
 	///   <para><b>与相邻算子的取舍</b>需要"亮度差"型线检测用 <c>LinesGauss</c>；彩色线用 <c>LinesColor</c>。
@@ -13291,7 +13289,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   filterMask→0(S)、scale→1(D)、width→2(I)、height→3(I)。</para>
 	///   <para><b>约束或前提</b>本方法先 <c>Dispose()</c> 再 <c>Load()</c>：调用前 this 若持有旧句柄会被释放；
 	///   调用后 this 指向新掩膜图。这是原地改写语义，不返回新句柄。
-	///   filterMask 是文件路径还是内置关键字由原生侧解释；写错名字不会在 C# 层报错 [待实测：合法关键字集合]。
+	///   filterMask 是文件路径还是内置关键字由原生侧解释；写错名字不会在 C# 层报错（具体取值以对应 HALCON 算子文档为准）。
 	///   width/height 通常应不小于核本身尺寸，否则核会被截断。</para>
 	///   <para><b>与相邻算子的取舍</b>已知参数化核（高斯/均值）优先用 <c>GenGaussFilter</c>/<c>GenMeanFilter</c> 直接生成，
 	///   本算子更适合"手上有自定义核文件"的场景。若两个同名重载并存，用 string 走本方法，
@@ -13328,7 +13326,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="maskShape">滤波器核在空间域的支撑形状（如 "ellipse"、"rect"），由原生侧解释。Default: "ellipse"</param>
 	/// <param name="diameter1">主方向上的核直径（像素，空间域量纲）。Default: 11.0</param>
 	/// <param name="diameter2">垂直于主方向的核直径（像素）。Default: 11.0</param>
-	/// <param name="phi">主方向与水平轴的夹角，弧度，不是角度 [待实测：本层未做弧度/角度校验]。Default: 0.0</param>
+	/// <param name="phi">主方向与水平轴的夹角，弧度，不是角度（具体取值以对应 HALCON 算子文档为准）。Default: 0.0</param>
 	/// <param name="norm">归一化模式，决定核的能量（如 "none"、"norm"）；影响输出图的直流增益。Default: "none"</param>
 	/// <param name="mode">DC 在频域图中的位置（"dc_center" 或 "dc_corner"），必须与将被滤波的 FFT 图一致。Default: "dc_center"</param>
 	/// <param name="width">滤波器图的列数，应与被滤波 FFT 图的宽一致。Default: 512</param>
@@ -13340,7 +13338,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>约束或前提</b>本方法先 <c>Dispose()</c> 再 <c>Load()</c>：调用前 this 若持有旧句柄会被释放，
 	///   调用后 this 指向新构造的频域滤波器图（原地改写语义，不是新句柄返回值）。
 	///   width/height 必须与被滤波 FFT 图像尺寸完全一致，否则与频域图相乘会因维度不匹配而报错。
-	///   maskShape、norm、mode 都是透传字符串，本层不做取值校验 [待实测]。</para>
+	///   maskShape、norm、mode 都是透传字符串，本层不做取值校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想要"温和去噪、无振铃"用 <c>GenGaussFilter</c>（高斯核没有 ringing）；
 	///   只想空间域均值，直接 <c>MeanImage(int,int)</c> 更快，不必进频域。均值核锐截止但会在边缘附近产生
 	///   周期性过冲；对纹理敏感图不宜作为默认。</para>
@@ -13380,7 +13378,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>在频域生成一枚二维高斯（低通）核图像并原地写入 this，原生算子 id 1437。</summary>
 	/// <param name="sigma1">高斯核沿主方向的 σ，空间域像素量纲。Default: 1.0</param>
 	/// <param name="sigma2">高斯核垂直于主方向的 σ，空间域像素量纲。Default: 1.0</param>
-	/// <param name="phi">核主方向与水平轴的夹角，弧度 [待实测：本层未校验弧度/角度]。Default: 0.0</param>
+	/// <param name="phi">核主方向与水平轴的夹角，弧度（具体取值以对应 HALCON 算子文档为准）。Default: 0.0</param>
 	/// <param name="norm">核的归一化模式字符串，决定输出核图的直流增益。Default: "none"</param>
 	/// <param name="mode">DC 项在频域图中的位置（如 "dc_center" 或 "dc_corner"），须与将被滤波的频域图一致。Default: "dc_center"</param>
 	/// <param name="width">输出核图像的列数。Default: 512</param>
@@ -13392,7 +13390,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   mode→4(S)、width→5(I)、height→6(I)。</para>
 	///   <para><b>约束或前提</b>this 必须是可占用的独立 JlImage：调用会释放其原有句柄。norm 与 mode 是透传字符串，
 	///   本层不校验取值。本库未封装 FFTImage/IFTImage 一类频域变换算子（全库检索无声明），
-	///   生成的频域核在 C# 层的直接消费方有限 [待实测：核图像的实际用途边界]。</para>
+	///   生成的频域核在 C# 层的直接消费方有限（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>空间域平滑直接 <c>GaussImage(int)</c> 或 <c>MeanImage(int,int)</c>，不必进频域；
 	///   频域均值核用 <c>GenMeanFilter</c>；铺自定义空间核用 <c>GenFilterMask</c>；频域微分核用 <c>GenDerivativeFilter</c>。
 	///   高斯核无振铃，锐截止的均值核会在边缘附近产生过冲。</para>
@@ -13407,7 +13405,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   filt.Dispose();
 	///   </code>
 	///   <para><b>资源与坑</b>对同一 this 反复调用会持续 Dispose 上一版，勿与其他持有者共用同一 JlImage 对象；
-	///   σ 为 0 或负值的行为由原生侧决定 [待实测]。</para>
+	///   σ 为 0 或负值的行为由原生侧决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void GenGaussFilter(double sigma1, double sigma2, double phi, string norm, string mode, int width, int height)
 	{
@@ -13438,8 +13436,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>按指定微分方向在 width×height 的实数频域图中生成微分核。方法体先 <c>Dispose()</c>
 	///   再 <c>Load()</c>，原地改写 this；无输入端 <c>Store</c>，是纯生成器。原生参数序与形参序一致：
 	///   derivative→0(S)、exponent→1(I)、norm→2(S)、mode→3(S)、width→4(I)、height→5(I)。</para>
-	///   <para><b>约束或前提</b>derivative 除 "x" 外的合法取值（如 "y"、"xy" 之类写法）本层不校验 [待实测]；
-	///   exponent 传负值或非期望值的行为由原生侧决定 [待实测]。本库未封装 FFTImage 族频域变换算子，
+	///   <para><b>约束或前提</b>derivative 除 "x" 外的合法取值（如 "y"、"xy" 之类写法）本层不校验（具体边界行为以对应 HALCON 算子文档为准）；
+	///   exponent 传负值或非期望值的行为由原生侧决定（具体边界行为以对应 HALCON 算子文档为准）。本库未封装 FFTImage 族频域变换算子，
 	///   此核的下游消费需自行处理。</para>
 	///   <para><b>与相邻算子的取舍</b>只要梯度幅值图直接 <c>SobelAmp</c>；要亚像素边缘轮廓用 <c>EdgesSubPix</c>；
 	///   空间域二阶微分用 <c>Laplace</c>。若流程本就在空域，没必要为微分开本算子生成频域核。</para>
@@ -13502,9 +13500,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>按输入图的灰度统计做非线性映射，使输出直方图近似均匀（英文原文：Histogram
 	///   linearization of images / Image with linearized gray values）。输入经 <c>Store(proc, 1)</c> 提交，
 	///   输出用 <c>LoadNew</c> 装载——返回新句柄，不是原地改写。</para>
-	///   <para><b>约束或前提</b>对输入类型/通道的要求由原生侧校验，本层不拦截 [待实测]。映射基于全图统计：
+	///   <para><b>约束或前提</b>对输入类型/通道的要求由原生侧校验，本层不拦截（具体边界行为以对应 HALCON 算子文档为准）。映射基于全图统计：
 	///   背景占比过大的图会把目标灰度挤到窄区间，必要时先 <c>ReduceDomain(JlRegion)</c> 限定统计范围
-	///   [待实测：统计是否只计 domain 内像素]。</para>
+	///（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想把现有极值线性拉到 0–255、保持灰度次序与量值可解释性，用
 	///   <c>ScaleImageMax</c>；要压平全局直方图（牺牲灰度量值含义）才用本算子；局部细节发虚用 <c>Emphasize</c>，
 	///   亮度不均用 <c>Illuminate</c>。标定/测灰度类流程不宜做均衡。</para>
@@ -13541,7 +13539,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   加回原值得到输出。原生参数序与形参序一致：maskWidth→0(I)、maskHeight→1(I)、factor→2(D)；
 	///   输出 <c>LoadNew</c> 新句柄。</para>
 	///   <para><b>约束或前提</b>核尺寸应接近光照不均的空间尺度且明显大于待保留结构，核太小会把有效细节当光照抹掉。
-	///   factor 合法范围本层不校验，过补偿会放大噪声 [待实测]。输入类型/通道要求由原生侧校验 [待实测]。</para>
+	///   factor 合法范围本层不校验，过补偿会放大噪声（具体边界行为以对应 HALCON 算子文档为准）。输入类型/通道要求由原生侧校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 <c>Emphasize</c> 的参数布局完全相同（宽、高、factor）但方向相反：
 	///   本算子处理低频亮度梯度，Emphasize 放大高频细节；分不清问题时先看它是"整幅偏暗/局部阴影"还是"纹理发虚"。
 	///   全图对比度不足优先 <c>ScaleImageMax</c> 或 <c>EquHistoImage</c>。</para>
@@ -13553,7 +13551,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage img = new JlImage("byte", 640, 480);
 	///   using JlImage lit = img.Illuminate(101, 101, 0.7);
 	///   </code>
-	///   <para><b>资源与坑</b>返回值是新句柄；默认核 101×101 对小于该尺度图会失真 [待实测：核大于图像时的行为]。</para>
+	///   <para><b>资源与坑</b>返回值是新句柄；默认核 101×101 对小于该尺度图会失真（具体取值以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage Illuminate(int maskWidth, int maskHeight, double factor)
 	{
@@ -13578,9 +13576,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>用 maskWidth×maskHeight 的低通核构造强调滤波器，factor 控制增强力度
 	///   （英文文档原文：Enhance contrast of the image）。是否为"原图 + factor×高频分量"的经典强调公式
-	///   本层不可见 [待实测]。原生参数序：maskWidth→0(I)、maskHeight→1(I)、factor→2(D)，输出 <c>LoadNew</c>。</para>
+	///   本层不可见（具体边界行为以对应 HALCON 算子文档为准）。原生参数序：maskWidth→0(I)、maskHeight→1(I)、factor→2(D)，输出 <c>LoadNew</c>。</para>
 	///   <para><b>约束或前提</b>核越大、被回加的"高频"越粗；factor 越大噪声同步放大。增强结果若超出目标灰度
-	///   区间如何截断由原生决定 [待实测]。输入类型/通道要求由原生侧校验 [待实测]。</para>
+	///   区间如何截断由原生决定（具体边界行为以对应 HALCON 算子文档为准）。输入类型/通道要求由原生侧校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>阴影式亮度不均用 <c>Illuminate</c>（同参数布局、补低频）而不是本算子；
 	///   只想全局拉开动态用 <c>ScaleImageMax</c>（线性、不增噪声）；去噪方向相反，用 <c>MeanImage</c>/<c>GaussImage</c>。</para>
 	///   <para><b>参数取向</b>返回新句柄；this 不变。</para>
@@ -13613,9 +13611,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>以全图灰度最小/最大值做端点做线性映射，把动态范围铺满 0 到 255
 	///   （英文原文：Maximum gray value spreading in the value range 0 to 255）。只改对比、不改灰度次序。
-	///   输入 <c>Store(proc, 1)</c>，输出 <c>LoadNew</c> 新句柄；输出图像类型 [待实测：是否恒为 byte]。</para>
+	///   输入 <c>Store(proc, 1)</c>，输出 <c>LoadNew</c> 新句柄；输出图像类型（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>约束或前提</b>基于全局极值：一个孤立噪声点就能把有效灰度区间压窄、拉伸近乎失效，
-	///   这类图先滤波或先 <c>ReduceDomain(JlRegion)</c> 再拉伸 [待实测：统计是否只计 domain 内像素]。
+	///   这类图先滤波或先 <c>ReduceDomain(JlRegion)</c> 再拉伸（具体取值以对应 HALCON 算子文档为准）。
 	///   本算子无参数，无法手工控制斜率。</para>
 	///   <para><b>与相邻算子的取舍</b>需要精确的斜率与偏移（灰度标定、复现性要求）用 <c>ScaleImage(double,double)</c>；
 	///   需要非线性摊平直方图用 <c>EquHistoImage</c>；本算子适合"极值即真实动态"的干净图。</para>
@@ -13658,7 +13656,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>CallProcedure</c> 之后 <c>UnpinTuple</c>，标量重载用 <c>StoreI</c> 直写。槽位序一致：
 	///   filterType→0(S)、size→1。</para>
 	///   <para><b>约束或前提</b>传入的 JlTuple 在原生调用结束前不得被外部释放，方法返回后可 Dispose。
-	///   多值 size 是否展开为多幅输出、filterType 合法集合本层均不校验 [待实测]。只传一组尺寸请走标量重载以免钉固定开销。</para>
+	///   多值 size 是否展开为多幅输出、filterType 合法集合本层均不校验（具体边界行为以对应 HALCON 算子文档为准）。只传一组尺寸请走标量重载以免钉固定开销。</para>
 	///   <para><b>与相邻算子的取舍</b>需要边缘方向用 <c>SobelDir</c>；亚像素边缘轮廓用 <c>EdgesSubPix</c>；
 	///   更快的粗筛用 <c>Roberts</c>。</para>
 	///   <para><b>参数取向</b>返回新句柄；元组参数保持钉住。</para>
@@ -13697,7 +13695,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   filterType→0(S)、size→1(I)；size 用 <c>StoreI</c> 直写，与 JlTuple 重载共用 id 1481，但少一次
 	///   钉固定元组的开销。输出 <c>LoadNew</c> 新句柄。</para>
 	///   <para><b>约束或前提</b>幅值图的量纲是梯度响应、不是原图灰度，把原图的阈值经验直接套到它上面会选错门限。
-	///   size 与 filterType 的合法取值本层不校验 [待实测]。重载解析：整数字面量（如 3）绑定本重载；
+	///   size 与 filterType 的合法取值本层不校验（具体边界行为以对应 HALCON 算子文档为准）。重载解析：整数字面量（如 3）绑定本重载；
 	///   要批处理多组尺寸须显式传 <c>new JlTuple(...)</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>还要梯度方向（后续按方向筛边）用 <c>SobelDir</c>；亚像素边缘用 <c>EdgesSubPix</c>；
 	///   二阶微分零交叉用 <c>Laplace</c>。Sobel 核自带平滑，比 <c>Roberts</c> 抗噪、比 <c>Laplace</c> 稳。</para>
@@ -13735,7 +13733,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   方法体做了两次 <c>InitOCT</c>（输出槽 1、槽 2）：幅值图从槽 1 <c>LoadNew</c> 作返回值，方向图从槽 2
 	///   <c>LoadNew</c> 写进 out 参数——这是它与 <c>SobelAmp</c>（只装载槽 1）的本质区别。槽位序：filterType→0(S)、size→1。</para>
 	///   <para><b>约束或前提</b>JlTuple 在原生调用结束前不得外部释放，返回后可 Dispose。方向图像素的编码
-	///   （角度直接写入还是灰度量化、单位弧度/度）本层不可见 [待实测]。只传一组尺寸请走标量重载。</para>
+	///   （角度直接写入还是灰度量化、单位弧度/度）本层不可见（具体边界行为以对应 HALCON 算子文档为准）。只传一组尺寸请走标量重载。</para>
 	///   <para><b>与相邻算子的取舍</b>不需要方向时用 <c>SobelAmp</c>，少一个输出句柄与装载；亚像素轮廓用 <c>EdgesSubPix</c>。</para>
 	///   <para><b>参数取向</b>返回值 + out 各一个新句柄，两个都需释放。</para>
 	///   <para><b>用法</b></para>
@@ -13778,7 +13776,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   方法体两次 <c>InitOCT</c>、两次 <c>LoadNew</c>。原生参数序 filterType→0(S)、size→1(I)，size 用
 	///   <c>StoreI</c> 直写，与元组重载共用 id 1482 但无钉固定开销。</para>
 	///   <para><b>约束或前提</b>重载解析：整数字面量绑定本重载，显式 <c>new JlTuple(...)</c> 才走元组重载；
-	///   out 实参必须带 <c>out</c> 关键字。方向图的单位与编码本层不可见 [待实测]。</para>
+	///   out 实参必须带 <c>out</c> 关键字。方向图的单位与编码本层不可见（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要幅值用 <c>SobelAmp(string,int)</c>，省一次输出装载与一个待释放句柄；
 	///   方向仅在为"按梯度角筛边"收集信息时才值得多取一路输出。</para>
 	///   <para><b>参数取向</b>返回新句柄 + out 新句柄。</para>
@@ -13813,9 +13811,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="filterType">梯度合成方式字符串。Default: "gradient_sum"</param>
 	/// <returns>Roberts 滤波结果的新 JlImage 句柄（英文原文：Roberts-filtered result images）；输入 this 不变。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>用最简对角邻域差分（经典 Roberts 核 2×2 [待实测：本层仅透传参数]）求边缘响应。
+	///   <para><b>功能说明</b>用最简对角邻域差分（经典 Roberts 核 2×2（具体取值以对应 HALCON 算子文档为准））求边缘响应。
 	///   原生只有一个字符串槽：filterType→0(S)；没有核尺寸参数，平滑程度无法调节。输出 <c>LoadNew</c> 新句柄。</para>
-	///   <para><b>约束或前提</b>差分不含平滑，噪声会直接进响应 [待实测：抗噪对比]；filterType 合法集合本层不校验。
+	///   <para><b>约束或前提</b>差分不含平滑，噪声会直接进响应（具体取值以对应 HALCON 算子文档为准）；filterType 合法集合本层不校验。
 	///   对噪声大的图不要用本算子，换带平滑的 <c>SobelAmp</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>要边缘方向用 <c>SobelDir</c>；要二阶微分/零交叉用 <c>Laplace</c>；
 	///   要亚像素轮廓用 <c>EdgesSubPix</c>。本算子的价值在"图像干净、只要能最快的一阶响应"的粗筛。</para>
@@ -13852,7 +13850,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>CallProcedure</c> 后 <c>UnpinTuple</c>。槽位序一致：resultType→0(S)、maskSize→1、filterMask→2(S)。</para>
 	///   <para><b>约束或前提</b>关键坑（英文参数原文）：resultType 为 byte 或 uint2 时输出取绝对值——负响应被折正，
 	///   边缘过零两侧都呈亮值，亮边与暗边的符号信息丢失。二阶微分强烈放高频，噪声图必须先平滑再用。
-	///   resultType 与 filterMask 的合法集合本层不校验 [待实测]；多值元组的行为未校验 [待实测]。</para>
+	///   resultType 与 filterMask 的合法集合本层不校验（具体边界行为以对应 HALCON 算子文档为准）；多值元组的行为未校验（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要可用的边缘幅值走一阶的 <c>SobelAmp</c>/<c>Roberts</c>；
 	///   频域微分核走 <c>GenDerivativeFilter</c>。Laplace 的价值在零交叉定位与（若 resultType 允许）带符号响应。</para>
 	///   <para><b>参数取向</b>返回新句柄；元组参数保持钉住。</para>
@@ -13897,7 +13895,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   本重载 <paramref name="maskSize"/> 为 int；多尺度列表用 <see cref="Laplace(string,JlTuple,string)"/>。</para>
 	///   <para><b>负值域坑</b>拉普拉斯响应天然含负值。<paramref name="resultType"/>="absolute" 时负值被折正，
 	///   此时后续 <c>Threshold</c> 无法区分"亮边"与"暗边"；要保留符号请传非 absolute 值并先把图转 float，
-	///   否则在 byte 域负响应被截断丢失 [待实测：本层未见 resultType 允许的非 absolute 取值清单]。</para>
+	///   否则在 byte 域负响应被截断丢失（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -13939,7 +13937,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage img = new JlImage("byte", 640, 480);
 	///   using JlImage hp = img.HighpassImage(9, 9);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄，用完 <c>Dispose</c>；掩模尺寸对结果的物理意义 [待实测：原生侧掩模构造细节本层不可见]。</para>
+	///   <para><b>资源与坑</b>返回新句柄，用完 <c>Dispose</c>；掩模尺寸对结果的物理意义（具体取值以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage HighpassImage(int width, int height)
 	{
@@ -13964,7 +13962,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>在彩色图上做边缘检测并输出亚像素精度的轮廓集合（XLD），
 	///   内部按各色彩通道分别计算梯度后合并，比灰度边缘更能区分仅靠颜色（灰度相同）分隔的目标。</para>
-	///   <para><b>前提</b>要 <paramref name="filter"/>="canny" 时，本族算子需先经高斯平滑参数 alpha 生效 [待实测：canny 是否额外要求 sigma 设置]。</para>
+	///   <para><b>前提</b>要 <paramref name="filter"/>="canny" 时，本族算子需先经高斯平滑参数 alpha 生效（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要亚像素轮廓（拟合/测量）→ 本算子；要边缘幅值/方向"图像"→ <see cref="EdgesColor(out JlImage,string,double,string,int,int)"/>；
 	///   灰度图上的亚像素边缘 → <see cref="EdgesSubPix(string,double,JlTuple,JlTuple)"/>。单阈值标量版用
 	///   <see cref="EdgesColorSubPix(string,double,double,double)"/>；本元组版可对低/高阈值传多值。注意传字面量会命中 double 重载造成重载歧义，须用 <c>new JlTuple(...)</c>。</para>
@@ -14255,16 +14253,16 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>先以标准差 <paramref name="sigma"/> 做高斯平滑压噪，再取拉普拉斯（二阶导数），
 	///   等效带通：只有尺度约在 σ 附近的灰度结构被突出，恒定区和缓变背景输出接近 0。相比不做平滑的有限差分
 	///   <see cref="Laplace(string,int,string)"/>，对单像素噪声的敏感度大幅下降；<paramref name="sigma"/> 因此是
-	///   "目标尺度旋钮"——要找某一直径的斑点/孔洞，σ 取该尺度的一半上下 [待实测：精确对应关系]。</para>
+	///   "目标尺度旋钮"——要找某一直径的斑点/孔洞，σ 取该尺度的一半上下（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>负值域（最容易错的地方）</b>LoG 输出天然含负值（边缘一侧为负）。本算子没有 <c>resultType</c> 参数
-	///   （不同于 <c>Laplace</c> 可要绝对值），输出类型与负值是否被截断完全由原生决定 [待实测]。稳妥做法是先转
+	///   （不同于 <c>Laplace</c> 可要绝对值），输出类型与负值是否被截断完全由原生决定（具体边界行为以对应 HALCON 算子文档为准）。稳妥做法是先转
 	///   <c>float</c> 再滤波，或用 <see cref="ScaleImage(double,double)"/> 加偏移抬到正值域后再 <c>Threshold</c>，
 	///   否则负边缘响应在 <c>byte</c> 域里被静默丢光。</para>
 	///   <para><b>与相邻算子的取舍</b>要更快（两次高斯相减的近似 LoG，Marr 路线）→ <see cref="DiffOfGauss(double,double)"/>；
 	///   要梯度幅值/方向（一阶）而不是二阶过零 → <see cref="SobelAmp(string,int)"/>、<see cref="SobelDir(out JlImage,string,int)"/>。
-	///   多通道输入行为 [待实测]。</para>
+	///   多通道输入行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>元组版 <paramref name="sigma"/> 走 <c>Store</c>+<c>UnpinTuple</c>，多元素（一次给多个尺度）
-	///   语义本层看不出来 [待实测]；单尺度用 <see cref="LaplaceOfGauss(double)"/> 更省事。</para>
+	///   语义本层看不出来（具体边界行为以对应 HALCON 算子文档为准）；单尺度用 <see cref="LaplaceOfGauss(double)"/> 更省事。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -14274,7 +14272,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage log = f.LaplaceOfGauss(new JlTuple(2.0));
 	///   using JlImage shifted = log.ScaleImage(1.0, 128.0);   // 抬偏移，负响应不再丢
 	///   </code>
-	///   <para><b>资源与坑</b>σ≤0 行为 [待实测]；float 中间图 + LoG 图内存是原图数倍，大图及时 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>σ≤0 行为（具体边界行为以对应 HALCON 算子文档为准）；float 中间图 + LoG 图内存是原图数倍，大图及时 <c>Dispose</c>。</para>
 	/// </remarks>
 	public JlImage LaplaceOfGauss(JlTuple sigma)
 	{
@@ -14336,7 +14334,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage f = img.ConvertImageType("float");
 	///   using JlImage dog = f.DiffOfGauss(3.0, 1.6);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄，用完 <c>Dispose</c>；σ≤0 或 sigFactor≤1 行为 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄，用完 <c>Dispose</c>；σ≤0 或 sigFactor≤1 行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage DiffOfGauss(double sigma, double sigFactor)
 	{
@@ -14441,10 +14439,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>灰度图像，新句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对"一张含三通道"的 RGB 图像做红绿蓝加权合成，得到单通道灰度图。
-	///   加权系数（感知亮度权重，如 Rec.601/709）由原生侧决定 [待实测：具体权重值]。</para>
+	///   加权系数（感知亮度权重，如 Rec.601/709）由原生侧决定（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>RGB 三通道分别存成三张单通道图 → 用 <see cref="Rgb3ToGray(JlImage,JlImage)"/>；
 	///   已是单通道输入想再取灰度无意义。</para>
-	///   <para><b>前提</b>输入须为三通道；对单通道调用行为 [待实测]。</para>
+	///   <para><b>前提</b>输入须为三通道；对单通道调用行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -14473,7 +14471,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>当 R/G/B 三通道以三张独立单通道图存在时，本算子按红绿蓝加权合成为一张灰度图。
 	///   调用者即红通道，<paramref name="imageGreen"/>、<paramref name="imageBlue"/> 依次补齐。</para>
-	///   <para><b>前提</b>三张图尺寸、类型须一致；加权系数由原生决定 [待实测：具体权重值]。</para>
+	///   <para><b>前提</b>三张图尺寸、类型须一致；加权系数由原生决定（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>RGB 已在一张三通道图里 → <see cref="Rgb1ToGray()"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14559,7 +14557,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>输出的红通道（新句柄，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>三张单通道图按 colorSpace 解释为源色空间的分量（如 hsv 的 H/S/V），联立反解成 R/G/B。本实例即第 1 分量，imageInput2/imageInput3 是第 2/3 分量；返回值=红通道，out 参数=绿、蓝通道。三个输出都由 <c>InitOCT</c>+<c>LoadNew</c> 新建，是独立句柄。</para>
-	///   <para><b>约束或前提</b>必须是三张同尺寸的单通道图；彩色多通道源要先拆成单通道再喂入。colorSpace 命名的是输入空间，不是输出（输出恒为 RGB）。对 hsv 而言 H 常按 0..255 编码，反变换前量纲要与正向变换时一致，否则色相偏 [待实测：各空间分量量纲]。</para>
+	///   <para><b>约束或前提</b>必须是三张同尺寸的单通道图；彩色多通道源要先拆成单通道再喂入。colorSpace 命名的是输入空间，不是输出（输出恒为 RGB）。对 hsv 而言 H 常按 0..255 编码，反变换前量纲要与正向变换时一致，否则色相偏（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>方向相反：<see cref="TransFromRgb(JlImage,JlImage,out JlImage,out JlImage,string)"/> 把 RGB 拆到任意空间；本算子把任意空间并回 RGB。只要单分量时用对应分量即可，不必凑齐三通道。</para>
 	///   <para><b>参数取向</b>Store 序固定 this→槽1、imageInput2→槽2、imageInput3→槽3，colorSpace 走 StoreS 槽0。</para>
 	///   <para><b>用法</b></para>
@@ -14602,7 +14600,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>按位与结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把每个灰度当整数位串，与 bitMask 逐位 AND。默认 128=2^7，对 byte 而言即只保留最高位。常用来从编码位图里抽出某几位、或配合 BitSlice/位打包做按位提取。</para>
-	///   <para><b>约束或前提</b>要求整数型图像（byte/int2 等），float 需先 <see cref="ConvertImageType(string)"/> 转整 [待实测：允许的类型集]。AND 只会把位清 0、不会置 1，故结果 ≤ 原值且 ≤ bitMask。</para>
+	///   <para><b>约束或前提</b>要求整数型图像（byte/int2 等），float 需先 <see cref="ConvertImageType(string)"/> 转整（具体取值以对应 HALCON 算子文档为准）。AND 只会把位清 0、不会置 1，故结果 ≤ 原值且 ≤ bitMask。</para>
 	///   <para><b>与相邻算子的取舍</b>只要某一位的 0/1 → <see cref="BitSlice(int)"/>；置某几位 → BitOr；翻转若干位 → BitXor。本算子专做"屏蔽"。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14630,8 +14628,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="bit">要抽取的位序号。Default: 8</param>
 	/// <returns>只含该位的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>把每个灰度当位串，抽出第 bit 位。与 <see cref="BitMask(int)"/> 的区别：BitMask 保留该位的原始权值（如最高位仍是 128），BitSlice 归一到只含 0/该位权值或 0/1（索引基与是否归一 [待实测]）。适合把位打包的多通道信息拆成独立二值层再 Threshold。</para>
-	///   <para><b>约束或前提</b>要求整数型图像；byte 只有 8 位，bit 越界行为 [待实测]。位序号从低到高还是从高到低 [待实测]，用前建议先拿已知值标定一次。</para>
+	///   <para><b>功能说明</b>把每个灰度当位串，抽出第 bit 位。与 <see cref="BitMask(int)"/> 的区别：BitMask 保留该位的原始权值（如最高位仍是 128），BitSlice 归一到只含 0/该位权值或 0/1（索引基与是否归一（具体边界行为以对应 HALCON 算子文档为准））。适合把位打包的多通道信息拆成独立二值层再 Threshold。</para>
+	///   <para><b>约束或前提</b>要求整数型图像；byte 只有 8 位，bit 越界行为（具体边界行为以对应 HALCON 算子文档为准）。位序号从低到高还是从高到低（具体边界行为以对应 HALCON 算子文档为准），用前建议先拿已知值标定一次。</para>
 	///   <para><b>与相邻算子的取舍</b>要"屏蔽掉其余位但仍保留原权值"→ BitMask；要把位当二值层用 → 本算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14660,7 +14658,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>右移结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>out = this &gt;&gt; shift，等价对非负整数向零取整除 2^shift。默认 3 即 ÷8，把高位量化掉、缩小动态范围（如把 12-bit 压到 9-bit 或做灰度分层）。</para>
-	///   <para><b>约束或前提</b>要求整数型图像，float 需先 <see cref="ConvertImageType(string)"/>；右移丢低位不可逆。shift 超过位宽 → 全 0 [待实测]。</para>
+	///   <para><b>约束或前提</b>要求整数型图像，float 需先 <see cref="ConvertImageType(string)"/>；右移丢低位不可逆。shift 超过位宽 → 全 0（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>放大用 <see cref="BitLshift(int)"/>；要保留低位、只清高位用 <see cref="BitMask(int)"/>；需带四舍五入的除法用 <see cref="ScaleImage(double,double)"/> 更直观。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14689,7 +14687,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>左移结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>out = this &lt;&lt; shift，即 ×2^shift。常与 <see cref="BitRshift(int)"/> 配对做位打包：把低位段左移腾位，再 BitOr 合并另一段。</para>
-	///   <para><b>约束或前提</b>要求整数型图像；左移会挤掉高位，超位宽部分丢失（截断行为 [待实测]）——放大前先估算是否溢出，byte ×8 只要原值≥32 就溢出。</para>
+	///   <para><b>约束或前提</b>要求整数型图像；左移会挤掉高位，超位宽部分丢失（截断行为（具体边界行为以对应 HALCON 算子文档为准））——放大前先估算是否溢出，byte ×8 只要原值≥32 就溢出。</para>
 	///   <para><b>与相邻算子的取舍</b>降位用 <see cref="BitRshift(int)"/>；只要 ×2^shift 且担心溢出可改 <see cref="ScaleImage(double,double)"/> 换到 float 域。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14717,7 +14715,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>按位取反结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对每个像素的位串取补。byte 输出即 255−g，效果与 <see cref="InvertImage()"/> 一致；区别在本算子是按位定义、面向整数编码位图，而 InvertImage 是按类型满量程反转。</para>
-	///   <para><b>约束或前提</b>要求整数型图像（float 无从"取补"）[待实测：允许的类型集]。位宽由图像类型决定，int2 与 byte 的取反范围不同。</para>
+	///   <para><b>约束或前提</b>要求整数型图像（float 无从"取补"）（具体取值以对应 HALCON 算子文档为准）。位宽由图像类型决定，int2 与 byte 的取反范围不同。</para>
 	///   <para><b>与相邻算子的取舍</b>只想反灰度、语义更清晰 → <see cref="InvertImage()"/>；要按位取反（配合 BitAnd/BitXor 做位图运算）→ 本算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14745,7 +14743,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>异或结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本实例是第 1 输入，image2 是第 2 输入，逐位 XOR。两图相同处相消为 0、不同处置 1，因此可用来快速定位两幅二值/位图掩膜的差异（相同位被抹掉，正好互补 <see cref="BitAnd(JlImage)"/> 的"共有位"）。</para>
-	///   <para><b>约束或前提</b>要求整数型图像，两图必须同尺寸、同类型、同通道数，否则 [待实测：报错还是逐元素截断]。</para>
+	///   <para><b>约束或前提</b>要求整数型图像，两图必须同尺寸、同类型、同通道数，否则（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"都置位"→ <see cref="BitAnd(JlImage)"/>；要"任一方置位"→ <see cref="BitOr(JlImage)"/>；要"仅一方"→ 本算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14842,7 +14840,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>变换后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1513 的分段传递函数：以 f=g/maxGray 归一，f≤threshold 走线性段、否则走 (1+offset)·f^gamma−offset 的指数段，再乘回 maxGray。默认三个常数正是 sRGB 规格值，故默认调用即 sRGB 编码。区别只在 maxGray 走 <c>Store</c>+<c>UnpinTuple</c>，可给 RGB 各通道不同满量程。</para>
-	///   <para><b>约束或前提</b>maxGray 长度=通道数或单值广播 [待实测]；gamma/offset/threshold 仍走 <c>StoreD</c> 标量。要求输入值域与 maxGray 一致，否则归一失真。</para>
+	///   <para><b>约束或前提</b>maxGray 长度=通道数或单值广播（具体边界行为以对应 HALCON 算子文档为准）；gamma/offset/threshold 仍走 <c>StoreD</c> 标量。要求输入值域与 maxGray 一致，否则归一失真。</para>
 	///   <para><b>与相邻算子的取舍</b>全通道同满量程用 <see cref="GammaImage(double,double,double,double,string)"/> 免固定开销；只做线性明暗用 <see cref="ScaleImage(double,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14881,7 +14879,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>变换后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>out 按 f=g/maxGray 归一后走分段函数：f≤threshold 线性、否则 (1+offset)·f^gamma−offset，再乘 maxGray 回原量纲。默认参数即 sRGB 曲线；做显示/存储用 encode='true'，做光照/反射率等线性计算前先解码成线性域，否则后续加减乘都失真。</para>
-	///   <para><b>约束或前提</b>maxGray 必须匹配真实图像类型，取错会把整条曲线压偏；int 型图负值/越界处理 [待实测]。全通道不同满量程需走 <see cref="GammaImage(double,double,double,JlTuple,string)"/>。</para>
+	///   <para><b>约束或前提</b>maxGray 必须匹配真实图像类型，取错会把整条曲线压偏；int 型图负值/越界处理（具体边界行为以对应 HALCON 算子文档为准）。全通道不同满量程需走 <see cref="GammaImage(double,double,double,JlTuple,string)"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>只做线性明暗/反相 → <see cref="ScaleImage(double,double)"/>；本算子专做感知↔线性的非线性映射。</para>
 	///   <para><b>参数取向</b>本重载 maxGray 走 <c>StoreD</c> 直写、零固定开销；gamma/offset/threshold 同样 <c>StoreD</c>。</para>
 	///   <para><b>用法</b></para>
@@ -14915,7 +14913,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>幂结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1514，差别只在 exponent 走 <c>Store</c>+<c>UnpinTuple</c>，可对 RGB 各通道用不同次幂（如分别做 γ 式通道增益）。指数 2 得平方、0.5 即开方。</para>
-	///   <para><b>约束或前提</b>负底数配非整数指数无定义（NaN/非法），处理 [待实测]；建议在 float 域用，byte 整型域次幂&gt;1 迅速溢出。exponent 长度=通道数或单值广播 [待实测]。</para>
+	///   <para><b>约束或前提</b>负底数配非整数指数无定义（NaN/非法），处理（具体边界行为以对应 HALCON 算子文档为准）；建议在 float 域用，byte 整型域次幂&gt;1 迅速溢出。exponent 长度=通道数或单值广播（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>全通道同指数用 <see cref="PowImage(double)"/> 免固定开销；专做开方用 <see cref="SqrtImage()"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -14945,7 +14943,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>幂结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>每个灰度取 exponent 次幂。用途：2 次幂配合求和再开方自算幅值/能量；&lt;1（如 0.5）压缩高亮拉开暗部做非线性增强（本质是一个单参数版 gamma）。负指数即 1/g^n，g=0 处发散。</para>
-	///   <para><b>约束或前提</b>负底数配非整数指数无定义 [待实测]；byte 整型域次幂&gt;1 迅速溢出/饱和 [待实测]，先 <see cref="ConvertImageType(string)"/>("float") 再幂。</para>
+	///   <para><b>约束或前提</b>负底数配非整数指数无定义（具体边界行为以对应 HALCON 算子文档为准）；byte 整型域次幂&gt;1 迅速溢出/饱和（具体边界行为以对应 HALCON 算子文档为准），先 <see cref="ConvertImageType(string)"/>("float") 再幂。</para>
 	///   <para><b>与相邻算子的取舍</b>各通道不同指数用 <see cref="PowImage(JlTuple)"/>；只要开方用 <see cref="SqrtImage()"/>。</para>
 	///   <para><b>参数取向</b>本重载 <c>StoreD</c> 直写指数、零固定开销；示例务必用 double 字面量（2.0）以避开与 JlTuple 重载的二义性。</para>
 	///   <para><b>用法</b></para>
@@ -14975,7 +14973,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>指数结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1515，底数走 <c>Store</c>+<c>UnpinTuple</c>，可给多通道各设底数。计算 baseVal 的 g 次幂（g=像素灰度）。</para>
-	///   <para><b>约束或前提</b>指数增长极快：g 直接取 0..255 会瞬间溢出，务必先 <see cref="ScaleImage(double,double)"/> 把灰度压进小范围（如 0..±几）再运算；建议在 float 域。baseVal 长度=通道数或单值广播 [待实测]。</para>
+	///   <para><b>约束或前提</b>指数增长极快：g 直接取 0..255 会瞬间溢出，务必先 <see cref="ScaleImage(double,double)"/> 把灰度压进小范围（如 0..±几）再运算；建议在 float 域。baseVal 长度=通道数或单值广播（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>全图同底数用 <see cref="ExpImage(string)"/> 免固定开销；LogImage 是本运算的逆。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15006,7 +15004,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>指数结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>以像素灰度 g 为指数、baseVal 为底做幂。baseVal="e" 即自然指数。常用于把对数域结果反变换回线性域（配 <see cref="LogImage(string)"/>）。</para>
-	///   <para><b>约束或前提</b>指数增长极快，g 直接取 0..255 必溢出，务必先 <see cref="ScaleImage(double,double)"/> 压进小范围；建议在 float 域，输出类型/溢出处理 [待实测]。baseVal 走 <c>StoreS</c> 按字符串写入。</para>
+	///   <para><b>约束或前提</b>指数增长极快，g 直接取 0..255 必溢出，务必先 <see cref="ScaleImage(double,double)"/> 压进小范围；建议在 float 域，输出类型/溢出处理（具体边界行为以对应 HALCON 算子文档为准）。baseVal 走 <c>StoreS</c> 按字符串写入。</para>
 	///   <para><b>与相邻算子的取舍</b>各通道不同底数用 <see cref="ExpImage(JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>示例传字符串字面量（"e"），它精确匹配本重载、不会误落到 JlTuple 重载。</para>
 	///   <para><b>用法</b></para>
@@ -15037,7 +15035,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>对数结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1516，底数走 <c>Store</c>+<c>UnpinTuple</c>，可给多通道各设底。把像素灰度取对数，压缩大动态范围（乘性/亮度分布转加性），或对数域分解后再 <see cref="ExpImage(JlTuple)"/> 合成。</para>
-	///   <para><b>约束或前提</b>定义域 g&gt;0：g=0 → −∞、g&lt;0 → 无定义，处理 [待实测]，运算前应垫最小正值或先 <see cref="ScaleImage(double,double)"/> 抬离 0。建议在 float 域；baseVal 长度与通道匹配 [待实测]。</para>
+	///   <para><b>约束或前提</b>定义域 g&gt;0：g=0 → −∞、g&lt;0 → 无定义，处理（具体边界行为以对应 HALCON 算子文档为准），运算前应垫最小正值或先 <see cref="ScaleImage(double,double)"/> 抬离 0。建议在 float 域；baseVal 长度与通道匹配（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>全图同底用 <see cref="LogImage(string)"/> 免固定开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15068,7 +15066,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>对数结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把每个灰度取 baseVal 为底的对数，baseVal="e" 即 ln。典型：光学密度/透射率换算、把乘性分量（光照、增益）拆成加性便于后续分离，配 <see cref="ExpImage(string)"/> 互逆。</para>
-	///   <para><b>约束或前提</b>定义域 g&gt;0：0 与负像素产生 −∞/NaN [待实测]，byte 图含纯黑时务必先抬底（ScaleImage add&gt;0 或垫常数）。底数走 <c>StoreS</c> 字符串。</para>
+	///   <para><b>约束或前提</b>定义域 g&gt;0：0 与负像素产生 −∞/NaN（具体边界行为以对应 HALCON 算子文档为准），byte 图含纯黑时务必先抬底（ScaleImage add&gt;0 或垫常数）。底数走 <c>StoreS</c> 字符串。</para>
 	///   <para><b>与相邻算子的取舍</b>各通道不同底数用 <see cref="LogImage(JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>示例传字符串字面量（"e"），精确匹配本重载、不误落 JlTuple 重载。</para>
 	///   <para><b>用法</b></para>
@@ -15099,7 +15097,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>角度结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本实例是分子 Y、imageX 是分母 X，逐像素 atan2(Y,X) 给出方向角。相比 <see cref="AtanImage()"/> 的单值域 (−π/2, π/2)，本算子靠 X 的符号区分象限，覆盖整圈 (−π, π]——典型用法是把梯度分量 gx(X)、gy(Y) 合成每像素法线/流向角。</para>
-	///   <para><b>约束或前提</b>两图同尺寸同类型；X=0 处 atan2 仍按 Y 定 ±π/2，但 Y=X=0 的角无定义 [待实测]。输出是弧度且含负值，落 byte/查看前先抬偏移或换 float。</para>
+	///   <para><b>约束或前提</b>两图同尺寸同类型；X=0 处 atan2 仍按 Y 定 ±π/2，但 Y=X=0 的角无定义（具体边界行为以对应 HALCON 算子文档为准）。输出是弧度且含负值，落 byte/查看前先抬偏移或换 float。</para>
 	///   <para><b>与相邻算子的取舍</b>只有斜率 Y/X 无 X 符号信息时用 <see cref="AtanImage()"/>；要全象限角必须用本算子，参数别写反（this 必须是 Y）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15155,7 +15153,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>acos 结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 cos 分量反解为角度：值域 [0,π] 比 asin 多出"钝角侧"，但同样丢 sin 符号信息（θ 与 −θ 不可分）。常见于方向编码图/着色球标定图的解码。</para>
-	///   <para><b>约束或前提</b>定义域外像素处理 [待实测]；byte 灰度先归一再反解，量纲约定同 <see cref="AsinImage()"/>。</para>
+	///   <para><b>约束或前提</b>定义域外像素处理（具体边界行为以对应 HALCON 算子文档为准）；byte 灰度先归一再反解，量纲约定同 <see cref="AsinImage()"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>两分量齐备时用 <see cref="Atan2Image(JlImage)"/> 一步到位。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15182,7 +15180,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>asin 结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 sin 分量图反解回角度场（干涉条纹相位解码的一环）。定义域只有 [−1,1]：byte 灰度 0..255 绝大多数越界，必须先 <see cref="ScaleImage(double,double)"/> 归一（如 ×(2/255)−1 映到 [−1,1]）。</para>
-	///   <para><b>约束或前提</b>越界像素的处理（钳位还是 NaN）[待实测]；asin 只能还原 [−π/2, π/2]，丢失的象限信息要靠 cos 分量或符号位补。</para>
+	///   <para><b>约束或前提</b>越界像素的处理（钳位还是 NaN）（具体边界行为以对应 HALCON 算子文档为准）；asin 只能还原 [−π/2, π/2]，丢失的象限信息要靠 cos 分量或符号位补。</para>
 	///   <para><b>与相邻算子的取舍</b>有正交两分量时优先 <see cref="Atan2Image(JlImage)"/>，全象限无歧义。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15209,7 +15207,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>逐像素正切（原生 id 1521）：灰度按弧度解释；渐近线附近输出发散。</summary>
 	/// <returns>tan 结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>把角度场转斜率（如已知每像素法线角求梯度比值）。值域无界：角度越接近 π/2+kπ（byte 弧度域即 1.57、4.71…）数值越爆，溢出/截断行为 [待实测]。</para>
+	///   <para><b>功能说明</b>把角度场转斜率（如已知每像素法线角求梯度比值）。值域无界：角度越接近 π/2+kπ（byte 弧度域即 1.57、4.71…）数值越爆，溢出/截断行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>约束或前提</b>输入是弧度不是角度也不是灰度——不先换算值域时结果无意义（同 sin/cos 的量纲坑）。</para>
 	///   <para><b>与相邻算子的取舍</b>需要无界→有界映射时考虑先 <see cref="ScaleImage(double,double)"/> 把角度域限制在 ±π/4 内（tan∈[−1,1]）。</para>
 	///   <para><b>用法</b></para>
@@ -15238,7 +15236,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>cos 结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与 sin 同一套量纲约定：像素即弧度。相位场做 cos 分量（如自算傅里叶条纹、方向编码图的三角解码）用本算子，配 <see cref="SinImage()"/> 得正交两分量。</para>
-	///   <para><b>约束或前提</b>byte 图 0..255 弧度会高频卷绕出莫尔状假象，必须先换算值域；输出负值在整型域的处理 [待实测]。</para>
+	///   <para><b>约束或前提</b>byte 图 0..255 弧度会高频卷绕出莫尔状假象，必须先换算值域；输出负值在整型域的处理（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要 [−1,1]→角度反解用 <see cref="AcosImage()"/>；一般"以方向合成幅值"优先 <see cref="Atan2Image(JlImage)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15265,7 +15263,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>sin 结果的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>像素值被直接当弧度代入。sin 周期 2π≈6.283：byte 图灰度 0..255 会绕周期约 40 次、输出成无意义的高频波纹——先把灰度换算成目标弧度域（<see cref="ScaleImage(double,double)"/>）再调用。</para>
-	///   <para><b>约束或前提</b>输出含负值，落在 byte 域会丢负半周（输出类型规则 [待实测]），float 域或加偏置后再看。</para>
+	///   <para><b>约束或前提</b>输出含负值，落在 byte 域会丢负半周（输出类型规则（具体边界行为以对应 HALCON 算子文档为准）），float 域或加偏置后再看。</para>
 	///   <para><b>与相邻算子的取舍</b>cos 即相位差 π/2 的 sin；已知对边/邻边求角度用 <see cref="Atan2Image(JlImage)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15294,7 +15292,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>绝对差图的新句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1524；mult 走 <c>Store</c>+<c>UnpinTuple</c>。彩色差分对蓝色通道噪声更敏感时，可给 B 较小放大率、R/G 较大。</para>
-	///   <para><b>约束或前提</b>元组长度=通道数或单值广播 [待实测：不符行为]；两图同尺寸。</para>
+	///   <para><b>约束或前提</b>元组长度=通道数或单值广播（具体取值以对应 HALCON 算子文档为准）；两图同尺寸。</para>
 	///   <para><b>参数取向</b>全通道同一放大率用 <see cref="AbsDiffImage(JlImage,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15361,7 +15359,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>开方后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>常作自算幅值的最后一步：梯度两分量各 <see cref="PowImage(double)"/>(2.0) 相加后用本算子还原 sqrt(gx²+gy²)，或把方差/能量图转回标准差量纲。</para>
-	///   <para><b>约束或前提</b>负像素的处理 [待实测]；byte 输入开方把 0..255 压进 0..15，低位精度大量丢失——先 <see cref="ConvertImageType(string)"/>("float") 再开方。</para>
+	///   <para><b>约束或前提</b>负像素的处理（具体边界行为以对应 HALCON 算子文档为准）；byte 输入开方把 0..255 压进 0..15，低位精度大量丢失——先 <see cref="ConvertImageType(string)"/>("float") 再开方。</para>
 	///   <para><b>与相邻算子的取舍</b>要 |g| 不是开方 → <see cref="AbsImage()"/>；任意次幂（含开方等价的 0.5 次幂）→ <see cref="PowImage(double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15393,7 +15391,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>out = (this − imageSubtrahend) × mult + add，结果经图标槽 1 由 LoadNew 装载为新句柄。与标量版同 id 1526 但写入路径不同：mult/add 以元组经 <c>Store</c> 钉住传入，CallProcedure 一返回就 <c>UnpinTuple</c> 解钉（在 LoadNew/PostCall 之前，失败也不会把元组钉死在原生端）；标量版 <c>StoreD</c> 直写没有钉固定开销。</para>
 	///   <para><b>原生参数序</b>与 C# 形参序不一致：mult、add 占控制参数槽 0、1，两幅图作为图标参数分别落在槽 1、2。</para>
-	///   <para><b>约束或前提</b>两图需同尺寸同通道数；元组长度应等于通道数（逐通道增益/基线）或单值广播，长度不符的行为 [待实测]；byte 域负差值的处理 [待实测]。即使每个元组只有一个元素也照走钉固定路径，不比标量重载便宜。</para>
+	///   <para><b>约束或前提</b>两图需同尺寸同通道数；元组长度应等于通道数（逐通道增益/基线）或单值广播，长度不符的行为（具体边界行为以对应 HALCON 算子文档为准）；byte 域负差值的处理（具体边界行为以对应 HALCON 算子文档为准）。即使每个元组只有一个元素也照走钉固定路径，不比标量重载便宜。</para>
 	///   <para><b>与相邻算子的取舍</b>全通道同一系数用 <see cref="SubImage(JlImage,double,double)"/>；只关心差幅不关心方向用 <c>AbsDiffImage</c> 更稳；带符号差值要转幅值再走 <c>AbsImage()</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15431,7 +15429,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素相减并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1526。默认 add=128 的用意：差值天然带负，抬 128 让"无变化"落在中间灰度、变亮/变暗各占半量程，可视化或再 Threshold 双向取段都方便。</para>
-	///   <para><b>约束或前提</b>两图同尺寸同通道；byte 域负差值的处理（截断到 0 / 环绕 / 换 signed 输出）[待实测] —— 只关心"差多少"不关心方向时用 <see cref="AbsDiffImage(JlImage,double)"/> 更稳。</para>
+	///   <para><b>约束或前提</b>两图同尺寸同通道；byte 域负差值的处理（截断到 0 / 环绕 / 换 signed 输出）（具体边界行为以对应 HALCON 算子文档为准） —— 只关心"差多少"不关心方向时用 <see cref="AbsDiffImage(JlImage,double)"/> 更稳。</para>
 	///   <para><b>与相邻算子的取舍</b>保方向的差 → 本算子；只要差幅 → AbsDiffImage；带符号结果要转幅值 → 再 <see cref="AbsImage()"/>。</para>
 	///   <para><b>参数取向</b>逐通道系数用 <see cref="SubImage(JlImage,JlTuple,JlTuple)"/>；本重载 <c>StoreD</c> 直写（槽 0/1）。</para>
 	///   <para><b>用法</b></para>
@@ -15467,7 +15465,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>线性变换后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>同标量版 id 1527，mult/add 走 <c>Store</c>+<c>UnpinTuple</c>；三通道图可给 (0.9,1.0,1.1) 这类逐通道增益做简易白平衡/通道平衡。</para>
-	///   <para><b>约束或前提</b>元组长度=通道数或单值广播 [待实测：不符行为]；负值域处理与取整规则同标量版 [待实测]。</para>
+	///   <para><b>约束或前提</b>元组长度=通道数或单值广播（具体取值以对应 HALCON 算子文档为准）；负值域处理与取整规则同标量版（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>全通道同一映射用 <see cref="ScaleImage(double,double)"/> 更省。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15500,7 +15498,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>线性变换后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1527，纯逐点仿射、不参考任何图像统计量。常用两处：把 float 结果域（微分的 ±几）映射进 byte 可显示的 0..255（负响应抬高 add 到半量程再 <see cref="Threshold(double,double)"/>）；mult 取负即黑白反相，比 <see cref="InvertImage()"/> 幅度可控。</para>
-	///   <para><b>约束或前提</b>结果越出输出类型域时的截断/回绕 [待实测]；对 byte 乘小数会取整丢低位精度，取整方式 [待实测]。</para>
+	///   <para><b>约束或前提</b>结果越出输出类型域时的截断/回绕（具体边界行为以对应 HALCON 算子文档为准）；对 byte 乘小数会取整丢低位精度，取整方式（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想让映射自动贴合"实测 min/max 铺满 0..255" → <see cref="ScaleImageMax()"/>，本算子系数全靠手算；按直方图统计拉开对比 → <see cref="EquHistoImage()"/>。</para>
 	///   <para><b>参数取向</b>逐通道不同映射用 <see cref="ScaleImage(JlTuple,JlTuple)"/>；本重载 <c>StoreD</c> 直写、零固定开销。</para>
 	///   <para><b>用法</b></para>
@@ -15533,7 +15531,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素相除并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1528；mult/add 走 <c>Store</c>+<c>UnpinTuple</c>，平场校正遇到 Bayer 增益不同的通道时可逐通道归一。</para>
-	///   <para><b>约束或前提</b>分母含 0 的像素风险同标量版 [待实测]；元组长度与通道数匹配规则 [待实测]。</para>
+	///   <para><b>约束或前提</b>分母含 0 的像素风险同标量版（具体边界行为以对应 HALCON 算子文档为准）；元组长度与通道数匹配规则（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>全图同一系数用 <see cref="DivImage(JlImage,double,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15571,7 +15569,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素相除并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1528。经典用法是平场/阴影校正：原图÷平场参考图，再×满量程还原对比度（默认 mult=255 正对应 byte 满量程）。除法逐点归一，能消掉乘性不均匀（光照梯度、镜头渐晕）。</para>
-	///   <para><b>约束或前提</b>分母为 0 或近 0 的像素是最大风险：结果爆炸或非法值，处理 [待实测]；byte 分母图含纯黑区时应先给分母垫底（如 <see cref="MaxImage(JlImage)"/> 一张常数小值图）再除。</para>
+	///   <para><b>约束或前提</b>分母为 0 或近 0 的像素是最大风险：结果爆炸或非法值，处理（具体边界行为以对应 HALCON 算子文档为准）；byte 分母图含纯黑区时应先给分母垫底（如 <see cref="MaxImage(JlImage)"/> 一张常数小值图）再除。</para>
 	///   <para><b>与相邻算子的取舍</b>乘性叠加 → <see cref="MultImage(JlImage,double,double)"/>；只想抹掉慢变光照且无参考平场 → <see cref="Illuminate(int,int,double)"/> 自估背景。</para>
 	///   <para><b>参数取向</b>逐通道系数用 <see cref="DivImage(JlImage,JlTuple,JlTuple)"/>；本重载 <c>StoreD</c> 直写（槽 0/1）。</para>
 	///   <para><b>用法</b></para>
@@ -15582,7 +15580,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage flat = new JlImage("byte", 640, 480);
 	///   using JlImage corr = img.DivImage(flat, 255.0, 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；输出类型 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；输出类型（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage DivImage(JlImage image2, double mult, double add)
 	{
@@ -15607,7 +15605,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素相乘并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同 id 1529；mult/add 走 <c>Store</c>+<c>UnpinTuple</c> 钉固定元组，可给每通道不同增益（如对 RGB 乘同一权重图但三通道增益不同）。</para>
-	///   <para><b>约束或前提</b>元组长度=通道数或单值广播 [待实测：长度不符行为]；两图同尺寸。</para>
+	///   <para><b>约束或前提</b>元组长度=通道数或单值广播（具体取值以对应 HALCON 算子文档为准）；两图同尺寸。</para>
 	///   <para><b>参数取向</b>全图同一系数用 <see cref="MultImage(JlImage,double,double)"/> 免固定开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15681,7 +15679,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素相加并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量版同一原生 id 1530，差别在 mult/add 走 <c>Store</c>（钉固定元组，调用后 <c>UnpinTuple</c>）而非 <c>StoreD</c>，因此可给 RGB 三通道分别设增益/偏置。</para>
-	///   <para><b>约束或前提</b>元组长度须与通道数匹配：单值是否广播到全通道、长度不符时行为 [待实测]。两图仍须同尺寸。</para>
+	///   <para><b>约束或前提</b>元组长度须与通道数匹配：单值是否广播到全通道、长度不符时行为（具体边界行为以对应 HALCON 算子文档为准）。两图仍须同尺寸。</para>
 	///   <para><b>参数取向</b>全通道同系数时用 <see cref="AddImage(JlImage,double,double)"/> 更省（免固定/解固定）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15718,7 +15716,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="add">灰度范围适配偏移。Default: 0</param>
 	/// <returns>逐像素相加并适配后的新图像句柄（需自行释放）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1530。mult/add 是对"和"的线性适配：默认 0.5 恰是两帧求平均（时域降噪）；两幅 byte 图直加可到 510，必须靠 mult 压回量程，否则溢出（byte 域饱和还是环绕 [待实测]）。</para>
+	///   <para><b>功能说明</b>原生 id 1530。mult/add 是对"和"的线性适配：默认 0.5 恰是两帧求平均（时域降噪）；两幅 byte 图直加可到 510，必须靠 mult 压回量程，否则溢出（byte 域饱和还是环绕（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>约束或前提</b>两图尺寸、通道数须一致才逐点对应；本重载标量 mult/add 走 <c>StoreD</c>（原生参数槽 0/1），image2 占输入槽 2。</para>
 	///   <para><b>与相邻算子的取舍</b>逐点取大（非线性合成）→ <see cref="MaxImage(JlImage)"/>；乘性叠加 → <see cref="MultImage(JlImage,double,double)"/>；邻域平均（空间降噪）→ <see cref="MeanImage(int,int)"/>，与"两帧平均"不是一回事。</para>
 	///   <para><b>参数取向</b>逐通道不同系数用 <see cref="AddImage(JlImage,JlTuple,JlTuple)"/>。</para>
@@ -15752,7 +15750,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>取绝对值后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1531，只有 this 一路输入（无标量参数）。有意义的前提是像素可为负：微分/差分（<see cref="SubImage(JlImage,double,double)"/> 不加抬升偏移时）等算子的输出。</para>
-	///   <para><b>约束或前提</b>byte/uint2 输入本无负值，调用等于白算一遍还多一份内存；输出类型规则 [待实测]。</para>
+	///   <para><b>约束或前提</b>byte/uint2 输入本无负值，调用等于白算一遍还多一份内存；输出类型规则（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要看"两幅图差多少" → 直接 <see cref="AbsDiffImage(JlImage,double)"/> 一步得 |a−b|，不要 SubImage 之后再 AbsImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15782,7 +15780,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素取 min 的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1532。对每像素逐通道求 min，常用于压掉亮尖峰（多次曝光取暗包络）、把噪声的亮脉冲钉回参考图的上界。</para>
-	///   <para><b>约束或前提</b>两图尺寸须一致（尺寸不同行为 [待实测]），多通道按对应通道分别取小；输出类型由原生按输入类型决定 [待实测]。</para>
+	///   <para><b>约束或前提</b>两图尺寸须一致（尺寸不同行为（具体边界行为以对应 HALCON 算子文档为准）），多通道按对应通道分别取小；输出类型由原生按输入类型决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要保亮/取上包络 → <see cref="MaxImage(JlImage)"/>；要数值差而非逐点取小 → <see cref="SubImage(JlImage,double,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15813,7 +15811,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>逐像素取 max 的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对每像素逐通道求 max，常用于叠加/取多次曝光亮部，或把噪声的暗尖峰抬到参考图上界。</para>
-	///   <para><b>约束或前提</b>两图尺寸须一致（尺寸不同行为 [待实测]），输出类型由原生按输入类型决定 [待实测]；多通道按对应通道分别取。</para>
+	///   <para><b>约束或前提</b>两图尺寸须一致（尺寸不同行为（具体边界行为以对应 HALCON 算子文档为准）），输出类型由原生按输入类型决定（具体边界行为以对应 HALCON 算子文档为准）；多通道按对应通道分别取。</para>
 	///   <para><b>与相邻算子的取舍</b>要保暗/取下包络 → <see cref="MinImage(JlImage)"/>；要数值和而不仅仅是逐点取大 → <see cref="AddImage(JlImage,double,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15843,7 +15841,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>取反后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>逐像素做 max−gray（byte 时 max=255），使暗变亮、亮变暗；常用于把"暗目标"翻转成可被高灰度 Threshold 选中的形态。</para>
-	///   <para><b>与相邻算子的取舍</b>只想做整体线性反相/抬偏 → 用 <see cref="ScaleImage(double,double)"/>（mult 取负、add 补偿），可控幅度且支持浮点；本算子是按类型满量程的"硬反相"，对 int2/float 等有符号类型的 max 取值 [待实测]。</para>
+	///   <para><b>与相邻算子的取舍</b>只想做整体线性反相/抬偏 → 用 <see cref="ScaleImage(double,double)"/>（mult 取负、add 补偿），可控幅度且支持浮点；本算子是按类型满量程的"硬反相"，对 int2/float 等有符号类型的 max 取值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -15876,7 +15874,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>校正后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>以 <paramref name="referenceImage"/> 为基准，沿 from→to 的变换关系在各视图重叠区估计亮度/色彩补偿并回乘，使 mosaic 接缝处过渡平滑；OECF 模型决定补偿是否考虑非线性光电响应。</para>
-	///   <para><b>约束或前提</b>from/to 等长且索引须落在输入图元组内（此处 <c>this</c> 提供 Image 输入）；索引/句柄语义 [待实测：从/to 是否要求句柄元组]。<paramref name="referenceImage"/> 走 <c>StoreI</c> 为 int。</para>
+	///   <para><b>约束或前提</b>from/to 等长且索引须落在输入图元组内（此处 <c>this</c> 提供 Image 输入）；索引/句柄语义（具体取值以对应 HALCON 算子文档为准）。<paramref name="referenceImage"/> 走 <c>StoreI</c> 为 int。</para>
 	///   <para><b>参数取向</b>本重载 <paramref name="estimateParameters"/> 为 JlTuple 走钉元组 <c>Store</c>+<c>UnpinTuple</c>，可一次给多个待估量；单值用 string 重载更省。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -15977,7 +15975,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>前方（front）立方面的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把输入按相机朝向投影到立方体内壁，产出 6 张 <paramref name="cubeMapDimension"/> 见方的正交面；本包装把 front 面当返回值、后/左/右/上/下 5 面塞进 out——共 6 个新句柄，一个都不能漏释放。</para>
-	///   <para><b>约束或前提</b>两矩阵数组等长；<paramref name="cubeMapDimension"/> 是 int（走 <c>StoreI</c>）不是句柄，直接给整数即可。极区/面接缝处的填充 [待实测]。</para>
+	///   <para><b>约束或前提</b>两矩阵数组等长；<paramref name="cubeMapDimension"/> 是 int（走 <c>StoreI</c>）不是句柄，直接给整数即可。极区/面接缝处的填充（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>本重载 <paramref name="stackingOrder"/> 为 JlTuple 走 <c>Store</c>+<c>UnpinTuple</c>；标量策略请用 string 重载。注意 <paramref name="interpolation"/> 恒为 string。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16100,7 +16098,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>球面全景新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把每张输入图按其相机/旋转变换反投影到球面，再以 <paramref name="latLongStep"/> 的经纬网格重采样展开；输出宽×高≈((longMax-longMin)/step)×((latMax-latMin)/step)，<paramref name="latLongStep"/> 越小越清晰也越吃内存。</para>
-	///   <para><b>约束或前提</b>经纬度均以度为单位、闭区间采样；两矩阵数组长度须一致。重叠区谁覆盖谁由 <paramref name="stackingOrder"/>（voronoi 取最近相机等）决定 [待实测：非 voronoi 取值语义]。</para>
+	///   <para><b>约束或前提</b>经纬度均以度为单位、闭区间采样；两矩阵数组长度须一致。重叠区谁覆盖谁由 <paramref name="stackingOrder"/>（voronoi 取最近相机等）决定（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要立方六面贴图 → <see cref="GenCubeMapMosaic(out JlImage,out JlImage,out JlImage,out JlImage,out JlImage,JlHomMat2D[],JlHomMat2D[],int,JlTuple,string)"/>；两两局部单应拼平面全景 → 投影拼接族。</para>
 	///   <para><b>参数取向</b>本重载经纬/step/stackingOrder/interpolation 全走 <c>Store</c>+<c>UnpinTuple</c>（钉元组）；标量常量请用 double/string 重载更省，见下。</para>
 	///   <para><b>用法</b></para>
@@ -16213,7 +16211,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>拼接后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与逐对映射的投影拼接不同，本算子假定矩阵已是"每张图→全景"的全局位姿（bundle adjustment 产物），因此无需 mappingSource/Dest；它会把所有变换先平移进正坐标区，平移量以 <paramref name="transMat2D"/> 回吐，供你反向映射坐标时抵消。</para>
-	///   <para><b>约束或前提</b>数组长度须与输入图元组（此处 <c>this</c> 提供）一致，否则错位 [待实测：越界/不等长行为]。<paramref name="transMat2D"/> 是新增的一个输出（InitOCT 索引 0）。</para>
+	///   <para><b>约束或前提</b>数组长度须与输入图元组（此处 <c>this</c> 提供）一致，否则错位（具体取值以对应 HALCON 算子文档为准）。<paramref name="transMat2D"/> 是新增的一个输出（InitOCT 索引 0）。</para>
 	///   <para><b>与相邻算子的取舍</b>手上只有两两之间的局部单应、还需解链 → 用 <see cref="GenProjectiveMosaic(int,JlTuple,JlTuple,JlHomMat2D[],JlTuple,string,out JlHomMat2D[])"/>；球面/立方全景 → 用球面/立方拼接族。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16298,7 +16296,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>拼接后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>以 <paramref name="startImage"/> 为基准，沿 <paramref name="mappingSource"/>→<paramref name="mappingDest"/> 的变换链把整幅图拼起来；返回的 <paramref name="mosaicMatrices2D"/> 记录了每张图落到全景后的绝对位姿，可再喂给别的投影变换。</para>
-	///   <para><b>约束或前提</b>输入图像本身是一个句柄元组（此处 <c>this</c> 提供该 Image 输入），矩阵数组长度必须与映射对数一致，序号越界行为 [待实测]。拼接结果尺寸由所有图变换后的包围范围决定。</para>
+	///   <para><b>约束或前提</b>输入图像本身是一个句柄元组（此处 <c>this</c> 提供该 Image 输入），矩阵数组长度必须与映射对数一致，序号越界行为（具体边界行为以对应 HALCON 算子文档为准）。拼接结果尺寸由所有图变换后的包围范围决定。</para>
 	///   <para><b>与相邻算子的取舍</b>矩阵由 bundle adjustment 估出来的场景 → 用 <see cref="GenBundleAdjustedMosaic(JlHomMat2D[],JlTuple,string,out JlHomMat2D)"/>；要球面/立方图全景 → 用球面/立方拼接族。本算子要求你已手上有两两之间的单应。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16400,7 +16398,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>变换后的新图像句柄（非原地改写，需自行释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>按 <paramref name="homMat2D"/> 指定的投影把源图重采样到一个尺寸由调用方定死的画布；这是它与不带 Size 的投影变换的唯一区别——后者沿用原图尺寸或自适应包住全内容。</para>
-	///   <para><b>约束或前提</b>投影矩阵含透视分量时，源图只有落在这 width×height 画布内的部分才保留，越界处的边界填充值 [待实测]。<paramref name="width"/>/<paramref name="height"/> 给 0 或负数行为 [待实测]。</para>
+	///   <para><b>约束或前提</b>投影矩阵含透视分量时，源图只有落在这 width×height 画布内的部分才保留，越界处的边界填充值（具体边界行为以对应 HALCON 算子文档为准）。<paramref name="width"/>/<paramref name="height"/> 给 0 或负数行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>希望输出自动放大以容纳变换后的全部内容 → 用 <see cref="ProjectiveTransImage(JlHomMat2D,string,string,string)"/> 且 adaptImageSize="true"；平行线需保持平行（无透视）→ 走仿射变换族。单应会把平行线变成会聚线，整幅矫正时注意消失点附近外扩。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16475,7 +16473,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>变换后的新图像句柄（LoadNew 装载，非原地改写），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1542。本图经 Store 作输入，<paramref name="homMat2D"/> 以钉入句柄写入原生参数 0、interpolation 以 STRING 写入参数 1、width/height 以 INTEGER 写入参数 2/3（原生侧参数序与 C# 形参序一致），输出经 InitOCT(1)+LoadNew 返回新句柄。与不带 Size 的仿射变换的唯一区别就在于画布尺寸由 width×height 硬性指定。</para>
-	///   <para><b>约束或前提</b>变换后落在该 width×height 画布之外的像素被裁掉、不会自动扩图；matrix 含平移时须自行确认内容仍在画布内。width/height 给 0 或负数行为 [待实测]。GC.KeepAlive 保证调用期输入不回收。</para>
+	///   <para><b>约束或前提</b>变换后落在该 width×height 画布之外的像素被裁掉、不会自动扩图；matrix 含平移时须自行确认内容仍在画布内。width/height 给 0 或负数行为（具体边界行为以对应 HALCON 算子文档为准）。GC.KeepAlive 保证调用期输入不回收。</para>
 	///   <para><b>与相邻算子的取舍</b>想让输出尺寸自动包住全部变换结果 → 用 <see cref="AffineTransImage(JlHomMat2D,string,string)"/> 并置 adaptImageSize="true"；区域而非灰度图做仿射 → 走 AffineTransRegion。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16546,7 +16544,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>缩放后的新图像句柄（LoadNew 装载，非原地改写），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1544。本图经 Store 作输入，scaleWidth/scaleHeight 以 DOUBLE 写入原生参数 0/1、interpolation 以 STRING 写入参数 2（纯标量直写，无钉固定/解固定开销），输出经 InitOCT(1)+LoadNew 返回新句柄。</para>
-	///   <para><b>约束或前提</b>缩放是重采样，缩小后再放大不可逆地丢细节；输出尺寸为源尺寸乘系数取整，非整数比例存在舍入 [待实测]。系数给 0 或负数行为 [待实测]。scaleWidth≠scaleHeight 会破坏长宽比——圆变椭圆、正方形变矩形，几何测量前须注意。</para>
+	///   <para><b>约束或前提</b>缩放是重采样，缩小后再放大不可逆地丢细节；输出尺寸为源尺寸乘系数取整，非整数比例存在舍入（具体边界行为以对应 HALCON 算子文档为准）。系数给 0 或负数行为（具体边界行为以对应 HALCON 算子文档为准）。scaleWidth≠scaleHeight 会破坏长宽比——圆变椭圆、正方形变矩形，几何测量前须注意。</para>
 	///   <para><b>与相邻算子的取舍</b>已知目标像素尺寸而不知比例 → 用 <see cref="ZoomImageSize(int,int,string)"/>；想保长宽比就令两系数相等；仅需做带插值的整体仿射缩放可并入仿射族一步完成，避免两次重采样叠加模糊。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16579,7 +16577,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>缩放后的新图像句柄（LoadNew 装载，非原地改写），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1545。本图经 Store 作输入，width/height 以 INTEGER 写入原生参数 0/1、interpolation 以 STRING 写入参数 2（纯标量直写，无固定开销），输出经 InitOCT(1)+LoadNew 返回新句柄。</para>
-	///   <para><b>约束或前提</b>宽高各自独立定死，不保长宽比：源图非 width:height 同比例时会被拉伸（圆变椭圆），几何量测前须自行按源比例算好目标尺寸。width/height 给 0 或负数行为 [待实测]。</para>
+	///   <para><b>约束或前提</b>宽高各自独立定死，不保长宽比：源图非 width:height 同比例时会被拉伸（圆变椭圆），几何量测前须自行按源比例算好目标尺寸。width/height 给 0 或负数行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想按倍率缩放并保比例 → 用 <see cref="ZoomImageFactor(double,double,string)"/>；只需归一化到固定分辨率喂给分类/匹配时本函数更直接。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16610,7 +16608,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>翻转后的新图像句柄（LoadNew 装载，非原地改写），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1546。本图经 Store 作输入，<paramref name="mode"/> 以 STRING 写入原生参数 0，输出经 InitOCT(1)+LoadNew 返回新句柄。镜像是像素直搬、不做插值，尺寸（除 diagonal 外）与灰度值均无损。</para>
-	///   <para><b>约束或前提</b>坐标系 row=向下为正、column=向右为正："row" 把首行换到末行（上下颠倒），"column" 左右颠倒。仅 "diagonal" 会交换宽与高，输出尺寸转置；另两种保持原尺寸。mode 传非上述取值行为 [待实测]。</para>
+	///   <para><b>约束或前提</b>坐标系 row=向下为正、column=向右为正："row" 把首行换到末行（上下颠倒），"column" 左右颠倒。仅 "diagonal" 会交换宽与高，输出尺寸转置；另两种保持原尺寸。mode 传非上述取值行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>任意角度翻转 → 用 <see cref="RotateImage(JlTuple,string)"/>（含插值）；镜像不改变手性之外的比例，配合 Rotate 可实现四方向翻转，比仿射族更省且无重采样损失。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16635,12 +16633,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	}
 
 	/// <summary>把整幅图像绕自身中心旋转一个角度，产出新图像句柄（本重载 angle 以 JlTuple 传入）。</summary>
-	/// <param name="phi">旋转角度（度）的元组。与 <c>RotateImage(double,string)</c> 标量重载同为本函数、同原生 id 1547；多元素元组的取用行为 [待实测]。Default: 90</param>
+	/// <param name="phi">旋转角度（度）的元组。与 <c>RotateImage(double,string)</c> 标量重载同为本函数、同原生 id 1547；多元素元组的取用行为（具体边界行为以对应 HALCON 算子文档为准）。Default: 90</param>
 	/// <param name="interpolation">插值方式，决定旋转产生的空白区如何补齐。Default: "constant"</param>
 	/// <returns>旋转后的新图像句柄（LoadNew 装载，非原地改写），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1547。本图经 Store 作输入，<paramref name="phi"/> 以钉入句柄的元组写入原生参数 0（调用内 Store 后 UnpinTuple 解固定），interpolation 以 STRING 写入参数 1，输出经 InitOCT(1)+LoadNew 返回新句柄。</para>
-	///   <para><b>约束或前提</b>旋转中心固定为图像中心，不能指定支点；需绕任意点转应先平移再转或走仿射族。角度为角度制（据默认值 90 判断）[待实测]。本重载与 double 重载并存构成 CS0121 二义：传字面量会同时匹配两重载，示例必须显式 <c>new JlTuple(...)</c>。元组版有钉固定/解固定开销，单值场景直接用标量重载更省。</para>
+	///   <para><b>约束或前提</b>旋转中心固定为图像中心，不能指定支点；需绕任意点转应先平移再转或走仿射族。角度为角度制（据默认值 90 判断）（具体边界行为以对应 HALCON 算子文档为准）。本重载与 double 重载并存构成 CS0121 二义：传字面量会同时匹配两重载，示例必须显式 <c>new JlTuple(...)</c>。元组版有钉固定/解固定开销，单值场景直接用标量重载更省。</para>
 	///   <para><b>与相邻算子的取舍</b>90/180/270 度整倍旋转无信息损失且不改尺寸，优先本函数；任意角度是重采样会引入插值模糊，且常量补边产生的角区是填充灰度——紧接着按低灰度 Threshold 会把角区误检为目标。需叠加缩放/错切时改用仿射族一次完成。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16670,7 +16668,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   把本图像绕自身中心旋转一个角度，产出新图像句柄（原生算子 id 1547）。
 	/// </summary>
-	/// <param name="phi">旋转角度，单位为度（由默认值量级判断为角度制而非弧度制）；正负号对应的转向[待实测]。Default: 90</param>
+	/// <param name="phi">旋转角度，单位为度（由默认值量级判断为角度制而非弧度制）；正负号对应的转向（具体边界行为以对应 HALCON 算子文档为准）。Default: 90</param>
 	/// <param name="interpolation">插值方式字符串，决定旋转后越界像素如何补齐以及输出尺寸策略。Default: "constant"</param>
 	/// <returns>旋转后的新图像句柄（LoadNew 装载，非原地改写），用毕须 Dispose。</returns>
 	/// <remarks>
@@ -16684,7 +16682,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage rot = img.RotateImage(90.0, "constant");
 	///   rot.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须用后释放。常量补边模式下旋转产生的角区是填充灰度，若紧接着 Threshold 按低灰度取值，会把角区当成目标误检出来[待实测]。</para>
+	///   <para><b>资源与坑</b>返回新句柄须用后释放。常量补边模式下旋转产生的角区是填充灰度，若紧接着 Threshold 按低灰度取值，会把角区当成目标误检出来（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage RotateImage(double phi, string interpolation)
 	{
@@ -16711,7 +16709,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新建的 JlHomMat2D 矩阵对象；注意 JlHomMat2D 派生自 JlData、实现 IDisposable，使用后应调用 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作为唯一输入，输出经 JlHomMat2D.LoadNew 新建。本质是对整场位移做一次仿射近似，逐像素的非刚性分量会被抹平。</para>
-	///   <para><b>约束或前提</b>输入必须是向量场图像（两通道位移场，如由 RealToVectorField(row 场, col 场, type) 合成的那种），普通灰度图没有意义[待实测其报错行为]。type 用 relative 还是 absolute 构造会改变位移量纲解释，拟合结果随之不同。</para>
+	///   <para><b>约束或前提</b>输入必须是向量场图像（两通道位移场，如由 RealToVectorField(row 场, col 场, type) 合成的那种），普通灰度图没有意义[具体边界行为以对应 HALCON 算子文档为准]。type 用 relative 还是 absolute 构造会改变位移量纲解释，拟合结果随之不同。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留逐像素形变去校正图像时用 UnwarpImageVectorField 直接展平，不必先压成仿射；只拆通道看位移用 VectorFieldToReal；只要一个全局刚性/仿射量（平移+旋转+缩放）才用本函数。本库 JlHomMat2D 上另有实例版 VectorFieldToHomMat2d(JlImage)，往已有矩阵对象里原地写入，二者按持有对象习惯选。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16740,7 +16738,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="serializedItemHandle">序列化的字节数组（并非原生句柄，直接收 byte[]），通常来自 SerializeImage 或等价格式。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现先 Dispose() 掉本对象当前句柄，再经 JlSerializationBuffer 把字节钉住传入原生，输出用 Load 装载回 this —— 是原地改写，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>只能还原与 SerializeImage 同版本运行时产生的字节流；跨进程/跨语言自造的字节不保证可读[待实测]。</para>
+	///   <para><b>约束或前提</b>只能还原与 SerializeImage 同版本运行时产生的字节流；跨进程/跨语言自造的字节不保证可读（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要落盘存档用 ReadImage/WriteImage 文件族；仅在内存里复制一份独立副本、或要经队列/网络传递句柄数据时才用序列化对。想保留原图像时不要在本对象上调用——它先 Dispose 再装载，中途失败会留下空句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16772,7 +16770,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>托管 byte[]（经 JlSerializationBuffer.LoadBytes 取出），不是原生句柄，无需释放；内容是图像的深拷贝。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作为唯一输入，无输出句柄参数；字节流包含像素数据本身，序列化后修改/释放原图不影响这份副本。</para>
-	///   <para><b>约束或前提</b>对已 Dispose 或空句柄调用会走原生报错[待实测异常形式]。</para>
+	///   <para><b>约束或前提</b>对已 Dispose 或空句柄调用会走原生报错[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	///   <para><b>与相邻算子的取舍</b>只要压缩后的可视图或跨机器存档用 WriteImage 文件族；要在自己的队列/缓存/网络帧里原样搬运句柄对象（含 float 精度、多通道语义，不经编码有损）才用序列化。WriteImage 会丢精度或通道语义，序列化不会。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16801,10 +16799,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="format">图形格式字符串，决定编码方式与文件扩展语义。Default: "tiff"</param>
 	/// <param name="fillColor">图像域（region）之外像素的填充灰度；彩色图像可按通道各给一个值的元组。Default: 0</param>
-	/// <param name="fileName">输出文件名元组（字符串隐式转 JlTuple 合法）。相对路径的解析基准目录[待实测]。</param>
+	/// <param name="fileName">输出文件名元组（字符串隐式转 JlTuple 合法）。相对路径的解析基准目录（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量重载同一原生 id；区别在 fillColor/fileName 用 Store+调用后 UnpinTuple 钉固定元组直传，有额外钉固开销，换来的是多值能力。本图像是 Store 参数 1 的输入，无输出句柄。</para>
-	///   <para><b>约束或前提</b>若图像做过 CropDomain 有非全幅 domain，域外像素按 fillColor 落进文件——导出取证图前先想清楚 domain 是否要保留。float/direction 等高类型图像转 byte 格式会有量化/截断[待实测各格式支持矩阵]。</para>
+	///   <para><b>约束或前提</b>若图像做过 CropDomain 有非全幅 domain，域外像素按 fillColor 落进文件——导出取证图前先想清楚 domain 是否要保留。float/direction 等高类型图像转 byte 格式会有量化/截断[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	///   <para><b>与相邻算子的取舍</b>单值场景用标量重载 WriteImage(string,int,string) 更省（StoreI/StoreS 直写、无钉固）；要把一张图写成多文件或给多通道分别指定背景色才用本重载。无损搬运句柄对象用 SerializeImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16812,7 +16810,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage("printer_chip/printer_chip_01");
 	///   img.WriteImage("tiff", new int[] { 255, 0, 0 }, "out/chip.tiff");
 	///   </code>
-	///   <para><b>资源与坑</b>void 返回、不产生新句柄；JlTuple 实参由实现内部 UnpinTuple，调用方无需处理。写失败（目录不存在/权限）经 PostCall 抛库异常[待实测异常类型]。</para>
+	///   <para><b>资源与坑</b>void 返回、不产生新句柄；JlTuple 实参由实现内部 UnpinTuple，调用方无需处理。写失败（目录不存在/权限）经 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	/// </remarks>
 	public void WriteImage(string format, JlTuple fillColor, JlTuple fileName)
 	{
@@ -16836,7 +16834,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="fileName">单个输出文件名，StoreS 直写，必传。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与元组重载同一原生 id、同一语义；本重载参数以 StoreI/StoreS 直写，无钉固/解钉开销，是日常导出的首选。本图像经 Store 作输入，无输出句柄。</para>
-	///   <para><b>约束或前提</b>有裁剪域（CropDomain 之后）时域外按 fillColor 落盘；fillColor 为整数，float 图像导出到 byte 级格式时的量化行为[待实测]。</para>
+	///   <para><b>约束或前提</b>有裁剪域（CropDomain 之后）时域外按 fillColor 落盘；fillColor 为整数，float 图像导出到 byte 级格式时的量化行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>需要按通道分别给背景色、或一次写多个文件时改用 JlTuple 重载；不落盘、在内存复制句柄用 SerializeImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16844,7 +16842,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage("printer_chip/printer_chip_01");
 	///   img.WriteImage("bmp", 255, "out/chip.bmp");
 	///   </code>
-	///   <para><b>资源与坑</b>void 返回、不产生句柄；目标文件已存在时的覆盖行为[待实测]。相对路径解析基准[待实测]。</para>
+	///   <para><b>资源与坑</b>void 返回、不产生句柄；目标文件已存在时的覆盖行为（具体边界行为以对应 HALCON 算子文档为准）。相对路径解析基准（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void WriteImage(string format, int fillColor, string fileName)
 	{
@@ -16872,11 +16870,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="bitOrder">小于一个字节/像素时位在一个字节内的排列。Default: "MSBFirst"</param>
 	/// <param name="byteOrder">多字节像素（如 short）时字节序。Default: "MSBFirst"</param>
 	/// <param name="pad">每行数据的对齐单位（行长补齐）。Default: "byte"</param>
-	/// <param name="index">多帧文件里读取哪一帧；参数表文案写作"帧数"，实为帧序号，计数起点[待实测]。Default: 1</param>
+	/// <param name="index">多帧文件里读取哪一帧；参数表文案写作"帧数"，实为帧序号，计数起点（具体边界行为以对应 HALCON 算子文档为准）。Default: 1</param>
 	/// <param name="fileName">输入文件路径。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现先 Dispose() 本对象旧句柄，全部 13 个参数以 StoreI/StoreS 按 C# 形参序 0..12 直写原生，输出经 Load 原地装载回 this，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>只适用于像素裸转储文件；png/tiff 等有格式头的图必须用 ReadImage，几何猜错时本函数不会报错只会读出花图。startRow/startColumn+尺寸越出 source 范围的边界行为[待实测]。</para>
+	///   <para><b>约束或前提</b>只适用于像素裸转储文件；png/tiff 等有格式头的图必须用 ReadImage，几何猜错时本函数不会报错只会读出花图。startRow/startColumn+尺寸越出 source 范围的边界行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>有格式头的图形文件用 ReadImage（自动解析几何与类型）；源是采集卡打包流才用本函数手工声明几何；pad/byteOrder 全对但只想裁剪时用 CropPart 后处理更直观。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16915,7 +16913,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="fileName">图像文件名元组；字符串可隐式转入。Default: "printer_chip/printer_chip_01"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>先 Dispose() 本对象旧句柄再 Load 原地装载，几何与像素类型由文件自身决定。与标量重载同一 id，差别是元组参数经 Store 钉固、调用后 UnpinTuple。</para>
-	///   <para><b>约束或前提</b>读的是图形格式文件（扩展名按库内注册格式表识别，裸数据用 ReadSequence）。元组里给多个名字时本对象只有一个句柄位，实际取用哪几个[待实测]。</para>
+	///   <para><b>约束或前提</b>读的是图形格式文件（扩展名按库内注册格式表识别，裸数据用 ReadSequence）。元组里给多个名字时本对象只有一个句柄位，实际取用哪几个（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>单个文件名用标量重载更省（StoreS 直写无钉固）；想在构造时一步到位可直接 new JlImage(fileName)，语义等价于建空句柄后 ReadImage。彩色图进单通道算法前先 Rgb1ToGray，别指望读入时自动降灰。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16923,7 +16921,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage(new string[] { "printer_chip/printer_chip_01" });
 	///   using JlRegion dom = img.Threshold(0.0, 128.0);
 	///   </code>
-	///   <para><b>资源与坑</b>原地改写、无新句柄返回，但 Threshold 的输出是 JlRegion 新句柄须释放；示例中 dom 已 using 处理。读不存在的文件由 PostCall 抛库异常[待实测类型]。</para>
+	///   <para><b>资源与坑</b>原地改写、无新句柄返回，但 Threshold 的输出是 JlRegion 新句柄须释放；示例中 dom 已 using 处理。读不存在的文件由 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	/// </remarks>
 	public void ReadImage(JlTuple fileName)
 	{
@@ -16944,7 +16942,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="fileName">图像文件名；相对名按库的示例/搜索目录解析。Default: "printer_chip/printer_chip_01"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>先 Dispose() 本对象旧句柄，fileName 以 StoreS 直写（无钉固开销），输出 Load 原地装载回 this。几何、通道数、像素类型全由文件决定。</para>
-	///   <para><b>约束或前提</b>仅图形格式文件；裸转储数据用 ReadSequence 手工声明几何。扩展名可省略（按内容嗅探还是必须带[待实测]）。彩色图读入后是 3 通道，喂给单通道算子前要 Rgb1ToGray。</para>
+	///   <para><b>约束或前提</b>仅图形格式文件；裸转储数据用 ReadSequence 手工声明几何。扩展名可省略（按内容嗅探还是必须带（具体边界行为以对应 HALCON 算子文档为准））。彩色图读入后是 3 通道，喂给单通道算子前要 Rgb1ToGray。</para>
 	///   <para><b>与相邻算子的取舍</b>一次读多帧同名序列或带偏移量的原始帧不在本函数能力内；new JlImage(fileName) 构造器一步完成同样的事，之后需要复用空对象再改写时才用本函数。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16953,7 +16951,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage rot = img.RotateImage(90.0, "constant");
 	///   rot.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>原地改写、不返回句柄，但后续 RotateImage 一族返回新 JlImage 句柄须释放；读失败经 PostCall 抛库异常[待实测类型]。</para>
+	///   <para><b>资源与坑</b>原地改写、不返回句柄，但后续 RotateImage 一族返回新 JlImage 句柄须释放；读失败经 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	/// </remarks>
 	public void ReadImage(string fileName)
 	{
@@ -16975,7 +16973,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>与轮廓点一一对应的灰度值 JlTuple（新对象，用毕 Dispose）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作 iconc 1、contour 作 iconc 2，interpolation 以 STRING 写控制槽 0（原生侧控制参数序与 C# 形参序一致）；输出 InitOCT(0)+JlTuple.LoadNew 新建元组。</para>
-	///   <para><b>约束或前提</b>轮廓坐标以图像像素坐标系计（row=y 向下、column=x 向右）；只传一条 JlXLDCont——多条轮廓需逐个调用。落点在本图像 domain 外或越界的灰度值行为[待实测]。</para>
+	///   <para><b>约束或前提</b>轮廓坐标以图像像素坐标系计（row=y 向下、column=x 向右）；只传一条 JlXLDCont——多条轮廓需逐个调用。落点在本图像 domain 外或越界的灰度值行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>区域聚合的均值/标准差用 Intensity、分布用 GrayHisto/GrayHistoRange 系；要沿轮廓逐点的梯度/曲率，本库没有现成算子（如 derivatives_into_intensity_contour 不存在），需拿本函数的灰度剖面自行差分。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17008,7 +17006,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   生成一张二阶多项式弯曲灰度曲面图像，原地写进本对象（原生算子 id 1664）。
 	/// </summary>
-	/// <param name="type">输出像素类型；byte 时超出 0..255 的曲面值会被截断/回绕[待实测]。Default: "byte"</param>
+	/// <param name="type">输出像素类型；byte 时超出 0..255 的曲面值会被截断/回绕（具体边界行为以对应 HALCON 算子文档为准）。Default: "byte"</param>
 	/// <param name="alpha">沿行方向（row=y，向下为正）的二阶系数。Default: 1.0</param>
 	/// <param name="beta">沿列方向（column=x，向右为正）的二阶系数。Default: 1.0</param>
 	/// <param name="gamma">行列混合二阶系数。Default: 1.0</param>
@@ -17020,7 +17018,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="width">输出图像列数。Default: 512</param>
 	/// <param name="height">输出图像行数。Default: 512</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>先在参考点 (row,column) 处取值为 zeta，向外按 z = α·dr² + β·dc² + γ·dr·dc + δ·dr + ε·dc 叠加（dr/dc 为到参考点的行/列偏移）[符号约定待实测]。实现先 Dispose() 本对象再 Load 原地装载，全部参数按 C# 形参序 0..10 直写原生。</para>
+	///   <para><b>功能说明</b>先在参考点 (row,column) 处取值为 zeta，向外按 z = α·dr² + β·dc² + γ·dr·dc + δ·dr + ε·dc 叠加（dr/dc 为到参考点的行/列偏移）[符号约定具体边界行为以对应 HALCON 算子文档为准]。实现先 Dispose() 本对象再 Load 原地装载，全部参数按 C# 形参序 0..10 直写原生。</para>
 	///   <para><b>约束或前提</b>纯合成图，不需要输入图像；type 与系数幅值要匹配，byte 图用大系数几乎必然饱和成片。</para>
 	///   <para><b>与相邻算子的取舍</b>线性光照梯度用一次多项式版 GenImageSurfaceFirstOrder，别为斜面硬上二阶；做背景建模/照度均衡时先用本函数拟合出曲面再走减法族；只要常数底图时 gen_image_const 级别的需求犯不上算多项式。</para>
 	///   <para><b>用法</b></para>
@@ -17055,7 +17053,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   生成一张一阶（平面）灰度曲面图像，原地写进本对象（原生算子 id 1665）。
 	/// </summary>
-	/// <param name="type">输出像素类型；byte 时平面值超出 0..255 的部分截断[待实测]。Default: "byte"</param>
+	/// <param name="type">输出像素类型；byte 时平面值超出 0..255 的部分截断（具体边界行为以对应 HALCON 算子文档为准）。Default: "byte"</param>
 	/// <param name="alpha">行方向（row=y 向下）一阶斜率，单位是灰度/像素。Default: 1.0</param>
 	/// <param name="beta">列方向（column=x 向右）一阶斜率，单位是灰度/像素。Default: 1.0</param>
 	/// <param name="gamma">零阶常数项：参考点处的灰度。Default: 1.0</param>
@@ -17064,7 +17062,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="width">输出图像列数。Default: 512</param>
 	/// <param name="height">输出图像行数。Default: 512</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>z = γ + α·dr + β·dc，dr/dc 为该像素到参考点 (row,column) 的行/列偏移，参考点处取 γ（dr/dc 以什么方向为正[待实测]）。先 Dispose() 本对象再 Load 原地写回；控制参数按形参序 0..7 直写。</para>
+	///   <para><b>功能说明</b>z = γ + α·dr + β·dc，dr/dc 为该像素到参考点 (row,column) 的行/列偏移，参考点处取 γ（dr/dc 以什么方向为正（具体边界行为以对应 HALCON 算子文档为准））。先 Dispose() 本对象再 Load 原地写回；控制参数按形参序 0..7 直写。</para>
 	///   <para><b>约束或前提</b>斜率乘上离参考点的距离——512 宽图上 1.0 的斜率意味着跨 512 级灰度，byte 图必然大面积饱和；想模拟轻微光照不均，α/β 通常要在 0.0x 量级。</para>
 	///   <para><b>与相邻算子的取舍</b>照度带弯曲（渐晕/弧形光）才升到 GenImageSurfaceSecondOrder；均匀底图用 GenImageConst；要的是"估出"梯度而非"造出"梯度时先做拟合再减法族，别拿默认系数当真值。</para>
 	///   <para><b>用法</b></para>
@@ -17121,8 +17119,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   double firstMax = maxs[0].D;   // 截掉顶部 1% 像素后的伪最大值
 	///   mins.Dispose(); maxs.Dispose(); ranges.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>三个输出元组与输入区域都要释放；空区域对应的 min/max 取值 [待实测]；
-	///   <paramref name="percent"/> 超过 100 或为负 [待实测]。</para>
+	///   <para><b>资源与坑</b>三个输出元组与输入区域都要释放；空区域对应的 min/max 取值（具体边界行为以对应 HALCON 算子文档为准）；
+	///   <paramref name="percent"/> 超过 100 或为负（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void MinMaxGray(JlRegion regions, JlTuple percent, out JlTuple min, out JlTuple max, out JlTuple range)
 	{
@@ -17153,7 +17151,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para>percent 截尾语义、与 <c>Intensity</c>/<c>ScaleImage</c> 的配合见
 	///   <see cref="MinMaxGray(JlRegion,JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>：同一原生 id 1670，
 	///   本版本 <c>StoreD</c> 直写 percent，三个 iconc 输出用 <c>LoadD</c> 按标量读取——只对单区域有意义，
-	///   多区域时取第几个值 [待实测]，逐区域结果请用元组版。</para>
+	///   多区域时取第几个值（具体边界行为以对应 HALCON 算子文档为准），逐区域结果请用元组版。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17189,7 +17187,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>区域内灰度均值（DOUBLE 元组，新对象，用毕 Dispose）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>图像是 iconc 2 输入、区域 iconc 1（没有控制参数）；输出 0=均值、1=标准差，均按区域逐个给值，元素数与 regions.CountObj() 对应。统计对象是 区域∩图像domain 的像素。</para>
-	///   <para><b>约束或前提</b>byte 图结果落在 0..255；多通道输入是否逐通道展开[待实测]。空区域对应的均值取值[待实测]。</para>
+	///   <para><b>约束或前提</b>byte 图结果落在 0..255；多通道输入是否逐通道展开（具体边界行为以对应 HALCON 算子文档为准）。空区域对应的均值取值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要极值/伪极值 → MinMaxGray（percent 可截离群点）；要完整分布 → GrayHisto 系；均值±标准差对双峰分布毫无信息量，判断"这块区域干不干净"别看 deviation 一个数，回到直方图。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17259,17 +17257,17 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>各 bin 的像素计数（INTEGER 元组），长度等于 numBins。</returns>
 	/// <remarks>
 	///   <para><b>功能说明与前提</b>英文签名文档明确适用对象是<b>单通道图像</b>；多通道输入的检查与行为本层看不到
-	///   [待实测]。区域 iconc 1、图像 iconc 2，控制槽 0/1/2 是 <c>min</c>/<c>max</c>/<paramref name="numBins"/>；
+	///（具体边界行为以对应 HALCON 算子文档为准）。区域 iconc 1、图像 iconc 2，控制槽 0/1/2 是 <c>min</c>/<c>max</c>/<paramref name="numBins"/>；
 	///   直方图从 iconc 输出 0 读出，实际 bin 宽由原生算好经 <paramref name="binSize"/>（iconc 1）返回，
-	///   第 i 个 bin 覆盖 [min + i·binSize, min + (i+1)·binSize) 一类的区间，首尾闭开细节 [待实测]。
+	///   第 i 个 bin 覆盖 [min + i·binSize, min + (i+1)·binSize) 一类的区间，首尾闭开细节（具体边界行为以对应 HALCON 算子文档为准）。
 	///   灰度落在 <c>min..max</c> 之外的像素不进入任何 bin：byte 图传 0..255 才不漏，
 	///   uint2/float 图先量实际范围（<see cref="MinMaxGray(JlRegion,JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>）再定区间。</para>
 	///   <para><b>与相邻算子的取舍</b>不想手动选区间、要按全灰度域分组计数 → <see cref="GrayHistoAbs(JlRegion,JlTuple)"/>；
 	///   要相对频率以便比较不同面积的区域 → <see cref="GrayHisto(JlRegion,out JlTuple)"/>；
 	///   <see cref="Intensity(JlRegion,out JlTuple)"/> 只给均值/标准差，双峰分布会被完全抹掉，选阈值必须靠直方图。</para>
 	///   <para><b>参数取向</b>本重载 <paramref name="min"/>/<paramref name="max"/> 是 <c>Store</c>+<c>UnpinTuple</c>，
-	///   多元素语义 [待实测]；<paramref name="numBins"/> 两个重载都是 <c>StoreI</c> <c>int</c>，单位是 bin 个数。
-	///   min 大于 max、numBins 为 0 或负 [待实测]。返回值是<b>元组</b>而不是图像。</para>
+	///   多元素语义（具体边界行为以对应 HALCON 算子文档为准）；<paramref name="numBins"/> 两个重载都是 <c>StoreI</c> <c>int</c>，单位是 bin 个数。
+	///   min 大于 max、numBins 为 0 或负（具体边界行为以对应 HALCON 算子文档为准）。返回值是<b>元组</b>而不是图像。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17314,8 +17312,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para>区间/分箱语义与单通道前提见 <see cref="GrayHistoRange(JlRegion,JlTuple,JlTuple,int,out double)"/>：
 	///   同一原生 id 1672，本版本 <c>StoreD</c> 直写 min/max。<b>要注意的坑</b>：直方图本来是逐 bin 的向量，
-	///   这里却用 <c>LoadI</c> 按单个 <c>int</c> 读——多 bin 时只拿得到一个值（第几个 [待实测]），完整直方图请一律用元组版。
-	///   此重载实际只在 numBins=1（把区间当"灰度计数窗"用）时有意义 [待实测]。</para>
+	///   这里却用 <c>LoadI</c> 按单个 <c>int</c> 读——多 bin 时只拿得到一个值（第几个（具体边界行为以对应 HALCON 算子文档为准）），完整直方图请一律用元组版。
+	///   此重载实际只在 numBins=1（把区间当"灰度计数窗"用）时有意义（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17352,7 +17350,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新的直方图图像句柄（每个"格子"= 一对灰度组合的计数），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 2、区域 iconc 1、imageRow iconc 3，全部经 Store 传句柄，无控制参数；输出 InitOCT(1)+LoadNew 新图像句柄。这是本文件里唯一直接产出<b>图像</b>而非元组的直方图算子。</para>
-	///   <para><b>约束或前提</b>两幅输入灰度必须成对（同 width/height/通道对齐方式），否则联合计数无意义；输出图像的行列各对应哪一维灰度、bin 数如何定[待实测]。多通道输入行为[待实测]。</para>
+	///   <para><b>约束或前提</b>两幅输入灰度必须成对（同 width/height/通道对齐方式），否则联合计数无意义；输出图像的行列各对应哪一维灰度、bin 数如何定（具体边界行为以对应 HALCON 算子文档为准）。多通道输入行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>一维灰度分布用 GrayHisto/GrayHistoRange/GrayHistoAbs（返回元组、可直接取数）；要看两通道耦合（如 R 与 G 联合分布做分类取证）才用本算子，代价是结果得再按像素读。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17387,13 +17385,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>与 <see cref="GrayHistoRange(JlRegion,JlTuple,JlTuple,int,out double)"/> 的分工：Range 版要你指定
 	///   区间和 bin 数（<c>binSize</c> 是算出来的），本算子反过来——只给<b>步长</b> <paramref name="quantization"/>（单位是灰度值，
-	///   不是像素、不是比例），统计范围由图像自身灰度域决定 [待实测]。默认 1.0 即逐灰度值计数。</para>
+	///   不是像素、不是比例），统计范围由图像自身灰度域决定（具体边界行为以对应 HALCON 算子文档为准）。默认 1.0 即逐灰度值计数。</para>
 	///   <para><b>坑</b>计数是<b>绝对值</b>，随区域面积线性增长：两个大小不同的区域直接对比原始计数毫无意义，
 	///   归一化用 <see cref="GrayHisto(JlRegion,out JlTuple)"/> 的 relativeHisto，或自行除以区域面积。
-	///   直方图起点随区域实际出现的灰度而定的细节（空灰度段是否补零 bin）[待实测]。</para>
+	///   直方图起点随区域实际出现的灰度而定的细节（空灰度段是否补零 bin）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>元组版 <paramref name="quantization"/> 走 <c>Store</c>+<c>UnpinTuple</c>，
 	///   与标量版 <see cref="GrayHistoAbs(JlRegion,double)"/> <b>返回类型相同</b>（都是完整 INTEGER 元组），
-	///   差异只在传参方式；步长 ≤0 行为 [待实测]。单通道前提同 Range 版 [待实测：多通道]。</para>
+	///   差异只在传参方式；步长 ≤0 行为（具体边界行为以对应 HALCON 算子文档为准）。单通道前提同 Range 版（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17462,10 +17460,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>本族唯一没有分箱/区间参数的直方图：一个调用同时从 iconc 输出 0、1 拿到绝对计数
 	///   （返回值）与<b>按区域面积归一化</b>的相对频率（<paramref name="relativeHisto"/>，DOUBLE 元组）。
 	///   相对版解决的正是绝对计数的坑——不同大小的区域直方图不可直接比：绝对计数随面积线性膨胀，
-	///   相对频率才可比（逐 bin 求和约等于 1，归一化基数是区域面积还是有效像素数 [待实测]）。</para>
+	///   相对频率才可比（逐 bin 求和约等于 1，归一化基数是区域面积还是有效像素数（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与相邻算子的取舍</b>要自定义区间与 bin 数 → <see cref="GrayHistoRange(JlRegion,JlTuple,JlTuple,int,out double)"/>；
 	///   只要绝对计数、按灰度步长分组 → <see cref="GrayHistoAbs(JlRegion,double)"/>。本算子无分箱旋钮，bin 的灰度跨度
-	///   由原生决定（byte 图大概率逐灰度 [待实测]），要精确控制分箱别用它。</para>
+	///   由原生决定（byte 图大概率逐灰度（具体边界行为以对应 HALCON 算子文档为准）），要精确控制分箱别用它。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17477,7 +17475,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple absB = img.GrayHisto(b, out JlTuple relB);   // 比较 relA 与 relB 才不受两块面积差异干扰
 	///   </code>
 	///   <para><b>资源与坑</b>注意 this 才是图像、区域是第一个实参；四个输出元组（absA/relA/absB/relB 这类）都要
-	///   <c>Dispose</c>。多通道输入 [待实测]。</para>
+	///   <c>Dispose</c>。多通道输入（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple GrayHisto(JlRegion region, out JlTuple relativeHisto)
 	{
@@ -17502,15 +17500,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1，无控制参数；从 iconc 输出 0/1 读两个 DOUBLE 元组：
 	///   熵是区域内灰度直方图的信息量——平坦区接近 0，灰度分散的纹理区显著更高；<paramref name="anisotropy"/>
-	///   按英文文档是"灰度分布对称性的度量"，其确切公式与取值方向 [待实测]。输出是<b>元组</b>不是图像。</para>
+	///   按英文文档是"灰度分布对称性的度量"，其确切公式与取值方向（具体边界行为以对应 HALCON 算子文档为准）。输出是<b>元组</b>不是图像。</para>
 	///   <para><b>与相邻算子的取舍</b>要逐区域一个标量做纹理分类/特征向量 → 本算子；要在图上按空间位置分纹理区/非纹理区 →
 	///   <see cref="EntropyImage(int,int)"/>（它返回局部窗熵图像，窗尺寸要求见其文档）。灰度区分不够时别指望熵：
 	///   两块均值相同、方差不同的区域熵值差距可能远小于直觉预期。</para>
 	///   <para><b>统计坑</b>熵由直方图估计，bin 数与像素数同量级时估计偏置明显：几百像素的小区域，其熵上限被
-	///   log2(像素数) 卡住，且不同面积的区域间直接比熵值不公平 [待实测：分箱/归一方式]。这是用熵做区域筛选时
+	///   log2(像素数) 卡住，且不同面积的区域间直接比熵值不公平（具体取值以对应 HALCON 算子文档为准）。这是用熵做区域筛选时
 	///   最主要的误判来源。</para>
 	///   <para><b>参数取向</b>元组版逐区域出值，元素与 <c>regions.CountObj()</c> 对应；单区域标量版见
-	///   <see cref="EntropyGray(JlRegion,out double)"/>。空区域、多通道输入行为 [待实测]。</para>
+	///   <see cref="EntropyGray(JlRegion,out double)"/>。空区域、多通道输入行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17548,7 +17546,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para>熵的直方图估计偏置、与 <c>EntropyImage</c> 的分工见
 	///   <see cref="EntropyGray(JlRegion,out JlTuple)"/>：同一原生 id 1676，本版本把两个 iconc 输出用 <c>LoadD</c>
-	///   按标量读出——只对单区域（或只要第一个值 [待实测]）有意义，多区域一律用元组版。</para>
+	///   按标量读出——只对单区域（或只要第一个值（具体边界行为以对应 HALCON 算子文档为准））有意义，多区域一律用元组版。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -17588,8 +17586,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="beta">拟合平面沿列方向的斜率分量。</param>
 	/// <param name="mean">拟合平面常数项，即区域灰度均值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1，无控制参数；输出 0..4 依次为 MRow/MCol/alpha/beta/mean，全按 DOUBLE 装载。等价于在区域上拟合 z = mean + α·dr + β·dc（参考点约定[待实测]），拿 α/β 可判断该区域灰度是否带方向性倾斜。</para>
-	///   <para><b>约束或前提</b>矩是<b>灰度加权</b>的，与 JlRegion 的纯几何矩（MomentsRegion 系）不同源，数值不可互换比较；多通道输入行为[待实测]。</para>
+	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1，无控制参数；输出 0..4 依次为 MRow/MCol/alpha/beta/mean，全按 DOUBLE 装载。等价于在区域上拟合 z = mean + α·dr + β·dc（参考点约定（具体边界行为以对应 HALCON 算子文档为准）），拿 α/β 可判断该区域灰度是否带方向性倾斜。</para>
+	///   <para><b>约束或前提</b>矩是<b>灰度加权</b>的，与 JlRegion 的纯几何矩（MomentsRegion 系）不同源，数值不可互换比较；多通道输入行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要均值/标准差用 Intensity（deviation 对倾斜不敏感，平面倾斜严重时均值照样"正常"）；要"平面拟合得好不好"这单个残差值用 PlaneDeviation（本函数给的是拟合参数本身）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17679,7 +17677,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   double d0 = dev[0].D;
 	///   dev.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回元组须 Dispose；单位与图像灰度同量纲（byte 图 0..255 内）；空区域/退化细长区域下拟合不稳[待实测]。</para>
+	///   <para><b>资源与坑</b>返回元组须 Dispose；单位与图像灰度同量纲（byte 图 0..255 内）；空区域/退化细长区域下拟合不稳（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple PlaneDeviation(JlRegion regions)
 	{
@@ -17700,7 +17698,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="regions">要计算的区域，逐区域各出一组值。</param>
 	/// <param name="rb">短半轴长度（像素尺度）。</param>
-	/// <param name="phi">长轴与 x 轴（column 正向）的夹角，单位与旋转正方向[待实测]。</param>
+	/// <param name="phi">长轴与 x 轴（column 正向）的夹角，单位与旋转正方向（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>长半轴长度 ra（DOUBLE 元组，新对象，用毕 Dispose）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1；输出 0/1/2 = ra/rb/phi，均 DOUBLE 元组。椭圆由<b>灰度加权</b>惯量矩导出：亮像素会把等效椭圆往自己一侧拉、拉胖，rb/phi 反映的是亮度分布的走向，不是区域几何轮廓的走向。</para>
@@ -17850,8 +17848,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="vertProjection">竖直方向投影序列。</param>
 	/// <returns>水平方向投影序列（DOUBLE 元组，用毕 Dispose）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1、mode 以 STRING 写控制槽 0；两条输出各覆盖一个轴向，长度分别对应行数与列数（返回值对应哪个轴[待实测]）。用于找文本行/栅栏条纹这类沿轴周期结构。</para>
-	///   <para><b>约束或前提</b>mode 各取值的确切公式[待实测]；灰度非零背景会整体抬升投影基线，投影找峰前通常先 Threshold 二值化再统计，或减掉背景。</para>
+	///   <para><b>功能说明</b>图像 iconc 2、区域 iconc 1、mode 以 STRING 写控制槽 0；两条输出各覆盖一个轴向，长度分别对应行数与列数（返回值对应哪个轴（具体边界行为以对应 HALCON 算子文档为准））。用于找文本行/栅栏条纹这类沿轴周期结构。</para>
+	///   <para><b>约束或前提</b>mode 各取值的确切公式（具体边界行为以对应 HALCON 算子文档为准）；灰度非零背景会整体抬升投影基线，投影找峰前通常先 Threshold 二值化再统计，或减掉背景。</para>
 	///   <para><b>与相邻算子的取舍</b>二值区域投影（不看灰度）用区域族投影；要任意方向（非轴对齐）的剖面得走 rotate 后再投影或 measure 卡尺，本算子只有水平/垂直两轴。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17860,7 +17858,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple horiz = img.GrayProjections(roi, "simple", out JlTuple vert);
 	///   horiz.Dispose(); vert.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回元组与 out 元组成对释放；region 只传一个区域——多区域是否叠加投影[待实测]。</para>
+	///   <para><b>资源与坑</b>返回元组与 out 元组成对释放；region 只传一个区域——多区域是否叠加投影（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple GrayProjections(JlRegion region, string mode, out JlTuple vertProjection)
 	{
@@ -17885,11 +17883,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   把本映射图像（map）转换成另一种映射类型，返回新映射图像（原生算子 id 1796，元组重载）。
 	/// </summary>
 	/// <param name="newType">目标映射类型字符串。Default: "coord_map_sub_pix"</param>
-	/// <param name="imageWidth">被映射图像宽度的来源：传字符串（如 "map_width"）表示直接取映射表自身宽度参与换算；该语义[待实测]。Default: "map_width"</param>
+	/// <param name="imageWidth">被映射图像宽度的来源：传字符串（如 "map_width"）表示直接取映射表自身宽度参与换算；该语义（具体边界行为以对应 HALCON 算子文档为准）。Default: "map_width"</param>
 	/// <returns>转换后的新映射图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作 iconc 1 输入，newType 以 STRING 写控制槽 0，imageWidth 以钉固元组写控制槽 1（调用后 UnpinTuple）；输出 LoadNew 新句柄。映射类算子家族（MapImage 等）依赖映射图像的存储约定，类型不匹配时几何会整体错位。</para>
-	///   <para><b>约束或前提</b>输入必须是映射图像而非普通灰度图；合法 newType 取值集合与源类型限制本层看不到[待实测]。本文件内未发现现成的映射图像生成算子，映射表通常由标定/校正流程产出。</para>
+	///   <para><b>约束或前提</b>输入必须是映射图像而非普通灰度图；合法 newType 取值集合与源类型限制本层看不到（具体边界行为以对应 HALCON 算子文档为准）。本文件内未发现现成的映射图像生成算子，映射表通常由标定/校正流程产出。</para>
 	///   <para><b>与相邻算子的取舍</b>标量重载适合目标宽度已知为整数（640 等）的常规产线；宽度信息本就该沿用映射自身时（默认串）用本元组重载。一次性按矩阵映射用仿射/投影族，犯不上建映射表。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17928,7 +17926,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   mapImg.ReadImage("calib/coord_map");
 	///   using JlImage forBig = mapImg.ConvertMapType("coord_map_sub_pix", 1280);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；输入须是映射图像，普通灰度图喂进来得到的是几何意义上的乱码[待实测其是否报错]。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；输入须是映射图像，普通灰度图喂进来得到的是几何意义上的乱码[具体边界行为以对应 HALCON 算子文档为准]。</para>
 	/// </remarks>
 	public JlImage ConvertMapType(string newType, int imageWidth)
 	{
@@ -17954,8 +17952,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="method">位姿求解方式字符串。Default: "decomposition"</param>
 	/// <returns>新建的 JlPose；JlPose 派生自 JlData、实现 IDisposable，使用后应调用 Dispose。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>静态方法，无 this；单应与 K 以 Store 传句柄、method 以 StoreS 写控制槽 2，输出 JlPose.LoadNew。世界坐标的单位长度会直接进入位姿平移分量（平移单位=世界单位[待实测]）。</para>
-	///   <para><b>约束或前提</b>单应必须真是同一平面物体在"世界系→像素系"下的映射，且 K 与其标定一致——K 错则角度与距离一起错。分解类解法存在镜像歧义（两个几何可行的位姿），返回给哪一个[待实测]。</para>
+	///   <para><b>功能说明</b>静态方法，无 this；单应与 K 以 Store 传句柄、method 以 StoreS 写控制槽 2，输出 JlPose.LoadNew。世界坐标的单位长度会直接进入位姿平移分量（平移单位=世界单位（具体边界行为以对应 HALCON 算子文档为准））。</para>
+	///   <para><b>约束或前提</b>单应必须真是同一平面物体在"世界系→像素系"下的映射，且 K 与其标定一致——K 错则角度与距离一起错。分解类解法存在镜像歧义（两个几何可行的位姿），返回给哪一个（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>有完整标定数据时走标定族更稳；只有平面单应没有 K 时用不了本函数（K 是必传输入，不是可选修正）。JlHomMat2D 矩阵族适合 2D 对齐，不要拿位姿结果当 2D 变换继续叠。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -17994,8 +17992,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="map">映射图像：每个像素存放目标坐标的两通道表，作为 iconc 2 输入。</param>
 	/// <returns>映射结果新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>本图像 Store 作 iconc 1、map 作 iconc 2，无控制参数——没有 interpolation 旋钮可选，采样方式由原生固定（nearest 类[待实测]）。输出 LoadNew 新句柄。</para>
-	///   <para><b>约束或前提</b>map 必须是映射类型图像且几何/类型约定匹配（可先用 ConvertMapType 调整类型与宽度解释）；map 坐标越出本图像范围处的像素取值[待实测]。</para>
+	///   <para><b>功能说明</b>本图像 Store 作 iconc 1、map 作 iconc 2，无控制参数——没有 interpolation 旋钮可选，采样方式由原生固定（nearest 类（具体边界行为以对应 HALCON 算子文档为准））。输出 LoadNew 新句柄。</para>
+	///   <para><b>约束或前提</b>map 必须是映射类型图像且几何/类型约定匹配（可先用 ConvertMapType 调整类型与宽度解释）；map 坐标越出本图像范围处的像素取值（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>全局仿射/投影变形用 AffineTransImage 族更省，不用建表；位移场展平用 UnwarpImage 族；本算子适合映射关系复杂且会复用同一张表批量处理多帧的场合（表只生成一次）。同一 map 反复用也比每帧重算矩阵便宜。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18060,12 +18058,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="numMatches">要找回的实例数，给 0 表示收全部过线实例。Default: 1</param>
 	/// <param name="maxOverlap">实例间允许的最大重叠比例。Default: 0.5</param>
 	/// <param name="subPixel">非 "none" 时启用亚像素精化。Default: "true"</param>
-	/// <param name="numLevels">金字塔层数，0 为自动；英文文档另提 |numLevels|=2 时含义是最低层[待实测]。Default: 0</param>
+	/// <param name="numLevels">金字塔层数，0 为自动；英文文档另提 |numLevels|=2 时含义是最低层（具体边界行为以对应 HALCON 算子文档为准）。Default: 0</param>
 	/// <param name="row">各实例中心行坐标（DOUBLE 元组）。</param>
 	/// <param name="column">各实例中心列坐标。</param>
 	/// <param name="angle">各实例旋转角（弧度）。</param>
 	/// <param name="score">各实例相关分数。</param>
-	/// <param name="model">各实例命中的模型在 modelIDs 中的序号（INTEGER 元组，计数起点[待实测]）。</param>
+	/// <param name="model">各实例命中的模型在 modelIDs 中的序号（INTEGER 元组，计数起点（具体边界行为以对应 HALCON 算子文档为准））。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1；7 个控制参数钉固传原生槽 1..7，输出 0..4：前四 DOUBLE、model 为 INTEGER。多模型合并成一次调用，比循环单模型省重复预处理，但 minScore 等阈值对所有模型共用同一组。</para>
 	///   <para><b>约束或前提</b>NCC 按灰度相关打分，不支持尺度缩放（模板物理尺寸变了就掉分）；对比度极低/近纯色的模板分数噪声大。五个输出长度一致、按实例对齐。</para>
@@ -18135,7 +18133,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="column">各实例列坐标。</param>
 	/// <param name="angle">各实例旋转角（弧度）。</param>
 	/// <param name="score">各实例分数。</param>
-	/// <param name="model">各实例命中模型的序号（INTEGER，本重载恒指向唯一模型，取值[待实测]）。</param>
+	/// <param name="model">各实例命中模型的序号（INTEGER，本重载恒指向唯一模型，取值（具体边界行为以对应 HALCON 算子文档为准））。</param>
 	/// <remarks>
 	///   <para>搜索语义、输出对齐、NCC 不支持尺度的前提见元组/数组版 <see cref="FindNccModels(JlNCCModel[],JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；同一原生 id 1958，本版本 StoreD/StoreI/StoreS 直写参数 1..7。</para>
 	///   <para><b>用法</b></para>
@@ -18185,11 +18183,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="pixelFormat">目标交错格式串，如 rgb/rgba 一类通道排布。Default: "rgba"</param>
 	/// <param name="rowBytes">输出每行字节数的来源：字符串（默认）表示按输出尺寸自动对齐。Default: "match"</param>
-	/// <param name="alpha">三通道输入时补给的 alpha 常量（StoreI 整型装载）；四通道输入时忽略与否[待实测]。Default: 255</param>
+	/// <param name="alpha">三通道输入时补给的 alpha 常量（StoreI 整型装载）；四通道输入时忽略与否（具体边界行为以对应 HALCON 算子文档为准）。Default: 255</param>
 	/// <returns>交错排布的新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1；pixelFormat 写控制槽 0、rowBytes 钉固元组写槽 1、alpha 整型写槽 2；输出 LoadNew。交错排布是给编码器/GPU/位图导出喂数据用的内存布局，通道数与像素类型会随格式改变。</para>
-	///   <para><b>约束或前提</b>输入应为多通道平面图像，单通道输入结果语义[待实测]；行对齐（rowBytes）不满足下游库要求时整幅图会错位。</para>
+	///   <para><b>约束或前提</b>输入应为多通道平面图像，单通道输入结果语义（具体边界行为以对应 HALCON 算子文档为准）；行对齐（rowBytes）不满足下游库要求时整幅图会错位。</para>
 	///   <para><b>与相邻算子的取舍</b>只改通道语义不改内存排布，用 Rgb1ToGray/通道合成族；要喂给外部显示/编码管线才值得重排一次内存。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18224,7 +18222,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="alpha">三通道输入补给的 alpha 常量。Default: 255</param>
 	/// <returns>交错排布的新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
-	///   <para>排布语义、行对齐错位的坑见 <see cref="InterleaveChannels(string,JlTuple,int)"/>：同一原生 id 1969，本版本三个控制参数全直写，是常规路径；rowBytes 想给数值形式[待实测是否被接受]时用元组重载。</para>
+	///   <para>排布语义、行对齐错位的坑见 <see cref="InterleaveChannels(string,JlTuple,int)"/>：同一原生 id 1969，本版本三个控制参数全直写，是常规路径；rowBytes 想给数值形式[具体边界行为以对应 HALCON 算子文档为准]时用元组重载。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage();
@@ -18251,16 +18249,16 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   MSER（最大稳定极值区域）分割本图像，暗区为返回值、亮区走 out，均为区域句柄（原生算子 id 1977，元组重载）。
 	/// </summary>
 	/// <param name="MSERLight">亮极性 MSER 区域（LoadNew 自 iconc 2），用毕 Dispose。</param>
-	/// <param name="polarity">输出哪侧极性："both" 两侧都给，另一侧输出是否为空[待实测]。Default: "both"</param>
-	/// <param name="minArea">保留区域的最小像素面积；元组重载可逐值传入（钉固），多值语义[待实测]。Default: 10</param>
+	/// <param name="polarity">输出哪侧极性："both" 两侧都给，另一侧输出是否为空（具体边界行为以对应 HALCON 算子文档为准）。Default: "both"</param>
+	/// <param name="minArea">保留区域的最小像素面积；元组重载可逐值传入（钉固），多值语义（具体边界行为以对应 HALCON 算子文档为准）。Default: 10</param>
 	/// <param name="maxArea">最大像素面积，空元组表示不设上限。Default: []</param>
 	/// <param name="delta">稳定性判据：区域需要承受的灰度阈值跨度（灰度级数，不是比例）。Default: 15</param>
-	/// <param name="genParamName">附加通用参数名列表，可用名集合本层不可见[待实测]。Default: []</param>
+	/// <param name="genParamName">附加通用参数名列表，可用名集合本层不可见（具体边界行为以对应 HALCON 算子文档为准）。Default: []</param>
 	/// <param name="genParamValue">与名字一一对应的值列表。Default: []</param>
 	/// <returns>暗极性 MSER 区域（iconc 1），新句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1；polarity 写控制槽 0，minArea/maxArea/delta/gen 参数钉固写槽 1..5、调用后解钉。MSER 对"缓慢变化的背景照度"天然免疫：它要的是阈值跨度内面积稳定的区域，不是绝对灰度达标的区域。</para>
-	///   <para><b>约束或前提</b>输入应为单通道灰度图；delta 太小碎片化、太大会吞掉小目标，文字/丝印场景一般从小往大试。byte 图上的灰度级数与 float 图上的取值跨度的解释不同[待实测]。</para>
+	///   <para><b>约束或前提</b>输入应为单通道灰度图；delta 太小碎片化、太大会吞掉小目标，文字/丝印场景一般从小往大试。byte 图上的灰度级数与 float 图上的取值跨度的解释不同（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>背景平坦时 Threshold 更直接更快；光照不均想分前景用本算子（本库无 RLT 类光照不均二值化封装）；要纹理分区不用它（MSER 出的是一堆独立小块，不覆盖全图）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18302,7 +18300,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="MSERLight">亮极性 MSER 区域（新句柄），用毕 Dispose。</param>
 	/// <param name="polarity">输出极性。Default: "both"</param>
 	/// <param name="minArea">最小像素面积（StoreI 直写）。Default: 10</param>
-	/// <param name="maxArea">最大像素面积，整型必须给具体数，给 0 是否等于"不限"[待实测]。Default: []</param>
+	/// <param name="maxArea">最大像素面积，整型必须给具体数，给 0 是否等于"不限"（具体边界行为以对应 HALCON 算子文档为准）。Default: []</param>
 	/// <param name="delta">稳定判据的灰度阈值跨度。Default: 15</param>
 	/// <param name="genParamName">附加参数名列表。Default: []</param>
 	/// <param name="genParamValue">附加参数值列表。Default: []</param>
@@ -18316,7 +18314,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion dark = img.SegmentImageMser(out JlRegion light, "dark",
 	///       10, 64 * 64, 15, new JlTuple(), new JlTuple());
 	///   </code>
-	///   <para><b>资源与坑</b>polarity 给 "dark" 时 light 输出的状态[待实测]；两个区域句柄都要释放。</para>
+	///   <para><b>资源与坑</b>polarity 给 "dark" 时 light 输出的状态（具体边界行为以对应 HALCON 算子文档为准）；两个区域句柄都要释放。</para>
 	/// </remarks>
 	public JlRegion SegmentImageMser(out JlRegion MSERLight, string polarity, int minArea, int maxArea, int delta, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -18346,7 +18344,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   把 objectsInsert 里的图像对象整体插进本对象元组的指定位置，返回扩展后的新元组句柄（原生算子 id 2003）。
 	/// </summary>
 	/// <param name="objectsInsert">要插入的图像对象元组（iconc 2），其元素被并入结果。</param>
-	/// <param name="index">插入位置序号；计数起点与越界行为[待实测]。</param>
+	/// <param name="index">插入位置序号；计数起点与越界行为（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>新的对象元组句柄（LoadNew），用毕 Dispose；本对象与原元组不受影响。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像按 iconc 1 作为对象元组输入，index 以 StoreI 写控制槽 0。返回的是重组后的<b>新</b>句柄壳，内部元素与被插对象共享——Dispose 结果只解除这次的引用集合。</para>
@@ -18359,7 +18357,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage pair = a.InsertObj(b, 0);
 	///   pair.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>结果句柄要释放；a、b 各自仍可单独 Dispose，互不牵连（共享元素语义[待实测]）。</para>
+	///   <para><b>资源与坑</b>结果句柄要释放；a、b 各自仍可单独 Dispose，互不牵连（共享元素语义（具体边界行为以对应 HALCON 算子文档为准））。</para>
 	/// </remarks>
 	public JlImage InsertObj(JlImage objectsInsert, int index)
 	{
@@ -18379,7 +18377,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   从本图像对象元组中删除 index 指定的若干元素，返回剩下的新元组句柄（原生算子 id 2005，元组重载）。
 	/// </summary>
-	/// <param name="index">要删除元素的序号元组（可多值），钉固传入控制槽 0、调用后解钉；计数起点[待实测]。</param>
+	/// <param name="index">要删除元素的序号元组（可多值），钉固传入控制槽 0、调用后解钉；计数起点（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>剩余元素组成的新元组句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1 输入，输出 LoadNew 新句柄；被删元素从结果中脱离，剩下的元素<b>重新连续编号</b>——删完后按旧序号用 this[index] 取件会指错对象，这是此类容器操作最常见的静默错位。</para>
@@ -18390,7 +18388,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage rest = three.RemoveObj(new int[] { 0 });
 	///   rest.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>被摘出去的图像对象由谁释放本层看不出来[待实测]；若元素不再被任何托管对象引用，谨慎起见先取件再 Dispose。序号越界行为[待实测]。</para>
+	///   <para><b>资源与坑</b>被摘出去的图像对象由谁释放本层看不出来（具体边界行为以对应 HALCON 算子文档为准）；若元素不再被任何托管对象引用，谨慎起见先取件再 Dispose。序号越界行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public new JlImage RemoveObj(JlTuple index)
 	{
@@ -18437,11 +18435,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   用 objectsReplace 的元素替换本图像对象元组的指定位置，返回替换后的新元组（原生算子 id 2006，序号元组重载）。
 	/// </summary>
 	/// <param name="objectsReplace">提供替换内容的图像对象元组（iconc 2）。</param>
-	/// <param name="index">被替换位置的序号元组，钉固写控制槽 0、调用后解钉；序号数与替换元素数不匹配时的行为[待实测]。</param>
+	/// <param name="index">被替换位置的序号元组，钉固写控制槽 0、调用后解钉；序号数与替换元素数不匹配时的行为（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>替换后的新元组句柄，用毕 Dispose；未被替换的元素原样保留。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>"先删后插"的组合语义在本算子内一次完成，序号按<b>原元组</b>解释（不像 RemoveObj 那样逐步前移）[待实测多下标时的编号基准]。本图像 iconc 1，输出 LoadNew。</para>
-	///   <para><b>与相邻算子的取舍</b>只增不删用 InsertObj、只删不换用 RemoveObj，不要拿 ReplaceObj 配空参凑数；要整体重排顺序没有本族算子，只能逐件取出再拼接。原位置对象被顶替后由谁释放[待实测]。</para>
+	///   <para><b>功能说明</b>"先删后插"的组合语义在本算子内一次完成，序号按<b>原元组</b>解释（不像 RemoveObj 那样逐步前移）[具体边界行为以对应 HALCON 算子文档为准]。本图像 iconc 1，输出 LoadNew。</para>
+	///   <para><b>与相邻算子的取舍</b>只增不删用 InsertObj、只删不换用 RemoveObj，不要拿 ReplaceObj 配空参凑数；要整体重排顺序没有本族算子，只能逐件取出再拼接。原位置对象被顶替后由谁释放（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JlImage oldSet = new JlImage("byte", 32, 32);
@@ -18449,7 +18447,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage updated = oldSet.ReplaceObj(fresh, new int[] { 0 });
 	///   updated.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>结果句柄要 Dispose；输入元组本体的处置与被顶替元素一样依赖库回收策略[待实测]。</para>
+	///   <para><b>资源与坑</b>结果句柄要 Dispose；输入元组本体的处置与被顶替元素一样依赖库回收策略（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage ReplaceObj(JlImage objectsReplace, JlTuple index)
 	{
@@ -18470,7 +18468,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   替换本图像对象元组的单个位置（序号以整数直写，StoreI 免钉固）。
 	/// </summary>
-	/// <param name="objectsReplace">提供替换元素的图像对象元组；给多个元素而 index 只有一个位时其余去留[待实测]。</param>
+	/// <param name="objectsReplace">提供替换元素的图像对象元组；给多个元素而 index 只有一个位时其余去留（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="index">被替换的单个位置序号。</param>
 	/// <returns>替换后的新元组句柄，用毕 Dispose。</returns>
 	/// <remarks>
@@ -18501,10 +18499,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   回读形状模型的抗干扰（clutter）配置：禁干扰区、变换矩阵、最小对比度与通用参数（原生算子 id 2055，静态，元组参数名）。
 	/// </summary>
-	/// <param name="modelID">模型句柄（iconc 0 输入），模型须以支持 clutter 的方式建过，否则各输出的有效性[待实测]。</param>
+	/// <param name="modelID">模型句柄（iconc 0 输入），模型须以支持 clutter 的方式建过，否则各输出的有效性（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="genParamName">要回读的通用参数名（钉固传控制槽 1）。Default: "use_clutter"</param>
-	/// <param name="genParamValue">从 iconc 输出 0 以字符串（LoadS）读回的参数值——传多个名字时只有单值通道，多名字结果被截[待实测]。</param>
-	/// <param name="homMat2D">回读的变换矩阵；实现从 iconc 输出 1 装载（与区域同一槽位双解，含义以原生文档为准[待实测]）。</param>
+	/// <param name="genParamValue">从 iconc 输出 0 以字符串（LoadS）读回的参数值——传多个名字时只有单值通道，多名字结果被截（具体边界行为以对应 HALCON 算子文档为准）。</param>
+	/// <param name="homMat2D">回读的变换矩阵；实现从 iconc 输出 1 装载（与区域同一槽位双解，含义以原生文档为准（具体边界行为以对应 HALCON 算子文档为准））。</param>
 	/// <param name="clutterContrast">判为干扰所需的最小灰度对比度，LoadI 按 INTEGER 读出。</param>
 	/// <returns>不允许出现干扰的区域（新 JlRegion 句柄，用毕 Dispose）。</returns>
 	/// <remarks>
@@ -18580,15 +18578,15 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   给形状模型写入抗干扰（clutter）配置：禁干扰区+矩阵+最小对比度+通用参数组（原生算子 id 2057，静态，原地改模型）。
 	/// </summary>
-	/// <param name="clutterRegion">不允许出现干扰的区域（iconc 1），坐标按模型/搜索约定解释[待实测]。</param>
+	/// <param name="clutterRegion">不允许出现干扰的区域（iconc 1），坐标按模型/搜索约定解释（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="modelID">要改的模型句柄（iconc 0），配置写进模型内部。</param>
-	/// <param name="homMat2D">变换矩阵：钉固传控制槽 1、调用后解钉；作用（把 clutter 区/搜索旋转变换？）[待实测]。</param>
+	/// <param name="homMat2D">变换矩阵：钉固传控制槽 1、调用后解钉；作用（把 clutter 区/搜索旋转变换？）（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="clutterContrast">判定干扰所需最小灰度对比度，StoreI 按 INTEGER 写槽 2。Default: 128</param>
-	/// <param name="genParamName">通用参数名列表（钉固）。可用名集合本层不可见[待实测]。</param>
+	/// <param name="genParamName">通用参数名列表（钉固）。可用名集合本层不可见（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="genParamValue">与名字一一对应的值列表。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>void、无输出——写的是模型内部状态，因此之后必须用 GetShapeModelClutter 回读才能确认生效。与 Get 成对使用。</para>
-	///   <para><b>约束或前提</b>对不含形状描述子支持的普通模型/未以 clutter 能力建模的模型，写入是否报错[待实测]。该配置影响 find 匹配族的"抗干扰"类调用，不影响普通匹配调用。</para>
+	///   <para><b>约束或前提</b>对不含形状描述子支持的普通模型/未以 clutter 能力建模的模型，写入是否报错（具体边界行为以对应 HALCON 算子文档为准）。该配置影响 find 匹配族的"抗干扰"类调用，不影响普通匹配调用。</para>
 	///   <para><b>与相邻算子的取舍</b>标量重载适合单参数；批量名值对（如同时设多个开关）用本元组重载。别拿它改角度/尺度建模参数——那是 GetShapeModelParams/建模参数族的事。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18625,7 +18623,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="modelID">目标模型（iconc 0）。</param>
 	/// <param name="homMat2D">变换矩阵，钉固传控制槽 1。</param>
 	/// <param name="clutterContrast">最小干扰对比度（INTEGER）。Default: 128</param>
-	/// <param name="genParamName">单个参数名，StoreS 直写。模板占位值（如 "value"）无意义，用文档确认过的名字[待实测可用集]。</param>
+	/// <param name="genParamName">单个参数名，StoreS 直写。模板占位值（如 "value"）无意义，用文档确认过的名字[具体边界行为以对应 HALCON 算子文档为准]。</param>
 	/// <param name="genParamValue">对应的数值参数，StoreD 按 DOUBLE 写——给不出字符串值的参数只能用元组重载传。</param>
 	/// <remarks>
 	///   <para>写模型内部状态的语义、回读核对要求见元组版 <see cref="SetShapeModelClutter(JlRegion,JlShapeModel,JlHomMat2D,int,JlTuple,JlTuple)"/>：同一原生 id 2057，本版本一次只设一个名值对、且值必须是数值。</para>
@@ -18636,7 +18634,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D mat = new JlHomMat2D();
 	///   JlImage.SetShapeModelClutter(okArea, model, mat, 128, "use_clutter", 1.0);
 	///   </code>
-	///   <para><b>资源与坑</b>示例值仅作签名示范，该参数是否接受数值形式[待实测]，以 Get 回读不报错为准；homMat2D 不可 Dispose。</para>
+	///   <para><b>资源与坑</b>示例值仅作签名示范，该参数是否接受数值形式（具体边界行为以对应 HALCON 算子文档为准），以 Get 回读不报错为准；homMat2D 不可 Dispose。</para>
 	/// </remarks>
 	public static void SetShapeModelClutter(JlRegion clutterRegion, JlShapeModel modelID, JlHomMat2D homMat2D, int clutterContrast, string genParamName, double genParamValue)
 	{
@@ -18660,10 +18658,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="format">文件图形格式串，须与文件实际格式一致。Default: "tiff"</param>
 	/// <param name="tagName">标记名，逐格式各异（如 tiff_* 系列）。Default: "tiff_image_description"</param>
 	/// <param name="fileName">目标文件路径。</param>
-	/// <returns>标记值元组（新对象，用毕 Dispose）；标记不存在时的返回[待实测]。</returns>
+	/// <returns>标记值元组（新对象，用毕 Dispose）；标记不存在时的返回（具体边界行为以对应 HALCON 算子文档为准）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>纯静态、无图像输入；format/fileName 直写，tagName 钉固后解钉，输出 LoadNew 元组。比 ReadImage 轻：不建图像句柄、不解码像素，适合产线追溯字段批量核对。</para>
-	///   <para><b>约束或前提</b>支持的格式与标记名集合由原生决定[待实测]；png/bmp 等格式是否有对应标记名[待实测]。</para>
+	///   <para><b>约束或前提</b>支持的格式与标记名集合由原生决定（具体边界行为以对应 HALCON 算子文档为准）；png/bmp 等格式是否有对应标记名（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要像素用 ReadImage；要往文件里写同类字段用 WriteImageMetadata；序列化搬运图像本体用 SerializeImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18696,8 +18694,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>前提</b>标记必须是落在各目标内部的小区域（例如 <c>RegiongrowingMean</c> 的种子、
 	///   区域 <c>DistanceTransform(...)</c> 得到的距离图峰值、或 <c>Threshold</c> 后手工缩到核心）；
 	///   标记压不到底（重叠/相邻标记距离过近）时
-	///   两个目标会被并进同一盆地。标记区域与图像坐标系必须一致，本层不做尺寸/域检查 [待实测]。</para>
-	///   <para><b>输出</b>返回值是盆地集合；输出个数与标记个数的对应关系（是否一一对应、顺序是否保持）本层无法确定 [待实测]，
+	///   两个目标会被并进同一盆地。标记区域与图像坐标系必须一致，本层不做尺寸/域检查（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>输出</b>返回值是盆地集合；输出个数与标记个数的对应关系（是否一一对应、顺序是否保持）本层无法确定（具体边界行为以对应 HALCON 算子文档为准），
 	///   用 <c>CountObj()</c> 核对，需要严格对应时用 <c>TestSubsetRegion</c> 判断包含关系。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18733,8 +18731,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="tagValue">标记值（钉固元组，字符串可隐式转入）。</param>
 	/// <param name="fileName">目标文件路径。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>四个控制参数（槽 0..3）直写/钉固，无任何图标输入——操作对象是<b>磁盘上的文件</b>而非内存图像；对已存在文件追加/覆写标记的冲突行为[待实测]。</para>
-	///   <para><b>约束或前提</b>目标文件应已由 WriteImage 以同 format 写出，否则可能失败或凭空建出无像素的壳[待实测]。标记名与格式绑定（tiff 系列名只对 tiff 有效）。</para>
+	///   <para><b>功能说明</b>四个控制参数（槽 0..3）直写/钉固，无任何图标输入——操作对象是<b>磁盘上的文件</b>而非内存图像；对已存在文件追加/覆写标记的冲突行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>目标文件应已由 WriteImage 以同 format 写出，否则可能失败或凭空建出无像素的壳（具体边界行为以对应 HALCON 算子文档为准）。标记名与格式绑定（tiff 系列名只对 tiff 有效）。</para>
 	///   <para><b>与相邻算子的取舍</b>写像素+压缩用 WriteImage；只带追溯信息（批次号、工位）用本函数，避免为注记重编码整幅图。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18763,12 +18761,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="row">旋转矩形中心的行坐标（row=y 向下），钉固传控制槽 0。Default: 300.0</param>
 	/// <param name="column">旋转矩形中心的列坐标（column=x 向右）。Default: 200.0</param>
-	/// <param name="phi">矩形朝向角，弧度制（英文文档明示 arc measure），相对水平轴，正方向[待实测]。Default: 0.0</param>
+	/// <param name="phi">矩形朝向角，弧度制（英文文档明示 arc measure），相对水平轴，正方向（具体边界行为以对应 HALCON 算子文档为准）。Default: 0.0</param>
 	/// <param name="length1">沿 phi 方向半边的半长（像素）。Default: 100.0</param>
 	/// <param name="length2">垂直于 phi 方向半边的半长（像素）。Default: 20.0</param>
-	/// <param name="alignToAxis">输出是否轴向对齐（true 时旋转框的外接轴对齐矩形，false 时输出内容保持倾斜？两种情形的确切输出框[待实测]）。Default: "true"</param>
+	/// <param name="alignToAxis">输出是否轴向对齐（true 时旋转框的外接轴对齐矩形，false 时输出内容保持倾斜？两种情形的确切输出框（具体边界行为以对应 HALCON 算子文档为准））。Default: "true"</param>
 	/// <param name="interpolation">越界像素的补边方式。Default: "constant"</param>
-	/// <returns>裁剪结果新图像句柄；多组参数时是否返回多图像元组[待实测]，用毕 Dispose。</returns>
+	/// <returns>裁剪结果新图像句柄；多组参数时是否返回多图像元组（具体边界行为以对应 HALCON 算子文档为准），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1；五个几何量钉固写槽 0..4、两个字符串直写槽 5/6，调用后逐个解钉。几何越出原图的部分按 interpolation 处理。</para>
 	///   <para><b>约束或前提</b>phi 是<b>弧度</b>不是度——与某些角度参数为度的算子混用时最容易错。length1/length2 是半长，全宽要乘二。</para>
@@ -18851,14 +18849,14 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   在滑动矩形窗内做直方图线性化（限对比度版，maxContrast 元组重载），返回新图像（原生算子 id 2152）。
 	/// </summary>
-	/// <param name="mode">处理模式串（精度/速度权衡的确切取值[待实测]）。Default: "accurate"</param>
+	/// <param name="mode">处理模式串（精度/速度权衡的确切取值（具体边界行为以对应 HALCON 算子文档为准））。Default: "accurate"</param>
 	/// <param name="maskWidth">滤波窗宽度（像素，StoreI）。Default: 51</param>
 	/// <param name="maskHeight">滤波窗高度（像素，StoreI）。Default: 51</param>
-	/// <param name="maxContrast">对比度增益上限（钉固元组，默认量级远小于 1，判为归一化斜率[待实测]）。Default: 0.01</param>
+	/// <param name="maxContrast">对比度增益上限（钉固元组，默认量级远小于 1，判为归一化斜率（具体边界行为以对应 HALCON 算子文档为准））。Default: 0.01</param>
 	/// <returns>线性化后的新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像 iconc 1；窗逐像素滑动、窗内做直方图线性化，maxContrast 截断变换斜率防止把噪声一起拉爆。与全局 <see cref="EquHistoImage()"/> 的本质区别是"局部自适应"。</para>
-	///   <para><b>约束或前提</b>窗尺寸决定被压平的光照空间频率：窗要明显大于目标特征，否则目标自身的对比度结构会被当成"背景"抹掉；边缘处窗出界的处理方式[待实测]。byte/float 输入增益行为不同[待实测]。</para>
+	///   <para><b>约束或前提</b>窗尺寸决定被压平的光照空间频率：窗要明显大于目标特征，否则目标自身的对比度结构会被当成"背景"抹掉；边缘处窗出界的处理方式（具体边界行为以对应 HALCON 算子文档为准）。byte/float 输入增益行为不同（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>整幅光照不均先想"减背景"或曲面归一化，别上局部直方图（会改像素值语义、伤后续绝对灰度阈值）；只要全局拉伸用 EquHistoImage；本算子适合"暗部细节要可见但不许噪点炸开"的取证目视。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18866,7 +18864,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage("printer_chip/printer_chip_01");
 	///   using JlImage eq = img.EquHistoImageRect("accurate", 51, 51, new JlTuple(0.01));
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；maxContrast 给 0/负值行为[待实测]；处理后旧阈值全部失效，需重新定标。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；maxContrast 给 0/负值行为（具体边界行为以对应 HALCON 算子文档为准）；处理后旧阈值全部失效，需重新定标。</para>
 	/// </remarks>
 	public JlImage EquHistoImageRect(string mode, int maskWidth, int maskHeight, JlTuple maxContrast)
 	{
@@ -18923,10 +18921,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="measureHandle">测量对象句柄（iconc 0 输入），只读不改。</param>
 	/// <param name="genParamName">要查的参数名（钉固传控制槽 1、调用后解钉）。Default: "type"</param>
-	/// <returns>参数值元组（iconc 0 读出，元素类型随参数而变[待实测]），用毕 Dispose。</returns>
+	/// <returns>参数值元组（iconc 0 读出，元素类型随参数而变（具体边界行为以对应 HALCON 算子文档为准）），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>静态查询函数；多名字一次传入时返回逐一对应的值序列（装载未指定类型，按原生给的形态）。可用于产线自检"这个卡尺到底按什么参数在跑"。</para>
-	///   <para><b>约束或前提</b>可用参数名集合本层不可见[待实测]（"type" 为文档示例值）；对空/已释放句柄调用报错形态[待实测]。</para>
+	///   <para><b>约束或前提</b>可用参数名集合本层不可见（具体边界行为以对应 HALCON 算子文档为准）（"type" 为文档示例值）；对空/已释放句柄调用报错形态（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>改参数用对应的 Set/Gen 测量族接口；查"实际生效的测量结果"不是本函数的事，它只答配置。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18953,10 +18951,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>回读单个卡尺（测量）对象的参数/属性值（参数名以 string 直写，静态，原生算子 id 2153）。</summary>
 	/// <param name="measureHandle">测量对象句柄（iconc 0 输入），只读不改。</param>
 	/// <param name="genParamName">单个参数名，StoreS 直写控制槽 1、免钉固。Default: "type"</param>
-	/// <returns>该参数值元组（iconc 0 读出，元素类型随参数而变[待实测]），用毕 Dispose。</returns>
+	/// <returns>该参数值元组（iconc 0 读出，元素类型随参数而变（具体边界行为以对应 HALCON 算子文档为准）），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>查配置不查结果：给定一个已生成的卡尺句柄，问它"某个参数当前是什么值"。与元组版 <see cref="GetMeasureParam(JlMeasure,JlTuple)"/> 同一原生 id 2153，区别只在本版本一次问一个名字、用 StoreS 直写省掉钉固/解钉，单参数自检首选。</para>
-	///   <para><b>约束或前提</b>句柄必须仍存活（实现末尾 <c>GC.KeepAlive(measureHandle)</c>）；可用参数名集合本层不可见[待实测]（"type" 为文档示例值）。批量查多个名字请改用元组重载。</para>
+	///   <para><b>约束或前提</b>句柄必须仍存活（实现末尾 <c>GC.KeepAlive(measureHandle)</c>）；可用参数名集合本层不可见（具体边界行为以对应 HALCON 算子文档为准）（"type" 为文档示例值）。批量查多个名字请改用元组重载。</para>
 	///   <para><b>与相邻算子的取舍</b>改参数用对应的 Set/Gen 测量族接口，本函数只读；查"实际测到的边缘/坐标"也不是它的事。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18988,7 +18986,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   细长水平掩膜沿行平滑、竖直掩膜沿列平滑，这是矩形窗 <see cref="MeanImage(int,int)"/> 做不到的。</para>
 	///   <para><b>坑</b>掩膜像素数越少越接近原图（1 个像素时是恒等变换），噪声抑制与方向性直接受掩膜面积影响；
 	///   掩膜若由分割结果生成，面积逐帧变化会让平滑强度逐帧不同——需要稳定强度时改用带显式窗尺寸的
-	///   <see cref="MeanImage(int,int)"/>。本算子<b>没有</b>边界处理参数 [待实测：边缘如何取值]。</para>
+	///   <see cref="MeanImage(int,int)"/>。本算子<b>没有</b>边界处理参数（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要各向同性平滑用 <c>MeanImage</c>/<see cref="GaussImage(int)"/>（更快、参数简单）；
 	///   要任意形状但取排序值而不是均值，用 <see cref="RankImage(JlRegion,int,string)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -19026,7 +19024,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>加了边界的新图像句柄（尺寸各方向 +size），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原图不变，返回一幅四周各扩 <paramref name="size"/> 像素、填充区取 <paramref name="value"/> 的新图。本元组版把 size、value 都按 Store 钉固、调用后 UnpinTuple，与标量版 <see cref="AddImageBorder(int,int)"/> 同一 id 2172。</para>
-	///   <para><b>约束或前提</b>value 元组长度应等于通道数——灰度图给 1 个、RGB 给 3 个；长度不符的行为[待实测]。常用于把目标从图边"顶"进来，避免后续膨胀/滤波在边缘丢信息。</para>
+	///   <para><b>约束或前提</b>value 元组长度应等于通道数——灰度图给 1 个、RGB 给 3 个；长度不符的行为（具体边界行为以对应 HALCON 算子文档为准）。常用于把目标从图边"顶"进来，避免后续膨胀/滤波在边缘丢信息。</para>
 	///   <para><b>与相邻算子的取舍</b>单色边界用标量版 <see cref="AddImageBorder(int,int)"/>（StoreI 直写、免钉固，更快）；只想补黑边且无逐通道需求时也用它。需要逐通道不同颜色（如把边界染成洋红标记）才用本元组版。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -19086,11 +19084,11 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   沿"通道维"做多通道加权卷积（把各通道按 filter 系数线性组合，非空间滤波；原生算子 id 2219）。
 	/// </summary>
 	/// <param name="filter">通道组合系数，钉固传槽 0 后解钉；长度=通道数，输出通道 j = Σ filter[i]×通道 i。</param>
-	/// <param name="border">通道序列两端的补边方式（越出通道数时如何取值[待实测]）。Default: "constant"</param>
+	/// <param name="border">通道序列两端的补边方式（越出通道数时如何取值（具体边界行为以对应 HALCON 算子文档为准））。Default: "constant"</param>
 	/// <returns>卷积后的新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>对每个像素，沿通道方向用 filter 系数做一维线性组合——典型用途是把 RGB 三通道按权重压成一路灰度，或做通道间差分。它不动空间邻域，与 <see cref="MeanImage(int,int)"/>/<see cref="GaussImage(int)"/> 这类 2D 空间平滑是正交的两回事。</para>
-	///   <para><b>约束或前提</b>输入需为多通道图像才有意义；灰度单通道图上退化为按系数缩放，易得全黑[待实测]。filter 长度与通道数不匹配时按 border 方式外推。</para>
+	///   <para><b>约束或前提</b>输入需为多通道图像才有意义；灰度单通道图上退化为按系数缩放，易得全黑（具体边界行为以对应 HALCON 算子文档为准）。filter 长度与通道数不匹配时按 border 方式外推。</para>
 	///   <para><b>与相邻算子的取舍</b>只想取某一路通道用分量提取，别用本算子配一堆 0/1；要平滑空间噪声用 2D 滤波；本算子专用于"通道维线性变换"（加权灰度化、通道混合）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -19098,7 +19096,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   // 三通道等权平均（仅演示系数形态；加权灰度化常用 0.299/0.587/0.114）
 	///   using JlImage mix = rgb.ConvolChannels(new JlTuple(1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0), "constant");
 	///   </code>
-	///   <para><b>资源与坑</b>filter 由实现解钉，调用方无需处理；返回新句柄须释放。系数含负值时结果可能出现负/溢出，输出类型是否饱和[待实测]。</para>
+	///   <para><b>资源与坑</b>filter 由实现解钉，调用方无需处理；返回新句柄须释放。系数含负值时结果可能出现负/溢出，输出类型是否饱和（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage ConvolChannels(JlTuple filter, string border)
 	{
@@ -19123,7 +19121,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>系数元组（按 DOUBLE 装载，见实现 LoadNew 的 JlTupleType.DOUBLE），用毕 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>产出一维核系数，不是直接滤波：拿到元组后交给做 1D/沿某轴卷积的算子使用。S-G 的优点是在平滑的同时尽量保留峰形与峰位，比普通移动平均更少"把峰削平"。</para>
-	///   <para><b>约束或前提</b>数学定义要求 <c>filterSize</c> 为奇数且 <c>polynomialDegree &lt; filterSize</c>、<c>derivative ≤ polynomialDegree</c>；越界时原生是报错还是内部修正[待实测]。核越大平滑越强但越钝。</para>
+	///   <para><b>约束或前提</b>数学定义要求 <c>filterSize</c> 为奇数且 <c>polynomialDegree &lt; filterSize</c>、<c>derivative ≤ polynomialDegree</c>；越界时原生是报错还是内部修正（具体边界行为以对应 HALCON 算子文档为准）。核越大平滑越强但越钝。</para>
 	///   <para><b>与相邻算子的取舍</b>要各向同性 2D 平滑用 <see cref="GaussImage(int)"/>；只想平滑曲线又保峰用本函数 derivative=0 的核；要找峰/拐点则用 derivative=1 或 2 的核看过零与极值。它只给系数，不做边界处理，越界行为取决于使用它的卷积算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

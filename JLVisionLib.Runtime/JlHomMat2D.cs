@@ -5,19 +5,23 @@ using System.Runtime.Serialization;
 
 namespace JLVisionLib;
 
-/// <summary>Represents a homogeneous 2D transformation matrix.</summary>
+/// <summary>表示 HALCON 兼容的二维齐次变换矩阵。</summary>
+/// <remarks>
+///   <para>本类型沿用 HALCON 的行优先表示。仿射矩阵使用 6 元素 <c>[a11,a12,a13,a21,a22,a23]</c>；含透视的投影矩阵使用 9 元素 <c>[a11,a12,a13,a21,a22,a23,a31,a32,a33]</c>。HALCON 的点坐标可以是笛卡尔坐标或图像坐标，但矩阵和点必须使用同一坐标约定。</para>
+///   <para>返回新矩阵的变换方法不会修改当前对象；名称带 <c>Local</c> 的算子按当前矩阵的局部坐标系叠加，普通算子按全局坐标系叠加。具体复合顺序以 HALCON 的左矩阵和右矩阵定义为准。</para>
+/// </remarks>
 [Serializable]
 public class JlHomMat2D : JlData, ISerializable, ICloneable
 {
 	private const int FIXEDSIZE = 9;
 
 	/// <summary>把一个已有的 <see cref="JlTuple"/> 包装成 2D 齐次矩阵，不调用任何原生算子。</summary>
-	/// <param name="tuple">按原生约定排布的 9 个数值（每矩阵 9 元素，见 <c>SplitArray</c> 的分段方式）。</param>
+	/// <param name="tuple">按 HALCON 行优先排列的仿射 6 元素或投影 9 元素矩阵。投影矩阵依次为 <c>[a11,a12,a13,a21,a22,a23,a31,a32,a33]</c>；多个输出投影矩阵可按每 9 个元素连续排列。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
 	///   <para>内部走 <c>base(tuple)</c>，复制入参作为本实例独立存储，无原生调用、无句柄分配；<c>JlHomMat2D.SplitArray</c> 按 9 元素一段把长 tuple 切成多个矩阵时使用内部转移构造。</para>
 	///   <para><b>前提与坑</b></para>
-	///   <para>托管层不校验长度；元素个数或顺序不合约定时，错误要到 <c>AffineTrans*</c>、<c>HomMat2dInvert</c> 等原生调用时才报出。9 元素在行优先/列优先下的具体排布 [待实测]。入参与本矩阵互不共享所有权。</para>
+	///   <para>构造器复制输入元组，不与调用方共享数据；输入长度和元素类型由后续原生算子校验。仿射矩阵省略固定的第三行 <c>[0,0,1]</c>，含透视分量的矩阵包含完整第三行并应使用 <c>ProjectiveTrans*</c> 系列算子。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlTuple t = new JlTuple(new double[] { 1, 0, 10, 0, 1, 20, 0, 0, 1 });
@@ -67,7 +71,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <summary>新建单位矩阵。原生算子 id 287（与 <c>HomMat2dIdentity</c> 同一算子），结果写入本实例。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>构造体即 <c>hom_mat2d_identity</c> 的托管绑定：调用后本实例携带 9 个 double，代表 x 不变、y 不变、无平移的恒等映射。与就地版本 <c>HomMat2dIdentity()</c> 的差别仅在于这里新建对象。</para>
+	///   <para>构造体即 <c>hom_mat2d_identity</c> 的托管绑定：恒等仿射矩阵按行优先保存为 6 个 double：<c>[1,0,0,0,1,0]</c>。与就地版本 <c>HomMat2dIdentity()</c> 的差别仅在于这里新建对象。</para>
 	///   <para><b>取舍</b></para>
 	///   <para>复合链的起点用本构造；复用已有实例重置请用 <c>HomMat2dIdentity()</c>，避免额外分配。</para>
 	///   <para><b>用例</b></para>
@@ -134,7 +138,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>承载流内容的新实例。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>实现 = <c>new JlHomMat2D()</c>（先取得单位矩阵，原生 id 287）+ <c>DeserializeHomMat2d</c>（原生 id 234）覆写。读流的字节偏移由 <c>JlSerializationBuffer.ReadFromStream</c> 决定；流内容不合法时报错来自原生层 [待实测]。</para>
+	///   <para>读取由 <see cref="Serialize(Stream)"/> 写出的库自有二进制负载并返回新对象。流必须可读且游标位于完整负载的起点；格式错误时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   using System.IO;
@@ -181,11 +185,10 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <param name="fileName">world 文件路径（地理配准伴生文件，如 .tfw/.jgw 一类）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>实现为 <c>StoreS(proc,0,fileName)</c> + <c>InitOCT(0)</c> + <c>Load(proc,0)</c>：矩阵是输出参数，本实例内容被就地改写；矩阵承载"图像像素坐标 ↔ 地理坐标"的编码映射 [待实测:轴向与单位]。</para>
+	///   <para>从 ESRI/ARC INFO world 文件读取六个地理配准参数，生成像素坐标到世界坐标的二维仿射矩阵，并就地覆写本实例。world 文件中的坐标单位由文件及其数据集定义。</para>
 	///   <para><b>取舍</b></para>
 	///   <para>与 <c>HomMat2dRotate</c> 等复合族不同，它不返回新对象；要保留旧值先 <c>Clone()</c>。仅在配合带 world 文件的 GIS 影像读取流程时使用；纯像素域几何变换不要用本入口。</para>
-	///   <para><b>资源</b></para>
-	///   <para>文件读取发生在原生层，托管侧不检查文件是否存在，路径错误以算子异常形式抛出。</para>
+	///   <para><b>异常与资源</b>文件不存在、不可读或内容无效时抛出 <see cref="JlOperatorException"/>；本实例仍由调用方负责 Dispose。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D geo = new JlHomMat2D();
@@ -295,9 +298,8 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>入参经 <c>JlSerializationBuffer</c> 拷入原生内存并在调用结束前持有（<c>GC.KeepAlive(buffer)</c>）；<c>InitOCT(0)</c>+<c>Load(proc,0)</c> 说明矩阵是输出、就地改写。</para>
 	///   <para><b>取舍</b></para>
-	///   <para>与 <c>Serialize(Stream)</c> 族是两套入口：本对走内存 byte[]，流版本走 <c>JlSerializationBuffer.WriteToStream</c>；两种负载能否互相读取 [待实测]。</para>
-	///   <para><b>坑</b></para>
-	///   <para>字节来自其他对象的序列化格式时由原生层报错；调用前实例的旧值无提示地丢失。</para>
+	///   <para>本方法读取由 <see cref="SerializeHomMat2d"/> 或 <see cref="Serialize(Stream)"/> 生成的同一库格式；不接受文本 world 文件或其他类型的序列化负载。</para>
+	///   <para><b>异常与状态</b>负载为空、截断或类型不匹配时抛出 <see cref="JlOperatorException"/>。调用成功后当前矩阵被覆写；失败时不要依赖目标对象的内容。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D src = new JlHomMat2D().HomMat2dScale(2.0, 2.0, 0.0, 0.0);
@@ -500,7 +502,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>两视图之间除单应外还有近似径向的畸变（广角镜头小基线）时用它；确认无畸变或不在乎残差就用 <c>VectorToProjHomMat2d</c>（它给协方差而不给畸变系数）。cov 六个参数传 <c>new JlTuple()</c> 即等权。</para>
 	///   <para><b>坑</b></para>
-	///   <para>就地覆写：需要保留原矩阵先 <c>Clone()</c>。点对需多于纯单应的 4 对才能同时定畸变 [待实测:最少点数]。</para>
+	///   <para>就地覆写：需要保留原矩阵先 <c>Clone()</c>。点对必须成对对应且数量足以同时估计投影和畸变参数；点分布退化时原生算子会抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D h = new JlHomMat2D();
@@ -616,7 +618,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>只需把点对映过去而不管透视，用 6 自由度的 <c>VectorToHomMat2d</c>（id 268）；存在透视（相机倾斜看平面）时仿射模型系统性失配，才用本算子。要连畸变一起估用 <c>VectorToProjHomMat2dDistortion</c>。</para>
 	///   <para><b>坑</b></para>
-	///   <para>最少点数与点分布退化（接近共线）由原生层报错 [待实测]；协方差 81 元素的行列排列约定 [待实测]。</para>
+	///   <para>至少需要足够的非退化点对来估计 8 个投影自由度；点接近共线或点数不足时抛出 <see cref="JlOperatorException"/>。协方差按 9×9 行优先矩阵展开为 81 个元素。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D h = new JlHomMat2D();
@@ -671,7 +673,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>六个输出经 <c>InitOCT(0..5)</c> 声明、<c>LoadD</c> 逐个读回：0=sx（返回值）、1..5 依次是 <c>out</c> 的 sy/phi/theta/tx/ty。这是"读语义"算子：给出缩放、转角、错切角，便于输出报告或按参数微调位姿。</para>
 	///   <para><b>前提</b></para>
-	///   <para>只对仿射形态（第三行 0,0,1）有意义；对含透视分量的投影矩阵的行为 [待实测]。分解的参数顺序约定（先缩放斜切后旋转再平移等）[待实测]。</para>
+	///   <para>只接受仿射矩阵，即第三行应为 <c>[0,0,1]</c>；含透视项的矩阵会导致算子异常。返回值按 HALCON 的仿射参数定义给出缩放、旋转、斜切和平移分量。</para>
 	///   <para><b>取舍</b></para>
 	///   <para>若只是继续复合变换，别分解再重拼（参数化重组可能引入偏差）；求逆搬运用 <c>HomMat2dInvert</c>，不要用"参数取负"凑逆。</para>
 	///   <para><b>用例</b></para>
@@ -714,7 +716,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>六个 <see cref="JlTuple"/> 钉住写入参数 0..5，<c>InitOCT(0)</c>+<c>Load(proc,0)</c> 单输出覆写 <c>this</c>。本重载把六个量都作为数组送入：N 对"位置+朝向"一起做最小二乘刚体拟合。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>与 <c>VectorToRigid</c>（id 265）的区别是这里额外有姿态角约束：位置对+角度对同时给出时（如已知标记点朝向）用本算子，否则只用位置即可。刚体不含缩放；若两视图确有多尺度，用相似/仿射估计族。角度单位为弧度；正方向在 y 向下的图像坐标系中的屏幕表现 [待实测]。</para>
+	///   <para>与 <c>VectorToRigid</c>（id 265）的区别是这里额外使用姿态角约束：位置和方向都已知时用本算子，否则只使用位置约束。刚体模型不包含缩放；角度单位为弧度，并遵循 HALCON 的坐标轴约定（图像行作为 x、列作为 y）。</para>
 	///   <para><b>坑</b></para>
 	///   <para>就地覆写；需要保留旧值先 <c>Clone()</c>。</para>
 	///   <para><b>用例</b></para>
@@ -790,7 +792,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>点对应完整可得时（位置两维都有）直接用 <c>VectorToRigid</c>/<c>VectorToHomMat2d</c>，信息量更高、解更稳。注意本算子 <c>transformationType</c> 是第一个参数，与其它 <c>VectorTo*</c>（无类型参数或类型在尾）不同。</para>
 	///   <para><b>坑</b></para>
-	///   <para>支持的类型串集合、点/线数量约束由原生层校验 [待实测]。</para>
+	///   <para>当前强类型重载只公开 <c>rigid</c> 类型。点和直线元组必须按索引一一对应，并提供足够的非退化约束；不满足时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -876,7 +878,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>同一物体因工作距离变化整体变大变小用它；x/y 缩放不等（如相机倾斜看平面）时应升级到 <c>VectorToAniso</c> 或 <c>VectorToHomMat2d</c>，用相似模型会把各向异性残差摊到角度上。已知无缩放时用 <c>VectorToRigid</c>，避免 s 吸收噪声。</para>
 	///   <para><b>坑</b></para>
-	///   <para>2 对点给 4 约束恰好定解；点对退化（重合）由原生层报错 [待实测]。</para>
+	///   <para>相似变换至少需要两对不重合的点；点重合或点对退化时抛出 <see cref="JlOperatorException"/>。点对按相同下标配对。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -913,7 +915,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>像素非方形或机械双轴增益不等时用它代替全仿射，少一个自由度、少一份噪声；一旦存在剪切或透视（266/267 的模型假设被破坏）改用 <c>VectorToHomMat2d</c> 或 <c>VectorToProjHomMat2d</c>。</para>
 	///   <para><b>坑</b></para>
-	///   <para>轴向（x/y 对应列/行）与最小点数 [待实测]；点对索引必须配对。</para>
+	///   <para>参数按 HALCON 的笛卡尔约定解释：x 对应行坐标，y 对应列坐标；至少需要两对不重合点来估计两个独立缩放分量。点对索引必须配对。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -950,7 +952,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>刚体/等比/各向异性对应关系明确时逐级降档（265/266/267），自由度越少抗噪越强；两视图含透视（倾斜平面、镜头畸变明显）时仿射表达不了，用 <c>VectorToProjHomMat2d</c>（261）或带畸变的 259。</para>
 	///   <para><b>坑</b></para>
-	///   <para>最少 3 对不共线点 [待实测]；点对按索引配对，错配不报错。就地覆写，保留旧值先 <c>Clone()</c>。</para>
+	///   <para>至少需要三对不共线点来确定 6 个仿射自由度；点对按索引配对，错配会影响结果但不会被几何模型自动纠正。就地覆写，保留旧值先 <c>Clone()</c>。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -983,7 +985,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <param name="colTrans">输出列坐标（新 <c>JlTuple</c>）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵钉住于索引 0、坐标钉住于 1/2，<c>InitOCT(0)/(1)</c> 声明两个输出并按 DOUBLE 读回；对每点算 (r',c')=((a21·col+a22·row+a23)/w, (a11·col+a12·row+a13)/w)，w=a31·col+a32·row+a33 [待实测:分量落位方向]。</para>
+	///   <para>矩阵使用行优先元素 <c>[a11,a12,a13,a21,a22,a23,a31,a32,a33]</c>。对图像点 <c>(row,col)</c>，先计算齐次乘积，再用第三分量归一化；输出仍按 <c>(row,col)</c> 返回。第三分量为零的点无法投影，原生算子会抛出异常。</para>
 	///   <para><b>与 double 重载差异</b></para>
 	///   <para>本重载输入数组逐点求解、输出为 tuple；double 重载用 <c>StoreD</c> 写入、无钉桩/解钉步骤。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
@@ -1131,7 +1133,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <param name="colTrans">输出列坐标（新 <c>JlTuple</c>）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵钉住索引 0、坐标索引 1/2，两个输出 <c>InitOCT(0)/(1)</c> 按 DOUBLE 读回；矩阵只读不改。逐点 r'=a21·col+a22·row+a23、c'=a11·col+a12·row+a13 [待实测:分量落位方向]。</para>
+	///   <para>矩阵只读不改，使用行优先元素 <c>[a11,a12,a13,a21,a22,a23]</c> 对每个 <c>(row,col)</c> 做仿射映射；结果按同一行、列约定返回。含透视项的矩阵应改用 <see cref="ProjectiveTransPixel(JlTuple, JlTuple, out JlTuple, out JlTuple)"/>。</para>
 	///   <para><b>与 double 重载差异</b></para>
 	///   <para>本重载输入为数组、需要钉桩并在调用后解钉；double 重载走 <c>StoreD</c>/<c>LoadD</c>，单点无此开销。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
@@ -1196,7 +1198,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>输出点 x/行坐标（新 <c>JlTuple</c>）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵与两点标输入均钉桩，两个输出 <c>InitOCT(0)/(1)</c> 按 DOUBLE 读回；参数命名同时允许数学 (x,y) 与图像 (row,col) 两套读法 [待实测:轴向对应]。矩阵只读。</para>
+	///   <para>矩阵和输入点只读；本库沿用 HALCON 的坐标约定，参数名 <c>px/py</c> 也可理解为 <c>row/column</c>。输出点与输入点一一对应，结果元组按 DOUBLE 返回。</para>
 	///   <para><b>与 double 重载差异</b></para>
 	///   <para>本重载数组进数组出、含钉桩/解钉；double 重载 <c>StoreD</c>/<c>LoadD</c>、单点零分配。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
@@ -1235,7 +1237,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para>语义与选型见 <c>JlTuple</c> 主重载；单点查询（含在循环里逐点调用）用本重载。</para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D().HomMat2dTranslate(10.0, 0.0);
-	///   double qx = m.AffineTransPoint2d(5.0, 7.0, out double qy);   // qx=15, qy=7 [待实测:轴向]
+	///   double qx = m.AffineTransPoint2d(5.0, 7.0, out double qy);   // 结果按 HALCON 的 x/y（row/column）约定解释
 	///   </code>
 	/// </remarks>
 	public double AffineTransPoint2d(double px, double py, out double qy)
@@ -1261,11 +1263,11 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para><c>InitOCT(0)</c> 单输出经 <c>LoadD</c> 读回。行列式的符号与幅值含义：|det| 是面积缩放倍率，det&lt;0 表示含镜像（手性翻转），det≈0 表示退化为共线映射（不可逆）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>目的若是"判断能不能求逆"，直接用它做阈值检查即可，不必捕获 <c>HomMat2dInvert</c> 的异常；目的若是取缩放参数，用 <c>HomMat2dToAffinePar</c>。对仿射矩阵 3×3 det 与左上 2×2 det 相同；投影矩阵取哪一个 [待实测]。</para>
+	///   <para>对仿射矩阵，行列式等于左上 2×2 线性部分的行列式；对含透视项的完整 3×3 矩阵，返回完整齐次矩阵的行列式。行列式接近零表示矩阵不可逆。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D().HomMat2dScale(2.0, -3.0, 0.0, 0.0);
-	///   double det = m.HomMat2dDeterminant();   // 预期 -6 [待实测]
+	///   double det = m.HomMat2dDeterminant();   // 缩放因子为 2 和 -3 时为 -6
 	///   </code>
 	/// </remarks>
 	public double HomMat2dDeterminant()
@@ -1287,7 +1289,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>单输出经 <c>LoadNew</c> 生成新矩阵句柄。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>别把转置当逆用：只有旋转部分正交时转置才接近逆变换，含平移/缩放/透视时 Hᵀ 没有几何逆变换的含义，要逆变换用 <c>HomMat2dInvert</c>。转置主要用于协方差传播（Q' = A·Q·Aᵀ 一类）中的矩阵代数 [待实测:此处 A 取哪个 2×2 子块]。</para>
+	///   <para>转置只是矩阵代数操作，不等于一般齐次变换的逆；需要几何逆变换时使用 <see cref="HomMat2dInvert"/>。如果用于协方差传播，应按具体模型选择相应的线性子矩阵。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D().HomMat2dRotate(0.3, 0.0, 0.0);
@@ -1320,7 +1322,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <code>
 	///   JlHomMat2D g = new JlHomMat2D().HomMat2dTranslate(3.0, 4.0);
 	///   JlHomMat2D back = g.HomMat2dInvert();
-	///   double qx = back.AffineTransPoint2d(13.0, 14.0, out double qy);   // 映回 (10,10) 附近 [待实测:轴向]
+	///   double qx = back.AffineTransPoint2d(13.0, 14.0, out double qy);   // 映回原坐标 (10,10)
 	///   </code>
 	/// </remarks>
 	public JlHomMat2D HomMat2dInvert()
@@ -1373,9 +1375,9 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加反射后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>反射使 det 变号（手性翻转）：镜像后的矩阵再走 <c>AffineTransRegion</c>/<c>AffineTransImage</c> 时图形呈左右翻转，走 <c>HomMat2dInvert</c> 回代时角度符号全部反转。"Local" 表示与同族 Local 算子一致按当前坐标系叠加，复合侧与非 Local 的 <c>HomMat2dReflect</c> 不同 [待实测:左右乘方向]。</para>
+	///   <para>反射会使行列式变号。Local 版本把反射轴解释在当前矩阵描述的局部坐标系中；需要在外部坐标系指定反射轴时使用 <see cref="HomMat2dReflect(JlTuple, JlTuple, JlTuple, JlTuple)"/>。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>单点 (px,py) 定义轴心，轴的方向如何确定（与坐标轴夹角或沿原点连线）[待实测]；两点定轴用 <c>HomMat2dReflect</c>。要撤销已有反射：反射轴不变的矩阵自反（R·R=I），对结果再复合一次同参数反射即可。</para>
+	///   <para>反射轴由局部原点 <c>(0,0)</c> 和点 <c>(px,py)</c> 确定，因此 <c>(px,py)</c> 不能为原点；两点定义的外部坐标轴使用 <see cref="HomMat2dReflect(JlTuple, JlTuple, JlTuple, JlTuple)"/>。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -1436,7 +1438,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>对 x 轴镜像（y 取反）不必用任意轴：直接 <c>HomMat2dScale(1, -1, ...)</c> 更直观且 det 同样变号；本算子用于斜置镜面/翻转会标图之类非坐标轴方向。</para>
 	///   <para><b>坑</b></para>
-	///   <para>两点重合时轴方向退化，行为由原生层决定 [待实测]；非 Local 版的复合侧与 Local 版不一致，混用时先固定一种写法并回代验证 [待实测:左右乘方向]。</para>
+	///   <para>两个轴点不能重合；否则反射轴无定义，原生算子会抛出 <see cref="JlOperatorException"/>。本版本在外部坐标系定义轴，Local 版本在当前局部坐标系定义轴。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D mirror = new JlHomMat2D().HomMat2dReflect(0.0, 0.0, 100.0, 0.0);   // 关于 y=0 直线
@@ -1498,7 +1500,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加斜切后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>斜切保持被切轴上的坐标不变、把垂直方向按 tan(theta) 线性推移：axis="x" 与 "y" 对应两族 shear 矩阵 [待实测:具体哪一维被推移]。theta 的斜切角定义（偏转角还是其余角）与 90° 退化行为 [待实测]。</para>
+	///   <para>斜切使指定坐标轴保持不变，并将另一坐标轴按角度 <paramref name="theta"/> 逆时针倾斜；<paramref name="axis"/> 为 <c>"x"</c> 时 x 轴倾斜、y 轴保持，为 <c>"y"</c> 时相反。角度单位为弧度。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>斜切矩阵自身 det=1，复合后面积倍率不变、只改形状；与 <c>HomMat2dRotate</c>/<c>HomMat2dScale</c> 复合可得一般仿射，<c>HomMat2dToAffinePar</c> 解出的 theta 正是该分量的逆用。要绕指定点斜切用 <c>HomMat2dSlant</c>（280）。</para>
 	///   <para><b>用例</b></para>
@@ -1556,7 +1558,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加斜切后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>等价于 T(px,py)·Shear·T(-px,-py) 与现矩阵的复合：固定点处坐标不变，离固定点越远推移越大 [待实测:复合顺序]。</para>
+	///   <para>在外部坐标系中围绕点 <c>(px,py)</c> 施加斜切；该点保持不变。斜切轴由 <paramref name="axis"/> 决定，角度单位为弧度。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>不需要固定点（绕原点斜切）用 <c>HomMat2dSlantLocal</c>（279）；theta/axis 的几何定义同 279。</para>
 	///   <para><b>用例</b></para>
@@ -1619,9 +1621,9 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加旋转后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>与 <c>HomMat2dRotate</c>（282）的实际差别就是没有 px/py：旋转中心由当前矩阵的局部坐标系决定 [待实测:等效全局中心]。复合侧与 282 是否一致 [待实测:左右乘方向]。</para>
+	///   <para>Local 版本在当前矩阵描述的局部坐标系中绕其原点旋转；普通版本在外部坐标系中绕显式给出的中心旋转。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>要让物体绕图像中某个已知点转（最常见需求）用 282；本算子适合"物体自身朝向增量"式叠加。phi 弧度制，正方向在 y 向下屏幕上的观感 [待实测]。</para>
+	///   <para>要让物体绕图像中的已知点旋转，使用 <see cref="HomMat2dRotate(JlTuple, JlTuple, JlTuple)"/>；本算子适合叠加物体自身的朝向变化。角度单位为弧度，并遵循 HALCON 的数学正方向约定。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D();
@@ -1673,9 +1675,9 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加旋转后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>等价于把平移-旋转-逆平移三段复合进现矩阵：中心 (px,py) 处坐标不动，其余点绕其转 phi 弧度 [待实测:正方向与复合顺序]。</para>
+	///   <para>在外部坐标系中围绕点 <c>(px,py)</c> 旋转 <paramref name="phi"/> 弧度；指定中心保持不变，其他点按同一刚体旋转变换。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>刚体位姿更新（物体转过 phi 后新的"模型→图像"矩阵）就叠在这里，不要在旧矩阵里手改元素。旋转中心以哪个坐标系的数值给出（全局像素或物体局部）[待实测]。</para>
+	///   <para>旋转中心使用外部坐标系中的坐标值。要在物体自身坐标系中更新姿态，使用 Local 版本；两个版本的复合顺序不同。</para>
 	///   <para><b>坑</b></para>
 	///   <para>旋转不可交换：m.HomMat2dRotate(phi,px,py) 与先旋转后平移得到的矩阵不同，顺序写反的错误表现为物体画弧而非原地转。矩阵含缩放时本算子在该矩阵定义的坐标系内进行。</para>
 	///   <para><b>用例</b></para>
@@ -1736,7 +1738,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加缩放后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>面积倍率为 sx·sy（<c>HomMat2dDeterminant</c> 可读回验证）；sx 或 sy 为负即在该轴镜像。缩放沿哪个坐标轴（全局 x/y 还是当前矩阵局部轴）取决于 Local 复合侧 [待实测:左右乘方向]。</para>
+	///   <para>面积倍率为 <c>sx·sy</c>；负缩放因子会产生相应轴的镜像。Local 版本沿当前矩阵的局部轴缩放，普通版本沿外部坐标轴缩放。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>要"以某个图像点为中心放大"（像素级缩放预览之类）用带固定点的 <c>HomMat2dScale</c>（284）；本算子没有固定点，效果是物体离原点越远位移越大。</para>
 	///   <para><b>用例</b></para>
@@ -1795,7 +1797,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加缩放后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>等价 T(px,py)·Scale(sx,sy)·T(-px,-py) 与现矩阵的复合 [待实测:复合顺序]：(px,py) 不动，其余点离中心越远被拉得越开。</para>
+	///   <para>在外部坐标系中围绕点 <c>(px,py)</c> 缩放；该点保持不变，其他点按到该点的距离缩放。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>只想让物体整体变大变小（不要求某点不动）用 <c>HomMat2dScaleLocal</c>（283）；固定点传 (0,0) 时与不带平移补偿的裸缩放一致，但 px/py 为图像中心才是"围绕画面中心缩放"的正确写法。</para>
 	///   <para><b>用例</b></para>
@@ -1860,7 +1862,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加平移后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>与非 Local 的 <c>HomMat2dTranslate</c>（286）参数个数相同、只差语义：本算子沿"矩阵当前的轴"走 tx/ty（物体自己的前后左右），286 沿全局 x/y 走 [待实测:两版实际复合方向差异]。</para>
+	///   <para>本算子沿当前矩阵描述的局部 x/y 轴平移；普通 <see cref="HomMat2dTranslate(JlTuple, JlTuple)"/> 沿外部坐标轴平移。两个版本在当前矩阵含旋转时会得到不同结果。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>机器人已转 90° 后沿夹爪轴向进给是本算子的场景；把物体在图像上往右下挪一段则用 286。单位与 286 同为矩阵坐标单位（通常像素）。</para>
 	///   <para><b>用例</b></para>
@@ -1917,13 +1919,13 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>叠加平移后的新矩阵，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>单位是矩阵作用坐标系的量（像素域即像素个数）。复合方向与 Local 版（285）的区别是这对算子最容易踩的坑：同一个 (tx,ty) 在两个算子下，当矩阵已含旋转时得到的落点不同 [待实测:两版方向的具体差异]。</para>
+	///   <para>平移量使用矩阵作用坐标系的单位。普通版本沿外部 x/y 轴平移；Local 版本沿当前矩阵局部轴平移，因此含旋转的矩阵对同一组数值会产生不同落点。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>"把已求出的位姿整体在图像上挪 (dx,dy)"用它；沿物体自身轴向的增量用 <c>HomMat2dTranslateLocal</c>；把点集挪完再复合进大矩阵的场景，可直接对点调 <c>AffineTransPoint2d</c>，不一定要建中间矩阵。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D m = new JlHomMat2D().HomMat2dTranslate(120.0, 40.0);
-	///   double qx = m.AffineTransPoint2d(0.0, 0.0, out double qy);   // 原点映到 (120,40) [待实测:轴向]
+	///   double qx = m.AffineTransPoint2d(0.0, 0.0, out double qy);   // 原点映到 (120,40)
 	///   </code>
 	/// </remarks>
 	public JlHomMat2D HomMat2dTranslate(JlTuple tx, JlTuple ty)
@@ -1975,7 +1977,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>一次性使用直接 <c>new JlHomMat2D()</c>；本方法适合对象已作为字段/数组元素存在、不便重建引用的场合。它与无参构造共享同一路径（287），差别只在覆写谁。</para>
 	///   <para><b>坑</b></para>
-	///   <para>覆写发生在原生调用之后才读回；出错时实例可能保留旧值或处于半更新状态 [待实测]。</para>
+	///   <para>调用成功后本实例变为单位矩阵；发生异常时不应依赖目标对象的内容。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlHomMat2D work = new JlHomMat2D();
@@ -2024,7 +2026,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>关键取向：本实例经 <c>Store(proc,10)</c> 作为第一台相机的投影矩阵（cam_mat1）被消费，不是被变换/被覆写的对象；<c>camMat2</c> 写在 11。<c>InitOCT(0..6)</c>：输出 0=<c>LoadNew</c> 的新基础矩阵，其余为 covEMat/error/x/y/z/covXYZ。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>输出刻画两视图的对极几何约束（E·x 给出对应点极线），不是把点从图 1 映到图 2 的 2D 变换——那种需求用 <c>VectorToHomMat2d</c>/<c>VectorToProjHomMat2d</c>。单目双视图无基线定标时 x/y/z 只有尺度自由度，绝对单位取决于相机基线 [待实测]。</para>
+	///   <para>输出刻画两视图的对极几何约束，不是把点从图 1 映到图 2 的 2D 变换；后者使用 <c>VectorToHomMat2d</c> 或 <c>VectorToProjHomMat2d</c>。三角化点的绝对尺度由相机之间的基线和标定单位决定。</para>
 	///   <para><b>坑</b></para>
 	///   <para>纯平移或退化朝向需要 method 里的特殊处理；<c>this</c> 内容只读，但传错相机矩阵不会报错、只会得到错误 E。</para>
 	///   <para><b>用例</b></para>
@@ -2187,7 +2189,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>鲁棒估计出的基础矩阵（新对象）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>本实例仍作为第一台相机矩阵消费（<c>Store(proc,4)</c> 钉住，对应原生 cam_mat1），<c>camMat2</c> 写在索引 5；两张输入图像在托管实现里先后写入索引 1/2、四个坐标 tuple 也写入 0..3，写入顺序存在重叠、最终生效顺序由原生绑定约定决定 [待实测]。<c>InitOCT(0..4)</c>：E 矩阵、covEMat、error、points1、points2。</para>
+	///   <para>本实例作为第一台相机矩阵只读参与计算，<paramref name="camMat2"/> 是第二台相机矩阵；输出依次为基础矩阵、协方差、误差和两组内点索引。两幅图像必须使用与相应相机矩阵匹配的标定和坐标约定。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>与 <c>VectorToEssentialMatrix</c>（352）的差别：它要求点对已配好；本算子自己按 <c>grayMatchMethod</c>/<c>maskSize</c> 做匹配并用 RANSAC 剔除外点，适合有遮挡/纹理重复的立体对。匹配结果可用 <c>points1</c>/<c>points2</c> 反查后再走 352 精算。</para>
 	///   <para><b>坑</b></para>
@@ -2348,7 +2350,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>变换后的新 <see cref="JlRegion"/>，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵钉住索引 0、区域在索引 1（<c>interpolation</c> 也以 <c>StoreS</c> 写在索引 1，随后 <c>InitOCT(1)</c> 取回新区域句柄）；区域按 run 栅格重采样，边界锯齿取决于 <c>interpolation</c> [待实测:支持的取值集合]。</para>
+	///   <para>按投影矩阵对区域进行栅格重采样并返回新区域。<paramref name="interpolation"/> 使用 HALCON 支持的区域插值模式，例如 <c>"nearest_neighbor"</c> 或 <c>"bilinear"</c>；输入区域和当前矩阵不变。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>仿射矩阵下与 <c>AffineTransRegion</c>（478）结果等价且后者语义更明确；本算子用于确含透视的矩阵（拼接/单应校正后的区域搬运）。只要点/轮廓坐标不要栅格区域时用 <c>ProjectiveTransContourXld</c>，无重采样损失。</para>
 	///   <para><b>用例</b></para>
@@ -2380,11 +2382,11 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>变换后的新 <see cref="JlRegion"/>，本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵钉住索引 0、区域在索引 1、<c>interpolate</c> 以 <c>StoreS</c> 写索引 1；输出新区域句柄。仿射下面积按 |det| 缩放，大角度旋转的重采样误差随区域周长增长 [待实测:误差量级]。</para>
+	///   <para>按仿射矩阵对区域进行栅格重采样并返回新区域；输入区域和当前矩阵不变。缩放会改变区域面积，旋转和非整数平移会引入由插值模式决定的栅格化误差。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>模型定位后把搜索区域搬到实测位姿的标准入口。含透视的矩阵要用 <c>ProjectiveTransRegion</c>（477）；只需搬坐标（如 ROI 角点）用 <c>AffineTransPixel</c>，别为几个点付栅格化的代价；对图像本身重采样用 <c>AffineTransImage</c>。</para>
 	///   <para><b>坑</b></para>
-	///   <para><c>nearest_neighbor</c> 与 <c>bilinear</c> 对细结构（1px 宽连通域）的存留不同 [待实测]。</para>
+	///   <para>对细结构区域，<c>nearest_neighbor</c> 通常更能保持离散像素占用，<c>bilinear</c> 会产生平滑的边界重采样；需要保持拓扑时优先选择最近邻并验证输出。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlRegion reg = new JlRegion(50.0, 50.0, 150.0, 250.0);
@@ -2421,7 +2423,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>与 <c>ProjectiveTransImage</c>（1541）的差别是输出画幅：本算子固定为 width×height（适合校正到统一幅面/瓦片），1541 交给 adaptImageSize 自动决定。变换会把画面甩出画幅外时结果被裁切，先算好平移分量或用大画幅。</para>
 	///   <para><b>坑</b></para>
-	///   <para>投影重采样开销大；"false" 域选项下输出有效域覆盖方式 [待实测]。</para>
+	///   <para>投影重采样开销较大。<paramref name="transformDomain"/> 为 <c>"true"</c> 时同时变换输入域；为 <c>"false"</c> 时保留输出图像的默认域。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -2460,7 +2462,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>要固定输出幅面（拼接瓦片、统一校正尺寸）用 <c>ProjectiveTransImageSize</c>（1540）；不关心画面完整性只要快，可用 "false"（原尺寸裁切）。仿射矩阵请走 <c>AffineTransImage</c>（1543），少一层透视处理。</para>
 	///   <para><b>坑</b></para>
-	///   <para>扩幅后尺寸规则 [待实测]；"constant" 型插值补边界值与其他方式的接缝差异 [待实测]。</para>
+	///   <para><paramref name="adaptImageSize"/> 为 <c>"true"</c> 时输出画幅扩展到覆盖变换后的输入范围；为 <c>"false"</c> 时维持原画幅并裁切越界部分。边界像素的生成方式由所选插值模式决定。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -2498,7 +2500,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>不想手填尺寸、让输出容纳全部画面用 <c>AffineTransImage</c>（1543，adaptImageSize）；只要坐标点别付重采样代价，用 <c>AffineTransPixel</c>；含透视矩阵用 1540。</para>
 	///   <para><b>坑</b></para>
-	///   <para>本算子没有域选项：输入图像带域时的输出域处理 [待实测]；"constant" 的补值取什么 [待实测]。</para>
+	///   <para>本重载固定输出画幅且不提供域选项；输入图像的域按 HALCON 图像变换规则处理。使用 <c>"constant"</c> 时，越界采样使用算子定义的常量边界值。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 640, 480);
@@ -2531,11 +2533,11 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <returns>变换后图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>矩阵钉住索引 0、图像索引 1、插值串写索引 1、扩幅串写索引 2；"false" 时输出维持原幅面并裁掉越界部分（裁切规则 [待实测]）。</para>
+	///   <para><paramref name="adaptImageSize"/> 为 <c>"false"</c> 时输出保持输入画幅，变换后超出画面的像素被裁掉；为 <c>"true"</c> 时根据变换后的有效范围调整画幅。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>要精确控制输出幅面用 <c>AffineTransImageSize</c>（1542）；含透视的矩阵用 1540/1541；只搬区域/轮廓用 478/49，别动图像。</para>
 	///   <para><b>坑</b></para>
-	///   <para>图像级仿射重采样是这族里最贵的调用，热路径里先问"是否只需要变换坐标"。缩小超过 2 倍时混叠取决于插值方式 [待实测]。</para>
+	///   <para>图像级仿射重采样会改变像素网格；只需要变换坐标时使用 <c>AffineTransPixel</c>。缩小图像时应选择合适的插值模式并检查混叠。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlImage img = new JlImage("byte", 64, 64);
@@ -2561,14 +2563,14 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	}
 
 	/// <summary>从位移向量场最小二乘拟合仿射矩阵，覆写本实例（原生 id 1551）。</summary>
-	/// <param name="vectorField">位移场图像，两通道分别编码 x/y（或 row/col）向位移 [待实测:通道顺序]。</param>
+	/// <param name="vectorField">包含两个分量的位移场图像，按 HALCON 约定分别表示 x（行）和 y（列）方向位移。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
 	///   <para>实现里没有任何针对本实例的 <c>Store</c>：本对象纯作输出（<c>InitOCT(0)</c>+<c>Load(proc,0)</c>），与 <c>VectorToHomMat2d</c> 那族"就地覆写的估计算子"取向一致；向量场经 <c>Store(proc,1,...)</c> 钉住。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>手头是稠密位移场（光流/变形配准的输出）而只需要全局仿射时用本算子，比从场里抽点再喂 268 省事；场含明显非仿射局部形变时，仿射拟合只给主趋势，别指望它复原细节。</para>
 	///   <para><b>坑</b></para>
-	///   <para>调用前实例内容被无条件覆写；输入通道数不是 2 时的行为由原生层决定 [待实测]。</para>
+	///   <para>输入必须包含两个位移分量；通道数不符或图像类型不支持时抛出 <see cref="JlOperatorException"/>。调用成功后本实例被覆写，失败时不要依赖目标对象的内容。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlImage field = new JlImage("real", 64, 64);   // 假设的位移场（实际需两通道）

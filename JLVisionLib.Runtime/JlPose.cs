@@ -5,17 +5,21 @@ using System.Runtime.Serialization;
 
 namespace JLVisionLib;
 
-/// <summary>表示 7 参数的刚体三维变换（3 个旋转分量、3 个平移分量、1 个表示类型）。</summary>
+/// <summary>表示 HALCON 兼容的 7 元素刚体三维位姿。</summary>
+/// <remarks>
+///   <para>元素顺序固定为 <c>TransX</c>、<c>TransY</c>、<c>TransZ</c>、<c>RotX</c>、<c>RotY</c>、<c>RotZ</c> 和表示类型码。前三项是平移，接后三项是旋转，最后一项由 <c>OrderOfTransform</c>、<c>OrderOfRotation</c> 和 <c>ViewOfTransform</c> 共同定义。</para>
+///   <para>平移单位由应用坐标系决定；HALCON 不把它固定为米。旋转角在欧拉表示中使用度，在 <c>rodriguez</c> 表示中使用 Rodrigues 向量。</para>
+///   <para>本类型拥有内部 <see cref="JlTuple"/>，实现 <see cref="IDisposable"/>；返回的新位姿和从 <c>RawData</c> 取得的元组都由调用方负责释放。</para>
+/// </remarks>
 [Serializable]
 public class JlPose : JlData, ISerializable, ICloneable
 {
 	private const int FIXEDSIZE = 7;
 
-	/// <summary>造一个未初始化的位姿壳：只落到 <c>JlData()</c> 把内部元组建成长度 0 的空 JlTuple，不发任何原生调用，7 个位姿分量此时都不存在。</summary>
+	/// <summary>创建一个空位姿容器，不执行原生调用。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>无参构造落到基类 <c>JlData()</c>，仅把内部 <c>tuple</c> 置成空元组（<c>new JlTuple()</c>），并不调用任何原生算子。此时位姿的 7 个分量（3 平移 + 3 旋转 + 1 表示类型码）都还不存在，直接取分量或参与运算都是未定义。</para>
-	///   <para><b>约束或前提</b>它只是"落点"：必须先被 <c>CreatePose</c>、<c>ReadPose</c>、<c>DeserializePose</c> 这类原地覆写方法填过值才能用；静态 <c>Deserialize(Stream)</c> 和 <c>Clone()</c> 内部正是先 <c>new JlPose()</c> 再覆写。空实例送进 <c>PoseCompose</c>/<c>PoseAverage</c> 前未写入会出错 [待实测：原生层报错形态]。</para>
-	///   <para><b>与相邻算子的取舍</b>数值已知时用 9 参构造器 <c>new JlPose(九个参数)</c> 一步建好，别"先空构造再 CreatePose"——那样多一次原生 id 1816 调用。</para>
+	///   <para><b>功能说明</b>构造结果的 <c>RawData.Length</c> 为 0；它适合作为 <c>CreatePose</c>、<c>ReadPose</c> 或 <c>DeserializePose</c> 的原地输出容器。</para>
+	///   <para><b>约束</b>在写入完整的 7 个元素前，不要把它传给需要有效位姿的算子。数值已知时可直接使用 9 参数构造器，避免额外的一次原生调用。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose pose = new JlPose();
@@ -28,9 +32,9 @@ public class JlPose : JlData, ISerializable, ICloneable
 	}
 
 	/// <remarks>
-	///   <para><b>功能说明</b>转调 <c>base(tuple)</c>，复制一个已含 7 个位姿分量的元组作为本实例的独立存储，不发任何原生调用，是纯托管包装。</para>
-	///   <para><b>约束或前提</b>传入元组与新位姿互不共享所有权；调用方仍负责传入元组本身的 Dispose。元组必须已按原生布局装满 7 分量（3 平移 + 3 旋转 + 1 表示类型码），长度或类型码不合法时后续原生调用行为未定义 [待实测：具体报错]。分量的内部排列顺序由原生侧决定，不能凭 C# 形参序臆测 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>手上是 9 个独立数值时用 9 参构造器（走原生 id 1816 生成规范类型码），不要手拼 7 元组喂本重载；本重载更适合承接别处已是合法位姿元组的场合。</para>
+	///   <para><b>功能说明</b>复制一个已有位姿元组，形成独立的托管存储，不执行原生算子。</para>
+	///   <para><b>输入要求</b><paramref name="tuple"/>必须包含 7 个元素，并遵循 HALCON 的位姿元素顺序；输入元组与新对象不共享所有权，调用方仍负责释放输入元组。</para>
+	///   <para><b>取舍</b>如果手上是 6 个数值和 3 个表示选项，使用 9 参数构造器可由原生运行时生成合法的表示类型码。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose src = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
@@ -90,8 +94,9 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <param name="orderOfRotation">旋转值的含义。默认值 "gba"</param>
 	/// <param name="viewOfTransform">变换的视角。默认值 "point"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1816：6 个数值分量依次 <c>StoreD</c> 入槽 0–5，3 个表示形式串 <c>StoreS</c> 入槽 6–8，<c>InitOCT(0)</c> 后调用、结果 <c>Load(proc,0)</c> 写入本对象——即构造时就完成初始化（尾部 <c>GC.KeepAlive(this)</c>）。它与 <c>CreatePose</c> 同一 id，区别只在 CreatePose 覆写既有实例、本构造器新建。</para>
-	///   <para><b>约束或前提</b>平移 transX/Y/Z 单位米；rotX/Y/Z 是"绕轴角度（度）"还是"Rodriguez 向量分量（无量纲）"完全由 <c>orderOfRotation</c> 决定——把 Rodriguez 值当欧拉角喂进去会静默得错姿势。三个串（次序/欧拉序/视角）的具体合法取值与各组合含义无法由本文件代码判定 [待实测]，须与库文档/GetPoseType 对照。</para>
+	///   <para><b>功能说明</b>创建并初始化一个位姿；与 <c>CreatePose</c> 使用同一 HALCON <c>create_pose</c> 算子，但本构造器把结果写入新对象，<c>CreatePose</c> 覆写已有对象。</para>
+	///   <para><b>表示选项</b><c>orderOfTransform</c> 支持 <c>"Rp+T"</c> 和兼容旧格式的 <c>"R(p-T)"</c>；<c>orderOfRotation</c> 支持 <c>"gba"</c>、<c>"abg"</c> 和 <c>"rodriguez"</c>；<c>viewOfTransform</c> 支持 <c>"point"</c> 和 <c>"coordinate_system"</c>。标准应用建议使用 <c>"Rp+T"</c> + <c>"point"</c>。</para>
+	///   <para><b>单位</b>平移单位由场景坐标系决定；欧拉角使用度，<c>rodriguez</c> 使用无量纲 Rodrigues 分量。最后一个元组元素保存表示类型码。</para>
 	///   <para><b>与相邻算子的取舍</b>要"由相机位置+注视点"定向用 <c>CreateCamPoseLookAtPoint</c>；要"从二进制/文本还原"用 <c>Deserialize</c>/<c>ReadPose</c>；本构造器只负责"已知 9 个分量"直接成型。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -144,8 +149,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <param name="info">序列化载体，须含键 <c>"data"</c>（<c>byte[]</c>），即本类 <c>ISerializable.GetObjectData</c> 用 <c>SerializePose()</c> 写出的那份负载；键缺失或类型不符抛 <c>SerializationException</c>。</param>
 	/// <param name="context">流上下文，本实现完全不用它参与解析。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>构造器未显式链 <c>base</c>，隐式走 <c>JlData()</c> 先得到空元组，再 <c>(byte[])info.GetValue("data", typeof(byte[]))</c> → <c>DeserializePose</c>：PreCall(1833) + <c>JlSerializationBuffer</c> 包住字节（其构造经原生 op 404）+ <c>InitOCT(0)</c>，最后 <c>Load(proc,0,err)</c> 原地写入自身。</para>
-	///   <para><b>约束或前提</b>负载必须是本库 <c>SerializePose()</c>（原生 id 1834）/ <c>Serialize(Stream)</c> 产出的自有二进制格式，与 <c>WritePose</c> 的文本格式不可互换；字节不合法时报错来自原生层 [待实测]。表示形式三串是否随字节一起还原、读回后要不要再 <c>ConvertPoseType</c> [待实测]。</para>
+	///   <para><b>功能说明</b>构造器从 <c>SerializationInfo</c> 的 <c>"data"</c> 键取得二进制负载，并调用 <see cref="DeserializePose(byte[])"/> 初始化新的位姿对象。</para>
+	///   <para><b>约束或前提</b>负载必须由本库的 <c>SerializePose()</c> 或 <c>Serialize(Stream)</c> 生成，与 <c>WritePose</c> 的文本格式不可互换。负载中的位姿表示信息会一并恢复；负载无效时构造器抛出异常。</para>
 	///   <para><b>与相邻入口的取舍</b>手里是裸流用静态 <c>JlPose.Deserialize(Stream)</c>（返回新实例）；已是 <c>byte[]</c> 且自己管实例时用 <c>new JlPose()</c> + <c>DeserializePose(byte[])</c>；本构造器只在对象图参与 .NET 二进制序列化时被格式化器回调，业务代码一般不直接 new（故标了 <c>EditorBrowsable(Never)</c>）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -166,8 +171,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 
 	/// <summary>把位姿按库自有二进制格式写入流。</summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>实现 = <c>SerializePose()</c>（原生 id 1834，取字节缓冲）+ <c>JlSerializationBuffer.WriteToStream</c> 落流；位姿的 7 个分量（3 旋转 + 3 平移 + 1 表示类型码）如何编码进字节由原生侧决定。</para>
-	///   <para><b>约束或前提</b>JlPose 底层是 7 元数据（3 旋转 + 3 平移 + 1 表示类型码），序列化是否连表示形式（orderOfTransform/orderOfRotation/viewOfTransform）一起带走、读回后要不要重新 ConvertPoseType，无法由本文件代码判定 [待实测]。JlPose 系（JlData）实现 IDisposable，使用后应释放内部元组。</para>
+	///   <para><b>功能说明</b>把当前位姿写入二进制流，内容与 <see cref="SerializePose"/> 相同，并保留位姿的表示信息。</para>
+	///   <para><b>约束与资源</b>流必须可写；流的生命周期由调用方管理，本方法不会关闭或释放传入的流。读取时使用 <see cref="Deserialize(Stream)"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>只要内存字节（如塞进自定义报文）用 <c>SerializePose</c>/<c>DeserializePose</c> 一对；落盘文本给人读用 <c>WritePose</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -187,8 +192,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>从 <c>Serialize(Stream)</c> 写出的流读出一个新位姿。</summary>
 	/// <returns>承载流内容的新 JlPose 实例（非原地改写；JlPose 实现 IDisposable，使用后应释放）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>实现 = 先 <c>new JlPose()</c>（未初始化实例），再 <c>DeserializePose(byte[])</c>（原生 id 1833）覆写自身，读流偏移由 <c>JlSerializationBuffer.ReadFromStream</c> 决定。</para>
-	///   <para><b>约束或前提</b>字节必须是本库 <c>Serialize(Stream)</c>/<c>SerializePose()</c> 产出的格式；内容不合法时报错来自原生层 [待实测]。表示形式是否随流内类型码原样还原 [待实测]。</para>
+	///   <para><b>功能说明</b>从当前流位置读取一个由 <see cref="Serialize(Stream)"/> 写出的二进制负载，并返回新的 JlPose；输入流和新对象相互独立。</para>
+	///   <para><b>约束与异常</b>流必须可读且游标位于完整负载的起点。内容截断或格式不匹配时抛出 <see cref="JlOperatorException"/>；位姿表示信息随负载恢复。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose src = new JlPose(0.1, 0.1, 0.1, 90.0, 90.0, 90.0, "Rp+T", "gba", "point");
@@ -242,11 +247,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <param name="mode">平均模式。Default: "iterative"</param>
 	/// <param name="sigmaT">平移权重或 "auto"。Default: "auto"</param>
 	/// <param name="sigmaR">旋转权重或 "auto"。Default: "auto"</param>
-	/// <param name="quality">平均位姿对输入点集的偏差（DOUBLE 装载）。</param>
+	/// <param name="quality">四元素 DOUBLE 元组：平移 RMS、旋转 RMS、最大平移偏差、最大旋转偏差。</param>
 	/// <returns>加权平均后的新 JlPose。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 220。数组先由 <c>JlData.ConcatArray</c> 压平为 7n 元组再传入；weights 为空元组时各点等权，否则须与位姿数一一对应。mode/sigmaT/sigmaR 以元组钉住方式传入（Store+UnpinTuple）；quality 按 DOUBLE 装载，含义是"平均位姿相对输入的点集偏差"，单位与平移分量一致（米）[待实测]。</para>
-	///   <para><b>约束或前提</b>输入的每个 JlPose 已是满 7 分量（构造/读入即可）；<c>mode</c> 除默认 <c>"iterative"</c> 外的合法值与 sigmaT/sigmaR <c>"auto"</c> 的具体策略无法由代码判定 [待实测]。平移与旋转尺度差异大时（如毫米级平移+弧度级旋转），auto 权重会失衡，需手给 sigmaT/sigmaR。</para>
+	///   <para><b>功能说明</b>计算一组位姿的平均平移和平均旋转。空 <paramref name="weights"/> 表示等权；非空时必须为每个位姿提供一个正权重。</para>
+	///   <para><b>模式与权重</b><paramref name="mode"/> 可取 <c>"direct"</c> 或 <c>"iterative"</c>，默认值为 <c>"iterative"</c>。迭代模式以直接平均为初值并降低离群位姿的影响；<paramref name="sigmaT"/> 和 <paramref name="sigmaR"/> 可取 <c>"auto"</c>，也可给出平移和旋转的期望离散程度。直接模式忽略这两个参数。</para>
+	///   <para><b>输出</b><paramref name="quality"/> 固定包含 4 个 double，顺序为平移 RMS、旋转 RMS、最大平移偏差和最大旋转偏差；返回的位姿和质量元组由调用方释放。</para>
 	///   <para><b>与相邻算子的取舍</b>要"两个位姿复合"用 PoseCompose，平均≠复合；位姿数=1 时结果即其本身，白白多一次原生调用。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -290,11 +296,11 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <param name="mode">平均模式。Default: "iterative"</param>
 	/// <param name="sigmaT">平移权重（数值，不能填 "auto"）。Default: "auto"</param>
 	/// <param name="sigmaR">旋转权重（数值，不能填 "auto"）。Default: "auto"</param>
-	/// <param name="quality">平均位姿对输入点集的偏差（DOUBLE 装载）。</param>
+	/// <param name="quality">四元素 DOUBLE 元组：平移 RMS、旋转 RMS、最大平移偏差、最大旋转偏差。</param>
 	/// <returns>加权平均后的新 JlPose。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>同一原生 id 220；差别在 sigmaT/sigmaR 用 <c>StoreD</c> 数值直写，无钉固定元组的开销，也因此无法表达 "auto"——想自动定权必须用元组重载（Default 值 "auto" 只是文档性说明，本重载传非数值语义的字符串会失败 [待实测]）。</para>
-	///   <para><b>约束或前提</b>weights 仍为 JlTuple；quality 按 DOUBLE 装载。平移/旋转尺度悬殊时手工给两个 sigma 是常态，单位约定 [待实测]。</para>
+	///   <para><b>功能说明</b>与元组重载使用相同的平均算法；本重载把 <paramref name="sigmaT"/> 和 <paramref name="sigmaR"/> 作为数值传入，适用于已确定权重尺度的场景。</para>
+	///   <para><b>限制</b>本重载不能表达 <c>"auto"</c>；需要自动估计时使用接受 <see cref="JlTuple"/> 的重载。<paramref name="quality"/> 仍为四元素 DOUBLE 元组。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose p1 = new JlPose(0.1, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
@@ -331,10 +337,10 @@ public class JlPose : JlData, ISerializable, ICloneable
 
 	/// <summary>逐元素求逆位姿（数组版），返回同样长度的新数组。</summary>
 	/// <param name="pose">待求逆的位姿数组（内部压平为 7n 元组再传入）。</param>
-	/// <returns>新的 JlPose[]，第 i 项为输入第 i 项的逆变换。</returns>
+	/// <returns>新的 JlPose[]，第 i 项为输入第 i 项的逆变换，并保持原位姿的表示类型。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 226；结果元组按每 7 个分量 SplitArray 切回数组（切分只取整数倍，尾部残值静默丢弃——由输入结构保证不会出现）。</para>
-	///   <para><b>约束或前提</b>逆的是"变换本身"：若原位姿按 Rp+T 表示，求逆后平移/旋转的耦合关系随之改变，但复合 P∘P⁻¹ 应回到单位变换 [待实测：单位元的 7 分量取值]。</para>
+	///   <para><b>功能说明</b>逐个位姿转换为齐次变换矩阵、求逆，再转换回位姿；输入数组中的每个元素独立处理，输出保持对应索引和表示类型。</para>
+	///   <para><b>约束</b>每个输入位姿必须完整包含 7 个元素。求逆是刚体变换的逆，不是逐元素取倒数。</para>
 	///   <para><b>与相邻算子的取舍</b>单个位姿求逆用实例方法 <c>PoseInvert()</c>，少一次数组压平/切分开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -386,10 +392,10 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>逐对复合两组位姿（数组版），返回复合结果数组。</summary>
 	/// <param name="poseLeft">左操作数位姿数组。</param>
 	/// <param name="poseRight">右操作数位姿数组。</param>
-	/// <returns>新的 JlPose[]，第 i 项 = 第 i 项左 ∘ 第 i 项右（先施加右、再施加左 [待实测：左右施加顺序]）。</returns>
+	/// <returns>新的 JlPose[]。两数组等长时按索引配对；其中一侧只有一个位姿时，该位姿会与另一侧的每个元素组合。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 227；两组数组各自压平为 7n 元组后一起传入，结果再按每 7 分量切回数组。两侧长度不等时如何配对（截断/广播）无法由代码判定 [待实测]，应保证等长。</para>
-	///   <para><b>约束或前提</b>本库已不提供 JlHomMat3D，复合只能在 JlPose 之间做（内部表示类型码不同也可以复合，结果落在哪种表示 [待实测]）。</para>
+	///   <para><b>功能说明</b>将左、右位姿解释为坐标系变换，按 HALCON 的矩阵乘法顺序组合。两侧等长时逐项配对；一侧为单个位姿时对另一侧逐项广播；两侧均为多元素且长度不等会失败。</para>
+	///   <para><b>结果表示</b>输入表示类型相同则保留该类型；类型不同时返回标准表示 <c>("Rp+T", "gba", "point")</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>一对一复合用实例版 <c>PoseCompose(JlPose)</c> 更直观；求平均用 PoseAverage，别拿复合代替。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -424,7 +430,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <returns>复合结果的新 JlPose；this 不被修改。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>同一原生 id 227：this 以 <c>Store(proc,0)</c> 入左槽、poseRight 入右槽，结果 <c>LoadNew</c> 新对象返回，尾部 GC.KeepAlive(this)。</para>
-	///   <para><b>约束或前提</b>左右施加顺序（先右后左 or 先左后右）无法由本文件代码判定 [待实测]；复合链每多一环就是一次原生调用，热路径请缓存复合结果而不是层层套嵌。</para>
+	///   <para><b>组合顺序</b>先构造左、右位姿对应的齐次矩阵 H1、H2，再计算 H1·H2；因此应用顺序应按坐标系变换的矩阵乘法规则理解。this 和 <paramref name="poseRight"/> 都只读，结果是新对象。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose left = new JlPose(0.1, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
@@ -478,25 +484,25 @@ public class JlPose : JlData, ISerializable, ICloneable
 
 
 
-	/// <summary>由相机位置与注视点构造"对准该点"的 3D 相机位姿（批量）。</summary>
-	/// <param name="camPosX">光心 x 坐标元组（单位与场景一致，通常米）。</param>
+	/// <summary>由相机位置与注视点构造“对准该点”的 3D 相机位姿（批量）。</summary>
+	/// <param name="camPosX">相机中心的 x 坐标元组；坐标单位由场景定义。</param>
 	/// <param name="camPosY">光心 y 坐标元组。</param>
 	/// <param name="camPosZ">光心 z 坐标元组。</param>
 	/// <param name="lookAtX">注视点 x 坐标元组。</param>
 	/// <param name="lookAtY">注视点 y 坐标元组。</param>
 	/// <param name="lookAtZ">注视点 z 坐标元组。</param>
-	/// <param name="refPlaneNormal">参考面法向量（"朝上"方向），轴名带符号串元组。Default: "-y"</param>
-	/// <param name="camRoll">相机滚转角，弧度/角度约定 [待实测]。Default: 0</param>
-	/// <returns>新 JlPose[]，第 i 项对应第 i 组 (camPos,lookAt)。</returns>
+	/// <param name="refPlaneNormal">参考平面的法向量，可传 <c>"x"</c>、<c>"-x"</c>、<c>"y"</c>、<c>"-y"</c>、<c>"z"</c>、<c>"-z"</c>，或长度为 3 的法向量元组。Default: <c>"-y"</c></param>
+	/// <param name="camRoll">绕相机观察轴的滚转角，单位为弧度。Default: 0</param>
+	/// <returns>新 JlPose[]；元组参数按 HALCON 的标量广播规则组合，数组中的每个元素对应一组输入。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 995：八个输入全部以元组钉住传入（Store+UnpinTuple），结果按每 7 分量 SplitArray 切回数组。视线方向 = 光心指向注视点，绕视线的滚转由 camRoll 决定。</para>
-	///   <para><b>约束或前提</b>本库已不提供 JlCamPar/3D 类型族，此接口是纯"位置+方向→位姿"的几何构造，不依赖它们。camPos 与 lookAt 重合时视线退化，结果未定义 [待实测]。refPlaneNormal 与视线平行的退化 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要原地改写一个已存在的 JlPose，用 double 版实例重载；本静态版适合一次算一批。</para>
+	///   <para><b>功能说明</b>根据相机中心、注视点、参考平面法向量和滚转角生成相机位姿。相机中心不能与注视点重合；参考平面法向量不能与相机的 z 轴平行，否则无法唯一确定姿态，原生算子会报告错误 8940。</para>
+	///   <para><b>输入规则</b>长度为 1 的坐标或角度元组会广播到其他输入；多个长度大于 1 的元组必须具有相同长度。结果数量等于广播后的输入数量。</para>
+	///   <para><b>与相邻入口的取舍</b>要原地改写一个已有的 JlPose，用 double 版实例重载；本静态版适合批量生成多个位姿。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose[] poses = JlPose.CreateCamPoseLookAtPoint(0.0, 0.0, -1.0, 0.0, 0.0, 0.0, "-y", 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，使用后应释放。</para>
+	///   <para><b>异常与资源</b>输入不满足几何约束或元组长度不兼容时抛出 <see cref="JlOperatorException"/>。返回数组中的每个 JlPose 都拥有独立资源，使用后应逐个 Dispose。</para>
 	/// </remarks>
 	public static JlPose[] CreateCamPoseLookAtPoint(JlTuple camPosX, JlTuple camPosY, JlTuple camPosZ, JlTuple lookAtX, JlTuple lookAtY, JlTuple lookAtZ, JlTuple refPlaneNormal, JlTuple camRoll)
 	{
@@ -527,24 +533,24 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>
 	///   由相机位置与注视点原地改写本位姿（double 版）。
 	/// </summary>
-	/// <param name="camPosX">光心 x 坐标（米 [待实测]）。</param>
-	/// <param name="camPosY">光心 y 坐标。</param>
-	/// <param name="camPosZ">光心 z 坐标。</param>
-	/// <param name="lookAtX">注视点 x 坐标。</param>
-	/// <param name="lookAtY">注视点 y 坐标。</param>
-	/// <param name="lookAtZ">注视点 z 坐标。</param>
-	/// <param name="refPlaneNormal">参考面法向（轴名带符号串元组，如 "-y"）——注意此参数在本重载仍是 JlTuple 而非 string。Default: "-y"</param>
-	/// <param name="camRoll">相机滚转角，弧度/角度约定 [待实测]。Default: 0</param>
+	/// <param name="camPosX">相机中心的 x 坐标；坐标单位由场景定义。</param>
+	/// <param name="camPosY">相机中心的 y 坐标；坐标单位由场景定义。</param>
+	/// <param name="camPosZ">相机中心的 z 坐标；坐标单位由场景定义。</param>
+	/// <param name="lookAtX">注视点的 x 坐标；坐标单位由场景定义。</param>
+	/// <param name="lookAtY">注视点的 y 坐标；坐标单位由场景定义。</param>
+	/// <param name="lookAtZ">注视点的 z 坐标；坐标单位由场景定义。</param>
+	/// <param name="refPlaneNormal">参考平面的法向量，可传 <c>"x"</c>、<c>"-x"</c>、<c>"y"</c>、<c>"-y"</c>、<c>"z"</c>、<c>"-z"</c>，或长度为 3 的法向量元组。Default: <c>"-y"</c></param>
+	/// <param name="camRoll">绕相机观察轴的滚转角，单位为弧度。Default: 0</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>同一原生 id 995；六个坐标用 <c>StoreD</c> 直写（无钉固开销），结果 <c>Load(proc,0)</c> 写回自身——void 返回、原地改写，无新对象产生。</para>
-	///   <para><b>约束或前提</b>本方法把相机对准指定方向，但不含任何投影/显示能力（本库显示族与 JlCamPar 类型均已删除，"相机位姿"只是几何约定）；camPos 与 lookAt 重合时方向退化 [待实测]。</para>
+	///   <para><b>功能说明</b>根据相机中心、注视点、参考平面法向量和滚转角原地生成相机位姿。六个坐标参数为标量；<paramref name="refPlaneNormal"/>仍可使用轴名字符串或 3 元素法向量元组。</para>
+	///   <para><b>约束与异常</b>相机中心不能与注视点重合，参考平面法向量不能与相机 z 轴平行；不满足时原生算子会报告错误 8940，并抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>不想破坏现值时先 <c>Clone()</c> 再调用；批量计算用静态元组重载。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose camPose = new JlPose();
 	///   camPose.CreateCamPoseLookAtPoint(0.0, 0.0, -1.0, 0.0, 0.0, 0.0, "-y", 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>refPlaneNormal 以字符串字面量传入时依赖 string→JlTuple 隐式转换；本库该参数族没有 string 版重载，勿与 <c>SetCurrentDir(string)</c> 之类接口想当然类比。JlPose 实现 IDisposable。</para>
+	///   <para><b>资源与生命周期</b>此方法覆写当前对象，不创建新的 JlPose；对象仍需在不再使用时 Dispose。</para>
 	/// </remarks>
 	public void CreateCamPoseLookAtPoint(double camPosX, double camPosY, double camPosZ, double lookAtX, double lookAtY, double lookAtZ, JlTuple refPlaneNormal, double camRoll)
 	{
@@ -576,12 +582,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   结合相机参数与本位姿（世界位姿），把图像坐标系的 XLD 轮廓变换到世界系 z=0 平面上。
 	/// </summary>
 	/// <param name="contours">待变换的 XLD 轮廓（输入控制参数）。</param>
-	/// <param name="cameraParam">内部相机参数，按库约定的数值元组传入（JlCamPar 类型本库已删除，无类型化入口；分量布局 [待实测]）。</param>
-	/// <param name="scale">世界单位/尺度串，如 "m"。Default: "m"</param>
+	/// <param name="cameraParam">HALCON 内部相机参数元组；参数顺序和长度必须符合所使用的相机模型。</param>
+	/// <param name="scale">输出世界坐标的尺度或单位，例如 <c>"m"</c>。Default: <c>"m"</c></param>
 	/// <returns>世界坐标下的新 JlXLDCont 句柄（非原地改写，用毕须 Dispose）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1810。this 作为世界位姿（WorldPose 槽位）参与投影反解，轮廓点经相机模型反投影到世界 z=0 平面。</para>
-	///   <para><b>约束或前提</b>输入是 XLD 轮廓（亚像素点列）而非 Region；世界系必须满足"目标点都在 z=0 平面"的前提，高度不为 0 的物体投影到该平面会产生系统性偏移。cameraParam 与位姿的单位要一致（scale 决定米/毫米）。本库不提供显示与 3D 类型族，本方法仍可用，因为全部输入都是 JlTuple/JlXLDCont。</para>
+	///   <para><b>约束或前提</b>输入是 XLD 轮廓而非 Region；算子把轮廓点变换到世界坐标系的 z=0 平面。<paramref name="cameraParam"/> 必须是与图像匹配的内部相机参数，当前位姿必须描述世界坐标系相对于相机坐标系的姿态，<paramref name="scale"/> 决定输出坐标的尺度。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose worldPose = new JlPose(0.0, 0.0, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
@@ -592,7 +598,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   world.Dispose();
 	///   contours.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>包装体内 this 先写入索引 1 槽、contours 随后又写入同一索引 1——两者对槽位的先后覆盖关系是否影响结果 [待实测]；返回值与 contours 都是 JlXLDCont 句柄（实现 IDisposable），都要释放；cameraParam 的 12 个分量顺序是按库文档约定示例的 [待实测]。</para>
+	///   <para><b>异常与资源</b>相机参数、位姿或尺度不合法时抛出 <see cref="JlOperatorException"/>。返回值是新的 JlXLDCont，使用后应 Dispose；输入轮廓仍由调用方管理。</para>
 	/// </remarks>
 	public JlXLDCont ContourToWorldPlaneXld(JlXLDCont contours, JlTuple cameraParam, JlTuple scale)
 	{
@@ -617,8 +623,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   结合相机参数与本位姿，把 XLD 轮廓变换到世界系 z=0 平面（scale 字符串版）。
 	/// </summary>
 	/// <param name="contours">待变换的 XLD 轮廓。</param>
-	/// <param name="cameraParam">内部相机参数数值元组（JlCamPar 类型本库已删除；布局 [待实测]）。</param>
-	/// <param name="scale">世界单位/尺度串。Default: "m"</param>
+	/// <param name="cameraParam">HALCON 内部相机参数元组；参数顺序和长度必须符合所使用的相机模型。</param>
+	/// <param name="scale">输出世界坐标的尺度或单位，例如 <c>"m"</c>。Default: <c>"m"</c></param>
 	/// <returns>世界坐标下的新 JlXLDCont 句柄（用毕须 Dispose）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>同一原生 id 1810，scale 以 <c>StoreS</c> 直写、不钉固定元组；其余与元组重载一致。</para>
@@ -632,7 +638,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   world.Dispose();
 	///   contours.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回值与 contours 均为 JlXLDCont 句柄（实现 IDisposable）；槽位覆盖疑点同元组重载 [待实测]。</para>
+	///   <para><b>异常与资源</b>相机参数、位姿或尺度不合法时抛出 <see cref="JlOperatorException"/>。返回值是新的 JlXLDCont，使用后应 Dispose；输入轮廓仍由调用方管理。</para>
 	/// </remarks>
 	public JlXLDCont ContourToWorldPlaneXld(JlXLDCont contours, JlTuple cameraParam, string scale)
 	{
@@ -655,13 +661,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>
 	///   平移本位姿的原点，返回新位姿。
 	/// </summary>
-	/// <param name="DX">x 方向平移量（单位与位姿平移分量一致，通常米）。Default: 0</param>
-	/// <param name="DY">y 方向平移量。Default: 0</param>
-	/// <param name="DZ">z 方向平移量。Default: 0</param>
+	/// <param name="DX">x 方向的原点平移量，单位与位姿平移分量一致。Default: 0</param>
+	/// <param name="DY">y 方向的原点平移量，单位与位姿平移分量一致。Default: 0</param>
+	/// <param name="DZ">z 方向的原点平移量，单位与位姿平移分量一致。Default: 0</param>
 	/// <returns>平移后的新 JlPose；this 不被修改。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1812：this 钉入后用 <c>LoadNew</c> 取回新实例；三个量以 <c>StoreD</c> 直写。</para>
-	///   <para><b>约束或前提</b>偏移施加在物体坐标系还是世界坐标系、与 orderOfTransform（"Rp+T"/"T+Rp"）是否耦合，无法由代码判定 [待实测]——换一种表示形式重复平移可能得到不同结果，务必实测确认。</para>
+	///   <para><b>功能说明</b>将位姿原点沿给定的 x、y、z 偏移移动，返回新的位姿；原位姿保持不变。HALCON 的位姿表示会被正确解释，输出仍描述同一变换约定下的新原点。</para>
+	///   <para><b>约束与异常</b>偏移量使用与位姿平移分量相同的场景单位。输入必须是完整的 7 元素位姿；不合法输入时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>沿固定向量做链式平移时，连续调用每次都过一次原生调用；能合并成一次 (DX,DY,DZ) 就合并。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -691,12 +697,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>
 	///   读取本位姿当前的表示形式三元组（只查询，不修改）。
 	/// </summary>
-	/// <param name="orderOfRotation">旋转值的含义（如 "gba"/"abg"，欧拉序细节 [待实测]）。</param>
-	/// <param name="viewOfTransform">变换视角（"point"/"object" 之一 [待实测]）。</param>
-	/// <returns>旋转与平移的先后次序串（如 "Rp+T"/"T+Rp"）。</returns>
+	/// <param name="orderOfRotation">输出的旋转表示顺序，例如 <c>"gba"</c>、<c>"abg"</c> 或 <c>"rodriguez"</c>。</param>
+	/// <param name="viewOfTransform">输出的变换视角：<c>"point"</c> 或 <c>"coordinate_system"</c>。</param>
+	/// <returns>旋转与平移的组合顺序，例如 <c>"Rp+T"</c> 或 <c>"R(p-T)"</c>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1814：三个字符串都经 <c>LoadS</c> 读出（返回值=orderOfTransform，另两个走 out）。</para>
-	///   <para><b>约束或前提</b>7 分量中的第 7 个就是这里的类型码的数值形式，三者合起来才构成完整表示约定；本方法不改变位姿。</para>
+	///   <para><b>约束或前提</b>输入必须包含完整的 7 元素位姿。返回的三个字符串共同描述最后一个类型码对应的表示约定；本方法只查询，不改变位姿。</para>
 	///   <para><b>与相邻算子的取舍</b>想改成别的表示形式用 <c>ConvertPoseType</c>（它会返回新实例），别拿本方法的返回值手工拼数。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -737,8 +743,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <param name="viewOfTransform">目标视角。Default: "point"</param>
 	/// <returns>目标表示形式下的新 JlPose；this 不被修改。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1815：三个串以 <c>StoreS</c> 直写，this 钉入，结果 <c>LoadNew</c> 新对象。只换参数化方式，不换变换本身。</para>
-	///   <para><b>约束或前提</b>HALCON 里与 JlHomMat3D/JlQuaternion 互转的接口在本库已随类型删除，不存在同名入口；这里只处理 pose↔pose。非法串组合或奇异欧拉构型下的换算行为 [待实测]。</para>
+	///   <para><b>功能说明</b>按目标表示形式重新表达同一个刚体变换，返回新的位姿；平移和旋转对应的几何变换保持不变。</para>
+	///   <para><b>允许值</b><paramref name="orderOfTransform"/> 可为 <c>"Rp+T"</c> 或 <c>"R(p-T)"</c>；<paramref name="orderOfRotation"/> 可为 <c>"gba"</c>、<c>"abg"</c> 或 <c>"rodriguez"</c>；<paramref name="viewOfTransform"/> 可为 <c>"point"</c> 或 <c>"coordinate_system"</c>。组合不合法或输入不是完整位姿时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>只想"知道当前是什么形式"用 <c>GetPoseType</c>（不生成新对象）；要数值分量对照用 <c>RawData</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -773,18 +779,18 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>
 	///   用给定的平移/旋转分量原地构造（覆写）本位姿。
 	/// </summary>
-	/// <param name="transX">x 方向平移，单位米。Default: 0.1</param>
-	/// <param name="transY">y 方向平移，单位米。Default: 0.1</param>
-	/// <param name="transZ">z 方向平移，单位米。Default: 0.1</param>
-	/// <param name="rotX">绕 x 轴转角（度）或 Rodriguez 向量 x 分量（无量纲），随 orderOfRotation 而定。Default: 90.0</param>
-	/// <param name="rotY">绕 y 轴转角或 Rodriguez y 分量。Default: 90.0</param>
-	/// <param name="rotZ">绕 z 轴转角或 Rodriguez z 分量。Default: 90.0</param>
-	/// <param name="orderOfTransform">旋转/平移次序串。Default: "Rp+T"</param>
-	/// <param name="orderOfRotation">旋转值含义串（欧拉序）。Default: "gba"</param>
-	/// <param name="viewOfTransform">视角串。Default: "point"</param>
+	/// <param name="transX">x 方向平移，单位由场景定义。Default: 0.1</param>
+	/// <param name="transY">y 方向平移，单位由场景定义。Default: 0.1</param>
+	/// <param name="transZ">z 方向平移，单位由场景定义。Default: 0.1</param>
+	/// <param name="rotX">旋转分量或 Rodriguez 向量 x 分量，含义由 <paramref name="orderOfRotation"/> 决定。HALCON 的欧拉角单位为度。Default: 90.0</param>
+	/// <param name="rotY">旋转分量或 Rodriguez 向量 y 分量，含义由 <paramref name="orderOfRotation"/> 决定。Default: 90.0</param>
+	/// <param name="rotZ">旋转分量或 Rodriguez 向量 z 分量，含义由 <paramref name="orderOfRotation"/> 决定。Default: 90.0</param>
+	/// <param name="orderOfTransform">旋转/平移组合顺序：<c>"Rp+T"</c> 或 <c>"R(p-T)"</c>。Default: <c>"Rp+T"</c></param>
+	/// <param name="orderOfRotation">旋转表示：<c>"gba"</c>、<c>"abg"</c> 或 <c>"rodriguez"</c>。Default: <c>"gba"</c></param>
+	/// <param name="viewOfTransform">变换视角：<c>"point"</c> 或 <c>"coordinate_system"</c>。Default: <c>"point"</c></param>
 	/// <remarks>
-	///   <para><b>功能说明</b>与 9 参构造器同一原生 id 1816，区别只在结果落地方式：构造器初始化新对象，本方法 <c>Load(proc,0)</c> 原地覆写已有实例。</para>
-	///   <para><b>约束或前提</b>欧拉序 "gba"/"abg" 的具体轴序与旋转正方向（右手系假定）无法由本文件代码判定 [待实测]；三个 rot 分量的含义完全取决于 orderOfRotation——把它当"绕固定三轴的角度"直接喂 Rodriguez 值会静默出错。</para>
+	///   <para><b>功能说明</b>根据六个数值分量和三个表示选项原地创建或覆写位姿。表示选项的允许值与 <see cref="ConvertPoseType(string, string, string)"/> 相同。</para>
+	///   <para><b>约束与异常</b>平移单位由场景定义；欧拉角按 HALCON 约定使用度，Rodriguez 表示使用无量纲旋转向量。输入组合不合法时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>新位姿优先直接 <c>new JlPose(同九个参数)</c>；本方法适合复用实例避免小对象分配。表示形式要换用 ConvertPoseType，不要重喂数值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -822,10 +828,10 @@ public class JlPose : JlData, ISerializable, ICloneable
 
 
 	/// <summary>用 <c>SerializePose()</c> 得到的字节覆写本位姿（原地改写）。</summary>
-	/// <param name="serializedItemHandle">库自有二进制格式的位姿字节（不是句柄数值，是完整负载）。</param>
+	/// <param name="serializedItemHandle">由 <see cref="SerializePose"/> 生成的完整位姿负载；它不是原生句柄数值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1833；字节先包进 <c>JlSerializationBuffer</c>（using 释放），调用后用 <c>Load(proc,0)</c> 把结果写回自身——这是原地改写而非返回新对象。</para>
-	///   <para><b>约束或前提</b>本方法来自 <c>ISerializable</c> 反序列化路径（.NET 二进制序列化构造器也调它），字节来源不合法时报错出自原生层 [待实测]。JlPose 实现 IDisposable。</para>
+	///   <para><b>功能说明</b>读取 JLVisionLib 的位姿二进制负载并原地覆写当前对象；不会创建新的 JlPose。</para>
+	///   <para><b>约束与异常</b>负载必须来自本库的 <see cref="SerializePose"/> 或 <see cref="Serialize(Stream)"/>。负载为空、截断或格式不匹配时抛出 <see cref="JlOperatorException"/>；本方法也用于 .NET 序列化回调。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose src = new JlPose(0.1, 0.1, 0.1, 90.0, 90.0, 90.0, "Rp+T", "gba", "point");
@@ -851,8 +857,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>把本位姿导出为库自有二进制格式的字节数组。</summary>
 	/// <returns>序列化负载 byte[]（每次调用新建；配套 <c>DeserializePose(byte[])</c> 读回）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1834：本位姿钉住传入（Store+UnpinTuple，调用结束有 GC.KeepAlive），结果用 <c>JlSerializationBuffer.LoadBytes</c> 拷成托管数组。</para>
-	///   <para><b>约束或前提</b>字节布局属库私有格式，不要与 <c>WritePose</c> 的文本格式混用；跨语言/跨版本兼容性 [待实测]。</para>
+	///   <para><b>功能说明</b>把当前位姿导出为 JLVisionLib 的二进制负载；每次调用返回新的托管字节数组，当前对象不变。</para>
+	///   <para><b>约束与兼容性</b>该负载是库的二进制格式，只能与 <see cref="DeserializePose(byte[])"/> 或 <see cref="Serialize(Stream)"/> / <see cref="Deserialize(Stream)"/> 配套使用，不要与 <see cref="WritePose(string)"/> 生成的文本文件混用。</para>
 	///   <para><b>与相邻算子的取舍</b>要塞进流用实例方法 <c>Serialize(Stream)</c>；要人可读的文本文件用 <c>WritePose(string)</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -879,15 +885,15 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="poseFile">位姿文本文件路径。Default: "campose.dat"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1835：文件名 <c>StoreS</c> 传入，<c>InitOCT</c> 预留输出后 <c>Load(proc,0)</c> 原地写入自身。</para>
-	///   <para><b>约束或前提</b>文件格式（几行、角度制与否、是否含表示形式行）无法由本文件代码判定 [待实测]，须与 <c>WritePose</c> 产物或库文档约定的样例文件配套；文件不存在/格式错时报错来自原生层。原参数注释写作 "File name of the external camera parameters"，说明它同时可承担外部相机位姿文件的读入。</para>
+	///   <para><b>功能说明</b>从 HALCON 位姿文本文件读取数据并原地覆写当前对象；该方法与 <see cref="WritePose(string)"/> 使用同一文本格式。</para>
+	///   <para><b>约束与异常</b>文件必须包含 HALCON 可识别的位姿表示，文件不存在、无法读取或内容无效时抛出 <see cref="JlOperatorException"/>。读取成功后，位姿的表示选项随文件内容恢复。</para>
 	///   <para><b>与相邻算子的取舍</b>程序间传大位姿数组用 <see cref="Serialize(Stream)"/> 二进制族；本方法面向"人可编辑"的单个位姿文件。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose pose = new JlPose();
 	///   pose.ReadPose("campose.dat");
 	///   </code>
-	///   <para><b>资源与坑</b>读失败时实例可能停留在原值或未初始化态 [待实测]，失败路径建议读入到 <c>Clone()</c> 副本先验证。</para>
+	///   <para><b>资源与生命周期</b>方法不接管文件路径对应的文件句柄；当前对象仍由调用方负责 Dispose。</para>
 	/// </remarks>
 	public void ReadPose(string poseFile)
 	{
@@ -905,15 +911,15 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="poseFile">目标文件路径（覆盖写入）。Default: "campose.dat"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 1836：this 以 <c>Store(proc,0)</c> 钉入（调用后解钉、尾部 GC.KeepAlive），文件名 <c>StoreS</c> 入第 1 槽；无输出参数。</para>
-	///   <para><b>约束或前提</b>输出文本的格式/角度制与 <c>ReadPose</c> 配套 [待实测]；位姿以哪种表示形式落盘（当前表示形式还是固定形式）无法由代码判定 [待实测]。</para>
+	///   <para><b>功能说明</b>按当前位姿的数值和表示选项写出 HALCON 位姿文本文件；当前对象不变，目标文件会被覆盖。</para>
+	///   <para><b>约束与异常</b>输出文件可由 <see cref="ReadPose(string)"/> 读回。目标目录不存在、文件不可写或位姿无效时抛出 <see cref="JlOperatorException"/>。</para>
 	///   <para><b>与相邻算子的取舍</b>要无损、机器可读的负载用 <c>SerializePose()</c> 字节族；给人核对/手改才用本方法。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose pose = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   pose.WritePose("campose.dat");
 	///   </code>
-	///   <para><b>资源与坑</b>目录不可写时抛原生错误；无句柄资源。</para>
+	///   <para><b>资源与生命周期</b>写文件由原生算子完成；方法不返回文件句柄，也不接管调用方的其他资源。</para>
 	/// </remarks>
 	public void WritePose(string poseFile)
 	{

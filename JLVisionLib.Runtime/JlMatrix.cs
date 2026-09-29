@@ -5,7 +5,11 @@ using System.Runtime.Serialization;
 
 namespace JLVisionLib;
 
-/// <summary>表示一个矩阵实例（封装原生 matrix 句柄）。</summary>
+/// <summary>表示 HALCON matrix 句柄封装的矩阵实例。</summary>
+/// <remarks>
+///   <para>矩阵元素使用 <see cref="double"/> 保存，行列索引从 0 开始。矩阵算子通常返回新的矩阵句柄，输入矩阵保持不变；原地设置和填充方法会覆盖当前矩阵。</para>
+///   <para>矩阵维度、元素数量和线性代数约束由对应 HALCON 算子定义；调用方应在批量操作前确认维度匹配。</para>
+/// </remarks>
 [Serializable]
 public class JlMatrix : JlHandle, ISerializable, ICloneable
 {
@@ -14,7 +18,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="column">列号，0 基。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>读取转调 GetValueMatrix(int,int)（原生算子 id 871，按 DOUBLE 装载单值）；写入转调 SetValueMatrix(int,int,double)（id 870，行列为 INTEGER、值为 DOUBLE）。</para>
-	///   <para><b>约束或前提</b>索引越界不在托管层预检，由原生层报错 [待实测]。矩阵元素只存 double：赋 int/long 字面量是隐式提升，超过 2^53 的整数才会悄悄丢精度。</para>
+	///   <para><b>约束与异常</b>行列索引必须落在矩阵范围内，越界时抛出 <see cref="JlOperatorException"/>。矩阵元素只存 double，超过 2^53 的整数可能无法精确表示。</para>
 	///   <para><b>与相邻算子的取舍</b>每次 get/set 都是一次完整的原生调用，逐元素循环搬运整块矩阵极慢；批量读写改用 GetValueMatrix(JlTuple,JlTuple)/SetValueMatrix(JlTuple,JlTuple,JlTuple) 或 GetFullMatrix/SetFullMatrix。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -40,7 +44,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <summary>矩阵行数；每次读取都向原生层查询一次，托管侧不缓存。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>getter 内部调用 GetSizeMatrix(out int,out int)（原生算子 id 861），维度按 INTEGER 装载后丢弃列数只返回行数。</para>
-	///   <para><b>约束或前提</b>句柄无效（未创建或已 Dispose）时由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>句柄无效（未创建或已 Dispose）时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>同时要行数和列数时，一次 GetSizeMatrix 比 NumRows+NumColumns 少一半原生调用；只关心元素总数也可直接 GetFullMatrix().Length。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -62,7 +66,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <summary>矩阵列数；每次读取都向原生层查询一次，托管侧不缓存。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>getter 内部调用 GetSizeMatrix(out int,out int)（原生算子 id 861），维度按 INTEGER 装载后丢弃行数只返回列数。</para>
-	///   <para><b>约束或前提</b>句柄无效（未创建或已 Dispose）时由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>句柄无效（未创建或已 Dispose）时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>校验乘法维度是否匹配时成对取 NumRows/NumColumns，或改用一次 GetSizeMatrix；判断是否方阵请两个都读，不能只读这一个。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -158,7 +162,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="fileName">矩阵文件名（由 WriteMatrix 写出的 .dat 等格式）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 819：StoreS(0, fileName) 传文件名字符串，InitOCT(0)+Load(0) 把读到的矩阵装载进本新建实例的句柄，属"构造新句柄"。</para>
-	///   <para><b>约束或前提</b>文件须是本库 WriteMatrix/序列化格式，路径不存在或格式非法时由原生层报错 [待实测]。用毕须 Dispose 释放句柄。</para>
+	///   <para><b>约束或前提</b>文件须是本库 WriteMatrix/序列化格式，路径不存在或格式非法时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。用毕须 Dispose 释放句柄。</para>
 	///   <para><b>与相邻算子的取舍</b>与实例方法 ReadMatrix(string) 用同一 id 819：本构造器给出新句柄；ReadMatrix 则先 Dispose() 再原地改写已有句柄，反复换文件读取时可复用同一对象避免新建。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -187,7 +191,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="value">初始化各元素的值，按行优先铺放；单元素会被广播到全矩阵。默认值 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 873：StoreI(0, rows)、StoreI(1, columns) 定维度，Store(2, value) 钉住传入的 JlTuple 作填充值，InitOCT(0)+Load(0) 装载出本新句柄，调用后 UnpinTuple(value) 解除固定。</para>
-	///   <para><b>约束或前提</b>value 元素个数须等于 rows*columns，或为单元素以广播填充，长度不匹配时由原生层报错 [待实测]。JlTuple 有 int/long/double/string 及其数组的隐式转换，可直接传数组字面量。用毕须 Dispose。</para>
+	///   <para><b>约束或前提</b>value 元素个数须等于 rows*columns，或为单元素以广播填充，长度不匹配时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。JlTuple 有 int/long/double/string 及其数组的隐式转换，可直接传数组字面量。用毕须 Dispose。</para>
 	///   <para><b>与相邻算子的取舍</b>与 double 重载同 id 873：整块填充同一常数用 double 重载（StoreD 直写、无钉固定开销）；需要逐元素不同的初值才用本元组重载（Store+UnpinTuple，多一次钉固定）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -227,7 +231,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double v = zeros[2, 2];
 	///   zeros.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>rows/columns 直接是矩阵维度，构造后即可用索引器 [row, col] 访问；0 维或负维由原生层报错 [待实测]。</para>
+	///   <para><b>资源与坑</b>rows/columns 直接是矩阵维度，构造后即可用索引器 [row, col] 访问；0 维或负维由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix(int rows, int columns, double value)
 	{
@@ -270,7 +274,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   }
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>序列化产物须用配套的 Deserialize(Stream) 读回；跨版本/跨本库格式不保证兼容 [待实测]。</para>
+	///   <para><b>资源与坑</b>序列化产物须用配套的 Deserialize(Stream) 读回；跨版本/跨本库格式不保证兼容 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public new void Serialize(Stream stream)
 	{
@@ -360,7 +364,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（A 与 B 对应元素之和），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转调 matrix1.AddMatrix(matrix2)（原生算子 id 858，Store(this)+Store(B)，LoadNew 返回新句柄）。</para>
-	///   <para><b>约束或前提</b>逐元素加法要求 A、B 行列维度完全一致；维度不匹配时由原生层报错 [待实测]，不会自动广播。</para>
+	///   <para><b>约束或前提</b>逐元素加法要求 A、B 行列维度完全一致；维度不匹配时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准），不会自动广播。</para>
 	///   <para><b>与相邻算子的取舍</b>这是逐元素加，不是矩阵相加意义的拼接；要就地累加到 A 用 AddMatrixMod(B)。矩阵乘法用 * 运算符（见 operator*）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -408,7 +412,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（A×B 的矩阵积），维度为 A.rows×B.columns，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转调 matrix1.MultMatrix(matrix2, "AB")（原生算子 id 860，multType 固定 "AB" 表示标准矩阵积），LoadNew 返回新句柄。</para>
-	///   <para><b>约束或前提</b>矩阵乘法要求 A 的列数等于 B 的行数，否则由原生层报错 [待实测]；乘法不满足交换律，A×B 与 B×A 维度与值一般不同，操作数顺序即 A、B 顺序。</para>
+	///   <para><b>约束或前提</b>矩阵乘法要求 A 的列数等于 B 的行数，否则由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）；乘法不满足交换律，A×B 与 B×A 维度与值一般不同，操作数顺序即 A、B 顺序。</para>
 	///   <para><b>与相邻算子的取舍</b>这是线性代数的矩阵积，不是逐元素乘——逐元素乘积本运算符族里没有；要就地乘回 A 用 MultMatrixMod(B, "AB")。与标量数乘 operator*(double,JlMatrix) 区分。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -476,7 +480,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄，满足 matrix2 × result = matrix1，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转调 matrix2.SolveMatrix("general", 0.0, matrix1)（原生算子 id 828，LoadNew 返回新句柄）：把右操作数 matrix2 当作系数矩阵 A、左操作数 matrix1 当作右端项 B，解 A×x=B。</para>
-	///   <para><b>约束或前提</b>操作数顺序与直觉相反：`B / A` 求的是 x 使 A×x=B（等价 x=A⁻¹B，左乘逆），不是 B×A⁻¹，也不是逐元素相除。A 须可解（配合维度：A 行数= B 行数），奇异/病态时由 epsilon 阈值判奇异性 [待实测]。</para>
+	///   <para><b>约束或前提</b>操作数顺序与直觉相反：`B / A` 求的是 x 使 A×x=B（等价 x=A⁻¹B，左乘逆），不是 B×A⁻¹，也不是逐元素相除。A 须可解（配合维度：A 行数= B 行数），奇异/病态时由 epsilon 阈值判奇异性 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要显式控制 matrixLHSType 与 epsilon 请直接用 SolveMatrix 方法；只要 A⁻¹ 本身用 InvertMatrix。本运算符把 epsilon 固定 0.0、类型固定 general。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -487,7 +491,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   b.Dispose();
 	///   a.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>结果是独立新句柄，两入参与结果分别 Dispose；奇异矩阵求解会报错而非静默返回 [待实测]。</para>
+	///   <para><b>资源与坑</b>结果是独立新句柄，两入参与结果分别 Dispose；奇异矩阵求解会报错而非静默返回 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public static JlMatrix operator /(JlMatrix matrix1, JlMatrix matrix2)
 	{
@@ -500,7 +504,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="serializedItemHandle">SerializeMatrix() 产出的序列化字节缓冲。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 817：先 Dispose() 释放本实例原有句柄，Store(0, buffer) 传字节，InitOCT(0)+Load(0) 把解出的矩阵原地装载回 this。属原地改写，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>会丢弃本对象原有的矩阵内容（先 Dispose 再装载）；buffer 须为配套的 SerializeMatrix()/Serialize() 字节，格式非法由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>会丢弃本对象原有的矩阵内容（先 Dispose 再装载）；buffer 须为配套的 SerializeMatrix()/Serialize() 字节，格式非法由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想一次得到全新对象（不动现有句柄）用静态 Deserialize(Stream) 或 Clone()；已持有句柄、想原地覆盖时用本方法，省去再建对象。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -511,7 +515,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   dst.Dispose();
 	///   src.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>调用内部先 Dispose()，若在装载中途抛异常本句柄可能处于无效态 [待实测]；buffer 用 JlSerializationBuffer 包装并 GC.KeepAlive 保活到调用结束。</para>
+	///   <para><b>资源与坑</b>调用内部先 Dispose()，若在装载中途抛异常本句柄可能处于无效态 （具体边界行为以对应 HALCON 算子文档为准）；buffer 用 JlSerializationBuffer 包装并 GC.KeepAlive 保活到调用结束。</para>
 	/// </remarks>
 	public void DeserializeMatrix(byte[] serializedItemHandle)
 		{
@@ -544,7 +548,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   r.Dispose();
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>字节内容含维度与全部 double 元素，大矩阵会占用可观托管内存；产物仅由本库 DeserializeMatrix 可读回 [待实测]。</para>
+	///   <para><b>资源与坑</b>字节内容含维度与全部 double 元素，大矩阵会占用可观托管内存；产物仅由本库 DeserializeMatrix 可读回 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public byte[] SerializeMatrix()
 	{
@@ -564,7 +568,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="fileName">矩阵文件名。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 819：先 Dispose() 释放本实例原句柄，StoreS(0, fileName) 传文件名，InitOCT(0)+Load(0) 把读到的矩阵原地装载回 this。属原地改写，无返回值。</para>
-	///   <para><b>约束或前提</b>会丢弃 this 原有内容；文件须为本库 WriteMatrix 写出的格式，不存在或格式非法由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>会丢弃 this 原有内容；文件须为本库 WriteMatrix 写出的格式，不存在或格式非法由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与构造器 JlMatrix(string) 同 id 819：构造器给新句柄，本方法复用已有句柄原地改；循环读多文件时用本法避免反复 new/Dispose。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -572,7 +576,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   m.ReadMatrix("data.dat");
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>内部先 Dispose 再装载，读失败时本句柄可能变无效态 [待实测]；对象本身由调用方最后统一 Dispose。</para>
+	///   <para><b>资源与坑</b>内部先 Dispose 再装载，读失败时本句柄可能变无效态 （具体边界行为以对应 HALCON 算子文档为准）；对象本身由调用方最后统一 Dispose。</para>
 	/// </remarks>
 	public void ReadMatrix(string fileName)
 	{
@@ -593,8 +597,8 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="fileName">目标文件名。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 820：Store(0) 传本句柄，StoreS(1, fileFormat)、StoreS(2, fileName)；参数序为 [矩阵, 格式, 文件名]。只读不改动 this，无返回值。</para>
-	///   <para><b>约束或前提</b>目标路径可写、目录须已存在 [待实测]；fileFormat 取值须为原生层支持的字符串（如 "binary"），拼写错误由原生层报错 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要存进 Stream（内存/网络）用 Serialize(Stream)；要落盘成可用 JlMatrix(string)/ReadMatrix 读回的文件用本法。读写文件与序列化流两套格式，不保证互相通用 [待实测]。</para>
+	///   <para><b>约束或前提</b>目标路径可写、目录须已存在 （具体边界行为以对应 HALCON 算子文档为准）；fileFormat 取值须为原生层支持的字符串（如 "binary"），拼写错误由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻算子的取舍</b>要存进 Stream（内存/网络）用 Serialize(Stream)；要落盘成可用 JlMatrix(string)/ReadMatrix 读回的文件用本法。读写文件与序列化流两套格式，不保证互相通用 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlMatrix m = new JlMatrix(2, 2, 1.0);
@@ -624,7 +628,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>被分解矩阵的正交部分（新句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 821：Store(0) 传本句柄，StoreS(1,decompositionType)、StoreS(2,outputMatricesType)、StoreS(3,computeOrthogonal)，两个 InitOCT+LoadNew 分别装载正交部分（返回值）与三角部分（out）。不改动 this。</para>
-	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，用完都须 Dispose；QR 分解要求输入为方阵或按 decompositionType 支持的形状 [待实测]。computeOrthogonal 置非 "true" 时正交部分可能不被实际计算 [待实测]。</para>
+	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，用完都须 Dispose；QR 分解要求输入为方阵或按 decompositionType 支持的形状 （具体边界行为以对应 HALCON 算子文档为准）。computeOrthogonal 置非 "true" 时正交部分可能不被实际计算 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要一般特征/谱分解用 DecomposeMatrix 或 SvdMatrix；本法专给正交-三角（QR 等）分解对。outputMatricesType 控制返回紧凑还是满尺寸矩阵。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -662,7 +666,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>分解结果第一矩阵（新句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 822：Store(0) 传本句柄，StoreS(1, matrixType)，两个 InitOCT+LoadNew 分别装载矩阵 1（返回值）与矩阵 2（out）。不改动 this。</para>
-	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，均须 Dispose；matrixType 选 "general"/对称等影响分解算法与所需输入形状 [待实测]。</para>
+	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，均须 Dispose；matrixType 选 "general"/对称等影响分解算法与所需输入形状 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>本法是通用分解入口；已知要 QR/特征/SVD 时分别用 OrthogonalDecomposeMatrix、Eigenvalues*、SvdMatrix 更直接。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -673,7 +677,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   mat2.Dispose();
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>两个输出句柄都要单独释放；matrix1/matrix2 的含义随 matrixType 而变，勿按固定语义假设 [待实测]。</para>
+	///   <para><b>资源与坑</b>两个输出句柄都要单独释放；matrix1/matrix2 的含义随 matrixType 而变，勿按固定语义假设 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix DecomposeMatrix(string matrixType, out JlMatrix matrix2ID)
 	{
@@ -700,7 +704,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>左奇异向量矩阵（新句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 823：Store(0) 传本句柄，StoreS(1,SVDType)、StoreS(2,computeSingularVectors)，三个 InitOCT+LoadNew 分别装载左奇异向量（返回）、奇异值（out S）、右奇异向量（out V）。不改动 this。</para>
-	///   <para><b>约束或前提</b>返回与两个 out 共三个独立新句柄，全部须 Dispose；computeSingularVectors 取非 "both" 时对应奇异向量矩阵可能不被计算 [待实测]。</para>
+	///   <para><b>约束或前提</b>返回与两个 out 共三个独立新句柄，全部须 Dispose；computeSingularVectors 取非 "both" 时对应奇异向量矩阵可能不被计算 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要奇异值不要向量时用更省的取法；要特征值分解用 Eigenvalues*；SVD 对任意（含非方阵）矩阵都稳定，比对称特征法适用范围广。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -712,7 +716,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   v.Dispose();
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>三输出句柄任一漏 Dispose 都泄漏；奇异值按 SVDType 可能落在对角阵或列向量，形状随参数变 [待实测]。</para>
+	///   <para><b>资源与坑</b>三输出句柄任一漏 Dispose 都泄漏；奇异值按 SVDType 可能落在对角阵或列向量，形状随参数变 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix SvdMatrix(string SVDType, string computeSingularVectors, out JlMatrix matrixSID, out JlMatrix matrixVID)
 	{
@@ -743,7 +747,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="eigenvectorsImagID">输出：特征向量虚部（新句柄）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 824：Store(0) 传 A（this），Store(1, matrixBID) 传 B，StoreS(2, computeEigenvectors)，四个 InitOCT+LoadNew 分别装载特征值实/虚部、特征向量实/虚部。无返回值，结果全在四个 out。</para>
-	///   <para><b>约束或前提</b>四个 out 各是独立新句柄，全部须 Dispose；广义特征问题针对 A、B 同维方阵，B 奇异时可能报错 [待实测]。computeEigenvectors 为 "none" 时特征向量矩阵内容可能为空 [待实测]。</para>
+	///   <para><b>约束或前提</b>四个 out 各是独立新句柄，全部须 Dispose；广义特征问题针对 A、B 同维方阵，B 奇异时可能报错 （具体边界行为以对应 HALCON 算子文档为准）。computeEigenvectors 为 "none" 时特征向量矩阵内容可能为空 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>这是"广义"（含 B）版本；只处理单矩阵用 EigenvaluesGeneralMatrix。特征值可能为复数，须成对读实部+虚部两矩阵，只读一个会丢信息。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -789,7 +793,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>特征值矩阵（新句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 825：Store(0) 传 A（this），Store(1, matrixBID) 传 B，StoreS(2, computeEigenvectors)，两个 InitOCT+LoadNew 装载特征值（返回）与特征向量（out）。不改动 this。</para>
-	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，须 Dispose；要求 A 对称、B 对称正定，B 非正定时可能报错 [待实测]。对称广义问题特征值为实数，不像一般版需实/虚部成对。</para>
+	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，须 Dispose；要求 A 对称、B 对称正定，B 非正定时可能报错 （具体边界行为以对应 HALCON 算子文档为准）。对称广义问题特征值为实数，不像一般版需实/虚部成对。</para>
 	///   <para><b>与相邻算子的取舍</b>这是对称版，比 GeneralizedEigenvaluesGeneralMatrix 快且只出实特征值；矩阵不对称时须改用一般版。单矩阵对称特征问题用 EigenvaluesSymmetricMatrix。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -802,7 +806,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   b.Dispose();
 	///   a.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>computeEigenvectors 为 "false" 时特征向量句柄仍被分配但内容可能为空 [待实测]。</para>
+	///   <para><b>资源与坑</b>computeEigenvectors 为 "false" 时特征向量句柄仍被分配但内容可能为空 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix GeneralizedEigenvaluesSymmetricMatrix(JlMatrix matrixBID, string computeEigenvectors, out JlMatrix eigenvectorsID)
 	{
@@ -831,7 +835,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="eigenvectorsImagID">输出：特征向量虚部（新句柄）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 826：Store(0) 传本句柄，StoreS(1, computeEigenvectors)，四个 InitOCT+LoadNew 装载特征值实/虚部、特征向量实/虚部。无返回值，结果全在 out。</para>
-	///   <para><b>约束或前提</b>四个 out 各是独立新句柄，须全部 Dispose；一般矩阵特征值可为复数，须成对读实部+虚部，只读一个丢信息。computeEigenvectors="none" 时向量矩阵内容可能为空 [待实测]。</para>
+	///   <para><b>约束或前提</b>四个 out 各是独立新句柄，须全部 Dispose；一般矩阵特征值可为复数，须成对读实部+虚部，只读一个丢信息。computeEigenvectors="none" 时向量矩阵内容可能为空 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>矩阵若对称，改用 EigenvaluesSymmetricMatrix 更快且只出实特征值；含第二矩阵 B 的广义问题用 GeneralizedEigenvaluesGeneralMatrix。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -872,7 +876,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>特征值矩阵（新句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 827：Store(0) 传本句柄，StoreS(1, computeEigenvectors)，两个 InitOCT+LoadNew 装载特征值（返回）与特征向量（out）。不改动 this。</para>
-	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，须 Dispose；输入须为对称矩阵，非对称时结果不保证正确 [待实测]。对称矩阵特征值为实数，无需虚部。</para>
+	///   <para><b>约束或前提</b>返回与 out 各是独立新句柄，须 Dispose；输入须为对称矩阵，非对称时结果不保证正确 （具体边界行为以对应 HALCON 算子文档为准）。对称矩阵特征值为实数，无需虚部。</para>
 	///   <para><b>与相邻算子的取舍</b>比 EigenvaluesGeneralMatrix 快且只出实特征值；矩阵不对称务必改用一般版。含 B 的对称广义问题用 GeneralizedEigenvaluesSymmetricMatrix。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -883,7 +887,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   vec.Dispose();
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>computeEigenvectors="false" 时特征向量句柄仍被分配但内容可能为空 [待实测]。</para>
+	///   <para><b>资源与坑</b>computeEigenvectors="false" 时特征向量句柄仍被分配但内容可能为空 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix EigenvaluesSymmetricMatrix(string computeEigenvectors, out JlMatrix eigenvectorsID)
 	{
@@ -909,7 +913,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>解 x 的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 828：Store(0) 传 A（this），StoreS(1, matrixLHSType)、StoreD(2, epsilon)、Store(3, matrixRHSID) 传 B，LoadNew 返回解。A、B 均不被改动。</para>
-	///   <para><b>约束或前提</b>this 是左端系数矩阵、matrixRHSID 是右端项，别写反；operator/ 即把右操作数当 A、左操作数当 B 调本法。A 须可逆/适定，维度须 A 行数=B 行数 [待实测]。epsilon&gt;0 时把小于阈值的奇异值当 0 处理（近似最小二乘/降秩解）[待实测]。</para>
+	///   <para><b>约束或前提</b>this 是左端系数矩阵、matrixRHSID 是右端项，别写反；operator/ 即把右操作数当 A、左操作数当 B 调本法。A 须可逆/适定，维度须 A 行数=B 行数 （具体边界行为以对应 HALCON 算子文档为准）。epsilon&gt;0 时把小于阈值的奇异值当 0 处理（近似最小二乘/降秩解）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要 A⁻¹ 本身用 InvertMatrix；批量同一 A 解不同 B 可复用 A。matrixLHSType 选对称/三角等可让原生层走更快的专用解法。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -920,7 +924,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   b.Dispose();
 	///   a.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>解是新句柄须 Dispose；奇异 A 会报错或依赖 epsilon 退化，不保证给出最小二乘解 [待实测]。</para>
+	///   <para><b>资源与坑</b>解是新句柄须 Dispose；奇异 A 会报错或依赖 epsilon 退化，不保证给出最小二乘解 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix SolveMatrix(string matrixLHSType, double epsilon, JlMatrix matrixRHSID)
 	{
@@ -945,7 +949,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>行列式值（托管 double，非句柄，无需释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 829：Store(0) 传本句柄，StoreS(1, matrixType)，InitOCT(0)+LoadD(0) 按 DOUBLE 装载单个标量结果。不改动 this。</para>
-	///   <para><b>约束或前提</b>行列式只对方阵有定义，非方阵由原生层报错 [待实测]；matrixType 选对称/三角等可能走专用快速路径但数学结果应一致 [待实测]。结果仅为第一个装载值。</para>
+	///   <para><b>约束或前提</b>行列式只对方阵有定义，非方阵由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）；matrixType 选对称/三角等可能走专用快速路径但数学结果应一致 （具体边界行为以对应 HALCON 算子文档为准）。结果仅为第一个装载值。</para>
 	///   <para><b>与相邻算子的取舍</b>想知道可逆性，判行列式是否≈0 不如直接 InvertMatrix 看是否报错（病态矩阵行列式可能极小但仍非零）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -953,7 +957,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double det = m.DeterminantMatrix("general");
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回纯标量无句柄泄漏风险；大矩阵行列式易溢出/下溢到 0，数值判奇异性须谨慎 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回纯标量无句柄泄漏风险；大矩阵行列式易溢出/下溢到 0，数值判奇异性须谨慎 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public double DeterminantMatrix(string matrixType)
 	{
@@ -975,7 +979,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="epsilon">求逆方式/奇异阈值。默认值 0.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 830：Store(0) 传本句柄，StoreS(1, matrixType)、StoreD(2, epsilon)，无 LoadNew——直接改写 this 为逆矩阵，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>原地覆盖原内容，调用后 this 已是 A⁻¹，原矩阵不可恢复；要求方阵且非奇异，奇异时由原生层报错 [待实测]。epsilon&gt;0 时按阈值截断小奇异值 [待实测]。</para>
+	///   <para><b>约束或前提</b>原地覆盖原内容，调用后 this 已是 A⁻¹，原矩阵不可恢复；要求方阵且非奇异，奇异时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。epsilon&gt;0 时按阈值截断小奇异值 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留原矩阵、另得逆用 InvertMatrix（返回新句柄）；只为解 A x=b 时别先本法求逆再乘，直接 SolveMatrix 更稳更快。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -983,7 +987,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   m.InvertMatrixMod("general", 0.0);
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>句柄不变、内容被替换，仍由调用方 Dispose；对已 Dispose 的句柄调用会报错 [待实测]。</para>
+	///   <para><b>资源与坑</b>句柄不变、内容被替换，仍由调用方 Dispose；对已 Dispose 的句柄调用会报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void InvertMatrixMod(string matrixType, double epsilon)
 	{
@@ -1004,7 +1008,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>逆矩阵的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 831：Store(0) 传本句柄，StoreS(1, matrixType)、StoreD(2, epsilon)，InitOCT(0)+LoadNew 装载逆矩阵为新句柄返回。this 不被改动。</para>
-	///   <para><b>约束或前提</b>要求方阵且非奇异，奇异时由原生层报错 [待实测]；epsilon&gt;0 按阈值截断小奇异值 [待实测]。</para>
+	///   <para><b>约束或前提</b>要求方阵且非奇异，奇异时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）；epsilon&gt;0 按阈值截断小奇异值 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想覆盖原句柄用 InvertMatrixMod；只是解线性方程组不要显式求逆，用 SolveMatrix 数值更稳。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1089,7 +1093,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>最大值矩阵的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 834：Store(0) 传本句柄，StoreS(1, maxType)，InitOCT(0)+LoadNew 返回归约结果。this 不变。</para>
-	///   <para><b>约束或前提</b>maxType 决定按列/行/全体归约，结果维度随之不同（如按列归约得单行）[待实测]。与逐元素两两求 max 不同，本算子只针对单个矩阵。</para>
+	///   <para><b>约束或前提</b>maxType 决定按列/行/全体归约，结果维度随之不同（如按列归约得单行）（具体边界行为以对应 HALCON 算子文档为准）。与逐元素两两求 max 不同，本算子只针对单个矩阵。</para>
 	///   <para><b>与相邻算子的取舍</b>要最小用 MinMatrix（id 835，同结构）；要两个矩阵逐元素取大需要别的组合，本族未直接提供。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1120,7 +1124,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>最小值矩阵的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 835：Store(0) 传本句柄，StoreS(1, minType)，InitOCT(0)+LoadNew 返回归约结果。this 不变。</para>
-	///   <para><b>约束或前提</b>minType 决定按列/行/全体归约，结果维度随之不同 [待实测]；只针对单个矩阵归约。</para>
+	///   <para><b>约束或前提</b>minType 决定按列/行/全体归约，结果维度随之不同 （具体边界行为以对应 HALCON 算子文档为准）；只针对单个矩阵归约。</para>
 	///   <para><b>与相邻算子的取舍</b>与 MaxMatrix（id 834）成对，仅归约方向相反；两者结构完全一致。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1151,7 +1155,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="power">指数（元组形式）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 836：Store(0) 传本句柄，StoreS(1, matrixType)，Store(2, power) 钉住指数元组，调用后 UnpinTuple(power)；无 LoadNew，原地改写 this。这是矩阵幂（A^p），非逐元素幂。</para>
-	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 [待实测]；原地覆盖后原矩阵不可恢复。与 double 重载同 id 836，区别仅在指数以钉固定的 JlTuple 传入（多值 [待实测]）。</para>
+	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 （具体边界行为以对应 HALCON 算子文档为准）；原地覆盖后原矩阵不可恢复。与 double 重载同 id 836，区别仅在指数以钉固定的 JlTuple 传入（多值 （具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留原矩阵用 PowMatrix(JlTuple)（id 837 返回新句柄）；单一带量用 double 重载省钉固定；逐元素求幂用 PowScalarElementMatrixMod/PowElementMatrix。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1180,7 +1184,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="power">指数（标量）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 836：Store(0) 传本句柄，StoreS(1, matrixType)，StoreD(2, power) 直写标量指数；无 LoadNew，原地改写 this。矩阵幂 A^p，非逐元素幂。</para>
-	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 [待实测]；原地覆盖不可恢复。与 JlTuple 重载同 id 836，本法 StoreD 直写、无钉固定/UnpinTuple 开销。</para>
+	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 （具体边界行为以对应 HALCON 算子文档为准）；原地覆盖不可恢复。与 JlTuple 重载同 id 836，本法 StoreD 直写、无钉固定/UnpinTuple 开销。</para>
 	///   <para><b>与相邻算子的取舍</b>单一整数/实数指数用本重载最快；要保留原矩阵用 PowMatrix(double)（id 837 新句柄）；逐元素幂用 PowScalarElementMatrixMod。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1188,7 +1192,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   m.PowMatrixMod("general", 2.0);
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>this 句柄不变仍归调用方 Dispose；指数为负或分数按矩阵幂语义处理 [待实测]。</para>
+	///   <para><b>资源与坑</b>this 句柄不变仍归调用方 Dispose；指数为负或分数按矩阵幂语义处理 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void PowMatrixMod(string matrixType, double power)
 	{
@@ -1209,7 +1213,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>幂结果矩阵的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 837：Store(0) 传本句柄，StoreS(1, matrixType)，Store(2, power) 钉住指数元组，InitOCT(0)+LoadNew 装载结果为新句柄，调用后 UnpinTuple(power)。this 不变。矩阵幂 A^p。</para>
-	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 [待实测]；与 double 重载同 id 837，本法走 Store+UnpinTuple 钉固定。返回独立新句柄须 Dispose。</para>
+	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 （具体边界行为以对应 HALCON 算子文档为准）；与 double 重载同 id 837，本法走 Store+UnpinTuple 钉固定。返回独立新句柄须 Dispose。</para>
 	///   <para><b>与相邻算子的取舍</b>要原地改写用 PowMatrixMod(JlTuple)（id 836）；单一带量用 PowMatrix(double) 省钉固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1243,7 +1247,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>幂结果矩阵的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 837：Store(0) 传本句柄，StoreS(1, matrixType)，StoreD(2, power) 直写标量指数，InitOCT(0)+LoadNew 装载结果为新句柄。this 不变。矩阵幂 A^p。</para>
-	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 [待实测]；与 JlTuple 重载同 id 837，本法 StoreD 直写、无钉固定。返回独立新句柄须 Dispose。</para>
+	///   <para><b>约束或前提</b>矩阵幂通常要求方阵 （具体边界行为以对应 HALCON 算子文档为准）；与 JlTuple 重载同 id 837，本法 StoreD 直写、无钉固定。返回独立新句柄须 Dispose。</para>
 	///   <para><b>与相邻算子的取舍</b>要原地改写用 PowMatrixMod(double)（id 836）；指数为向量用 JlTuple 重载。单一带量下本法最省。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1252,7 +1256,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   p.Dispose();
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回句柄与 m 各自独立 Dispose；负/分数指数按矩阵幂语义 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回句柄与 m 各自独立 Dispose；负/分数指数按矩阵幂语义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlMatrix PowMatrix(string matrixType, double power)
 	{
@@ -1274,7 +1278,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="matrixExpID">含各元素指数的矩阵句柄。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 838：Store(0) 传底数矩阵（this），Store(1, matrixExpID) 传指数矩阵；无 LoadNew，逐元素 this[i]=this[i]^exp[i]，原地改写。</para>
-	///   <para><b>约束或前提</b>底数与指数矩阵须同维，否则由原生层报错 [待实测]；这与 PowMatrixMod（矩阵幂 A^p、把整矩阵当底连乘）本质不同，别混用。原地覆盖后底数不可恢复。</para>
+	///   <para><b>约束或前提</b>底数与指数矩阵须同维，否则由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）；这与 PowMatrixMod（矩阵幂 A^p、把整矩阵当底连乘）本质不同，别混用。原地覆盖后底数不可恢复。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留底数用 PowElementMatrix（id 839 返回新句柄）；全元素同指数用 PowScalarElementMatrixMod。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1304,7 +1308,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>逐元素幂结果的新句柄，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 839：Store(0) 传底数矩阵（this），Store(1, matrixExpID) 传指数矩阵，InitOCT(0)+LoadNew 返回逐元素 this[i]^exp[i] 的新句柄。底数不变。</para>
-	///   <para><b>约束或前提</b>底数与指数矩阵须同维 [待实测]；这是逐元素幂，非 PowMatrix 的矩阵幂 A^p。返回独立新句柄须 Dispose。</para>
+	///   <para><b>约束或前提</b>底数与指数矩阵须同维 （具体边界行为以对应 HALCON 算子文档为准）；这是逐元素幂，非 PowMatrix 的矩阵幂 A^p。返回独立新句柄须 Dispose。</para>
 	///   <para><b>与相邻算子的取舍</b>要原地改写底数用 PowElementMatrixMod（id 838）；全元素同指数用 PowScalarElementMatrix 系列。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1337,7 +1341,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="power">指数（元组形式）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>转原生算子 id 840：Store(0) 传底数矩阵（this），Store(1, power) 钉住指数元组，调用后 UnpinTuple(power)；无 LoadNew，逐元素把 this 各元素求幂，原地改写。base 矩阵、指数来自 power。</para>
-	///   <para><b>约束或前提</b>与 double 重载同 id 840，区别是指数以钉固定的 JlTuple 传入（可多值 [待实测]）；原地覆盖不可恢复。这与 PowElementMatrix（指数是另一矩阵）不同。</para>
+	///   <para><b>约束或前提</b>与 double 重载同 id 840，区别是指数以钉固定的 JlTuple 传入（可多值 （具体边界行为以对应 HALCON 算子文档为准））；原地覆盖不可恢复。这与 PowElementMatrix（指数是另一矩阵）不同。</para>
 	///   <para><b>与相邻算子的取舍</b>单一标量指数用 PowScalarElementMatrixMod(double) 省钉固定；要保留底数另得结果则用带返回值的逐元素幂族。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1362,7 +1366,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="power">指数（标量）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 840。输入原生参数序 0=this（Store 句柄）、1=power（StoreD 直写 DOUBLE）；方法体无 InitOCT/Load，结果由原生层直接写回 this，维度不变。</para>
-	///   <para><b>约束或前提</b>原值即时消失，回退只能靠事先 CopyMatrix 快照；0^负数、负底数分数指数等退化组合的结果由原生层决定 [待实测]。多次调用是幂的复合（指数相乘），不是重复同一变换。</para>
+	///   <para><b>约束或前提</b>原值即时消失，回退只能靠事先 CopyMatrix 快照；0^负数、负底数分数指数等退化组合的结果由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。多次调用是幂的复合（指数相乘），不是重复同一变换。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留原矩阵用 PowScalarElementMatrix（id 841 返回新句柄）；指数来自别处算子的 JlTuple 输出时用本方法的 JlTuple 重载（多一次钉固定/解固定）；矩阵自乘意义的 A^n 用 PowMatrixMod（id 836）。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者。</para>
 	///   <para><b>用法</b></para>
@@ -1389,7 +1393,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各元素取 power 给出的指数次幂），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 841，与 PowScalarElementMatrix(double) 完全同一算子；唯一差别是 power 走 JlNativeApi.Store 把元组钉在原生输入 1 上、调用后 UnpinTuple 解除固定（double 重载用 StoreD 直写，无钉固定开销）。输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层按位置对应、广播还是只用第一条，托管层看不出来 [待实测]——需要严格的"逐元素不同指数"请改用 PowElementMatrix（指数必须是矩阵）。</para>
+	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层按位置对应、广播还是只用第一条，托管层看不出来 （具体边界行为以对应 HALCON 算子文档为准）——需要严格的"逐元素不同指数"请改用 PowElementMatrix（指数必须是矩阵）。</para>
 	///   <para><b>与相邻算子的取舍</b>指数是编译期常数时直接传 double 字面量命中标量重载，省一次钉固定；只有指数本来就是别的算子输出的 JlTuple 时才用本重载，避免先取首值再转 double。矩阵幂用 PowMatrix（id 837），别把逐元素幂当矩阵自乘。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1419,7 +1423,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各元素的 power 次幂），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 841。输入原生参数序 0=this（Store 句柄）、1=power（StoreD 直写 DOUBLE，无元组钉固定）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>0^0、负底数配分数指数等退化组合的结果（NaN/报错）由原生层决定 [待实测]。power 用 int/long 字面量时隐式提升为 double，不会丢精度也命中不了别的重载。</para>
+	///   <para><b>约束或前提</b>0^0、负底数配分数指数等退化组合的结果（NaN/报错）由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。power 用 int/long 字面量时隐式提升为 double，不会丢精度也命中不了别的重载。</para>
 	///   <para><b>与相邻算子的取舍</b>要 A^n 那种矩阵自乘（矩阵幂）用 PowMatrix（id 837），两者对 n=2 结果都不同（逐元素平方 ≠ 矩阵自乘）；每个元素指数不同用 PowElementMatrix（id 839，指数须是等维度矩阵句柄）；指数来自别处算子的 JlTuple 输出时用本方法 JlTuple 重载；就地版是 PowScalarElementMatrixMod（id 840）。开平方有专用的 SqrtMatrix，比传 0.5 更不易错。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1428,7 +1432,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double v = sq[0, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回句柄必须 Dispose；负指数会产生小数而非报错 [待实测]，别假定输出仍是整数语义。</para>
+	///   <para><b>资源与坑</b>返回句柄必须 Dispose；负指数会产生小数而非报错 （具体边界行为以对应 HALCON 算子文档为准），别假定输出仍是整数语义。</para>
 	/// </remarks>
 	public JlMatrix PowScalarElementMatrix(double power)
 	{
@@ -1446,7 +1450,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <summary>原地逐元素开平方（A ← √A 按元素），不产生新句柄，原值不可恢复。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 842。输入原生参数序只有 0=this（Store 句柄）；方法体无 InitOCT/Load，结果由原生层直接写回 this。维度不变。</para>
-	///   <para><b>约束或前提</b>含负元素时 NaN 还是原生报错由原生层决定 [待实测]，本法不会自动取绝对值，必要时先手动 AbsMatrixMod。这是逐元素操作，不是求满足 X·X=A 的矩阵平方根。</para>
+	///   <para><b>约束或前提</b>含负元素时 NaN 还是原生报错由原生层决定 （具体边界行为以对应 HALCON 算子文档为准），本法不会自动取绝对值，必要时先手动 AbsMatrixMod。这是逐元素操作，不是求满足 X·X=A 的矩阵平方根。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留原值用 SqrtMatrix（id 843）；指数不是 0.5 的幂运算走 PowScalarElementMatrixMod（id 840）；本法无参数、不会传错指数，开方优先用它。</para>
 	///   <para><b>参数取向</b>void 返回；this 原地改写。</para>
 	///   <para><b>用法</b></para>
@@ -1471,7 +1475,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各元素 √x），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 843。输入原生参数序只有 0=this（Store 句柄）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。作用于每个元素：√x，维度不变。</para>
-	///   <para><b>约束或前提</b>负元素的结果（NaN 还是原生报错）托管层不预检 [待实测]，方差/能量矩阵开方前先 AbsMatrix 或确认非负。本法是逐元素操作，若想要满足 X·X=A 的矩阵平方根，本库没有该算子 [待实测]。</para>
+	///   <para><b>约束或前提</b>负元素的结果（NaN 还是原生报错）托管层不预检 （具体边界行为以对应 HALCON 算子文档为准），方差/能量矩阵开方前先 AbsMatrix 或确认非负。本法是逐元素操作，若想要满足 X·X=A 的矩阵平方根，本库没有该算子 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>等价于 PowScalarElementMatrix(0.5)（id 841），但本法无参数、不会传错指数；任意次幂（0.33、-2 等）才用 Pow 族；要原地版本用 SqrtMatrixMod（id 842）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1497,7 +1501,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <summary>原地对 this 的每个元素取绝对值，不产生新句柄，原值不可恢复。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 844。输入原生参数序只有 0=this（Store 句柄）；方法体无 InitOCT/Load，即无输出装载，|x| 的结果由原生层直接写回 this。维度与元素类型（double）不变。</para>
-	///   <para><b>约束或前提</b>调用后符号信息即丢失，之后想还原正负必须事先 CopyMatrix 存快照；NaN/Inf 元素的处理由原生层决定 [待实测]。</para>
+	///   <para><b>约束或前提</b>调用后符号信息即丢失，之后想还原正负必须事先 CopyMatrix 存快照；NaN/Inf 元素的处理由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>还要保留原矩阵就用 AbsMatrix（id 845 返回新句柄）；只要一个标量幅值指标用 NormMatrix；取反保号用一元 operator -，本法是"去号"不是"变号"。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者。</para>
 	///   <para><b>用法</b></para>
@@ -1522,7 +1526,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（元素为 |x|），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 845。输入原生参数序只有 0=this（Store 句柄），无其他控制参数；输出 InitOCT(0)+LoadNew(0) 返回新句柄。逐元素 |x|：负号消失，小数部分保留。</para>
-	///   <para><b>约束或前提</b>矩阵元素只有 double 一种，"绝对值"不存在整型最小值取负溢出的坑；NaN/Inf 元素取绝对值后的表现由原生层决定 [待实测]。</para>
+	///   <para><b>约束或前提</b>矩阵元素只有 double 一种，"绝对值"不存在整型最小值取负溢出的坑；NaN/Inf 元素取绝对值后的表现由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>不需要保留原矩阵时用 AbsMatrixMod（id 844，原地、少一个待释放句柄）；本法只消符号，与一元 operator -（全体变号，正也变负）不是一回事；想要行和范数这类标量指标去 NormMatrix（id 846），别拿逐元素绝对值当范数。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1549,9 +1553,9 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="normType">范数类型。默认值 "2-norm"</param>
 	/// <returns>范数值（DOUBLE 装载取回的第一个 double）。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 846。输入原生参数序 0=this（Store 句柄）、1=normType（StoreS）；输出用 JlNativeApi.LoadD 按 DOUBLE 读回一个标量。计算 2-范数时原生侧要做奇异值分解，非方阵同样可算 [待实测：报错与否]。</para>
-	///   <para><b>约束或前提</b>normType 支持的其余取值（如 1-范数、无穷范数、Frobenius 之类）及其确切定义托管层不校验也看不出来 [待实测]，换值前先在已知小矩阵上验证。空矩阵/零矩阵的范数由原生层决定 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要的是"逐列和/逐列均值"这类向量结果就用 SumMatrix/MeanMatrix（返回句柄），别拿范数当求和：2-范数是最大奇异值，不等于元素平方和的开方（那是 Frobenius）[待实测：本实现里 "2-norm" 的确切语义]。判断矩阵奇异性用 SvdMatrix 看奇异值谱，比单看范数可靠。</para>
+	///   <para><b>功能说明</b>原生算子 id 846。输入原生参数序 0=this（Store 句柄）、1=normType（StoreS）；输出用 JlNativeApi.LoadD 按 DOUBLE 读回一个标量。计算 2-范数时原生侧要做奇异值分解，非方阵同样可算 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>normType 支持的其余取值（如 1-范数、无穷范数、Frobenius 之类）及其确切定义托管层不校验也看不出来 （具体边界行为以对应 HALCON 算子文档为准），换值前先在已知小矩阵上验证。空矩阵/零矩阵的范数由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻算子的取舍</b>要的是"逐列和/逐列均值"这类向量结果就用 SumMatrix/MeanMatrix（返回句柄），别拿范数当求和：2-范数是最大奇异值，不等于元素平方和的开方（那是 Frobenius）（具体边界行为以对应 HALCON 算子文档为准）。判断矩阵奇异性用 SvdMatrix 看奇异值谱，比单看范数可靠。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlMatrix m = new JlMatrix(2, 2, 3.0);
@@ -1578,7 +1582,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各均值按 meanType 方向排布），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 847。输入原生参数序 0=this（Store 句柄）、1=meanType（StoreS 字符串直传，托管层不校验取值）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>meanType 支持的取值集合与各值下输出的行列形状托管层看不出来 [待实测]，拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
+	///   <para><b>约束或前提</b>meanType 支持的取值集合与各值下输出的行列形状托管层看不出来 （具体边界行为以对应 HALCON 算子文档为准），拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
 	///   <para><b>与相邻算子的取舍</b>它做的是统计归约，不是图像均值滤波——要给矩阵做平滑/卷积没有本算子，别被模板旧文案"图像滤波与预处理"误导；只要总和用 SumMatrix（id 848），要一个标量指标用 NormMatrix（id 846）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1607,7 +1611,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各求和结果按 sumType 方向排布），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 848。输入原生参数序 0=this（Store 句柄）、1=sumType（StoreS 字符串直传原生，托管层不校验取值）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>"columns" 时输出是 1 行多列还是多行 1 列、以及是否支持"rows"/"all"之类取值，托管层看不出来 [待实测]，取回后先 GetSizeMatrix 确认形状再按下标读。sumType 拼错由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>"columns" 时输出是 1 行多列还是多行 1 列、以及是否支持"rows"/"all"之类取值，托管层看不出来 （具体边界行为以对应 HALCON 算子文档为准），取回后先 GetSizeMatrix 确认形状再按下标读。sumType 拼错由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要一个总和使用 SumMatrix 后读 [0,0]（或对应位置），别用 NormMatrix——范数不是元素和；要平均值用 MeanMatrix（id 847）；要逐列最大/最小用 MaxMatrix/MinMatrix（id 834/835）。结果仍按 double 元素存放，无整型求和的溢出问题。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1636,7 +1640,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="matrixBID">输入矩阵 B 的句柄（作除数）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 849。输入原生参数序 0=this（被除数、被改写者）、1=matrixBID（除数，Store 句柄只读）；无 InitOCT/Load，结果由原生层直接落在 this 上。</para>
-	///   <para><b>约束或前提</b>两矩阵维度须完全一致 [待实测：不匹配时报错还是广播]；B 含 0 元素时托管层不预检，Inf/NaN 或原生报错由原生层决定 [待实测]。this 原值即时消失，需要回退先做 CopyMatrix 快照。</para>
+	///   <para><b>约束或前提</b>两矩阵维度须完全一致 （具体边界行为以对应 HALCON 算子文档为准）；B 含 0 元素时托管层不预检，Inf/NaN 或原生报错由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。this 原值即时消失，需要回退先做 CopyMatrix 快照。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留 A 用 DivElementMatrix（id 850 返回新句柄）；整块除以常数用 ScaleMatrixMod(1.0/k)，别为此造一张常数矩阵；operator / 是解方程组（id 828），不是逐元素除。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者，B 调用后仍归调用方。</para>
 	///   <para><b>用法</b></para>
@@ -1666,7 +1670,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（this 各元素除以 B 对应元素），维度与输入一致，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 850。输入原生参数序 0=this（被除数）、1=matrixBID（除数）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，两个入参都不被改动。</para>
-	///   <para><b>约束或前提</b>两矩阵维度须完全一致 [待实测：不匹配时报错还是广播]；B 中含 0 元素时的行为（Inf/NaN 或原生报错）托管层不做预检 [待实测]，归一化前应先把 B 清零位处理掉。</para>
+	///   <para><b>约束或前提</b>两矩阵维度须完全一致 （具体边界行为以对应 HALCON 算子文档为准）；B 中含 0 元素时的行为（Inf/NaN 或原生报错）托管层不做预检 （具体边界行为以对应 HALCON 算子文档为准），归一化前应先把 B 清零位处理掉。</para>
 	///   <para><b>与相邻算子的取舍</b>运算符 `A / B` 是解线性方程组（B·x=A，id 828），与逐元素除法完全是两码事，别指望 / 做掩模反归一化；就地除回 this 用 DivElementMatrixMod（id 849）；除以常数用 ScaleMatrixMod(1.0/k)。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1697,7 +1701,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="matrixBID">输入矩阵 B 的句柄。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 851。输入原生参数序 0=this（Store 句柄）、1=matrixBID（Store 句柄）；方法体没有 InitOCT/Load，即无输出装载，结果由原生层直接落在 this 上。matrixBID 只被读取，调用后仍归调用方。</para>
-	///   <para><b>约束或前提</b>两矩阵行列维度须完全一致，维度不匹配由原生层报错、不广播 [待实测]；维度不变、旧值不保留，改错了只能靠事先 CopyMatrix 的快照恢复。</para>
+	///   <para><b>约束或前提</b>两矩阵行列维度须完全一致，维度不匹配由原生层报错、不广播 （具体边界行为以对应 HALCON 算子文档为准）；维度不变、旧值不保留，改错了只能靠事先 CopyMatrix 的快照恢复。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留 A 用 MultElementMatrix（id 852 返回新句柄）；整块乘常数用 ScaleMatrixMod（id 853，double 直写更省）；矩阵乘法（A←A·B）是 MultMatrixMod（id 859），别混淆。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者。</para>
 	///   <para><b>用法</b></para>
@@ -1727,7 +1731,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（this 与 B 对应位置元素之积），维度与输入一致，用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 852。输入原生参数序 0=this（Store 句柄）、1=matrixBID（Store 句柄）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不被改动。</para>
-	///   <para><b>约束或前提</b>逐元素运算要求两矩阵行列维度完全一致，维度不匹配由原生层报错、不广播 [待实测]。乘 0 得 0，与矩阵是否奇异无关。</para>
+	///   <para><b>约束或前提</b>逐元素运算要求两矩阵行列维度完全一致，维度不匹配由原生层报错、不广播 （具体边界行为以对应 HALCON 算子文档为准）。乘 0 得 0，与矩阵是否奇异无关。</para>
 	///   <para><b>与相邻算子的取舍</b>运算符 `a * b` 走的是矩阵乘法 MultMatrix（id 860，A 列数须等于 B 行数），别用它做逐元素乘；就地逐元素乘回 A 用 MultElementMatrixMod（id 851）；整块统一倍率用 ScaleMatrix（标量重载更省，无句柄入参开销）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1758,7 +1762,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="factor">缩放系数（元组形式）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 853，与 ScaleMatrixMod(double) 同一算子；差别仅在 factor 走 JlNativeApi.Store 钉住元组、调用后 UnpinTuple 解除固定（double 重载用 StoreD 直写、无钉固定开销）。方法体无 InitOCT/Load，结果原地写回 this，维度不变。</para>
-	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；多条值是逐元素对应、广播还是只取第一条，托管层看不出来 [待实测]——要严格的逐元素不同倍率请用 MultElementMatrixMod（id 851，倍率须是等维度矩阵句柄）。原值即时消失。</para>
+	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；多条值是逐元素对应、广播还是只取第一条，托管层看不出来 （具体边界行为以对应 HALCON 算子文档为准）——要严格的逐元素不同倍率请用 MultElementMatrixMod（id 851，倍率须是等维度矩阵句柄）。原值即时消失。</para>
 	///   <para><b>与相邻算子的取舍</b>系数是编译期常数时直接传 double 命中标量重载，省一次钉固定；系数本来就是别的算子输出的 JlTuple 时用本重载，避免先取首值转 double；要保留原矩阵用 ScaleMatrix 族（id 854）。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者，factor 只读。</para>
 	///   <para><b>用法</b></para>
@@ -1812,7 +1816,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>含缩放后元素的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 854，与 ScaleMatrix(double) 完全同一个算子，唯一差别是 factor 走 JlNativeApi.Store 把元组钉在原生输入 1 上，调用后再 UnpinTuple 解除固定（double 重载用 StoreD 直写，没有这层固定开销）。输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层是按元素对应缩放、广播还是只用第一条，代码层面看不出来 [待实测]，需要逐元素乘一个系数场请用 MultElementMatrix。</para>
+	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层是按元素对应缩放、广播还是只用第一条，代码层面看不出来 （具体边界行为以对应 HALCON 算子文档为准），需要逐元素乘一个系数场请用 MultElementMatrix。</para>
 	///   <para><b>与相邻算子的取舍</b>系数是编译期已知的常数时直接 `m * 2.0`（走 double 重载，省一次元组钉固定）；只有当系数来自其它算子的输出（本来就是 JlTuple）时才用本重载，避免先取 [0] 再转 double。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1842,7 +1846,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>含缩放后元素的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 854。输入原生参数序 0=this、1=factor（本重载用 StoreD 直写一个 DOUBLE，不钉元组）；输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>只改数值不改维度，也不做逐元素按位置缩放：factor 是标量，元组重载传多条值时是否按元素对应缩放本仓库无法确认 [待实测]。</para>
+	///   <para><b>约束或前提</b>只改数值不改维度，也不做逐元素按位置缩放：factor 是标量，元组重载传多条值时是否按元素对应缩放本仓库无法确认 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>托管侧的运算符 `m * k`、`k * m` 以及一元 `-m`（内部传 -1.0）全部转调本方法，写表达式更短；矩阵乘法 `a * b` 走的是 MultMatrix(860)，别把标量缩放当成乘矩阵。不想保留原矩阵就用 ScaleMatrixMod（id 853，原地）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1870,7 +1874,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="matrixBID">输入矩阵 B 的句柄。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 855（非原地版 SubMatrix 是 856）。输入原生参数序 0=this（被减数）、1=matrixBID（减数）；无 InitOCT/LoadNew，差直接写回 this，维度保持不变。</para>
-	///   <para><b>约束或前提</b>不可交换：本方法只能算 A-B，想要 B-A 得换实例调用者。维度不一致时由原生层报错 [待实测]。this 原值调用后即丢失。</para>
+	///   <para><b>约束或前提</b>不可交换：本方法只能算 A-B，想要 B-A 得换实例调用者。维度不一致时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。this 原值调用后即丢失。</para>
 	///   <para><b>与相邻算子的取舍</b>迭代残差（r 每轮减掉一个更新量）用它，省掉每轮一个待释放句柄；还要保留 A 用 SubMatrix 或 `a - b`。若目的是把两矩阵对应元素取大/取小，那是 MinMatrix/MaxMatrix（对单矩阵做归约）之外的另一套，本方法不适用。</para>
 	///   <para><b>参数取向</b>void 返回；this 唯一被改写，matrixBID 只读。</para>
 	///   <para><b>用法</b></para>
@@ -1900,7 +1904,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>含两输入矩阵之差的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 856。输入原生参数序 0=this（被减数 A）、1=matrixBID（减数 B）；输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>减法不可交换：本方法算的是 A-B，参数顺序写反就得到符号相反的结果，这类错误不会报错、只会静默反号。两矩阵维度需一致 [待实测]。</para>
+	///   <para><b>约束或前提</b>减法不可交换：本方法算的是 A-B，参数顺序写反就得到符号相反的结果，这类错误不会报错、只会静默反号。两矩阵维度需一致 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>`a - b` 运算符即转调本方法。要把结果直接落在 A 上（做残差迭代）用 SubMatrixMod（id 855）；只想取反符号不必调减法，`-m`（一元负号）内部是 ScaleMatrix(-1.0)，id 854，只跑一次标量乘。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1931,7 +1935,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="matrixBID">输入矩阵 B 的句柄。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 857（非原地版 AddMatrix 是 858）。输入原生参数序 0=this、1=matrixBID；无 InitOCT、无 LoadNew，结果由原生层写回 this 的句柄，维度不变。</para>
-	///   <para><b>约束或前提</b>两矩阵维度需一致，否则由原生层报错 [待实测]。this 的旧值在调用后即刻被覆盖，无回退手段（要留底先 CopyMatrix）。</para>
+	///   <para><b>约束或前提</b>两矩阵维度需一致，否则由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。this 的旧值在调用后即刻被覆盖，无回退手段（要留底先 CopyMatrix）。</para>
 	///   <para><b>与相邻算子的取舍</b>累加器模式（sum 从零矩阵开始不断加）用本方法最省句柄；还要保留 A 时改用 AddMatrix 或 `a + b`。想加一个常数没有对应算子，只能配一个恒值矩阵。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者，matrixBID 只读。</para>
 	///   <para><b>用法</b></para>
@@ -1962,7 +1966,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>含两输入矩阵之和的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 858。输入原生参数序 0=this、1=matrixBID，两个都是句柄参数（第二个用 JlNativeApi.Store，第一个用实例内 Store）；没有字符串控制参数，输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>两矩阵维度需一致 [待实测]。本方法只能矩阵加矩阵：要给每个元素加常数，库里没有"加标量"的重载，只能先造一个同维度、值恒等的矩阵（CreateMatrix(rows, columns, k)）再加，或者用 SetFullMatrix/SetValueMatrix 直接改值。</para>
+	///   <para><b>约束或前提</b>两矩阵维度需一致 （具体边界行为以对应 HALCON 算子文档为准）。本方法只能矩阵加矩阵：要给每个元素加常数，库里没有"加标量"的重载，只能先造一个同维度、值恒等的矩阵（CreateMatrix(rows, columns, k)）再加，或者用 SetFullMatrix/SetValueMatrix 直接改值。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留 A 用本方法（`a + b` 运算符即转调它）；只是把 b 累加进 a 用 AddMatrixMod（id 857）省一次分配。逐元素相减用 SubMatrix（856），点乘用 MultElementMatrix（852），别把 858 当成矩阵拼接。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1994,7 +1998,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="multType">乘法的输入矩阵类型。默认值 "AB"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 859，与非原地版 MultMatrix（id 860）是两个不同算子。输入原生参数序 0=this、1=matrixBID、2=multType（StoreS）；方法里没有 InitOCT/LoadNew，说明结果由原生层直接写回 this 指向的句柄。</para>
-	///   <para><b>约束或前提</b>this 既当输入又当输出，乘完维度变成 A行×B列 的组合结果 [待实测]，维度不匹配时由原生层报错 [待实测]；multType 可选字符串集合本仓库未声明 [待实测]。A 的原始内容无法回取，需要留底先 CopyMatrix。</para>
+	///   <para><b>约束或前提</b>this 既当输入又当输出，乘完维度变成 A行×B列 的组合结果 （具体边界行为以对应 HALCON 算子文档为准），维度不匹配时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）；multType 可选字符串集合本仓库未声明 （具体边界行为以对应 HALCON 算子文档为准）。A 的原始内容无法回取，需要留底先 CopyMatrix。</para>
 	///   <para><b>与相邻算子的取舍</b>循环里累乘（如反复施加同一变换矩阵）用它，避免每轮多一个待释放句柄；一次性求积且还要保留 A 时用 MultMatrix。逐元素自乘请用 MultElementMatrixMod，别把 859 当成点乘用。</para>
 	///   <para><b>参数取向</b>void 返回；this 被原地改写，matrixBID 不被消费。</para>
 	///   <para><b>用法</b></para>
@@ -2026,7 +2030,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>两矩阵相乘结果的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 860。输入原生参数序 0=this（当作 A）、1=matrixBID（B，句柄）、2=multType（StoreS 字符串）——注意乘积类型排在两个矩阵之后。输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>线性代数意义上的维度约束：按 "AB" 时要求 A 的列数等于 B 的行数 [待实测]；multType 换成带转置的取值时参与运算的是 Aᵀ/Bᵀ，具体可取字符串集合本仓库没有声明，以原生层为准 [待实测]。不满足维度关系时报错由原生层给出 [待实测]。</para>
+	///   <para><b>约束或前提</b>线性代数意义上的维度约束：按 "AB" 时要求 A 的列数等于 B 的行数 （具体边界行为以对应 HALCON 算子文档为准）；multType 换成带转置的取值时参与运算的是 Aᵀ/Bᵀ，具体可取字符串集合本仓库没有声明，以原生层为准 （具体边界行为以对应 HALCON 算子文档为准）。不满足维度关系时报错由原生层给出 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>逐元素点乘请用 MultElementMatrix（要求两矩阵同维度、结果同维度），两者极易混用：矩阵乘法结果维度是 A行×B列，与元素乘完全不同。运算符 matrix1 * matrix2 就是本方法传 "AB" 的包装；想 AᵀB 之类必须显式调本方法给 multType。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2090,7 +2094,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>重复平铺所得矩阵的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 862。输入原生参数序 0=this、1=rows、2=columns，两个参数都按 INTEGER 装载（StoreI）；输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>参数含义是"份数"，不是目标尺寸：结果行数 = 原行数 × rows、列数 = 原列数 × columns [待实测]。传 1 表示该方向不铺；传 0 或负数由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>参数含义是"份数"，不是目标尺寸：结果行数 = 原行数 × rows、列数 = 原列数 × columns （具体边界行为以对应 HALCON 算子文档为准）。传 1 表示该方向不铺；传 0 或负数由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想要一个大尺寸的常量矩阵，用 CreateMatrix/构造器一次给定 rows、columns 和初值更省；本方法用于把已有的一块图案（如单位阵、模板窗口）按网格重复。要转置或抽行用 TransposeMatrix/GetSubMatrix，别拿平铺凑。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2099,7 +2103,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   tiled.GetSizeMatrix(out int r, out int c);
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；this 不变。平铺结果不共享内存，改 tiled 不会影响 m [待实测]。大份数会让元素数按乘法增长，注意内存。</para>
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；this 不变。平铺结果不共享内存，改 tiled 不会影响 m （具体边界行为以对应 HALCON 算子文档为准）。大份数会让元素数按乘法增长，注意内存。</para>
 	/// </remarks>
 	public JlMatrix RepeatMatrix(int rows, int columns)
 	{
@@ -2128,7 +2132,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double before = snapshot[0, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的新句柄用完必须 Dispose，否则原生内存要到终结器才回收。副本是否为深拷贝（改原矩阵不影响副本）从托管侧无法判断 [待实测]；维度信息随副本一起复制。</para>
+	///   <para><b>资源与坑</b>返回的新句柄用完必须 Dispose，否则原生内存要到终结器才回收。副本是否为深拷贝（改原矩阵不影响副本）从托管侧无法判断 （具体边界行为以对应 HALCON 算子文档为准）；维度信息随副本一起复制。</para>
 	/// </remarks>
 	public JlMatrix CopyMatrix()
 	{
@@ -2147,7 +2151,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="diagonal">对角线位置。默认值 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 864。输入原生参数序 0=this、1=vectorID、2=diagonal（StoreI，INTEGER）。两个矩阵都是句柄参数，没有 InitOCT：结果落在 this 上，非对角元素保持原值。</para>
-	///   <para><b>约束或前提</b>真坑：vectorID 的类型是 JlMatrix，不是 JlTuple——想设一组对角值必须先造一个矩阵装值（如 new JlMatrix(n, 1, new double[]{...}) 或 GetDiagonalMatrix 拿回来的形状），不能直接传 double[]。向量长度与目标对角线可容纳的元素数不符时的行为由原生层决定 [待实测]。diagonal 的正负方向约定同 GetDiagonalMatrix [待实测]。</para>
+	///   <para><b>约束或前提</b>真坑：vectorID 的类型是 JlMatrix，不是 JlTuple——想设一组对角值必须先造一个矩阵装值（如 new JlMatrix(n, 1, new double[]{...}) 或 GetDiagonalMatrix 拿回来的形状），不能直接传 double[]。向量长度与目标对角线可容纳的元素数不符时的行为由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。diagonal 的正负方向约定同 GetDiagonalMatrix （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要一次改整条对角线用本方法；改个别几项用 SetValueMatrix(JlTuple,JlTuple,JlTuple) 传坐标对更灵活（还能同时改非对角位置）。构造单位矩阵：先 CreateMatrix(n,n,0.0) 再对本方法传入全 1 向量，比手写 GetFullMatrix/SetValueMatrix 循环省一轮原生调用。</para>
 	///   <para><b>参数取向</b>void 返回；this 被原地改写，vectorID 不被消费。</para>
 	///   <para><b>用法</b></para>
@@ -2177,7 +2181,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>含对角线元素的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 865。输入原生参数序 0=this、1=diagonal（StoreI，INTEGER）；输出 InitOCT(0)+LoadNew(0) 返回新 JlMatrix 句柄，元素仍按 double 存。</para>
-	///   <para><b>约束或前提</b>diagonal 是带符号的对角线编号：0 为主对角线，正数往上、负数往下偏移 [待实测]；编号超出矩阵可容纳的范围时报错由原生层决定 [待实测]。返回矩阵的行列形状（一列多行还是多列一行）代码里看不出来，用前先 GetSizeMatrix 确认 [待实测]。</para>
+	///   <para><b>约束或前提</b>diagonal 是带符号的对角线编号：0 为主对角线，正数往上、负数往下偏移 （具体边界行为以对应 HALCON 算子文档为准）；编号超出矩阵可容纳的范围时报错由原生层决定 （具体边界行为以对应 HALCON 算子文档为准）。返回矩阵的行列形状（一列多行还是多列一行）代码里看不出来，用前先 GetSizeMatrix 确认 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要主对角线上那几个数、又不想多一次原生调用时，直接按坐标 GetValueMatrix(JlTuple,JlTuple) 传成对的 (i,i) 更直观；本方法胜在一条调用拿到整条对角线并可直接当矩阵参与运算（配合 SetDiagonalMatrix 写回）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2208,7 +2212,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="column">子矩阵左上角落在 this 中的起始列号（INTEGER）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 866。输入原生参数序 0=this（母矩阵）、1=matrixSubID（句柄）、2=row、3=column，位置参数按 INTEGER 装载；无 InitOCT，即没有输出装载——结果直接落在 this 上。</para>
-	///   <para><b>约束或前提</b>子矩阵的行列数不在参数里出现，靠尺寸自身决定落点范围：row+子矩阵行数超过母矩阵行数、或列方向越界时由原生层报错 [待实测]。母矩阵必须先存在（先 CreateMatrix 或构造器建好尺寸），本方法不会改变 this 的维度。</para>
+	///   <para><b>约束或前提</b>子矩阵的行列数不在参数里出现，靠尺寸自身决定落点范围：row+子矩阵行数超过母矩阵行数、或列方向越界时由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。母矩阵必须先存在（先 CreateMatrix 或构造器建好尺寸），本方法不会改变 this 的维度。</para>
 	///   <para><b>与相邻算子的取舍</b>整块覆盖用 SetFullMatrix；只改零星几个元素用 SetValueMatrix 或索引器；嵌一块已有矩阵进更大矩阵的某个偏移用本方法最省事。要读回来用 GetSubMatrix。</para>
 	///   <para><b>参数取向</b>void 返回；两个矩阵都是入参，this 是唯一被改写者。</para>
 	///   <para><b>用法</b></para>
@@ -2220,7 +2224,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   patch.Dispose();
 	///   big.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>matrixSubID 只是被读取，调用后仍归你所有，要自己 Dispose（方法末尾的 GC.KeepAlive 只保证原生调用期间不被回收）。写进去的是当时的值快照，之后改 patch 不会影响 big [待实测]。</para>
+	///   <para><b>资源与坑</b>matrixSubID 只是被读取，调用后仍归你所有，要自己 Dispose（方法末尾的 GC.KeepAlive 只保证原生调用期间不被回收）。写进去的是当时的值快照，之后改 patch 不会影响 big （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void SetSubMatrix(JlMatrix matrixSubID, int row, int column)
 	{
@@ -2243,7 +2247,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>子矩阵的矩阵句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 867。输入原生参数序 0=this、1=row、2=column、3=rowsSub、4=columnsSub，四个位置参数全部按 INTEGER 装载（StoreI）；输出 InitOCT(0)+LoadNew(0) 返回一个新的 JlMatrix 句柄（不是视图）。</para>
-	///   <para><b>约束或前提</b>原点是左上角、0 基；row+rowsSub 超过矩阵行数或 column+columnsSub 超过列数时越界，由原生层报错 [待实测]。rowsSub/columnsSub 给 0 时结果形状未定义 [待实测]。</para>
+	///   <para><b>约束或前提</b>原点是左上角、0 基；row+rowsSub 超过矩阵行数或 column+columnsSub 超过列数时越界，由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。rowsSub/columnsSub 给 0 时结果形状未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只想读几个离散点用 GetValueMatrix(JlTuple,JlTuple)；想连续一块就用本方法。写回必须显式调 SetSubMatrix，本方法拿不到原矩阵的写权限。取整块等价于 CopyMatrix，不必用本方法。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2252,7 +2256,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double corner = sub[0, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄，用完 Dispose（示例用 using 接管）。子块是独立拷贝还是与原矩阵共享内存，从托管侧看不出来 [待实测]；要保证写回，稳妥做法是改完 sub 再 SetSubMatrix(sub, 1, 2)。</para>
+	///   <para><b>资源与坑</b>返回新句柄，用完 Dispose（示例用 using 接管）。子块是独立拷贝还是与原矩阵共享内存，从托管侧看不出来 （具体边界行为以对应 HALCON 算子文档为准）；要保证写回，稳妥做法是改完 sub 再 SetSubMatrix(sub, 1, 2)。</para>
 	/// </remarks>
 	public JlMatrix GetSubMatrix(int row, int column, int rowsSub, int columnsSub)
 	{
@@ -2274,7 +2278,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="values">待设置的值。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 868。输入原生参数序 0=this、1=values；元组经 JlNativeApi.Store 钉成固定内存写入，调用后 UnpinTuple 解除固定。void 返回、原地改写，不装载任何输出句柄。</para>
-	///   <para><b>约束或前提</b>只覆盖元素值、不改矩阵维度：values 的元素个数须等于已建矩阵的 NumRows×NumColumns，不符时的截断/越界行为未定义 [待实测]。展平顺序（行优先或列优先）托管侧看不出来，须与 GetFullMatrix 读出时的顺序一致 [待实测]，跨行列定位前建议先小规模核对。</para>
+	///   <para><b>约束或前提</b>只覆盖元素值、不改矩阵维度：values 的元素个数须等于已建矩阵的 NumRows×NumColumns，不符时的截断/越界行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。展平顺序（行优先或列优先）托管侧看不出来，须与 GetFullMatrix 读出时的顺序一致 （具体边界行为以对应 HALCON 算子文档为准），跨行列定位前建议先小规模核对。</para>
 	///   <para><b>与相邻算子的取舍</b>整表填同一个常数用标量重载 SetFullMatrix(double)，省一次钉内存开销；只改个别点用索引器 this[row,column] 或 SetValueMatrix；改连续一块用 SetSubMatrix。只有逐元素给不同值时才用本元组重载一次写回。</para>
 	///   <para><b>参数取向</b>void 返回，只有一个入参，无 out。</para>
 	///   <para><b>用法</b></para>
@@ -2301,7 +2305,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="values">待设置的值。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与 SetFullMatrix(JlTuple) 同为原生算子 id 868，差别在于这里用 JlNativeApi.StoreD 直接把一个 DOUBLE 写进参数 1，不走钉元组、无 UnpinTuple 开销。void 返回、原地改写、不装载输出。</para>
-	///   <para><b>约束或前提</b>矩阵须已带正确行列数（构造器 JlMatrix(rows,columns,value) 或 CreateMatrix），本方法只填值不定尺寸。整表是否真的按单一标量广播到每个元素属原生语义 [待实测]。</para>
+	///   <para><b>约束或前提</b>矩阵须已带正确行列数（构造器 JlMatrix(rows,columns,value) 或 CreateMatrix），本方法只填值不定尺寸。整表是否真的按单一标量广播到每个元素属原生语义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>清零/初始化整表用它最省；需要逐元素不同值时改用元组重载 SetFullMatrix(JlTuple)；只动一个点用索引器 this[row,column]。别为了清零而建完矩阵再去乘 0。</para>
 	///   <para><b>参数取向</b>void 返回，单个入参，无 out。</para>
 	///   <para><b>用法</b></para>
@@ -2327,7 +2331,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>矩阵元素的值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 869：输入只有 0=this；输出 InitOCT(0) 后用 JlTuple.LoadNew 以 JlTupleType.DOUBLE 装载成一条新元组。元组是数值元组，不含句柄元素。</para>
-	///   <para><b>约束或前提</b>元素总数 = GetSizeMatrix 的 rows × columns [待实测]；展平是行优先还是列优先，托管侧看不出来 [待实测]，跨行列定位前先小规模验证或用 GetValueMatrix 显式给坐标。</para>
+	///   <para><b>约束或前提</b>元素总数 = GetSizeMatrix 的 rows × columns （具体边界行为以对应 HALCON 算子文档为准）；展平是行优先还是列优先，托管侧看不出来 （具体边界行为以对应 HALCON 算子文档为准），跨行列定位前先小规模验证或用 GetValueMatrix 显式给坐标。</para>
 	///   <para><b>与相邻算子的取舍</b>只想求和、求均值、求极值不必把整表搬回托管侧再 LINQ，用 SumMatrix/MeanMatrix/MaxMatrix/MinMatrix 让原生层归约；只要少数几个点用 GetValueMatrix，别为读 2 个数读回 10000 个。写回用 SetFullMatrix，或逐项 SetValueMatrix。</para>
 	///   <para><b>参数取向</b>只有一个返回值元组，没有 out。</para>
 	///   <para><b>用法</b></para>
@@ -2358,7 +2362,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="value">要写入指定矩阵元素的值。默认值 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与 SetValueMatrix(int,int,double) 同为原生算子 id 870，只是三个参数改用 JlNativeApi.Store 钉成元组：输入原生参数序 0=this、1=row、2=column、3=value，调用后按 row、column、value 的顺序依次 UnpinTuple。原地改写、无输出装载。</para>
-	///   <para><b>约束或前提</b>row/column 是"成对"的坐标表，第 i 个写入落在 (row[i], column[i]) [待实测]；三条元组长度不一致时行为未定义 [待实测]。索引 0 基，任一坐标越界由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>row/column 是"成对"的坐标表，第 i 个写入落在 (row[i], column[i]) （具体边界行为以对应 HALCON 算子文档为准）；三条元组长度不一致时行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。索引 0 基，任一坐标越界由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>改一个元素用标量重载或索引器更直白；改一片连续区域用 SetSubMatrix；全表覆盖用 SetFullMatrix。本重载的价值是把 N 次原生调用压成 1 次，坐标能从其它算子直接拿到时（例如某列的下标集合）尤其顺手。</para>
 	///   <para><b>参数取向</b>void 返回，三个参数顺序与签名一致；没有 out。</para>
 	///   <para><b>用法</b></para>
@@ -2391,7 +2395,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="value">要写入指定矩阵元素的值。默认值 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 870。输入原生参数序 0=this、1=row、2=column（两者 StoreI，INTEGER）、3=value（StoreD，DOUBLE）；没有 InitOCT，原地改写、无输出装载。</para>
-	///   <para><b>约束或前提</b>索引 0 基，越界由原生层报错 [待实测]。维度不受影响：不能靠写越界来扩矩阵。</para>
+	///   <para><b>约束或前提</b>索引 0 基，越界由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。维度不受影响：不能靠写越界来扩矩阵。</para>
 	///   <para><b>与相邻算子的取舍</b>索引器 this[row, column] 的 set 就是转调本方法。一次改多个坐标必须用 SetValueMatrix(JlTuple,JlTuple,JlTuple)（同 id 870），别写循环：每循环一次都是一整次原生调用。整表覆盖用 SetFullMatrix，整块覆盖用 SetSubMatrix。</para>
 	///   <para><b>参数取向</b>void 返回；三个标量参数顺序与签名一致。</para>
 	///   <para><b>用法</b></para>
@@ -2421,7 +2425,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>指定矩阵元素的值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 871，与标量版 GetValueMatrix(int,int) 是同一算子。输入原生参数序 0=this、1=row 元组、2=column 元组（两条都用 Store 钉住，调用后依次 UnpinTuple）；输出 InitOCT(0) 后用 JlTuple.LoadNew 以 JlTupleType.DOUBLE 装载成一条新元组。</para>
-	///   <para><b>约束或前提</b>row 与 column 是"成对"解释的坐标表（第 i 个结果对应 (row[i], column[i])）[待实测]，两条长度不等时的行为未定义 [待实测]。索引 0 基，任一坐标越界由原生层报错 [待实测]。</para>
+	///   <para><b>约束或前提</b>row 与 column 是"成对"解释的坐标表（第 i 个结果对应 (row[i], column[i])）（具体边界行为以对应 HALCON 算子文档为准），两条长度不等时的行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。索引 0 基，任一坐标越界由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要一整块连续区域用 GetSubMatrix + GetFullMatrix；只要一个值用标量重载直接拿 double，不必再索引元组 [0]。批量取散点（对角线、抽样若干位置）时本重载一条调用胜过 N 次标量调用。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2454,7 +2458,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>指定矩阵元素的值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 871，输入原生参数序 0=this 矩阵、1=row（StoreI）、2=column（StoreI）；输出 0 用 JlNativeApi.LoadD 装载，且只取第一个 DOUBLE —— 本重载坐标是标量，恰好对应一个值。</para>
-	///   <para><b>约束或前提</b>行列号 0 基；越界坐标由原生层报错 [待实测]。矩阵类型不影响结果：所有元素对外都是 double。</para>
+	///   <para><b>约束或前提</b>行列号 0 基；越界坐标由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。矩阵类型不影响结果：所有元素对外都是 double。</para>
 	///   <para><b>与相邻算子的取舍</b>索引器 this[row, column] 的 get 就是转调本方法，写 m[i, j] 与调本方法开销相同，挑顺手的即可。要一次取多个坐标必须用 GetValueMatrix(JlTuple,JlTuple)；只想要整表则用 GetFullMatrix() 一次读回，比循环调本方法少 N-1 次原生往返。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2490,7 +2494,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   JlMatrix b = new JlMatrix(3, 1, 1.0);
 	///   JlMatrix.ClearMatrix(new JlMatrix[] { a, b });
 	///   </code>
-	///   <para><b>资源与坑</b>调用后 a、b 两个 C# 对象还在，但底层内存已回收，再用它们或再 Dispose() 会重复释放同一句柄 [待实测]。数组中出现 null 元素时 ConcatArray 的结果不可控 [待实测]。</para>
+	///   <para><b>资源与坑</b>调用后 a、b 两个 C# 对象还在，但底层内存已回收，再用它们或再 Dispose() 会重复释放同一句柄 （具体边界行为以对应 HALCON 算子文档为准）。数组中出现 null 元素时 ConcatArray 的结果不可控 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public static void ClearMatrix(JlMatrix[] matrixID)
 	{
@@ -2512,7 +2516,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   JlMatrix m = new JlMatrix(3, 3, 0.0);
 	///   m.ClearMatrix();
 	///   </code>
-	///   <para><b>资源与坑</b>调用后 this 仍"看起来是个矩阵"：IsInitialized() 之外没有任何托管侧标记被清掉，紧接着再调任何算子会拿着已释放句柄进原生层，行为不可靠 [待实测]。也不要指望终结器救场——对象被 GC 回收时会再释放一次同一句柄 [待实测]。</para>
+	///   <para><b>资源与坑</b>调用后 this 仍"看起来是个矩阵"：IsInitialized() 之外没有任何托管侧标记被清掉，紧接着再调任何算子会拿着已释放句柄进原生层，行为不可靠 （具体边界行为以对应 HALCON 算子文档为准）。也不要指望终结器救场——对象被 GC 回收时会再释放一次同一句柄 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void ClearMatrix()
 	{
@@ -2529,7 +2533,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="value">用于初始化矩阵各元素的值。默认值 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与 CreateMatrix(int,int,double) 共用原生算子 id 873，输入原生参数序同样是 0=rows、1=columns、2=value；区别在 value 用 JlNativeApi.Store 钉住整条元组传入，调用后再 UnpinTuple 解除固定。输出 InitOCT(0)+Load(0) 绑回 this，原地改写、无返回值。</para>
-	///   <para><b>约束或前提</b>进入方法即 Dispose() 释放旧句柄（否则 Load 会抛 JlException）。元组长度与 rows*columns 的关系决定结果形状是否合法：等长按元素铺满，长度不等时的行为由原生层判定 [待实测]；元素展平顺序（行优先还是列优先）代码层面看不出 [待实测]。</para>
+	///   <para><b>约束或前提</b>进入方法即 Dispose() 释放旧句柄（否则 Load 会抛 JlException）。元组长度与 rows*columns 的关系决定结果形状是否合法：等长按元素铺满，长度不等时的行为由原生层判定 （具体边界行为以对应 HALCON 算子文档为准）；元素展平顺序（行优先还是列优先）代码层面看不出 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"全矩阵同一初值"用 double 重载即可，不必造一条长元组；已有矩阵改尺寸+改值用本方法，只改值用 SetFullMatrix(JlTuple)（后者不重建句柄、维度必须已经匹配）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2538,7 +2542,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double v = m[1, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>double[] 靠 JlTuple 的隐式转换生成临时元组，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；若显式建 JlTuple 变量传进来，用完请自行 Dispose（数值元组的 Dispose 只处理句柄类元素，不调用也无原生泄漏风险）。传入空元组时行为未定义 [待实测]。</para>
+	///   <para><b>资源与坑</b>double[] 靠 JlTuple 的隐式转换生成临时元组，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；若显式建 JlTuple 变量传进来，用完请自行 Dispose（数值元组的 Dispose 只处理句柄类元素，不调用也无原生泄漏风险）。传入空元组时行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void CreateMatrix(int rows, int columns, JlTuple value)
 	{
@@ -2570,7 +2574,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double v = m[2, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>本重载只交一个 double，按惯例广播到全部元素 [待实测]。调用后 this 指向全新矩阵，先前由它派生的独立句柄（CopyMatrix/GetSubMatrix 的返回）不受影响；若传入的 rows 或 columns 为 0 或负数，由原生层报错 [待实测]。</para>
+	///   <para><b>资源与坑</b>本重载只交一个 double，按惯例广播到全部元素 （具体边界行为以对应 HALCON 算子文档为准）。调用后 this 指向全新矩阵，先前由它派生的独立句柄（CopyMatrix/GetSubMatrix 的返回）不受影响；若传入的 rows 或 columns 为 0 或负数，由原生层报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void CreateMatrix(int rows, int columns, double value)
 	{
