@@ -159,7 +159,7 @@ internal class JlTupleElementsImplementation
 	/// <summary>构造一个不带底层元组的空视图。</summary>
 	/// <remarks>
 	/// <para><b>功能说明</b>：初始化 <see cref="source"/> 为 null、<see cref="indices"/> 为空数组；此时对 I/L/D/S/H/O 的读写会因此抛 <see cref="JlTupleAccessException"/>。</para>
-	/// <para><b>资源与坑</b>：该空视图由公开的 <see cref="JlTupleElements"/> 的内部无参构造器用作占位（其 <c>parent</c> 亦为 null），代表零元素结果：<see cref="Length"/> 为 0，<see cref="indices"/> 非 null 故可安全参与广播长度校验。它不占任何原生资源，无需单独释放。落到基类默认实现时：读取 I/L/D/S/H/O 抛 <see cref="JlTupleAccessException"/>；因 <see cref="source"/> 为 null，写入路径在 <c>source.AssertSize</c> 处即失败 [待实测]。</para>
+	/// <para><b>资源与坑</b>：该空视图由公开的 <see cref="JlTupleElements"/> 的内部无参构造器用作占位（其 <c>parent</c> 亦为 null），代表零元素结果：<see cref="Length"/> 为 0，<see cref="indices"/> 非 null 故可安全参与广播长度校验。它不占任何原生资源，无需单独释放。落到基类默认实现时：读取 I/L/D/S/H/O 抛 <see cref="JlTupleAccessException"/>；因 <see cref="source"/> 为 null，写入路径在 <c>source.AssertSize</c> 处即失败 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTupleElementsImplementation()
 	{

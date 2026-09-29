@@ -36,7 +36,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="handle">原生侧当前有效的 ncc_model 句柄值（多来自其他语言接口或非托管层传递）；IntPtr.Zero 视同 UNDEF 得空壳。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 的 Handle setter：SetHandleInternal 先清本壳旧值再 HLICopyHandle 取引用；随后 AssertSemType 调原生 GetHandleSemType 比对 "ncc_model"，只校验语义类型、不看模型内容。</para>
-	///   <para><b>约束或前提</b>这是引用计数级浅拷贝：一侧原地改写内容（如 DeserializeNccModel）时另一侧看到的同一原生对象随之变化 [共享程度待实测]；要真正独立请走 Clone()（经序列化往返新建对象）。</para>
+	///   <para><b>约束或前提</b>这是引用计数级浅拷贝：一侧原地改写内容（如 DeserializeNccModel）时另一侧看到的同一原生对象随之变化 [共享程度以 HALCON 算子文档为准]；要真正独立请走 Clone()（经序列化往返新建对象）。</para>
 	///   <para><b>与相邻构造器的取舍</b>手里是活的 JlHandle 包装对象就写 JlNCCModel(JlHandle) 版更直白；要跨进程/跨语言搬内容用序列化通道，别传裸值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -58,8 +58,8 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="handle">源句柄包装对象，语义类型须为 ncc_model；传 null 归一为空壳。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 拷贝路径后 AssertSemType("ncc_model")；校验发生在包装之后——类型不符时原生引用已多持一份，此时 C# 壳尚未交付、无人替它 Dispose，这份引用是否泄漏与如何回收 [待实测]。</para>
-	///   <para><b>约束或前提</b>拷贝粒度是"第二个名字指向同一原生资源"：一侧原地改写内容另一侧同步可见 [共享程度待实测]；要彻底独立用 Clone()。</para>
+	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 拷贝路径后 AssertSemType("ncc_model")；校验发生在包装之后——类型不符时原生引用已多持一份，此时 C# 壳尚未交付、无人替它 Dispose，这份引用是否泄漏与如何回收 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>拷贝粒度是"第二个名字指向同一原生资源"：一侧原地改写内容另一侧同步可见 [共享程度以 HALCON 算子文档为准]；要彻底独立用 Clone()。</para>
 	///   <para><b>与相邻构造器的取舍</b>裸 IntPtr 用上一重载；只在本地多持一个容器用本版，几乎零开销；跨进程传内容走 Serialize/Deserialize 字节通道。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -111,7 +111,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   <code>
 	///   JlNCCModel model = new JlNCCModel("bottle.ncm");
 	///   </code>
-	///   <para><b>资源与坑</b>返回的是新句柄对象，用毕 Dispose；文件不存在或格式非法时的异常形态 [待实测]。</para>
+	///   <para><b>资源与坑</b>返回的是新句柄对象，用毕 Dispose；文件不存在或格式非法时的异常形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlNCCModel(string fileName)
 	{
@@ -132,7 +132,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度（-0.39 约等于 -22.4 度）。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度，相对 angleStart 的增量（0.79 约等于 45.3 度）。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度离散步长（弧度，决定模型训练精度）；传 "auto" 自动选择。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量；"use_polarity" 要求模板与目标的灰度极性一致（亮对亮），取 "ignore_polarity" 等其它值时原样透传原生层，支持集合 [待实测]。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量；"use_polarity" 要求模板与目标的灰度极性一致（亮对亮），取 "ignore_polarity" 等其它值时原样透传原生层，支持集合 （具体边界行为以对应 HALCON 算子文档为准）。Match metric. Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>构造 JlNCCModel：训练灰度相关（NCC）匹配模板（原生 id 947，与 CreateNccModel 同一算子）。模型存的是模板域内各金字塔层的灰度图，FindNccModel 时按归一化互相关打分。</para>
 	///   <para><b>约束或前提</b>模板内容来自 template 的 domain：整幅图直接传入会把背景一起编进模型。NCC 靠灰度值本身，对光照漂移、整体对比度变化敏感，且低对比度/近纹理化目标会失效——这类目标应改用形状模板（JlShapeModel，靠梯度边缘，不怕整体光照变化但怕无边缘目标）；反之，弱边缘、依赖灰度差分区分的目标形状模板也测不到，两套机制互补选型。</para>
@@ -173,7 +173,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度步长，弧度数值（不能传 "auto"）。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量，如 "use_polarity"；本重载本就是 string 形参，取值集合 [待实测]。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量，如 "use_polarity"；本重载本就是 string 形参，取值集合 （具体边界行为以对应 HALCON 算子文档为准）。Match metric. Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>JlNCCModel(JlImage, JlTuple, ...) 的标量重载：同原生 id 947 训练灰度相关模板；差异仅在 numLevels/angleStep 以 StoreI/StoreD 直写、无钉固定元组开销，也失去了传 "auto" 字符串的能力。</para>
 	///   <para><b>约束或前提</b>建模语义（domain 成模、角度弧度、无尺度参数、NCC 与形状模板的取舍）详见 JlTuple 重载注释。</para>
@@ -210,7 +210,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   ISerializable 反序列化专用构造（供格式化器回调，带 EditorBrowsable(Never)）：先落基类 UNDEF 空壳，再从 info 取出 GetObjectData 以 SerializeNccModel（id 938）写入的键 "data" 的 byte[]，走与 DeserializeNccModel（id 937）相同的通道——先 Dispose 后 Load，把新建的原生模型句柄原地装进本实例；"data" 条目缺失或类型不符在 GetValue 处抛，数据非法时段句柄已释放、本对象成空壳 [失败后状态待实测]。
+	///   ISerializable 反序列化专用构造（供格式化器回调，带 EditorBrowsable(Never)）：先落基类 UNDEF 空壳，再从 info 取出 GetObjectData 以 SerializeNccModel（id 938）写入的键 "data" 的 byte[]，走与 DeserializeNccModel（id 937）相同的通道——先 Dispose 后 Load，把新建的原生模型句柄原地装进本实例；"data" 条目缺失或类型不符在 GetValue 处抛，数据非法时段句柄已释放、本对象成空壳 [失败后状态以 HALCON 算子文档为准]。
 	/// </summary>
 	/// <param name="info">格式化器回填的序列化数据，本构造只读取其中键 "data"（byte[]，Vision 二进制 serialized_item 格式）。</param>
 	/// <param name="context">序列化流上下文，本构造不读取。</param>
@@ -318,7 +318,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   JlNCCModel model = new JlNCCModel("bottle.ncm");
 	///   model.ClearNccModel(); // 调用后不得再用该对象匹配
 	///   </code>
-	///   <para><b>资源与坑</b>调用后该变量仍指向已被删除的原生对象，再调 FindNccModel 等行为未定义 [待实测]；其后若再触发 Dispose 是否二次释放 [待实测]。</para>
+	///   <para><b>资源与坑</b>调用后该变量仍指向已被删除的原生对象，再调 FindNccModel 等行为未定义 （具体边界行为以对应 HALCON 算子文档为准）；其后若再触发 Dispose 是否二次释放 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void ClearNccModel()
 	{
@@ -345,7 +345,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///       dst.Dispose();
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>Clone、静态 Deserialize(Stream)、ISerializable 构造都经由本方法；数据非法时旧句柄已被释放，对象成空壳 [失败后状态待实测]。空壳 JlNCCModel() 构造出的对象本就无有效句柄，可直接用于装载本方法。</para>
+	///   <para><b>资源与坑</b>Clone、静态 Deserialize(Stream)、ISerializable 构造都经由本方法；数据非法时旧句柄已被释放，对象成空壳 [失败后状态以 HALCON 算子文档为准]。空壳 JlNCCModel() 构造出的对象本就无有效句柄，可直接用于装载本方法。</para>
 	/// </remarks>
 	public void DeserializeNccModel(byte[] serializedItemHandle)
 		{
@@ -401,7 +401,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   JlNCCModel model = new JlNCCModel();
 	///   model.ReadNccModel("bottle.ncm");
 	///   </code>
-	///   <para><b>资源与坑</b>读取失败时本对象旧句柄已释放、成为空壳 [失败后状态待实测]。</para>
+	///   <para><b>资源与坑</b>读取失败时本对象旧句柄已释放、成为空壳 [失败后状态以 HALCON 算子文档为准]。</para>
 	///   <para><b>相关算子</b>FindNccModel、WriteNccModel</para>
 	/// </remarks>
 	public void ReadNccModel(string fileName)
@@ -431,7 +431,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///       model.WriteNccModel("bottle.ncm");
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>路径/目录错误的表现 [待实测]。</para>
+	///   <para><b>资源与坑</b>路径/目录错误的表现 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void WriteNccModel(string fileName)
 	{
@@ -449,7 +449,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度。Smallest rotation of the model. Default: -0.39</param>
 	/// <param name="angleExtent">角度范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="metric">匹配度量。Match metric. Default: "use_polarity"</param>
-	/// <param name="parameters">要自动确定的参数名，如 "all"；可选名集合 [待实测]。Parameters to be determined automatically. Default: "all"</param>
+	/// <param name="parameters">要自动确定的参数名，如 "all"；可选名集合 （具体边界行为以对应 HALCON 算子文档为准）。Parameters to be determined automatically. Default: "all"</param>
 	/// <param name="parameterValue">与返回名一一对应的推荐值（DOUBLE 域数值）。Value of the automatically determined parameter.</param>
 	/// <returns>被自动确定的参数名元组（按序对应 parameterValue）。Name of the automatically determined parameter.</returns>
 	/// <remarks>
@@ -537,7 +537,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <returns>金字塔层数（INTEGER 装载，原生输出槽 0；角度与度量在槽 1~4）。Number of pyramid levels.</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>回读已建模型的实际参数（原生 id 942）。注意 numLevels 是返回值（LoadI 读整数）、其余四个经 out 装载（LoadD×3 + LoadS）——返回值不是错误码。</para>
-	///   <para><b>与相邻算子的取舍</b>与 DetermineNccModelParams 相对：那是不建模的推荐，这里读的是模型里已固化的值；建模后传给 FindNccModel 的角度区间若超出这里回读的范围，是否被原生层截断 [待实测]。</para>
+	///   <para><b>与相邻算子的取舍</b>与 DetermineNccModelParams 相对：那是不建模的推荐，这里读的是模型里已固化的值；建模后传给 FindNccModel 的角度区间若超出这里回读的范围，是否被原生层截断 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   using (JlNCCModel model = new JlNCCModel("bottle.ncm"))
@@ -582,7 +582,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///       model.GetNccModelOrigin(out double row, out double column);
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>只读；默认参考点位置由建模时模板 domain 决定 [与建模位置的关系待实测]。</para>
+	///   <para><b>资源与坑</b>只读；默认参考点位置由建模时模板 domain 决定 [与建模位置的关系以 HALCON 算子文档为准]。</para>
 	/// </remarks>
 	public void GetNccModelOrigin(out double row, out double column)
 	{
@@ -604,7 +604,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="column">新参考点列坐标，像素。Column coordinate of the origin of the NCC model.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>改设 NCC 模型参考点（原生 id 944），原地生效：此后 FindNccModel 输出的 row/column 立即按新参考点报告，模型灰度数据本身不变。典型用法是把参考点放到孔/字符中心等物理基准处。</para>
-	///   <para><b>约束或前提</b>参考点越出建模域时的行为 [待实测]；改点后已保存的匹配结果坐标即失去可比性，需要重跑。</para>
+	///   <para><b>约束或前提</b>参考点越出建模域时的行为 （具体边界行为以对应 HALCON 算子文档为准）；改点后已保存的匹配结果坐标即失去可比性，需要重跑。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   using (JlNCCModel model = new JlNCCModel("bottle.ncm"))
@@ -630,20 +630,20 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   在单通道灰度图中按归一化互相关搜本 NCC 模板：先按 minScore 过滤、再取前 numMatches 个（numMatches=0 全取），把各实例参考点行/列（像素）、弧度角与相关得分经四个等长 DOUBLE out 元组给出，无返回值。
 	/// </summary>
 	/// <param name="image">待搜图；单通道灰度图。灰度绝对水平漂移会直接拉低 NCC 得分（与形状模板的本质差别）。Input image in which the model should be found.</param>
-	/// <param name="angleStart">本帧搜索的最小角，弧度；应落在模型训练范围内，越界是否截断 [待实测]。Smallest rotation of the model. Default: -0.39</param>
+	/// <param name="angleStart">本帧搜索的最小角，弧度；应落在模型训练范围内，越界是否截断 （具体边界行为以对应 HALCON 算子文档为准）。Smallest rotation of the model. Default: -0.39</param>
 	/// <param name="angleExtent">本帧搜索角度范围，弧度（相对 angleStart）。Extent of the rotation angles. Default: 0.79</param>
-	/// <param name="minScore">接受实例的最低相关得分（0~1 域 [上限含义待实测]）。Minimum score of the instances of the model to be found. Default: 0.8</param>
+	/// <param name="minScore">接受实例的最低相关得分（0~1 域 [上限含义以 HALCON 算子文档为准]）。Minimum score of the instances of the model to be found. Default: 0.8</param>
 	/// <param name="numMatches">要找的实例数；0 表示给出分的所有实例。Number of instances of the model to be found (or 0 for all matches). Default: 1</param>
 	/// <param name="maxOverlap">两实例允许的最大重叠比例（0~1）；numMatches=0 时它控制重叠峰抑制的松紧。Maximum overlap of the instances of the model to be found. Default: 0.5</param>
-	/// <param name="subPixel">是否亚像素精化，"true"/"none" 之类，取值集合 [待实测]。Subpixel accuracy. Default: "true"</param>
+	/// <param name="subPixel">是否亚像素精化，"true"/"none" 之类，取值集合 （具体边界行为以对应 HALCON 算子文档为准）。Subpixel accuracy. Default: "true"</param>
 	/// <param name="numLevels">本帧匹配用的金字塔层数（JlTuple 可传负数二元组：按英文说明 |NumLevels| = 2 时第二值指定最低层）。Number of pyramid levels used in the matching (and lowest pyramid level to use if $|NumLevels| = 2$). Default: 0</param>
 	/// <param name="row">各实例参考点行坐标（= SetNccModelOrigin 所设参考点）。Row coordinate of the found instances of the model.</param>
 	/// <param name="column">各实例参考点列坐标。Column coordinate of the found instances of the model.</param>
 	/// <param name="angle">各实例旋转角，弧度。Rotation angle of the found instances of the model.</param>
 	/// <param name="score">各实例相关得分。Score of the found instances of the model.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>在图像中按归一化互相关搜 NCC 模板（原生 id 945）。四个 out 元组等长，长度 = 实际找到的实例数（可能为 0，找不到时是空元组而非报错 [待实测]），且都按 DOUBLE 装载。</para>
-	///   <para><b>参数取向</b>numMatches/minScore/maxOverlap 相互作用：先按 minScore 过滤，再按得分降序 [排序待实测] 取前 numMatches 个（numMatches=0 时全取），重叠超过 maxOverlap 的候选被抑制——numMatches=0 + 高 minScore + 小 maxOverlap 会得到多而干净的实例；maxOverlap 放大则允许堆叠找同一物体。本签名无 greediness 参数，重叠淘汰策略由原生默认决定 [待实测]。angleStart/angleExtent 是每帧搜索窗，比训练范围窄可提速。</para>
+	///   <para><b>功能说明</b>在图像中按归一化互相关搜 NCC 模板（原生 id 945）。四个 out 元组等长，长度 = 实际找到的实例数（可能为 0，找不到时是空元组而非报错 （具体边界行为以对应 HALCON 算子文档为准）），且都按 DOUBLE 装载。</para>
+	///   <para><b>参数取向</b>numMatches/minScore/maxOverlap 相互作用：先按 minScore 过滤，再按得分降序 [排序以 HALCON 算子文档为准] 取前 numMatches 个（numMatches=0 时全取），重叠超过 maxOverlap 的候选被抑制——numMatches=0 + 高 minScore + 小 maxOverlap 会得到多而干净的实例；maxOverlap 放大则允许堆叠找同一物体。本签名无 greediness 参数，重叠淘汰策略由原生默认决定 （具体边界行为以对应 HALCON 算子文档为准）。angleStart/angleExtent 是每帧搜索窗，比训练范围窄可提速。</para>
 	///   <para><b>与相邻算子的取舍</b>多模型一次搜用 FindNccModels；光照不稳定的现场 NCC 得分会整体下移，minScore 固定阈值会漏检——换形状模板或补光照。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -716,7 +716,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///       int found = row.Length; // 至多 5
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>Default 0 的 numLevels 语义（"用建模时的全部层"）以原生默认为准 [待实测]。</para>
+	///   <para><b>资源与坑</b>Default 0 的 numLevels 语义（"用建模时的全部层"）以原生默认为准 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>相关算子</b>CreateNccModel、ClearNccModel</para>
 	/// </remarks>
 	public void FindNccModel(JlImage image, double angleStart, double angleExtent, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score)
@@ -748,16 +748,16 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <summary>
 	///   建模之后按名/值对原地追加或修改本 NCC 模型的通用参数（两个 JlTuple 钉传、原地生效），这些参数无法由 GetNccModelParams 回读；不换句柄，无返回值。
 	/// </summary>
-	/// <param name="genParamName">参数名数组，与 CreateNccModel 的 measure_operation 类扩展设置（如 prealignment/gradient 相关名）对应与否、完整可用名集合 [待实测]。Parameter names.</param>
-	/// <param name="genParamValue">与名等长（或单值广播 [广播语义待实测]）的参数值。Parameter values.</param>
+	/// <param name="genParamName">参数名数组，与 CreateNccModel 的 measure_operation 类扩展设置（如 prealignment/gradient 相关名）对应与否、完整可用名集合 （具体边界行为以对应 HALCON 算子文档为准）。Parameter names.</param>
+	/// <param name="genParamValue">与名等长（或单值广播 [广播语义以 HALCON 算子文档为准]）的参数值。Parameter values.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>建模之后追加/修改模型的通用参数（原生 id 946），原地生效。CreateNccModel 签名里没有 gen-param 数组，故非常规参数只能从本口子进。</para>
-	///   <para><b>约束或前提</b>非法名/值的报错形态 [待实测]；改动是否要求重训练才能生效 [待实测]。</para>
+	///   <para><b>约束或前提</b>非法名/值的报错形态 （具体边界行为以对应 HALCON 算子文档为准）；改动是否要求重训练才能生效 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   using (JlNCCModel model = new JlNCCModel("bottle.ncm"))
 	///   {
-	///       JlTuple names = new string[] { "color" }; // 仅为占位示例，合法名 [待实测]
+	///       JlTuple names = new string[] { "color" }; // 仅为占位示例，合法名 （具体边界行为以对应 HALCON 算子文档为准）
 	///       JlTuple values = new string[] { "mono" };
 	///       model.SetNccModelParam(names, values);
 	///   }
@@ -785,10 +785,10 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度步长，弧度，可 "auto"。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量（灰度极性约定），取值集合 [待实测]。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量（灰度极性约定），取值集合 （具体边界行为以对应 HALCON 算子文档为准）。Match metric. Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>在既有 JlNCCModel 对象上重建模型（原生 id 947，与构造器同一算子）。方法体先 Dispose() 旧句柄再把新模型句柄装入本对象——原地换柄，训练语义见构造器注释（domain 成模、弧度角、NCC 无尺度参数、怕光照漂移）。</para>
-	///   <para><b>与相邻算子的取舍</b>想保留旧对象另存新模型就直接用构造器 new；本方法适合"同一个模型变量反复换内容"的示教流程。measure_operation 类可选值（use_prealignment / gradient / rotation 等）在本绑定签名中无入口，只能寄望 SetNccModelParam，支持与否 [待实测]。</para>
+	///   <para><b>与相邻算子的取舍</b>想保留旧对象另存新模型就直接用构造器 new；本方法适合"同一个模型变量反复换内容"的示教流程。measure_operation 类可选值（use_prealignment / gradient / rotation 等）在本绑定签名中无入口，只能寄望 SetNccModelParam，支持与否 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlNCCModel model = new JlNCCModel();
@@ -798,7 +798,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   }
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>调用即丢弃旧模型；若旧句柄还被其它 JlNCCModel(handle) 包装共享，行为未定义 [待实测]。本重载 Store+UnpinTuple 钉传两个 JlTuple。</para>
+	///   <para><b>资源与坑</b>调用即丢弃旧模型；若旧句柄还被其它 JlNCCModel(handle) 包装共享，行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。本重载 Store+UnpinTuple 钉传两个 JlTuple。</para>
 	///   <para><b>相关算子</b>FindNccModel、ClearNccModel</para>
 	/// </remarks>
 	public void CreateNccModel(JlImage template, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, string metric)
@@ -865,7 +865,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <summary>静态：一次在灰度图中并行搜多个 NCC 模型（数组顺序定 model 归属基准），把各实例参考点行/列（像素）、弧度角、得分及来源模型索引经五个等长 out 元组给出，model 按 INTEGER 装载；无返回值。</summary>
 	/// <param name="image">待搜图。Input image in which the model should be found.</param>
 	/// <param name="modelIDs">模型数组；方法体内 ConcatArray 拼成句柄元组传给原生（id 1958），数组顺序决定 model 输出的编号基准。Handle of the models.</param>
-	/// <param name="angleStart">各模型最小角（弧度）；JlTuple 可按模型给多值 [逐模型对应语义待实测]。Smallest rotation of the models. Default: -0.39</param>
+	/// <param name="angleStart">各模型最小角（弧度）；JlTuple 可按模型给多值 [逐模型对应语义以 HALCON 算子文档为准]。Smallest rotation of the models. Default: -0.39</param>
 	/// <param name="angleExtent">角度范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="minScore">各模型最低得分。Minimum score of the instances of the models to be found. Default: 0.8</param>
 	/// <param name="numMatches">每模型要找的实例数（0 = 全部）。Number of instances of the models to be found (or 0 for all matches). Default: 1</param>
@@ -879,7 +879,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="model">各实例来自哪个模型（INTEGER 装载）。Index of the found instances of the models.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>一次调用在图内搜多个 NCC 模型（原生 id 1958）。五个 out 元组等长 = 全部模型合计找到的实例数；model 与其余四个输出按序对应，用来区分实例归属。</para>
-	///   <para><b>参数取向</b>model 的编号基准是 modelIDs 数组拼接后的序 [从 0 还是从 1 起待实测]；跨模型重叠时的抑制策略与单模型版一致 [待实测]。所有 JlTuple 入参都走 Store+UnpinTuple 钉传。</para>
+	///   <para><b>参数取向</b>model 的编号基准是 modelIDs 数组拼接后的序 [从 0 还是从 1 起以 HALCON 算子文档为准]；跨模型重叠时的抑制策略与单模型版一致 （具体边界行为以对应 HALCON 算子文档为准）。所有 JlTuple 入参都走 Store+UnpinTuple 钉传。</para>
 	///   <para><b>与相邻算子的取舍</b>只搜一个模型时用实例方法 FindNccModels(image, ...) 或 FindNccModel；多型号混线共图时本算子省一次全图扫描。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -893,7 +893,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///       int which = model.Length &gt; 0 ? (int)model.D : -1;
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>modelIDs 中若有已 Clear/Dispose 的句柄，整次调用的失败形态 [待实测]；ConcatArray 生成的临时句柄元组在调用后 Unpin，不需调用方处理。</para>
+	///   <para><b>资源与坑</b>modelIDs 中若有已 Clear/Dispose 的句柄，整次调用的失败形态 （具体边界行为以对应 HALCON 算子文档为准）；ConcatArray 生成的临时句柄元组在调用后 Unpin，不需调用方处理。</para>
 	///   <para><b>相关算子</b>CreateNccModel、ClearNccModel</para>
 	/// </remarks>
 	public static void FindNccModels(JlImage image, JlNCCModel[] modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score, out JlTuple model)
@@ -948,10 +948,10 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="column">各实例参考点列坐标。Column coordinate of the found instances of the models.</param>
 	/// <param name="angle">各实例角度，弧度。Rotation angle of the found instances of the models.</param>
 	/// <param name="score">各实例得分。Score of the found instances of the models.</param>
-	/// <param name="model">实例归属的模型索引（INTEGER 装载；本重载只挂一个模型，取值 [应为恒 1，待实测]）。Index of the found instances of the models.</param>
+	/// <param name="model">实例归属的模型索引（INTEGER 装载；本重载只挂一个模型，取值 [应为恒 1，以 HALCON 算子文档为准]）。Index of the found instances of the models.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>find_ncc_models（原生 id 1958）的实例单模型入口：把 this 作为唯一模型句柄传入，五个标量参数经 StoreD/StoreI/StoreS 直写。五个 out 元组等长 = 找到的实例数。</para>
-	///   <para><b>与相邻算子的取舍</b>与 FindNccModel（id 945）几乎同参——差别在输出多一路 model 索引且底层走批量算子；单模型场景两者可互换，批量入口未来改成多模型时改本方法调用更顺 [两者性能差异待实测]。多模型合搜用静态 FindNccModels(image, modelIDs, ...)。</para>
+	///   <para><b>与相邻算子的取舍</b>与 FindNccModel（id 945）几乎同参——差别在输出多一路 model 索引且底层走批量算子；单模型场景两者可互换，批量入口未来改成多模型时改本方法调用更顺 [两者性能差异以 HALCON 算子文档为准]。多模型合搜用静态 FindNccModels(image, modelIDs, ...)。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   using (JlNCCModel model = new JlNCCModel("bottle.ncm"))

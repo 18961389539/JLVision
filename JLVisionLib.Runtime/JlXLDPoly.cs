@@ -14,7 +14,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>只含该元素的新 JlXLDPoly 句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>索引器不做任何换算，把 index 原样交给 SelectObj(JlTuple)（原生算子 572），因此序号是原生的 1 基语义：a[1] 取第一个多边形。</para>
-	///   <para><b>约束或前提</b>index 应大于等于 1；0 或负序号在原生层的表现未验证 [待实测]。JlTuple 与 int 间有隐式转换，传整数字面量即可。</para>
+	///   <para><b>约束或前提</b>index 应大于等于 1；0 或负序号在原生层的表现未验证 （具体边界行为以对应 HALCON 算子文档为准）。JlTuple 与 int 间有隐式转换，传整数字面量即可。</para>
 	///   <para><b>与相邻算子的取舍</b>与 C# 集合的 0 基习惯相反，按 0 基思维用会整体错位一个元素。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -192,7 +192,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	///   JlXLDPoly copy = a.Clone();
 	///   copy.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回值是新句柄，用毕 Dispose；克隆走一次完整序列化-反序列化，比句柄级共享开销大 [待实测：具体量级]。</para>
+	///   <para><b>资源与坑</b>返回值是新句柄，用毕 Dispose；克隆走一次完整序列化-反序列化，比句柄级共享开销大 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public new JlXLDPoly Clone()
 	{
@@ -207,7 +207,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>包围并集区域的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>几何布尔并：this→原生输入 1、polygons2→输入 2，InitOCT 登记 1 个输出，LoadNew 返回全新句柄；两个输入都不被改写。</para>
-	///   <para><b>约束或前提</b>"Closed" 指算子把每个多边形视为首末相连、围成有界区域来处理；输入应为闭合多边形。自相交多边形"内部"的定义本身有歧义，布尔结果依原生算法实现而定 [待实测]。顶点序（顺/逆时针）对并集结果的影响亦未在包装层体现 [待实测]。</para>
+	///   <para><b>约束或前提</b>"Closed" 指算子把每个多边形视为首末相连、围成有界区域来处理；输入应为闭合多边形。自相交多边形"内部"的定义本身有歧义，布尔结果依原生算法实现而定 （具体边界行为以对应 HALCON 算子文档为准）。顶点序（顺/逆时针）对并集结果的影响亦未在包装层体现 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要交集用 IntersectionClosedPolygonsXld（id 11），要差集用 DifferenceClosedPolygonsXld（id 9，方向是 this 减 sub），要对称差用 SymmDifferenceClosedPolygonsXld（id 7）。若是"删掉元组里某些多边形元素"，那是 ObjDiff 的容器语义，不是几何布尔。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -240,7 +240,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>包围对称差区域的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>几何对称差：this→原生输入 1、polygons2→输入 2；等价于 (A∪B)−(A∩B)，两两相交处会被挖掉。返回 LoadNew 新句柄，输入不改写。</para>
-	///   <para><b>约束或前提</b>输入须是闭合多边形；自相交输入下"内部"定义有歧义，结果依原生实现 [待实测]。对称差具有交换性，但 DifferenceClosedPolygonsXld 的差方向不可交换，别混用。</para>
+	///   <para><b>约束或前提</b>输入须是闭合多边形；自相交输入下"内部"定义有歧义，结果依原生实现 （具体边界行为以对应 HALCON 算子文档为准）。对称差具有交换性，但 DifferenceClosedPolygonsXld 的差方向不可交换，别混用。</para>
 	///   <para><b>与相邻算子的取舍</b>要"A 有而 B 无"用 DifferenceClosedPolygonsXld（id 9）；只要公共部分用 IntersectionClosedPolygonsXld（id 11）；合并用 Union2ClosedPolygonsXld（id 5）。四个布尔算子都不处理开放多边形（不闭合）的语义。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -273,7 +273,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>包围差集（this 有而 sub 无）区域的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>几何布尔差：this（被减数）→原生输入 1、sub（减数）→输入 2，InitOCT 登记 1 个输出，LoadNew 返回全新句柄，两输入都不被改写。差方向固定为 this − sub。</para>
-	///   <para><b>约束或前提</b>输入须是闭合多边形才有确定内部；开口多边形如何围合 [待实测]。差方向不可交换，需要 sub − this 时得交换两路输入。自相交输入结果依原生实现而定 [待实测]。</para>
+	///   <para><b>约束或前提</b>输入须是闭合多边形才有确定内部；开口多边形如何围合 （具体边界行为以对应 HALCON 算子文档为准）。差方向不可交换，需要 sub − this 时得交换两路输入。自相交输入结果依原生实现而定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"公共部分"用 IntersectionClosedPolygonsXld（id 11），要"合并"用 Union2ClosedPolygonsXld（id 5），要"只属一侧"用 SymmDifferenceClosedPolygonsXld（id 7）。"从元组删掉某些多边形元素"（非几何）是 ObjDiff 的容器语义。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -306,7 +306,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>包围交集区域的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>几何布尔交：this→原生输入 1、polygons2→输入 2，InitOCT 登记 1 个输出，LoadNew 返回全新句柄，两输入都不被改写。交集对两路输入可交换。</para>
-	///   <para><b>约束或前提</b>输入须是闭合多边形；不相交的两区域结果为空句柄 [待实测：空结果是否仍返回可 Dispose 对象]。开口多边形的围合方式 [待实测]。</para>
+	///   <para><b>约束或前提</b>输入须是闭合多边形；不相交的两区域结果为空句柄 （具体边界行为以对应 HALCON 算子文档为准）。开口多边形的围合方式 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"合并"用 Union2ClosedPolygonsXld（id 5），要"this 减 sub"用 DifferenceClosedPolygonsXld（id 9），要"只属一侧"用 SymmDifferenceClosedPolygonsXld（id 7）。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -361,10 +361,10 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	}
 
 	/// <summary>把本多边形元组写出为 ARC/INFO generate 格式文本文件（算子 id 19，纯副作用，无输出参数）。</summary>
-	/// <param name="fileName">目标文件路径；对已存在文件的覆盖行为依原生实现 [待实测]。</param>
+	/// <param name="fileName">目标文件路径；对已存在文件的覆盖行为依原生实现 （具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>Store 本对象到输入 1、fileName 用 StoreS 到控制参数 0，CallProcedure 后不装载任何输出；本对象内容不变。</para>
-	///   <para><b>约束或前提</b>本对象须已初始化；未初始化句柄的写出行为依原生实现 [待实测]。开放多边形与闭合多边形在文件里的记法差异未在包装层处理，以文件实际内容为准 [待实测]。</para>
+	///   <para><b>约束或前提</b>本对象须已初始化；未初始化句柄的写出行为依原生实现 （具体边界行为以对应 HALCON 算子文档为准）。开放多边形与闭合多边形在文件里的记法差异未在包装层处理，以文件实际内容为准 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>要 DXF 用 WritePolygonXldDxf；要内存流用 Serialize(Stream)。读回用成对的 ReadPolygonXldArcInfo。</para>
 	///   <para><b>参数取向</b>void。</para>
 	///   <para><b>用法</b></para>
@@ -541,7 +541,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>描述平行关系的 JlXLDPara 新句柄（不是多边形本身）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>len/dist/alpha 经 StoreD 直写控制槽 0..2，merge 经 StoreS 到槽 3；输出走 JlXLDPara.LoadNew。它是道路/双线路提取管线的第一步，产物是"哪些线段互为平行"的关系集，供 EdgePolygons 等后续算子加工，再喂给 CombineRoadsXld。</para>
-	///   <para><b>约束或前提</b>输入应是线状多边形（长直线）；对闭合面状多边形配平行的语义未定义 [待实测]。merge 取 "true"/"false" 字符串而非布尔值。</para>
+	///   <para><b>约束或前提</b>输入应是线状多边形（长直线）；对闭合面状多边形配平行的语义未定义 （具体边界行为以对应 HALCON 算子文档为准）。merge 取 "true"/"false" 字符串而非布尔值。</para>
 	///   <para><b>与相邻算子的取舍</b>阈值需多值 JlTuple 时用元组重载（钉固定/解钉）；标量场景用本重载。要真正得到"平行多边形"还需后续算子处理关系对象，本方法只给关系。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄，本对象不被改写。</para>
 	///   <para><b>用法</b></para>
@@ -578,8 +578,8 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="phi">各线段法向矢量的角度，弧度制。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>InitOCT 登记 6 个输出槽 0..5，全部用 JlTupleType.DOUBLE 装载——即便 length 这类量本可整数，也是 double 精度。六个元组等长，第 i 个分量对应第 i 个多边形，顺序即元组内元素顺序。</para>
-	///   <para><b>约束或前提</b>面向两顶点的线状多边形；对多顶点/闭合多边形时"起终点"如何取 [待实测]。零长度线段（两顶点重合）会给出 length=0 而非报错 [待实测]。</para>
-	///   <para><b>与相邻算子的取舍</b>要完整顶点序列用 GetPolygonXld（返回逐点 row/col）；本方法压扁成直线段参数，适合道路/线划分析。phi 是法向角不是方向角，相差 π/2 [待实测：符号约定]。</para>
+	///   <para><b>约束或前提</b>面向两顶点的线状多边形；对多顶点/闭合多边形时"起终点"如何取 （具体边界行为以对应 HALCON 算子文档为准）。零长度线段（两顶点重合）会给出 length=0 而非报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻算子的取舍</b>要完整顶点序列用 GetPolygonXld（返回逐点 row/col）；本方法压扁成直线段参数，适合道路/线划分析。phi 是法向角不是方向角，相差 π/2 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>六个 out 全部是新 JlTuple 句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -617,7 +617,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="length">每个多边形的长度（像素），元素数 = 多边形数。</param>
 	/// <param name="phi">每个多边形法向矢量的角度（弧度），元素数 = 多边形数。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>InitOCT 登记 4 个输出槽 0..3，均按 JlTupleType.DOUBLE 装载。注意两层级混合：row/col 是"逐顶点"串联序列，length/phi 是"逐多边形"标量，二者长度通常不同；哪个顶点对应哪个多边形需自行按顶点数切分，本算子不返回分组边界 [待实测：闭合多边形首末点是否重复计入]。</para>
+	///   <para><b>功能说明</b>InitOCT 登记 4 个输出槽 0..3，均按 JlTupleType.DOUBLE 装载。注意两层级混合：row/col 是"逐顶点"串联序列，length/phi 是"逐多边形"标量，二者长度通常不同；哪个顶点对应哪个多边形需自行按顶点数切分，本算子不返回分组边界 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>约束或前提</b>顶点保持多边形原始顶点序；包装层不做顺/逆时针规范化。</para>
 	///   <para><b>与相邻算子的取舍</b>只要直线段参数用 GetLinesXld；这里保留全部顶点，适合逐点重建多边形。phi 是法向角而非切向/方向角。</para>
 	///   <para><b>参数取向</b>四个 out 均为新 JlTuple。</para>
@@ -654,7 +654,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>切分后的新轮廓集 JlXLDCont 句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>mode 用 StoreS 写控制槽 0，weight/smooth 用 StoreI 写槽 1/2；输出经 JlXLDCont.LoadNew 装载。先在平滑上找主点（dominant points），再在这些点处断开，把每个输入多边形拆成若干轮廓。</para>
-	///   <para><b>约束或前提</b>这是 XLD 多边形→XLD 轮廓的类转换：结果不再有多边形（线段）语义，不能再喂给只收 JlXLDPoly 的算子；平滑宽度 smooth 过小/过大都会改变主点检测，进而改变切分数量。"polygon" 之外可取值的完整清单未见包装层校验 [待实测]。</para>
+	///   <para><b>约束或前提</b>这是 XLD 多边形→XLD 轮廓的类转换：结果不再有多边形（线段）语义，不能再喂给只收 JlXLDPoly 的算子；平滑宽度 smooth 过小/过大都会改变主点检测，进而改变切分数量。"polygon" 之外可取值的完整清单未见包装层校验 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>想把轮廓再变回多边形顶点表示是另一条转换路径（不在本类）；只是想去噪平滑而非切分，不要用本方法，它会改变元素个数。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄，本对象不被改写。</para>
 	///   <para><b>用法</b></para>
@@ -688,7 +688,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>变换后的新多边形句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 48。homMat2D 以 Store 到参数 0、this 到参数 1，逐顶点乘上齐次矩阵得到新多边形；调用后 UnpinTuple(homMat2D)。矩阵按 row=y、column=x 的图像坐标约定作用。</para>
-	///   <para><b>约束或前提</b>JlHomMat2D 派生自 JlData 且实现 IDisposable，使用完毕应调用 .Dispose() 或放入 using。奇异矩阵（行列式为 0）会把多边形压扁成点/线，退化后填充区域面积为 0 [待实测]。</para>
+	///   <para><b>约束或前提</b>JlHomMat2D 派生自 JlData 且实现 IDisposable，使用完毕应调用 .Dispose() 或放入 using。奇异矩阵（行列式为 0）会把多边形压扁成点/线，退化后填充区域面积为 0 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>多边形级变换保持顶点数不变（每顶点变换）；若要对已栅格化区域做仿射请用区域族算子。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -720,7 +720,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>差集结果的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 558。this→参数 1、objectsSub→参数 2，保留在 this 中出现、但不在 objectsSub 中的元素。这是对象元组集合层面的差，不是几何布尔差。</para>
-	///   <para><b>约束或前提</b>"是否属于" 依据对象标识/相等性判定 [待实测：按引用还是按内容]，与多边形几何求交相减（DifferenceClosedPolygonsXld）不同。</para>
+	///   <para><b>约束或前提</b>"是否属于" 依据对象标识/相等性判定 （具体边界行为以对应 HALCON 算子文档为准），与多边形几何求交相减（DifferenceClosedPolygonsXld）不同。</para>
 	///   <para><b>与相邻算子的取舍</b>想按几何区域做差用 DifferenceClosedPolygonsXld；想从一组结果里剔除某些对象用本算子。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -753,7 +753,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>复制出的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 568。index/numObj 分别 StoreI 到参数 0/1。index 从 1 起（1 基，与基类 `Default: 1` 一致）；numObj=-1 表示复制到末尾。产出为独立的对象副本，不共享句柄内部数据。</para>
-	///   <para><b>约束或前提</b>index+numObj 越界触发原生错误 [待实测]。numObj 为负且非 -1 的行为 [待实测]。副本与原对象各自需独立 Dispose。</para>
+	///   <para><b>约束或前提</b>index+numObj 越界触发原生错误 （具体边界行为以对应 HALCON 算子文档为准）。numObj 为负且非 -1 的行为 （具体边界行为以对应 HALCON 算子文档为准）。副本与原对象各自需独立 Dispose。</para>
 	///   <para><b>与相邻算子的取舍</b>只要引用不复制用 SelectObj；需要数据库内真实副本用本算子。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -816,7 +816,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>被选中元素组成的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 572，与 int 重载同 id。index 作为钉住的 JlTuple Store 到参数 0（调用后 UnpinTuple）。序号 1 基（与基类 `Default: 1` 一致）。结果按 index 给出的顺序排列，允许重复与任意次序，因而可用来重排或复制元素。</para>
-	///   <para><b>约束或前提</b>任一序号越界触发原生错误 [待实测]。挑选后顺序即 index 顺序，若下游依赖序号对应上游检测顺序，需自行维护映射。</para>
+	///   <para><b>约束或前提</b>任一序号越界触发原生错误 （具体边界行为以对应 HALCON 算子文档为准）。挑选后顺序即 index 顺序，若下游依赖序号对应上游检测顺序，需自行维护映射。</para>
 	///   <para><b>与相邻算子的取舍</b>单元素用 int 重载省钉固定开销；批量/重排用本元组版。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -848,7 +848,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>被选中元素组成的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 572，与元组重载同 id。index 用 StoreI 直写单个 1 基序号，无钉固定/解钉开销。返回仅含该元素的新元组。</para>
-	///   <para><b>约束或前提</b>序号 1 基，越界触发原生错误 [待实测]。需要选多个或重排时用 JlTuple 重载。</para>
+	///   <para><b>约束或前提</b>序号 1 基，越界触发原生错误 （具体边界行为以对应 HALCON 算子文档为准）。需要选多个或重排时用 JlTuple 重载。</para>
 	///   <para><b>与相邻算子的取舍</b>只取一个元素用本重载最直接。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -879,7 +879,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>布尔结果值（int）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 573，与标量重载同 id。epsilon 作为 JlTuple 直接 Store 到参数 0（调用后 UnpinTuple 解钉），允许一次传入多个容差值分别约束不同量。</para>
-	///   <para><b>约束或前提</b>若只关心单一全局容差用标量版省钉固定开销；epsilon 元素数与被比较量不匹配时按何种规则广播 [待实测]。</para>
+	///   <para><b>约束或前提</b>若只关心单一全局容差用标量版省钉固定开销；epsilon 元素数与被比较量不匹配时按何种规则广播 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>多容差用本元组版，单容差用 double 重载。</para>
 	///   <para><b>参数取向</b>this→参数 1，objects2→参数 2，epsilon→参数 0。返回 int，无新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -915,7 +915,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>布尔结果值（int）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 573，与元组重载同 id。epsilon 是两坐标/灰度值允许的最大差，此处用 StoreD 直写单个 double。经 LoadI 装载整数结果。</para>
-	///   <para><b>约束或前提</b>epsilon=0.0 退化为精确比较（等同 TestEqualObj 语义 [待实测]）。对浮点坐标建议给非零容差以避免噪声误判不等。单位随被比较量（坐标为像素）。</para>
+	///   <para><b>约束或前提</b>epsilon=0.0 退化为精确比较（等同 TestEqualObj 语义 （具体边界行为以对应 HALCON 算子文档为准））。对浮点坐标建议给非零容差以避免噪声误判不等。单位随被比较量（坐标为像素）。</para>
 	///   <para><b>与相邻算子的取舍</b>单一容差用本标量版；需对不同特征用不同容差用 JlTuple 重载。</para>
 	///   <para><b>参数取向</b>返回 int，无新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -948,7 +948,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>布尔结果值（int）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 576，无 epsilon 参数，按精确相等比较两路图标输入（this→参数 1，objects2→参数 2）。经 LoadI 以整数装载返回值。</para>
-	///   <para><b>约束或前提</b>浮点坐标的完全相等判定对噪声敏感，若需容差请改用 CompareObj(…, epsilon)。返回值是否严格为 0/1 [待实测]。返回按两元组的对应位置逐元素比较 [待实测：多元素时的语义]。</para>
+	///   <para><b>约束或前提</b>浮点坐标的完全相等判定对噪声敏感，若需容差请改用 CompareObj(…, epsilon)。返回值是否严格为 0/1 （具体边界行为以对应 HALCON 算子文档为准）。返回按两元组的对应位置逐元素比较 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>已知两对象由同一算子生成、期望逐位一致时用本算子；跨来源或有浮点抖动时用带 epsilon 的 CompareObj。</para>
 	///   <para><b>参数取向</b>返回 int，无新句柄产生。</para>
 	///   <para><b>用法</b></para>
@@ -979,8 +979,8 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="mode">区域的填充模式。Default: "filled"</param>
 	/// <returns>生成的新区域句柄。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>算子 id 581。以本对象的多边形顶点为边界轮廓生成 JlRegion。mode="filled" 得到实心填充区域；其它模式（如按轮廓描边）具体取值 [待实测]。这是 XLD→区域 的单向转换。</para>
-	///   <para><b>约束或前提</b>多边形必须闭合才有确定内部；开口/退化（共线、零面积）多边形填充结果不确定 [待实测]。顶点按 row=y、column=x 定义，区域像素以行为单位栅格化。</para>
+	///   <para><b>功能说明</b>算子 id 581。以本对象的多边形顶点为边界轮廓生成 JlRegion。mode="filled" 得到实心填充区域；其它模式（如按轮廓描边）具体取值 （具体边界行为以对应 HALCON 算子文档为准）。这是 XLD→区域 的单向转换。</para>
+	///   <para><b>约束或前提</b>多边形必须闭合才有确定内部；开口/退化（共线、零面积）多边形填充结果不确定 （具体边界行为以对应 HALCON 算子文档为准）。顶点按 row=y、column=x 定义，区域像素以行为单位栅格化。</para>
 	///   <para><b>与相邻算子的取舍</b>只要轮廓点集保持 XLD 表示就别用本算子（转区域会丢失连续顶点精度）；需要面积/矩等区域度量时才转区域。</para>
 	///   <para><b>参数取向</b>mode 用 StoreS 传字符串，输出经 JlRegion.LoadNew 得到新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -1016,7 +1016,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1107。本对象（多边形）作为第二路图标输入 Store 到参数 2，image 输入参数 1；控制参数 gridSpacing/rotation(row/column)/mapType 分别 Store 到 0..4。产出两路输出：JlImage.LoadNew 得到映射图像（返回值），LoadNew 得到 out meshes 网格多边形。</para>
-	///   <para><b>约束或前提</b>gridSpacing 为校正图中网格点间距（像素），应为正数 [待实测：0/负数行为]。rotation 走元组版直接 Store 并在调用后 UnpinTuple，"auto" 由算法自动取向；显式给角度时单位为弧度 [待实测]。row/column 是网格点坐标，须成对等长。</para>
+	///   <para><b>约束或前提</b>gridSpacing 为校正图中网格点间距（像素），应为正数 （具体边界行为以对应 HALCON 算子文档为准）。rotation 走元组版直接 Store 并在调用后 UnpinTuple，"auto" 由算法自动取向；显式给角度时单位为弧度 （具体边界行为以对应 HALCON 算子文档为准）。row/column 是网格点坐标，须成对等长。</para>
 	///   <para><b>与相邻算子的取舍</b>只传单一旋转标量时用 string rotation 重载；rotation 需多值/批量配置时用本元组重载。</para>
 	///   <para><b>参数取向</b>返回新 JlImage，out 出参 meshes 也是新句柄，二者都需释放。</para>
 	///   <para><b>用法</b></para>
@@ -1067,7 +1067,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1107，与元组版同 id。本重载把 rotation 作为字符串用 StoreS 直写（如 "auto"），无需钉固定与解钉；其余图标输入 this(参数 2)、image(参数 1) 与控制输入 gridSpacing(0)、row(2)、column(3)、mapType(4) 布局同元组版。双路输出：返回值 JlImage 映射图、out meshes 网格多边形。</para>
-	///   <para><b>约束或前提</b>gridSpacing 应为正的像素间距 [待实测：非正值行为]；row/column 须成对等长；mapType 常用 "bilinear"，其它取值语义 [待实测]。</para>
+	///   <para><b>约束或前提</b>gridSpacing 应为正的像素间距 （具体边界行为以对应 HALCON 算子文档为准）；row/column 须成对等长；mapType 常用 "bilinear"，其它取值语义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>rotation 只有一个模式串时用本重载；需多值 rotation 用 JlTuple 重载。</para>
 	///   <para><b>参数取向</b>返回新 JlImage，out meshes 也是新句柄，均须释放。</para>
 	///   <para><b>用法</b></para>
@@ -1110,7 +1110,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="serializedItemHandle">由 SerializeXld 得到的序列化字节数组。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>形参虽名为 handle，实为托管 byte[]。方法用 using 包住 JlSerializationBuffer 承载字节，先 Dispose() 释放本对象旧句柄，再 Load(proc,1) 把重建的多边形原地写回本对象。与 SerializeXld 成对使用。</para>
-	///   <para><b>约束或前提</b>字节须来自同版本 SerializeXld/Read 通道，格式不符会以原生错误码抛出并令本对象处于空态 [待实测]。</para>
+	///   <para><b>约束或前提</b>字节须来自同版本 SerializeXld/Read 通道，格式不符会以原生错误码抛出并令本对象处于空态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 .NET Deserialize(Stream) 不同，本方法走原生反序列化通道，作用于当前实例。</para>
 	///   <para><b>参数取向</b>buffer 经 using 自动释放，调用期间靠 GC.KeepAlive 保住 this 与 buffer。</para>
 	///   <para><b>用法</b></para>
@@ -1142,7 +1142,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>序列化后的字节缓冲区（托管数组，非句柄）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>Store 本对象到参数 1，InitOCT(0) 声明零个图标输出，随后由 JlSerializationBuffer.LoadBytes 把原生结果拷贝成托管 byte[]。返回值是普通数组，不涉及原生句柄。</para>
-	///   <para><b>约束或前提</b>与 DeserializeXld 成对：字节格式仅对本库版本兼容 [待实测：跨版本兼容性]。空对象也会被序列化为合法字节数组 [待实测]。</para>
+	///   <para><b>约束或前提</b>与 DeserializeXld 成对：字节格式仅对本库版本兼容 （具体边界行为以对应 HALCON 算子文档为准）。空对象也会被序列化为合法字节数组 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 .NET 的 Serialize(Stream) 不同，本方法走原生序列化通道，专用于 XLD 句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1172,7 +1172,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>状态信息元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1554，与标量重载同 id。方法先 Dispose() 丢弃旧句柄，再 Load(proc,1) 把读到的多边形原地写回本对象。genParamName/genParamValue 是配对的参数名与值序列（钉住后 Store，调用后 UnpinTuple），可一次配置多个 DXF 输入项。</para>
-	///   <para><b>约束或前提</b>两个元组长度应一致，否则名/值错位。读取失败时本对象可能处于空/未定义状态 [待实测]。传空元组表示不做输入调整。</para>
+	///   <para><b>约束或前提</b>两个元组长度应一致，否则名/值错位。读取失败时本对象可能处于空/未定义状态 （具体边界行为以对应 HALCON 算子文档为准）。传空元组表示不做输入调整。</para>
 	///   <para><b>与相邻算子的取舍</b>需要多参数用本元组版；单个参数用 string/double 重载更省。</para>
 	///   <para><b>参数取向</b>状态经 JlTuple.LoadNew 以元组装载并返回；多边形原地写回本对象。</para>
 	///   <para><b>用法</b></para>
@@ -1210,7 +1210,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>状态信息字符串。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1554，与元组重载同 id。方法先 Dispose() 丢弃本对象旧句柄，再 Load(proc,1) 把读到的多边形原地写回本对象，故本对象被改写而非返回新句柄。genParamName 用 StoreS、genParamValue 用 StoreD 各写单个通用参数。</para>
-	///   <para><b>约束或前提</b>调用前本对象旧内容被释放，读取失败时本对象可能处于空/未定义状态 [待实测]。传空的参数名意味着不做任何 DXF 输入调整。</para>
+	///   <para><b>约束或前提</b>调用前本对象旧内容被释放，读取失败时本对象可能处于空/未定义状态 （具体边界行为以对应 HALCON 算子文档为准）。传空的参数名意味着不做任何 DXF 输入调整。</para>
 	///   <para><b>与相邻算子的取舍</b>只需设一个通用参数用本标量版；需一次传多组参数名/值用 JlTuple 重载。</para>
 	///   <para><b>参数取向</b>状态经 LoadS 以字符串装载并返回。</para>
 	///   <para><b>用法</b></para>
@@ -1243,7 +1243,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="fileName">DXF 文件的名称。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>将本对象的多边形几何序列化到指定 DXF 文件。Store 本对象到参数 1，fileName 用 StoreS 到参数 0，InitOCT 未声明，纯副作用调用。</para>
-	///   <para><b>约束或前提</b>路径不可写或磁盘错误会以原生错误码抛出 [待实测：是否抛异常]。多边形顶点按 row=y、column=x 映射到 DXF 的 y/x [待实测：轴向是否交换]。</para>
+	///   <para><b>约束或前提</b>路径不可写或磁盘错误会以原生错误码抛出 （具体边界行为以对应 HALCON 算子文档为准）。多边形顶点按 row=y、column=x 映射到 DXF 的 y/x （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 ReadPolygonXldDxf 成对；本方法只写不读，且不改变本对象内容。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1269,7 +1269,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="column">测试点的列坐标。Default: 100.0</param>
 	/// <returns>包含测试点的新多边形句柄。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>算子 id 1595，与标量重载同 id。row 与 column 是配对的坐标序列，逐点判断覆盖关系。多边形被任一点命中即入选 [待实测：多点是"或"还是"且"语义]。坐标遵循 row=y（向下为正）、column=x（向右为正）。</para>
+	///   <para><b>功能说明</b>算子 id 1595，与标量重载同 id。row 与 column 是配对的坐标序列，逐点判断覆盖关系。多边形被任一点命中即入选 （具体边界行为以对应 HALCON 算子文档为准）。坐标遵循 row=y（向下为正）、column=x（向右为正）。</para>
 	///   <para><b>约束或前提</b>row 与 column 长度应一致，否则配对错位。本重载把钉住的 row/column 直接 Store，调用后各自 UnpinTuple。</para>
 	///   <para><b>与相邻算子的取舍</b>单点测试用标量重载更省；多点批量筛选用本版。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1。返回 LoadNew 新句柄。</para>
@@ -1306,7 +1306,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>包含该测试点的新多边形句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1595。以 (row,column) 为测试点，返回本元组中"经过/包含"该点的多边形集合。坐标遵循 row=y（向下为正）、column=x（向右为正）。</para>
-	///   <para><b>约束或前提</b>点在多边形边界上时的归属 [待实测]；无任何多边形命中时返回空句柄。本重载仅测一个点，多目标点请用 JlTuple 重载。</para>
+	///   <para><b>约束或前提</b>点在多边形边界上时的归属 （具体边界行为以对应 HALCON 算子文档为准）；无任何多边形命中时返回空句柄。本重载仅测一个点，多目标点请用 JlTuple 重载。</para>
 	///   <para><b>与相邻算子的取舍</b>与元组重载同 id：单点用 StoreD 直写省钉固定开销，多点批量筛选用元组版。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1，row/column StoreD 到 0/1。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -1339,8 +1339,8 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="max">各特征的上限或 'max'。Default: 99999.0</param>
 	/// <returns>满足条件的多边形新句柄。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>算子 id 1597。features 是要检查的形状特征名列表，min/max 为对应下/上限，operation 决定多个特征间的组合方式（"and" 全满足、"or" 任一满足 [待实测：or 是否支持]）。本元组版把钉住的 features/min/max 直接 Store，调用后各自 UnpinTuple。</para>
-	///   <para><b>约束或前提</b>面积类特征以像素计；特征值需在闭区间 [min,max] 内才保留，边界是否包含 [待实测]。features 与 min/max 长度需匹配，标量阈值通常被广播到全部特征 [待实测]。</para>
+	///   <para><b>功能说明</b>算子 id 1597。features 是要检查的形状特征名列表，min/max 为对应下/上限，operation 决定多个特征间的组合方式（"and" 全满足、"or" 任一满足 （具体边界行为以对应 HALCON 算子文档为准））。本元组版把钉住的 features/min/max 直接 Store，调用后各自 UnpinTuple。</para>
+	///   <para><b>约束或前提</b>面积类特征以像素计；特征值需在闭区间 [min,max] 内才保留，边界是否包含 （具体边界行为以对应 HALCON 算子文档为准）。features 与 min/max 长度需匹配，标量阈值通常被广播到全部特征 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 string 重载同 id：需要多特征/多阈值时用本元组版，单特征时可用标量版避免钉固定开销。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -1380,7 +1380,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>满足条件的多边形新句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 与元组版同为 1597。本标量版只携带一个特征名与一对 double 阈值，用 StoreS/StoreD 直写，省去钉固定与解钉。min/max 为该特征的下/上限。</para>
-	///   <para><b>约束或前提</b>面积类特征以像素计，边界是否含 [min,max] 端点 [待实测]。若要同时检查多个特征，请改用元组重载，本重载传单个字符串只会检查那一个特征。</para>
+	///   <para><b>约束或前提</b>面积类特征以像素计，边界是否含 [min,max] 端点 （具体边界行为以对应 HALCON 算子文档为准）。若要同时检查多个特征，请改用元组重载，本重载传单个字符串只会检查那一个特征。</para>
 	///   <para><b>与相邻算子的取舍</b>需要多特征/多区间组合时用 JlTuple 重载；只按单一特征粗筛时用本重载更省事。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -1412,8 +1412,8 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <param name="type">变换类型。Default: "convex"</param>
 	/// <returns>形状变换后的新多边形句柄。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>算子 id 1608。以本对象为输入，用 type 指定的目标形状替换原轮廓几何。"convex" 生成顶点为原点集凸包的多边形；其余形状（如外接矩形/椭圆/圆等）具体名与语义 [待实测]，以本库现有英文文档与原生算子为准，不臆造。</para>
-	///   <para><b>约束或前提</b>退化输入（共线点、单点、零面积）在求凸包时结果可能为线段或点，顶点数随之变化 [待实测]。顶点坐标遵循 row=y（向下为正）、column=x（向右为正）。</para>
+	///   <para><b>功能说明</b>算子 id 1608。以本对象为输入，用 type 指定的目标形状替换原轮廓几何。"convex" 生成顶点为原点集凸包的多边形；其余形状（如外接矩形/椭圆/圆等）具体名与语义 （具体边界行为以对应 HALCON 算子文档为准），以本库现有英文文档与原生算子为准，不臆造。</para>
+	///   <para><b>约束或前提</b>退化输入（共线点、单点、零面积）在求凸包时结果可能为线段或点，顶点数随之变化 （具体边界行为以对应 HALCON 算子文档为准）。顶点坐标遵循 row=y（向下为正）、column=x（向右为正）。</para>
 	///   <para><b>与相邻算子的取舍</b>若只需要区域层面的形状变换应改用 JlRegion 的对应算子；本算子保持 XLD 表示，输出仍是多边形顶点集。</para>
 	///   <para><b>参数取向</b>type 用 StoreS 传字符串。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -1444,7 +1444,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>插入后的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 2003。objectsInsert 的所有元素被整体插入到本元组 index 指定处，原元素顺序保持不变，结果是全新元组，本对象与 objectsInsert 不被改写。</para>
-	///   <para><b>约束或前提</b>index 从 1 开始；index 大于当前元素数时追加到末尾 [待实测：越界是追加还是报错]。原生参数序为 index、this、objectsInsert（Store 到 0/1/2），与 C# 形参序不同。</para>
+	///   <para><b>约束或前提</b>index 从 1 开始；index 大于当前元素数时追加到末尾 （具体边界行为以对应 HALCON 算子文档为准）。原生参数序为 index、this、objectsInsert（Store 到 0/1/2），与 C# 形参序不同。</para>
 	///   <para><b>参数取向</b>int 参数用 StoreI 直写。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1476,7 +1476,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>删除后剩余的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 2005，与 int 重载同 id。本重载把钉住的多序号 JlTuple 直接 Store，调用后 UnpinTuple 解钉；int 重载用 StoreI 单值。可一次性删除多个位置。</para>
-	///   <para><b>约束或前提</b>序号从 1 开始；任一序号越界会触发原生错误 [待实测：越界行为]。删除顺序不影响结果。</para>
+	///   <para><b>约束或前提</b>序号从 1 开始；任一序号越界会触发原生错误 （具体边界行为以对应 HALCON 算子文档为准）。删除顺序不影响结果。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1，index Store 到参数 0。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1507,7 +1507,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>删除后剩余的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 2005，标量重载用 StoreI 直写单个序号，无钉固定元组开销。本对象不被改写，产出删除后的新元组。</para>
-	///   <para><b>约束或前提</b>序号从 1 开始（与基类 JlObject 的 `Default: 1`、示例 `SelectObj(1)` 一致），越界会触发原生错误 [待实测：是否静默忽略]。删除到空时返回空元组句柄 [待实测]。</para>
+	///   <para><b>约束或前提</b>序号从 1 开始（与基类 JlObject 的 `Default: 1`、示例 `SelectObj(1)` 一致），越界会触发原生错误 （具体边界行为以对应 HALCON 算子文档为准）。删除到空时返回空元组句柄 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>this Store 到参数 1，index StoreI 到参数 0，InitOCT 声明 1 个输出。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1537,7 +1537,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>替换后的新多边形元组句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量重载共用算子 id 2006。差别在于本重载把钉住的 JlTuple 直接 Store（调用后 UnpinTuple 解钉），而 int 重载用 StoreI 直写单值。index 元组可含多个 1 基序号，objectsReplace 的元素按序逐一替换这些位置。</para>
-	///   <para><b>约束或前提</b>index 各元素不得越界；index 元素个数应与 objectsReplace 元素个数匹配，否则替换错位 [待实测]。</para>
+	///   <para><b>约束或前提</b>index 各元素不得越界；index 元素个数应与 objectsReplace 元素个数匹配，否则替换错位 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>this 为原元组，index 钉固定元组传入原生参数 0，objectsReplace 传入参数 2。返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

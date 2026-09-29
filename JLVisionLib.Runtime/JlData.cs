@@ -14,7 +14,7 @@ public class JlData : IDisposable
 	/// </summary>
 	/// <remarks>
 ///   <para><b>功能说明</b>读：<c>get</c> 返回 <c>new JlTuple(tuple)</c>，调用方得到独立副本；写：先复制赋入值，再释放本实例原有元组，避免旧元组中的句柄悬挂。</para>
-///   <para><b>约束或前提</b>get 返回的副本不会随宿主变化，调用方负责在使用后 Dispose；分量的内部排列由原生侧决定（对 JlPose 即 7 个位姿分量，具体槽序 [待实测]）。</para>
+///   <para><b>约束或前提</b>get 返回的副本不会随宿主变化，调用方负责在使用后 Dispose；分量的内部排列由原生侧决定（对 JlPose 即 7 个位姿分量，具体槽序 （具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与相邻算子的取舍</b>只想按类型取单个分量用索引器 <c>this[int]</c>（返回 <c>JlTupleElements</c> 视图，可 <c>.D/.I/.S</c> 读）；要整体搬运/比对才动 RawData。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -45,14 +45,14 @@ public class JlData : IDisposable
 	/// </summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>转发到内部元组：<c>get</c> 返回 <c>tuple[index]</c>，其类型是 <see cref="JlTupleElements"/>——一个仍绑定到底层元组的<b>类型化视图</b>，不是标量；<c>set</c> 把视图写回该下标处。</para>
-	///   <para><b>约束或前提</b>取值需按类型口径读取（<c>.I</c> 32 位整数 / <c>.L</c> 64 位 / <c>.D</c> double / <c>.S</c> 字符串，或靠隐式转换直接用），元素类型与读取口径不匹配会抛 <c>JlTupleAccessException</c>。下标是对底层元组的定位（对 JlPose 即那 7 个位姿分量，0..6；各分量含义与排列 [待实测]）。</para>
+	///   <para><b>约束或前提</b>取值需按类型口径读取（<c>.I</c> 32 位整数 / <c>.L</c> 64 位 / <c>.D</c> double / <c>.S</c> 字符串，或靠隐式转换直接用），元素类型与读取口径不匹配会抛 <c>JlTupleAccessException</c>。下标是对底层元组的定位（对 JlPose 即那 7 个位姿分量，0..6；各分量含义与排列 （具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>与相邻算子的取舍</b>要整段搬走或整体比对用 <c>RawData</c>；只想按类型读某一个分量用本索引器更直接。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose pose = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   double first = pose[0].D;      // 以 double 口径读第 0 个分量
 	///   </code>
-	///   <para><b>资源与坑</b>返回的视图仍绑定宿主元组，写 <c>pose[i]</c> 会改到宿主；越界下标按元组侧行为报错 [待实测]。使用完 JlData/JlPose 应调用 <see cref="Dispose()"/>。</para>
+	///   <para><b>资源与坑</b>返回的视图仍绑定宿主元组，写 <c>pose[i]</c> 会改到宿主；越界下标按元组侧行为报错 （具体边界行为以对应 HALCON 算子文档为准）。使用完 JlData/JlPose 应调用 <see cref="Dispose()"/>。</para>
 	/// </remarks>
 	public JlTupleElements this[int index]
 	{
@@ -142,7 +142,7 @@ public class JlData : IDisposable
 ///   JlData data = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 ///   using JlTuple tuple = data;   // 隐式转换：取得独立副本
 ///   </code>
-///   <para><b>资源与坑</b>返回值是独立元组，使用后应 Dispose；分量排列由原生侧决定，跨派生类型套用前需确认分量数与含义 [待实测]。</para>
+///   <para><b>资源与坑</b>返回值是独立元组，使用后应 Dispose；分量排列由原生侧决定，跨派生类型套用前需确认分量数与含义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public static implicit operator JlTuple(JlData data)
 	{

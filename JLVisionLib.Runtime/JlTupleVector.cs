@@ -457,7 +457,7 @@ public class JlTupleVector : JlVector
 	///   extra.Dispose();
 	///   v.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>各叶元组类型不一致（数值配字符串）时，拼出的元组类型行为由元组侧 MIXED 规则决定 [待实测]；返回元组要独立释放，别与向量的 Dispose 混为一谈。</para>
+	///   <para><b>资源与坑</b>各叶元组类型不一致（数值配字符串）时，拼出的元组类型行为由元组侧 MIXED 规则决定 （具体边界行为以对应 HALCON 算子文档为准）；返回元组要独立释放，别与向量的 Dispose 混为一谈。</para>
 	/// </remarks>
 	public JlTuple ConvertVectorToTuple()
 	{

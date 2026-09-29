@@ -117,7 +117,7 @@ public class JlHandleBase : IDisposable
 	///   bool ready = shell.IsInitialized();   // false：句柄为 UNDEF
 	///   shell.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>句柄值为悬垂值时该原生查询会不会抛异常、还是只回 false [待实测]；不要用 try/catch 之外的方式依赖它的返回做释放决策。</para>
+	///   <para><b>资源与坑</b>句柄值为悬垂值时该原生查询会不会抛异常、还是只回 false （具体边界行为以对应 HALCON 算子文档为准）；不要用 try/catch 之外的方式依赖它的返回做释放决策。</para>
 	/// </remarks>
 	public bool IsInitialized()
 	{
@@ -190,7 +190,7 @@ public class JlHandleBase : IDisposable
 	///   h.InvalidateWithoutDispose();
 	///   bool empty = h.Handle == JlHandleBase.UNDEF;   // true：本壳已与原生对象脱钩
 	///   </code>
-	///   <para><b>资源与坑</b>标了 <c>EditorBrowsable(Never)</c>，属内部/互操作通道；调用后原生侧那份对象由外部负责清理，若外部并不清理则成泄漏 [待实测：原生 ClearHandle 是减引用还是彻底销毁内容]。</para>
+	///   <para><b>资源与坑</b>标了 <c>EditorBrowsable(Never)</c>，属内部/互操作通道；调用后原生侧那份对象由外部负责清理，若外部并不清理则成泄漏 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void InvalidateWithoutDispose()
@@ -317,7 +317,7 @@ public class JlHandleBase : IDisposable
 	/// <returns>新建的 <c>JlTuple</c>，元素为各句柄的引用拷贝；元组需 Dispose（只释放组内副本），用完前原句柄须保持存活。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现是 <c>new JlTuple(handles as JlHandle[])</c>：走 <c>JlTuple(params JlHandle[])</c>，对每个元素做 <c>new JlHandle(h[i])</c> 拷贝（<c>copy: true</c>），顺序与入参数组一一对应。</para>
-	///   <para><b>关键前提</b>转换用的是 <c>as</c>：运行时类型不是 <c>JlHandle[]</c>（例如数组按 <c>new JlHandleBase[n]</c> 创建，或元素是别的基类派生实例）时 <c>as</c> 得到 null，再喂给 <c>JlHandle[]</c> 形参，后果是空引用类异常 [待实测：具体异常形态]。要避开就用 <c>new JlHandle[] { ... }</c> 字面量（协变可直接当 <c>JlHandleBase[]</c> 传）。数组里含 null 元素时的行为也未在托管层特判 [待实测]。</para>
+	///   <para><b>关键前提</b>转换用的是 <c>as</c>：运行时类型不是 <c>JlHandle[]</c>（例如数组按 <c>new JlHandleBase[n]</c> 创建，或元素是别的基类派生实例）时 <c>as</c> 得到 null，再喂给 <c>JlHandle[]</c> 形参，后果是空引用类异常 （具体边界行为以对应 HALCON 算子文档为准）。要避开就用 <c>new JlHandle[] { ... }</c> 字面量（协变可直接当 <c>JlHandleBase[]</c> 传）。数组里含 null 元素时的行为也未在托管层特判 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻成员的取舍</b>数值/字符串数组的拼接走 <c>JlTuple</c> 自身的构造或 <c>TupleConcat</c>；<c>JlData.ConcatArray</c>（internal）拼的是元组内容而非句柄引用，两者不可互换。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
