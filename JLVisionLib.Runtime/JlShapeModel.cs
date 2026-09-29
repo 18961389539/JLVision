@@ -2777,7 +2777,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
 	///   using JlRegion keepOut = model.GetShapeModelClutter("use_clutter", out JlTuple values, out JlHomMat2D homMat2D, out int clutterContrast);
 	///   </code>
-	///   <para><b>资源与坑</b>：返回的 JlRegion 是新句柄需 Dispose；JlHomMat2D 与 JlTuple 不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>：返回的 JlRegion 是新句柄需 Dispose；输出的 JlHomMat2D 实现 IDisposable，使用后应 Dispose；JlTuple 也实现 IDisposable，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose。</para>
 	/// </remarks>
 	public JlRegion GetShapeModelClutter(JlTuple genParamName, out JlTuple genParamValue, out JlHomMat2D homMat2D, out int clutterContrast)
 	{
@@ -2857,7 +2857,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   pose.HomMat2dIdentity();
 	///   model.SetShapeModelClutter(clutter, pose, 128, new string[] { "use_clutter" }, new double[] { 1.0 });
 	///   </code>
-	///   <para><b>资源与坑</b>：改完需再次 WriteShapeModel 才能固化到文件；JlHomMat2D 不实现 IDisposable 无需释放，传入的 clutter 区域调用返回后能否立即 Dispose（原生侧是否留存引用）[待实测]。</para>
+	///   <para><b>资源与坑</b>：改完需再次 WriteShapeModel 才能固化到文件；JlHomMat2D 实现 IDisposable，使用后应 Dispose；传入的 clutter 区域调用返回后能否立即 Dispose（原生侧是否留存引用）[待实测]。</para>
 	/// </remarks>
 	public void SetShapeModelClutter(JlRegion clutterRegion, JlHomMat2D homMat2D, int clutterContrast, JlTuple genParamName, JlTuple genParamValue)
 	{

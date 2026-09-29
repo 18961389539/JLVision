@@ -589,6 +589,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   IntPtr v = t.IP;     // v 的地址值 == 0xFF
 	///   </code>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr IP
 	{
 		get
@@ -5210,6 +5211,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：传入数组本身不拷贝（内部 new 了目标宽度数组逐元素转换），但目标数组是新建的，改动入参 IntPtr[] 不影响元组。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlTuple(params IntPtr[] ip)
 	{
 		if (JlNativeApi.isPlatform64)
@@ -5468,9 +5470,8 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <summary>把源元组的内部存储整体接管进本实例并把源置空——纯引用转移，无原生调用、无拷贝。</summary>
 	/// <param name="source">被接管的源元组；调用后其内容变为空元组（EMPTY）。传 null 则本实例直接置为 EMPTY。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>方法体仅交换引用：<c>data = source.data</c> 后 <c>source.data</c> 指向
-	///   空实现 <c>JlTupleVoid.EMPTY</c>；<c>source</c> 与本实例相同时不做任何事。本实例原先持有的存储
-	///   引用被直接丢弃（交由 GC/finalizer 处理）。</para>
+	///   <para><b>功能说明</b>方法先保存本实例旧存储，再把 <c>source.data</c> 移入本实例并让
+	///   <c>source</c> 指向空实现 <c>JlTupleVoid.EMPTY</c>；旧存储会立即 Dispose，避免其中的句柄泄漏。</para>
 	///   <para><b>约束或前提</b>标 <c>EditorBrowsable(Never)</c>，框架内部用于把"新建并装载好的元组"
 	///   零拷贝转交出去（如 <c>JlTuple(params JlTuple[])</c> 构造尾部即调它）；用户代码用赋值/拼接即可，
 	///   不要手动调用。</para>
@@ -5484,21 +5485,32 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   target.Dispose();
 	///   filled.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>接管不是克隆：source 置空后不可再用；接管丢弃本实例旧存储时，若旧内容
-	///   存有句柄元素其释放时机 [待实测]。</para>
+	///   <para><b>资源与坑</b>接管不是克隆：source 置空后不可再用；本实例旧存储会被释放，若还需保留请先 Clone。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void TransferOwnership(JlTuple source)
 	{
-		if (source != this)
+		if (ReferenceEquals(source, this))
 		{
-			if (source == null)
+			return;
+		}
+
+		JlTupleImplementation previous = data;
+		if (source == null)
+		{
+			data = JlTupleVoid.EMPTY;
+			if (!ReferenceEquals(previous, data))
 			{
-				data = JlTupleVoid.EMPTY;
-				return;
+				previous.Dispose();
 			}
-			data = source.data;
-			source.data = JlTupleVoid.EMPTY;
+			return;
+		}
+
+		data = source.data;
+		source.data = JlTupleVoid.EMPTY;
+		if (!ReferenceEquals(previous, data))
+		{
+			previous.Dispose();
 		}
 	}
 
@@ -5757,6 +5769,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：拿到的 IntPtr 只是数值拷贝，不持有任何内存所有权；32 位进程跑上面这段会因宽度不符抛异常。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr[] ToIPArr()
 	{
 		return data.ToIPArr();
@@ -5891,6 +5904,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：拿到的 IntPtr 只是数值拷贝，不持有任何内存所有权；同一份代码在 32 位进程可能因宽度不符抛异常。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator IntPtr(JlTuple t)
 	{
 		return t[0];
@@ -6003,6 +6017,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：拿到的 IntPtr 只是数值拷贝，不持有内存所有权；32 位进程跑上面这段会因宽度不符抛异常。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator IntPtr[](JlTuple t)
 	{
 		return t.ToIPArr();
@@ -6241,6 +6256,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：本法产出的元组宽度依赖运行位数，跨 32/64 位序列化/比较时要意识到同一 IntPtr 值在两种构建下 Type 不同。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator JlTuple(IntPtr ip)
 	{
 		return new JlTuple(ip);
@@ -6259,6 +6275,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>：产出元组的 Type 随运行位数在 LONG/INTEGER 间漂移；与 ToIPArr 配对时宽度不符会在 32 位进程抛指针宽异常。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator JlTuple(IntPtr[] ip)
 	{
 		return new JlTuple(ip);
@@ -6273,10 +6290,19 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	{
 		if (JlNativeApi.IsFailure(err))
 		{
+			data.Dispose();
 			data = JlTupleVoid.EMPTY;
 			return err;
 		}
-		return JlTupleImplementation.Load(proc, parIndex, type, out data);
+
+		int result = JlTupleImplementation.Load(proc, parIndex, type, out var loaded);
+		JlTupleImplementation previous = data;
+		data = loaded;
+		if (!ReferenceEquals(previous, data))
+		{
+			previous.Dispose();
+		}
+		return result;
 	}
 
 	internal int Load(IntPtr proc, int parIndex, int err)

@@ -1335,4 +1335,52 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		GC.KeepAlive(this);
 		return tuple;
 	}
+
+	/// <summary>使用强类型插值选项创建圆弧卡尺。</summary>
+	public JlMeasure(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, JlInterpolationMode interpolation)
+		: this(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, width, height, interpolation.ToNative())
+	{
+	}
+
+	/// <summary>使用强类型插值选项创建圆弧卡尺（标量重载）。</summary>
+	public JlMeasure(double centerRow, double centerCol, double radius, double angleStart, double angleExtent, double annulusRadius, int width, int height, JlInterpolationMode interpolation)
+		: this(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, width, height, interpolation.ToNative())
+	{
+	}
+
+	/// <summary>使用强类型插值选项创建矩形卡尺。</summary>
+	public JlMeasure(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, int width, int height, JlInterpolationMode interpolation)
+		: this(row, column, phi, length1, length2, width, height, interpolation.ToNative())
+	{
+	}
+
+	/// <summary>使用强类型插值选项创建矩形卡尺（标量重载）。</summary>
+	public JlMeasure(double row, double column, double phi, double length1, double length2, int width, int height, JlInterpolationMode interpolation)
+		: this(row, column, phi, length1, length2, width, height, interpolation.ToNative())
+	{
+	}
+
+	/// <summary>使用强类型插值选项原地重建圆弧卡尺。</summary>
+	public void GenMeasureArc(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, JlInterpolationMode interpolation)
+	{
+		GenMeasureArc(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, width, height, interpolation.ToNative());
+	}
+
+	/// <summary>使用强类型插值选项原地重建圆弧卡尺（标量重载）。</summary>
+	public void GenMeasureArc(double centerRow, double centerCol, double radius, double angleStart, double angleExtent, double annulusRadius, int width, int height, JlInterpolationMode interpolation)
+	{
+		GenMeasureArc(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, width, height, interpolation.ToNative());
+	}
+
+	/// <summary>使用强类型插值选项原地重建矩形卡尺。</summary>
+	public void GenMeasureRectangle2(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, int width, int height, JlInterpolationMode interpolation)
+	{
+		GenMeasureRectangle2(row, column, phi, length1, length2, width, height, interpolation.ToNative());
+	}
+
+	/// <summary>使用强类型插值选项原地重建矩形卡尺（标量重载）。</summary>
+	public void GenMeasureRectangle2(double row, double column, double phi, double length1, double length2, int width, int height, JlInterpolationMode interpolation)
+	{
+		GenMeasureRectangle2(row, column, phi, length1, length2, width, height, interpolation.ToNative());
+	}
 }

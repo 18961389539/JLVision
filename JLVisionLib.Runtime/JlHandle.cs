@@ -275,7 +275,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	/// <summary>
 	///   把 this 所指句柄的内容导出为库自有二进制的完整序列化字节（原生 id 2015），返回托管 byte[]；只读操作，不改变 this 指向的内容。
 	/// </summary>
-	/// <returns>完整序列化项字节数组（含 16 字节头），可被 DeserializeHandle/ReadFromStream 读回；托管数组，无需手动释放。</returns>
+	/// <returns>完整序列化项字节数组（含 16 字节头），可被 DeserializeHandle/ReadFromStream 读回；托管数组，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>PreCall(2015)：Store(this,0) 作输入，InitOCT(0) 声明第 0 位为输出控制，调用后由 JlSerializationBuffer.LoadBytes 取出该输出句柄并转成 byte[]（内部 LoadNew→ToBytes→Dispose 临时缓冲句柄）。</para>
 	///   <para><b>与相邻成员的取舍</b>要落盘/走流用 Serialize(Stream)；只要内存字节用本方法。二者输出格式一致，可配对 DeserializeHandle。</para>

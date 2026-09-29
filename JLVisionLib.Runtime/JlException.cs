@@ -14,7 +14,7 @@ namespace JLVisionLib;
 ///   本类多用于跨进程/序列化地搬运异常信息（配合 <see cref="M:JLVisionLib.JlException.ToHTuple(out JLVisionLib.JlTuple)"/> 与
 ///   <see cref="M:JLVisionLib.JlException.GetExceptionData(JLVisionLib.JlTuple,JLVisionLib.JlTuple,out JLVisionLib.JlTuple)"/>）。</para>
 ///   <para><b>捕获建议</b>调用方按 <c>catch (JlException ex)</c> 一网打尽即可，再用
-///   <see cref="M:JLVisionLib.JlException.GetErrorCode"/> 判断类别、<see cref="M:JLVisionLib.JlException.GetErrorMessage"/> 取文本。</para>
+///   <see cref="P:JLVisionLib.JlException.ErrorCode"/> 判断类别、<see cref="P:JLVisionLib.JlException.ErrorMessage"/> 取文本。</para>
 /// </remarks>
 public class JlException : ApplicationException
 {
@@ -23,6 +23,21 @@ public class JlException : ApplicationException
 	private JlTuple user_data;
 
 	private const int ErrCodeUserException = 30000;
+
+	/// <summary>错误码。纯托管异常为 <c>-1</c>，原生异常为 <c>JlErrorDef</c> 中的返回码。</summary>
+	public int ErrorCode => err;
+
+	/// <summary>错误说明。默认返回 <see cref="Exception.Message"/>。</summary>
+	public virtual string ErrorMessage => Message;
+
+	/// <summary>扩展错误码。基类没有扩展错误码时返回 <c>0</c>。</summary>
+	public virtual long ExtendedErrorCode => 0L;
+
+	/// <summary>扩展错误说明。基类没有扩展错误说明时返回空字符串。</summary>
+	public virtual string ExtendedErrorMessage => string.Empty;
+
+	/// <summary>当前异常是否为错误码大于等于 30000 的用户自定义异常。</summary>
+	public bool IsUserDefined => ErrorCode >= ErrCodeUserException;
 
 	/// <summary>用错误码、错误说明与底层异常三者构造 <see cref="T:JLVisionLib.JlException"/>，信息最全的入口。</summary>
 	/// <param name="err">错误码，取值见 <c>JlErrorDef</c> 常量；等于 2 视为成功、30000 及以上为用户自定义异常。存入内部字段供 <see cref="M:JLVisionLib.JlException.GetErrorCode"/> 读取。</param>
@@ -107,7 +122,7 @@ public class JlException : ApplicationException
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public int GetErrorNumber()
 	{
-		return err;
+		return ErrorCode;
 	}
 
 	/// <summary>取回本异常携带的整型错误码。</summary>
@@ -129,7 +144,7 @@ public class JlException : ApplicationException
 	/// </remarks>
 	public int GetErrorCode()
 	{
-		return err;
+		return ErrorCode;
 	}
 
 	/// <summary>把本异常序列化为一个 <see cref="T:JLVisionLib.JlTuple"/>，用于跨边界传递或再喂给 <see cref="M:JLVisionLib.JlException.GetExceptionData(JLVisionLib.JlTuple,JLVisionLib.JlTuple,out JLVisionLib.JlTuple)"/>。</summary>
@@ -155,7 +170,10 @@ public class JlException : ApplicationException
 		exception[0] = GetErrorCode();
 		if ((long)GetErrorCode() < 30000L)
 		{
-			exception[1] = GetErrorMessage();
+			// Serialize the message supplied when the exception was constructed.
+			// Derived types may expose a normalized/native ErrorMessage, but that
+			// must not erase operator-specific context carried by Message.
+			exception[1] = Message;
 		}
 		if (user_data != null)
 		{
@@ -261,22 +279,22 @@ public class JlException : ApplicationException
 		}
 	}
 
-	/// <summary>已废弃：改用 <see cref="M:JLVisionLib.JlException.GetErrorMessage"/>。返回同样的说明文本。</summary>
-	[Obsolete("GetErrorText is deprecated, please use GetErrorMessage instead.")]
+/// <summary>已废弃：改用 <see cref="P:JLVisionLib.JlException.ErrorMessage"/>。返回同样的说明文本。</summary>
+	[Obsolete("GetErrorText is deprecated, please use ErrorMessage or GetErrorMessage instead.")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public string GetErrorText()
+	public virtual string GetErrorText()
 	{
-		return Message;
+		return ErrorMessage;
 	}
 
-	/// <summary>取回本异常的说明文本。</summary>
+/// <summary>取回本异常的说明文本；新代码优先使用 <see cref="P:JLVisionLib.JlException.ErrorMessage"/>。</summary>
 	/// <returns>构造时写入的 <c>Message</c>；用无说明的重载时为空字符串。</returns>
 	/// <remarks>
 	///   <para><b>与派生类的差异</b>基类原样返回构造时的 <c>Message</c>；<see cref="T:JLVisionLib.JlOperatorException"/> 重写此方法改为按错误码查原生消息表，二者对同一异常可能给出不同文本。</para>
 	///   <para><b>取代关系</b>取代已废弃的 <c>GetErrorText</c>。</para>
 	/// </remarks>
-	public string GetErrorMessage()
+	public virtual string GetErrorMessage()
 	{
-		return Message;
+		return ErrorMessage;
 	}
 }

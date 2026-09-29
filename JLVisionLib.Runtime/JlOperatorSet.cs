@@ -1543,7 +1543,7 @@ public class JlOperatorSet
 	/// <param name="homMat2D">输入变换矩阵（以 JlTuple 形态传入）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>每个顶点乘齐次矩阵得到新多边形，顶点数不变；矩阵按行=y、列=x 的图像坐标约定作用。奇异矩阵会把多边形压扁成点或线 [待实测]。</para>
-	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDPoly.AffineTransPolygonXld(JlHomMat2D)"/> 编译期锁定矩阵类型；本静态版矩阵槽放开为 JlTuple，好处是能直接吃静态算子（如 VectorToSimilarity 族）吐出的裸矩阵元组，省一次包装。JlHomMat2D 不实现 IDisposable，对它写释放是画蛇添足。</para>
+	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDPoly.AffineTransPolygonXld(JlHomMat2D)"/> 编译期锁定矩阵类型；本静态版矩阵槽放开为 JlTuple，好处是能直接吃静态算子（如 VectorToSimilarity 族）吐出的裸矩阵元组，省一次包装。JlHomMat2D 实现 IDisposable，对它写释放是画蛇添足。</para>
 	///   <para><b>参数取向</b>多边形在图标槽 1、矩阵钉到控制槽 0；单个 out 经 JlObject.LoadNew 新建。</para>
 	///   <para><b>资源与坑</b>polygonsAffineTrans 须 Dispose；输入由 GC.KeepAlive 保命到调用结束。</para>
 	/// </remarks>
@@ -5342,7 +5342,7 @@ public class JlOperatorSet
 	/// <param name="error">RMS 变换误差。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 259。十三个输入严格按形参顺序占满槽 0..12，三个输出都声明为对象输出并以 DOUBLE 型 LoadNew 装载。归一化坐标以图像尺寸定义，故宽高必给数值。</para>
-	///   <para><b>与实例重载的取舍</b><see cref="JlHomMat2D.VectorToProjHomMat2dDistortion"/> 的宽高是整数、method 是字符串、kappa 走返回值、error 走 out 标量，且矩阵就地覆写本实例；本静态版一律元组化、矩阵另起新元组，适合宽高需按不同值给、或不愿动到既有矩阵实例的场合。</para>
+	///   <para><b>与实例重载的取舍</b><see cref="M:JLVisionLib.JlHomMat2D.VectorToProjHomMat2dDistortion(JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,System.Int32,System.Int32,System.String,System.Double@"/> 的宽高是整数、method 是字符串、kappa 走返回值、error 走 out 标量，且矩阵就地覆写本实例；本静态版一律元组化、矩阵另起新元组，适合宽高需按不同值给、或不愿动到既有矩阵实例的场合。</para>
 	///   <para><b>参数取向</b>三个 out 依次为矩阵、畸变系数、误差；六个协差参数给空元组即退化为等权，非空时按点逐元素配对。</para>
 	///   <para><b>资源与坑</b>三个 out 元组均需 Dispose。同时定畸变比纯单应需要更多点对，最少点数由原生校验 [待实测]；点对索引错配不报错只出错位。</para>
 	/// </remarks>
@@ -5396,7 +5396,7 @@ public class JlOperatorSet
 	/// <param name="homMat2D">估计出的投影矩阵。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 260。七个输入按形参顺序占槽 0..6，唯一输出以 DOUBLE 型 LoadNew 生成新元组，每个矩阵九个值。</para>
-	///   <para><b>与实例重载的取舍</b><see cref="JlHomMat2D.HomVectorToProjHomMat2d"/> 的 method 是字符串、矩阵就地覆写 this 且无返回值；本静态版不触碰原实例，便于保留旧值或把结果继续喂元组接口。普通 2D 点对配准请改用 <see cref="VectorToProjHomMat2d"/>。</para>
+	///   <para><b>与实例重载的取舍</b><see cref="M:JLVisionLib.JlHomMat2D.HomVectorToProjHomMat2d(JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,System.String)"/> 的 method 是字符串、矩阵就地覆写 this 且无返回值；本静态版不触碰原实例，便于保留旧值或把结果继续喂元组接口。普通 2D 点对配准请改用 <see cref="VectorToProjHomMat2d"/>。</para>
 	///   <para><b>参数取向</b>一个 out；六个分量元组由原生按索引逐点配对，长度不齐时行为由原生决定 [待实测]。</para>
 	///   <para><b>资源与坑</b>没有误差与协方差输出，估计质量要自行用反变换回代检查；out 元组用完 Dispose。</para>
 	/// </remarks>
@@ -5439,7 +5439,7 @@ public class JlOperatorSet
 	/// <param name="covariance">投影矩阵的 9x9 协方差矩阵。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 261。十一个输入严格同序占槽 0..10；两路输出都以 DOUBLE 型 LoadNew 生成新元组，协方差按九个参数展平存放。x/y 在此按行/列解释，与其它 VectorTo* 一致。</para>
-	///   <para><b>与实例重载的取舍</b><see cref="JlHomMat2D.VectorToProjHomMat2d"/> 把矩阵就地写进本实例、协方差走返回值；本静态版两样都是 out 新元组，不触碰已有实例。只需仿射时降级用 <see cref="VectorToHomMat2d"/>（id 268）更抗噪。</para>
+	///   <para><b>与实例重载的取舍</b><see cref="M:JLVisionLib.JlHomMat2D.VectorToProjHomMat2d(JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,System.String,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple)"/> 把矩阵就地写进本实例、协方差走返回值；本静态版两样都是 out 新元组，不触碰已有实例。只需仿射时降级用 <see cref="VectorToHomMat2d"/>（id 268）更抗噪。</para>
 	///   <para><b>参数取向</b>两个 out；六个协差参数给空元组即等权，非空时按点逐元素配对。</para>
 	///   <para><b>资源与坑</b>两个 out 元组都要 Dispose。点接近共线时的退化由原生层报错 [待实测]；协方差八十一个元素的行列排列约定 [待实测]。</para>
 	/// </remarks>
@@ -5557,7 +5557,7 @@ public class JlOperatorSet
 	/// <param name="homMat2D">输出变换矩阵。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 264。类型串占槽 0、六个坐标占槽 1..6，与形参顺序完全一致；输出以 DOUBLE 型 LoadNew 生成新元组。每条对应提供的是"变换后的点落在给定直线上"这一约束，适合亚像素边缘点只知所在直线、沿法向未定的装配场景。</para>
-	///   <para><b>与实例重载的取舍</b><see cref="JlHomMat2D.PointLineToHomMat2d"/> 的类型形参是 string 并经 StoreS 写入、结果就地覆写本实例；本静态版的类型也是 JlTuple 并经 Store 钉住，矩阵另起新元组。点对应完整可得时改用最直接的 <see cref="VectorToRigid"/> 一类算子。</para>
+	///   <para><b>与实例重载的取舍</b><see cref="M:JLVisionLib.JlHomMat2D.PointLineToHomMat2d(System.String,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple,JLVisionLib.JlTuple)"/> 的类型形参是 string 并经 StoreS 写入、结果就地覆写本实例；本静态版的类型也是 JlTuple 并经 Store 钉住，矩阵另起新元组。点对应完整可得时改用最直接的 <see cref="VectorToRigid"/> 一类算子。</para>
 	///   <para><b>参数取向</b>一个 out；类型串放在第一个形参位，与其它 VectorTo* 的取向不同，按位置传参时易错位。</para>
 	///   <para><b>资源与坑</b>支持的类型串集合与最少点数由原生校验 [待实测]；out 元组用完 Dispose。</para>
 	/// </remarks>
@@ -6907,7 +6907,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 418。量的是笔画相对垂直方向的斜度，与"整行该转多少度摆正"是两个不同物理量，后者见 <see cref="JlOperatorSet.TextLineOrientation(JlObject,JlObject,JlTuple,JlTuple,JlTuple,out JlTuple)"/>。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.TextLineSlant(JlImage,int,double,double)"/>：实例版以区域为调用者、参数强类型化、角度作返回值；本静态版把区域与图像当两路显式图标输入（槽 1、2），角度改为 <paramref name="slantAngle"/> 出参，三个数值参数走 <c>Store</c> 加 <c>UnpinTuple</c>，可传元组。</para>
 	///   <para><b>参数取向</b><c>InitOCT(proc, 0)</c> 表示本算子没有图标输出；结果由 <c>JlTuple.LoadNew</c> 显式按 <c>DOUBLE</c> 装载，单位是弧度而非度。</para>
-	///   <para><b>资源与坑</b>返回的 <see cref="JlTuple"/> 不实现 <c>IDisposable</c>，无需也无法释放；<paramref name="charHeight"/> 要接近真实字高，真实倾角落在搜索窗外时测不到；区域与图像必须同坐标系配对，两者均被 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>返回的 <see cref="JlTuple"/> 实现 <c>IDisposable</c>，无需也无法释放；<paramref name="charHeight"/> 要接近真实字高，真实倾角落在搜索窗外时测不到；区域与图像必须同坐标系配对，两者均被 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void TextLineSlant(JlObject region, JlObject image, JlTuple charHeight, JlTuple slantFrom, JlTuple slantTo, out JlTuple slantAngle)
 	{
@@ -7207,7 +7207,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 439。由 <paramref name="method"/> 指定的判据自动定出一个阈值，再按 <paramref name="lightDark"/> 取亮侧或暗侧成区域。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.BinaryThreshold(string,string,out JlTuple)"/> 与 <see cref="JlImage.BinaryThreshold(string,string,out int)"/>：三者同 id、区域输出路径一致；差别在装载方式——实例的 <c>int</c> 版用 <c>LoadI</c> 读阈值，<c>float</c> 图上的非整数阈值会被截断；本静态版用不指定类型的 <c>JlTuple.LoadNew</c>，按原生类型原样取回，不丢小数。</para>
 	///   <para><b>参数取向</b>两次 <c>InitOCT</c>（槽 1 图标、槽 0 控制），因此本算子有两个 out，调用处必须都写 <c>out</c>；两个字符串参数走通用 <c>Store</c> 而非 <c>StoreS</c>。</para>
-	///   <para><b>资源与坑</b><paramref name="region"/> 是新句柄需 <c>Dispose</c>；<paramref name="usedThreshold"/> 是 <see cref="JlTuple"/>，不实现 <c>IDisposable</c>；直方图接近单峰时判据给出的阈值可用性有限 [待实测：是否会直接报错]。</para>
+	///   <para><b>资源与坑</b><paramref name="region"/> 是新句柄需 <c>Dispose</c>；<paramref name="usedThreshold"/> 是 <see cref="JlTuple"/>，实现 <c>IDisposable</c>；直方图接近单峰时判据给出的阈值可用性有限 [待实测：是否会直接报错]。</para>
 	/// </remarks>
 	public static void BinaryThreshold(JlObject image, out JlObject region, JlTuple method, JlTuple lightDark, out JlTuple usedThreshold)
 	{
@@ -8085,7 +8085,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 478。矩阵以控制槽 0 的元组传入、插值选项以槽 1 的字符串元组传入；矩阵可在托管层用 <c>JlHomMat2D</c> 配 <c>VectorAngleToRigid</c>、<c>HomMat2dRotate</c> 等算好。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.AffineTransRegion(JlHomMat2D,string)"/>：本门面版形参写的是 <see cref="JlTuple"/>，但 <c>JlHomMat2D</c> 经 <c>JlData</c> 的隐式转换可直接实参传入。纯整数平移用 <see cref="JlOperatorSet.MoveRegion(JlObject,out JlObject,JlTuple,JlTuple)"/>、双轴缩放用 <see cref="JlOperatorSet.ZoomRegion(JlObject,out JlObject,JlTuple,JlTuple)"/> 更快也更不易错；带旋转或亚像素位移才用本算子；透视需求见 <see cref="JlOperatorSet.ProjectiveTransRegion(JlObject,out JlObject,JlTuple,JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>两个控制参数（矩阵、插值）；单路图标输出。</para>
-	///   <para><b>资源与坑</b>变换后的面积近似乘上矩阵行列式的绝对值，但栅格化误差不保证精确相等，旧特征一律重算；'nearest_neighbor' 与插值方式给出的边缘像素数不同 [待实测]；<c>JlHomMat2D</c> 不实现 <c>IDisposable</c>，对它写 <c>Dispose</c> 会编译失败；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>变换后的面积近似乘上矩阵行列式的绝对值，但栅格化误差不保证精确相等，旧特征一律重算；'nearest_neighbor' 与插值方式给出的边缘像素数不同 [待实测]；<c>JlHomMat2D</c> 实现 <c>IDisposable</c>，使用后应调用 <c>Dispose()</c>；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void AffineTransRegion(JlObject region, out JlObject regionAffineTrans, JlTuple homMat2D, JlTuple interpolate)
 	{
@@ -9712,7 +9712,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 591。把一块外部单通道连续缓冲包成图像，原生侧不复制像素。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage 实例重载见 <see cref="JlImage.GenImage1"/>，属原地改写（先 Dispose 再 Load）不返回新句柄；本静态门面产新句柄，要裸句柄或无现成实例时用之。需复制一份再脱钩改用 GenImage1Rect 的 doCopy 传 true。</para>
 	///   <para><b>参数取向</b>out 1 新句柄；type/width/height 与 pixelPointer 先固定、调用后解固定。</para>
-	///   <para><b>资源与坑</b>新句柄须释放；缓冲须连续按行、长度至少 width*height*每像素字节数，托管数组要 GCHandle 固定且在使用完图像前保持固定 [待实测是否复制]；只要常数底图、无外部内存时用 <see cref="JlImage.GenImageConst"/>。</para>
+	///   <para><b>资源与坑</b>新句柄须释放；缓冲须连续按行、长度至少 width*height*每像素字节数，托管数组要 GCHandle 固定且在使用完图像前保持固定 [待实测是否复制]；只要常数底图、无外部内存时用 <see cref="M:JLVisionLib.JlImage.GenImageConst(System.String,System.Int32,System.Int32)"/>。</para>
 	/// </remarks>
 	public static void GenImage1(out JlObject image, JlTuple type, JlTuple width, JlTuple height, JlTuple pixelPointer)
 	{
@@ -9738,7 +9738,7 @@ public class JlOperatorSet
 	/// <param name="height">图像高度。Default: 512</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 592。内存由运行时自行分配并全部置为该类型的常数灰度（0），无外部缓冲生命周期负担。</para>
-	///   <para><b>与实例重载的取舍</b>JlImage 实例重载见 <see cref="JlImage.GenImageConst"/>，原地改写当前句柄；本静态门面经 LoadNew 返回新句柄，做叠加/掩码/计时占位的干净底图最省事。</para>
+	///   <para><b>与实例重载的取舍</b>JlImage 实例重载见 <see cref="M:JLVisionLib.JlImage.GenImageConst(System.String,System.Int32,System.Int32)"/>，原地改写当前句柄；本静态门面经 LoadNew 返回新句柄，做叠加/掩码/计时占位的干净底图最省事。</para>
 	///   <para><b>参数取向</b>out 1 新句柄；type/width/height 先固定、调用后解固定。</para>
 	///   <para><b>资源与坑</b>新句柄须释放；常数 0 非位深起点含义，与不同位深图做运算前注意类型检查 [待实测]；无多通道参数，需彩色自行拼接。</para>
 	/// </remarks>
@@ -16756,7 +16756,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 995：look-at 构造——视轴由光心指向目标点，refPlaneNormal 决定"哪边算上"，camRoll 再绕视轴滚转。八个入参按声明序占控制槽 0..7（全部 Store 钉固后逐个 UnpinTuple），camRoll/refPlaneNormal 在此门面里都是 JlTuple 形参。</para>
 	///   <para><b>与强类型重载的取舍</b>JlPose 侧另有静态版返回 JlPose[]（新建数组），实例版 <see cref="JlPose.CreateCamPoseLookAtPoint(double, double, double, double, double, double, JlTuple, double)"/> 则要求先存在一个 JlPose 对象、把结果原地写回 this；本门面不触碰任何已有对象，经无类型 JlTuple.LoadNew 产出一个承载位姿句柄的全新元组。位姿系（JlPose）已属受限的 3D 能力，本算子仅按数值入参生成句柄。</para>
 	///   <para><b>参数取向</b>InitOCT(0) 登记单个 out；无图标入参，故本方法体内不含 GC.KeepAlive。</para>
-	///   <para><b>资源与坑</b>camPose 是 JlTuple（实现 IDisposable），用毕可 Dispose 释放其句柄元素；但强类型 JlPose 派生自 JlData 且不实现 IDisposable，对它写 .Dispose()/using 会编译不过。光心与目标点重合时视轴方向不定，行为 [待实测]；camRoll 的弧度/角度约定 [待实测]。</para>
+	///   <para><b>资源与坑</b>camPose 是 JlTuple（实现 IDisposable），用毕可 Dispose 释放其句柄元素；但强类型 JlPose 派生自 JlData 且实现 IDisposable，使用后应调用 .Dispose()/using。光心与目标点重合时视轴方向不定，行为 [待实测]；camRoll 的弧度/角度约定 [待实测]。</para>
 	/// </remarks>
 	public static void CreateCamPoseLookAtPoint(JlTuple camPosX, JlTuple camPosY, JlTuple camPosZ, JlTuple lookAtX, JlTuple lookAtY, JlTuple lookAtZ, JlTuple refPlaneNormal, JlTuple camRoll, out JlTuple camPose)
 	{
@@ -28652,7 +28652,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 1836。纯落盘调用：pose 与 poseFile 各钉到控制槽 0、1，调用后不装载任何输出、两个入参随后 UnpinTuple。写出的是位姿的六分量加表示类型文本，文件已存在时的覆盖行为依原生实现 [待实测]。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlPose.WritePose(string)"/> 以 this 为位姿、只接收文件名；本静态版把位姿退化为 JlTuple 入参，便于把非 JlPose 句柄（如 VectorToPose/GetRectanglePose 直接产出的 pose 元组）落盘而不必先包装成 JlPose。</para>
 	///   <para><b>参数取向</b>无 out/ref、无返回值；形参序 pose 在前、poseFile 在后，与实例版（文件名唯一入参）不同。</para>
-	///   <para><b>资源与坑</b>两个入参都是元组，调用后已解钉；pose 若为纯数值元组无需 Dispose，JlPose 本身不实现 IDisposable 也无处可 Dispose。</para>
+	///   <para><b>资源与坑</b>两个入参都是元组，调用后已解钉；纯数值 pose 元组无需释放，含句柄元素的元组使用后应 Dispose；若把结果包装为 JlPose，包装对象也应由调用方 Dispose。</para>
 	///   <code>
 	///   JlOperatorSet.CreatePose(0.1, 0.1, 20.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point", out JlTuple pose);
 	///   JlOperatorSet.WritePose(pose, "campose.dat");

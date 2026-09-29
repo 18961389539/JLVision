@@ -1231,7 +1231,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   img.Dispose();
 	///   line.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的 <c>JlTuple</c> 不实现 <c>IDisposable</c>，无需也无法 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>返回的 <c>JlTuple</c> 实现 <c>IDisposable</c>；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose。</para>
 	/// </remarks>
 	public JlTuple TextLineSlant(JlImage image, int charHeight, double slantFrom, double slantTo)
 	{
@@ -1273,7 +1273,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   img.Dispose();
 	///   line.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的 <c>JlTuple</c> 不实现 <c>IDisposable</c>。</para>
+	///   <para><b>资源与坑</b>返回的 <c>JlTuple</c> 实现 <c>IDisposable</c>。</para>
 	/// </remarks>
 	public JlTuple TextLineOrientation(JlImage image, int charHeight, double orientationFrom, double orientationTo)
 	{
@@ -1731,10 +1731,10 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   h.VectorAngleToRigid(100.0, 100.0, 0.0, 120.0, 140.0, 0.2618);
 	///   using JlRegion moved = part.ProjectiveTransRegion(h, "bilinear");
 	///   part.Dispose();
-	///   // JlHomMat2D 派生自 JlData、不实现 IDisposable：矩阵对象不需要也不能 Dispose
+	///   // JlHomMat2D 派生自 JlData、实现 IDisposable：矩阵对象使用后应调用 Dispose
 	///   </code>
 	///   <para><b>资源与坑</b>返回新句柄需 Dispose；<c>JlHomMat2D</c> 与 <c>JlTuple</c> 是 <c>JlData</c>
-	///   系的托管壳、不实现 <c>IDisposable</c>，不要对它们写 <c>Dispose</c> 或 <c>using</c>。
+	///   系的托管壳、实现 <c>IDisposable</c>，使用后应调用 <c>Dispose()</c> 或 <c>using</c>。
 	///   除默认值外 interpolation 可用字面量 [待实测]。</para>
 	/// </remarks>
 	public JlRegion ProjectiveTransRegion(JlHomMat2D homMat2D, string interpolation)
@@ -1775,10 +1775,10 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   m.VectorAngleToRigid(10.0, 10.0, 0.0, 30.0, 40.0, 0.5236);
 	///   using JlRegion moved = part.AffineTransRegion(m, "nearest_neighbor");
 	///   part.Dispose();
-	///   // JlHomMat2D 派生自 JlData、不实现 IDisposable：矩阵对象不需要也不能 Dispose
+	///   // JlHomMat2D 派生自 JlData、实现 IDisposable：矩阵对象使用后应调用 Dispose
 	///   </code>
 	///   <para><b>资源与坑</b>返回新句柄需 Dispose，输入区域不被改写；<c>JlHomMat2D</c> 属 <c>JlData</c>
-	///   系、不实现 <c>IDisposable</c>，对它写 <c>Dispose</c>/<c>using</c> 会编译失败。</para>
+	///   系、实现 <c>IDisposable</c>，使用后应调用 <c>Dispose</c>/<c>using</c>。</para>
 	/// </remarks>
 	public JlRegion AffineTransRegion(JlHomMat2D homMat2D, string interpolate)
 	{
@@ -11473,7 +11473,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   dies.Dispose();
 	///   </code>
 	///   <para><b>资源与坑</b>图像与区域 <c>KeepAlive</c> 到调用结束；结果元组
-	///   不实现 IDisposable。</para>
+	///   实现 IDisposable。</para>
 	/// </remarks>
 	public JlTuple PlaneDeviation(JlImage image)
 	{
@@ -11745,7 +11745,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   JlTuple height = parts.HeightWidthRatio(out JlTuple width, out JlTuple ratio);
 	///   parts.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>结果均为 <c>JlTuple</c>（不实现 IDisposable，无需手动释放）；
+	///   <para><b>资源与坑</b>结果均为 <c>JlTuple</c>（实现 IDisposable，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose）；
 	///   边界像素是否 +1 计入 [待实测]。</para>
 	/// </remarks>
 	public JlTuple HeightWidthRatio(out JlTuple width, out JlTuple ratio)
@@ -12079,7 +12079,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   JlTuple inside = roi.TestRegionPoints(new JlTuple(30.0, 5.0), new JlTuple(50.0, 5.0));
 	///   roi.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b><c>JlTuple</c> 不实现 IDisposable，结果无需手动释放；
+	///   <para><b>资源与坑</b><c>JlTuple</c> 实现 IDisposable，结果纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；
 	///   区域句柄 <c>GC.KeepAlive</c> 到调用结束。</para>
 	/// </remarks>
 	public JlTuple TestRegionPoints(JlTuple row, JlTuple column)

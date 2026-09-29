@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace JLVisionLib;
 
 /// <summary>
-///   图标对象包装（图像/区域/XLD 及各模型类）的共同基类：以原生对象 key（<c>IntPtr</c>，<c>UNDEF</c>=0 为未初始化哨兵）为核心，提供 Key/CopyKey、TransferOwnership 及 <c>Dispose</c>/终结器释放。与以引用计数句柄为核心的 <see cref="JlHandleBase"/> 是两套通道，本类实现 <c>IDisposable</c>，而数据类的 <see cref="JlData"/> 不实现。
+	///   图标对象包装（图像/区域/XLD 及各模型类）的共同基类：以原生对象 key（<c>IntPtr</c>，<c>UNDEF</c>=0 为未初始化哨兵）为核心，提供 Key/CopyKey、TransferOwnership 及 <c>Dispose</c>/终结器释放。与以引用计数句柄为核心的 <see cref="JlHandleBase"/>、以及拥有托管元组的数据类 <see cref="JlData"/> 统一遵循显式 Dispose 生命周期。
 /// </summary>
 public class JlObjectBase : IDisposable
 {
@@ -199,7 +199,7 @@ public class JlObjectBase : IDisposable
 	///   bool gone = !img.IsInitialized();         // true
 	///   img.Dispose();                            // 幂等：key 已是 UNDEF，不再进原生
 	///   </code>
-	///   <para><b>资源与坑</b>所有派生图标对象（<c>JlImage</c>/<c>JlRegion</c>/<c>JlXLD</c>/<c>JlMeasure</c> 及各模型类）都要自行 <c>Dispose()</c> 或用 <c>using</c>；<c>JlData</c> 系（<c>JlHomMat2D</c>、<c>JlPose</c>）不在此列，它们不实现 <c>IDisposable</c>。</para>
+	///   <para><b>资源与坑</b>所有资源包装（图标对象、句柄、<c>JlData</c> 系）都要自行 <c>Dispose()</c> 或用 <c>using</c>；本类只负责 key 所有权，数据类负责内部元组所有权。</para>
 	/// </remarks>
 	public virtual void Dispose()
 	{

@@ -135,7 +135,7 @@ internal class JlTupleHandle : JlTupleImplementation
 		}
 	}
 
-	public static int Load(IntPtr tuple, out JlTupleHandle data)
+	internal static int Load(IntPtr tuple, out JlTupleHandle data)
 	{
 		int num = 2;
 		JlNativeApi.GetTupleLength(tuple, out var length);

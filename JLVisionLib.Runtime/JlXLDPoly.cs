@@ -688,7 +688,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>变换后的新多边形句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 48。homMat2D 以 Store 到参数 0、this 到参数 1，逐顶点乘上齐次矩阵得到新多边形；调用后 UnpinTuple(homMat2D)。矩阵按 row=y、column=x 的图像坐标约定作用。</para>
-	///   <para><b>约束或前提</b>JlHomMat2D 派生自 JlData 且**不实现 IDisposable**，切勿对其调用 .Dispose()/using。奇异矩阵（行列式为 0）会把多边形压扁成点/线，退化后填充区域面积为 0 [待实测]。</para>
+	///   <para><b>约束或前提</b>JlHomMat2D 派生自 JlData 且实现 IDisposable，使用完毕应调用 .Dispose() 或放入 using。奇异矩阵（行列式为 0）会把多边形压扁成点/线，退化后填充区域面积为 0 [待实测]。</para>
 	///   <para><b>与相邻算子的取舍</b>多边形级变换保持顶点数不变（每顶点变换）；若要对已栅格化区域做仿射请用区域族算子。</para>
 	///   <para><b>参数取向</b>返回 LoadNew 新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -697,7 +697,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	///   JlHomMat2D hom = new JlHomMat2D();
 	///   JlXLDPoly moved = poly.AffineTransPolygonXld(hom);
 	///   </code>
-	///   <para><b>资源与坑</b>返回值是新句柄，须 Dispose；hom 由托管对象自动回收，无需（也不能）手动释放。</para>
+	///   <para><b>资源与坑</b>返回值是新句柄，须 Dispose；hom 由调用方持有并负责 Dispose，using 可确保异常路径也释放。</para>
 	/// </remarks>
 	public JlXLDPoly AffineTransPolygonXld(JlHomMat2D homMat2D)
 	{
@@ -1120,7 +1120,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	///   JlXLDPoly dst = new JlXLDPoly();
 	///   dst.DeserializeXld(data);
 	///   </code>
-	///   <para><b>资源与坑</b>本对象被原地改写，用毕仍须 Dispose；buffer 由 using 管理无需手动释放。</para>
+	///   <para><b>资源与坑</b>本对象被原地改写，用毕仍须 Dispose；buffer 由 using 管理纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose。</para>
 	/// </remarks>
 	public new void DeserializeXld(byte[] serializedItemHandle)
 	{
@@ -1149,7 +1149,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	///   JlXLDPoly poly = new JlXLDPoly();
 	///   byte[] data = poly.SerializeXld();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的 byte[] 是托管内存，由 GC 回收，无需手动释放；本对象不变。</para>
+	///   <para><b>资源与坑</b>返回的 byte[] 是托管内存，由 GC 回收，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；本对象不变。</para>
 	/// </remarks>
 	public new byte[] SerializeXld()
 	{

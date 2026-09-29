@@ -10,9 +10,13 @@ namespace JLVisionLib;
 /// <summary>
 ///   管理与视觉核心库(JLVisionCore 原生库)之间的全部底层通信：HALCON 风格算子/元组/句柄的 P/Invoke 绑定层。
 /// </summary>
+/// <remarks>保留公开类型以兼容既有互操作调用方；新代码应优先使用上层类型化 API 和 <see cref="JLVisionRuntime"/>。</remarks>
 [SuppressUnmanagedCodeSecurity]
 public class JlNativeApi
 {
+	private JlNativeApi()
+	{
+	}
 	/// <summary>原生库内存分配器类型（对应 HSet/HGetMemoryAllocatorType）。</summary>
 	public enum JlMemoryAllocatorType
 	{
@@ -36,8 +40,12 @@ public class JlNativeApi
 
 
 	private const string NativeLib = "JLVisionCore";
+	internal const string NativeLibraryFileName = NativeLib + ".dll";
 
 	private const CallingConvention NativeCall = CallingConvention.Cdecl;
+	private static readonly object NativeLoadSync = new object();
+	private static IntPtr nativeLibraryHandle;
+	private static string nativeLibraryPath;
 
 	/// <summary>在 64 位平台上运行时为 true。</summary>
 	public static readonly bool isPlatform64 = IntPtr.Size > 4;
@@ -57,22 +65,74 @@ public class JlNativeApi
 
 	static JlNativeApi()
 	{
-		if (!isWindows)
+		if (isWindows)
 		{
-			return;
-		}
-		string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, NativeLib + ".dll");
-		if (File.Exists(path))
-		{
-			LoadLibrary(path);
+			string path = GetDefaultNativeLibraryPath();
+			if (File.Exists(path))
+			{
+				TryEnsureNativeLibrary(path, out _, out _);
+			}
 		}
 	}
 
 	[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 	private static extern IntPtr LoadLibrary(string lpFileName);
 
-	private JlNativeApi()
+	internal static string GetDefaultNativeLibraryPath()
 	{
+		return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, NativeLibraryFileName);
+	}
+
+	internal static bool IsNativeLibraryLoaded => nativeLibraryHandle != IntPtr.Zero;
+
+	internal static bool TryEnsureNativeLibrary(string path, out int nativeErrorCode, out string loadError)
+	{
+		if (string.IsNullOrWhiteSpace(path))
+		{
+			nativeErrorCode = 0;
+			loadError = "The native library path is empty.";
+			return false;
+		}
+
+		lock (NativeLoadSync)
+		{
+			if (nativeLibraryHandle != IntPtr.Zero && string.Equals(nativeLibraryPath, path, StringComparison.OrdinalIgnoreCase))
+			{
+				nativeErrorCode = 0;
+				loadError = string.Empty;
+				return true;
+			}
+
+			if (!isWindows)
+			{
+				nativeErrorCode = 0;
+				loadError = "The current platform does not provide LoadLibrary.";
+				return false;
+			}
+
+			try
+			{
+				IntPtr handle = LoadLibrary(path);
+				if (handle != IntPtr.Zero)
+				{
+					nativeLibraryHandle = handle;
+					nativeLibraryPath = path;
+					nativeErrorCode = 0;
+					loadError = string.Empty;
+					return true;
+				}
+
+				nativeErrorCode = Marshal.GetLastWin32Error();
+				loadError = new Win32Exception(nativeErrorCode).Message;
+				return false;
+			}
+			catch (Exception exception)
+			{
+				nativeErrorCode = Marshal.GetLastWin32Error();
+				loadError = exception.Message;
+				return false;
+			}
+		}
 	}
 
 	private static bool testWindows()
@@ -187,6 +247,7 @@ public class JlNativeApi
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static IntPtr PreCall(int procIndex)
 	{
+		JLVisionRuntime.Initialize();
 		int num = CreateProcedure(procIndex, out var proc);
 		if (num != 2)
 		{

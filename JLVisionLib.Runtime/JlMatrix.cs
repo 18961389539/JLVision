@@ -2538,7 +2538,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double v = m[1, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>double[] 靠 JlTuple 的隐式转换生成临时元组，无需手动释放；若显式建 JlTuple 变量传进来，用完请自行 Dispose（数值元组的 Dispose 只处理句柄类元素，不调用也无原生泄漏风险）。传入空元组时行为未定义 [待实测]。</para>
+	///   <para><b>资源与坑</b>double[] 靠 JlTuple 的隐式转换生成临时元组，纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；若显式建 JlTuple 变量传进来，用完请自行 Dispose（数值元组的 Dispose 只处理句柄类元素，不调用也无原生泄漏风险）。传入空元组时行为未定义 [待实测]。</para>
 	/// </remarks>
 	public void CreateMatrix(int rows, int columns, JlTuple value)
 	{

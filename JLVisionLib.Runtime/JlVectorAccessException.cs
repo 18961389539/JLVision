@@ -18,7 +18,7 @@ public class JlVectorAccessException : JlException
 	}
 
 	internal JlVectorAccessException(JlVector sender, string sInfo, Exception inner)
-		: base(BuildMessage(sender, sInfo), null)
+		: base(BuildMessage(sender, sInfo), inner)
 	{
 	}
 

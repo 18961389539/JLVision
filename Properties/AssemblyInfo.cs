@@ -9,3 +9,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyProduct("JLVisionLib")]
 [assembly: AssemblyCopyright("\u00A9 JLVision 2026")]
 [assembly: AssemblyVersion("1.0.0.1")]
+[assembly: InternalsVisibleTo("JLVisionLib.Tests")]

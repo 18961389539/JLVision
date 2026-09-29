@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -123,6 +124,7 @@ internal class JlTupleDouble : JlTupleImplementation
 		return impl.CopyToDArr(d, offset);
 	}
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public override void Store(IntPtr proc, int parIndex)
 	{
 		JlNativeApi.JlCkP(proc, JlNativeApi.GetInputTuple(proc, parIndex, out var tuple));
@@ -135,7 +137,7 @@ internal class JlTupleDouble : JlTupleImplementation
 		JlNativeApi.SetDArrPtr(tuple, d, iLength);
 	}
 
-	public static int Load(IntPtr tuple, out JlTupleDouble data)
+	internal static int Load(IntPtr tuple, out JlTupleDouble data)
 	{
 		JlNativeApi.GetTupleLength(tuple, out var length);
 		double[] doubleArray = new double[length];

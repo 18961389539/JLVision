@@ -147,7 +147,7 @@ public abstract class JlVector : ICloneable, IDisposable
 	/// <summary>先释放本向量已有内容，再无损接管 source 的元素容器：只换引用、不拷贝，source 随即变空壳。</summary>
 	/// <param name="source">被接管的一方，维数须与本方一致；传 null 时本方法退化为一次 <c>Dispose()</c>。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>顺序为：<c>source == this</c> 直接返回；<c>source.Dimension != Dimension</c> 抛 "Vector dimension mismatch"；随后 <c>Dispose()</c> 清掉自己，再 <c>mVector = source.mVector; source.mVector = new List&lt;JlVector&gt;()</c>，最后 <c>GC.ReRegisterForFinalize(this)</c>。元素实例本身一个都没复制，只是所有者换了。</para>
+	///   <para><b>功能说明</b>顺序为：<c>source == this</c> 直接返回；维数不符或叶向量先抛异常；随后 <c>Dispose()</c> 清掉自己，再 <c>mVector = source.mVector; source.mVector = new List&lt;JlVector&gt;()</c>，最后 <c>GC.ReRegisterForFinalize(this)</c>。元素实例一个都不复制，只是所有者换了。</para>
 	///   <para><b>约束或前提</b><c>Dimension &lt;= 0</c> 的叶向量抛 "TransferOwnership not implemented for leaf"——叶上的 <c>mTuple</c>/<c>mObject</c> 不在基类管辖内。方法带 <c>[EditorBrowsable(EditorBrowsableState.Never)]</c>，是给框架搬运原生输出用的，业务代码不该常规调用。</para>
 	///   <para><b>与相邻算子的取舍</b>想两边都能独立改就 <c>Clone()</c> 或拷贝构造（付一次深拷代价）；想让本方彻底清空且释放元素用 <c>Clear()</c>；只有"确定源不再被使用"时才配用本方法省这次拷贝。</para>
 	///   <para><b>用法</b></para>
@@ -173,13 +173,13 @@ public abstract class JlVector : ICloneable, IDisposable
 		{
 			throw new JlVectorAccessException("Vector dimension mismatch");
 		}
+		if (source != null && mDimension <= 0)
+		{
+			throw new JlVectorAccessException("TransferOwnership not implemented for leaf");
+		}
 		Dispose();
 		if (source != null)
 		{
-			if (mDimension <= 0)
-			{
-				throw new JlVectorAccessException("TransferOwnership not implemented for leaf");
-			}
 			mVector = source.mVector;
 			source.mVector = new List<JlVector>();
 			GC.ReRegisterForFinalize(this);

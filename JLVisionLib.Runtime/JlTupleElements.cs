@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 
 namespace JLVisionLib;
 
@@ -406,6 +407,7 @@ public class JlTupleElements
 	///   以 IntPtr 读取/写入该元素。
 	/// </summary>
 	/// <remarks>元素须为代表指针的整数，且需匹配当前平台的 <see cref="IntPtr.Size"/>（64 位平台用 64 位整数、32 位平台用 32 位整数）。</remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr IP
 	{
 		get
@@ -444,6 +446,7 @@ public class JlTupleElements
 	///   以 IntPtr 数组整体读取/写入这组元素。
 	/// </summary>
 	/// <remarks>元素须为代表指针的整数，且匹配当前平台的 <see cref="IntPtr.Size"/>。</remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr[] IPArr
 	{
 		get
@@ -612,6 +615,7 @@ public class JlTupleElements
 	}
 
 	/// <summary>将装箱的 object 强制拆箱为 IntPtr；装箱类型不符会抛 InvalidCastException。供 OArr 批量转换使用。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static IntPtr ObjectToIntPtr(object o)
 	{
 		return (IntPtr)o;
@@ -1305,6 +1309,7 @@ public class JlTupleElements
 	}
 
 	/// <summary>把元素视图隐式转为 IntPtr 标量，等价于读取 IP。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator IntPtr(JlTupleElements hte)
 	{
 		return hte.IP;
@@ -1335,6 +1340,7 @@ public class JlTupleElements
 	}
 
 	/// <summary>把 IntPtr 隐式转为元素视图：新建单元素元组并取其首元素（非共享）。</summary>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator JlTupleElements(IntPtr ip)
 	{
 		return new JlTuple(ip)[0];

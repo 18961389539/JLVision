@@ -27,7 +27,7 @@ public class JlTupleAccessException : JlException
 	}
 
 	internal JlTupleAccessException(JlTupleImplementation sender, string sInfo, Exception inner)
-		: base(BuildMessage(sender, sInfo), null)
+		: base(BuildMessage(sender, sInfo), inner)
 	{
 	}
 

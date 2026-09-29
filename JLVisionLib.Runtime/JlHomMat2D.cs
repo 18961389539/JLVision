@@ -15,9 +15,9 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	/// <param name="tuple">按原生约定排布的 9 个数值（每矩阵 9 元素，见 <c>SplitArray</c> 的分段方式）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>内部走 <c>base(tuple)</c>，与入参共享同一 <see cref="JlTuple"/> 引用，无原生调用、无句柄分配；<c>JlHomMat2D.SplitArray</c> 按 9 元素一段把长 tuple 切成多个矩阵时也走本构造器。</para>
+	///   <para>内部走 <c>base(tuple)</c>，复制入参作为本实例独立存储，无原生调用、无句柄分配；<c>JlHomMat2D.SplitArray</c> 按 9 元素一段把长 tuple 切成多个矩阵时使用内部转移构造。</para>
 	///   <para><b>前提与坑</b></para>
-	///   <para>托管层不校验长度；元素个数或顺序不合约定时，错误要到 <c>AffineTrans*</c>、<c>HomMat2dInvert</c> 等原生调用时才报出。9 元素在行优先/列优先下的具体排布 [待实测]。由于共享引用，改动该 tuple 会同时改变本矩阵。</para>
+	///   <para>托管层不校验长度；元素个数或顺序不合约定时，错误要到 <c>AffineTrans*</c>、<c>HomMat2dInvert</c> 等原生调用时才报出。9 元素在行优先/列优先下的具体排布 [待实测]。入参与本矩阵互不共享所有权。</para>
 	///   <para><b>用例</b></para>
 	///   <code>
 	///   JlTuple t = new JlTuple(new double[] { 1, 0, 10, 0, 1, 20, 0, 0, 1 });
@@ -29,19 +29,26 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	{
 	}
 
+	internal JlHomMat2D(JlTuple tuple, bool takeOwnership)
+		: base(tuple, takeOwnership)
+	{
+	}
+
 	internal JlHomMat2D(JlData data)
 		: base(data)
 	{
 	}
 
-	internal static int LoadNew(IntPtr proc, int parIndex, JlTupleType type, int err, out JlHomMat2D obj)
+	/// <summary>从原生过程输出装载一个齐次矩阵；供兼容的低层互操作调用。</summary>
+	public static int LoadNew(IntPtr proc, int parIndex, JlTupleType type, int err, out JlHomMat2D obj)
 	{
 		err = JlTuple.LoadNew(proc, parIndex, err, out var t);
-		obj = new JlHomMat2D(new JlData(t));
+		obj = new JlHomMat2D(t, takeOwnership: true);
 		return err;
 	}
 
-	internal static int LoadNew(IntPtr proc, int parIndex, int err, out JlHomMat2D obj)
+	/// <summary>从原生过程输出装载一个齐次矩阵，使用默认元组类型。</summary>
+	public static int LoadNew(IntPtr proc, int parIndex, int err, out JlHomMat2D obj)
 	{
 		return LoadNew(proc, parIndex, JlTupleType.MIXED, err, out obj);
 	}
@@ -52,7 +59,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlHomMat2D[] array = new JlHomMat2D[num];
 		for (int i = 0; i < num; i++)
 		{
-			array[i] = new JlHomMat2D(new JlData(data.TupleSelectRange(i * 9, (i + 1) * 9 - 1)));
+			array[i] = new JlHomMat2D(data.TupleSelectRange(i * 9, (i + 1) * 9 - 1), takeOwnership: true);
 		}
 		return array;
 	}
@@ -813,6 +820,12 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = Load(proc, 0, err);
 		JlNativeApi.PostCall(proc, err);
 		GC.KeepAlive(this);
+	}
+
+	/// <summary>使用强类型刚体模型从点线约束估计矩阵。</summary>
+	public void PointLineToHomMat2d(JlPointLineTransformType transformationType, JlTuple px, JlTuple py, JlTuple l1x, JlTuple l1y, JlTuple l2x, JlTuple l2y)
+	{
+		PointLineToHomMat2d(transformationType.ToNative(), px, py, l1x, l1y, l2x, l2y);
 	}
 
 	/// <summary>由完整点对近似刚体变换（仅旋转+平移，3 自由度），覆写本实例（原生 id 265）。</summary>
@@ -2573,6 +2586,96 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.PostCall(proc, err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(vectorField);
+	}
+
+	/// <summary>使用强类型算法选项估计带畸变的投影矩阵。</summary>
+	public double VectorToProjHomMat2dDistortion(JlTuple points1Row, JlTuple points1Col, JlTuple points2Row, JlTuple points2Col, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, int imageWidth, int imageHeight, JlHomographyMethod method, out double error)
+	{
+		return VectorToProjHomMat2dDistortion(points1Row, points1Col, points2Row, points2Col, covRR1, covRC1, covCC1, covRR2, covRC2, covCC2, imageWidth, imageHeight, method.ToNative(), out error);
+	}
+
+	/// <summary>使用强类型算法选项把点向量转换为投影矩阵。</summary>
+	public void HomVectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple pw, JlTuple qx, JlTuple qy, JlTuple qw, JlHomographyMethod method)
+	{
+		HomVectorToProjHomMat2d(px, py, pw, qx, qy, qw, method.ToNative());
+	}
+
+	/// <summary>使用强类型算法选项把对应点转换为投影矩阵。</summary>
+	public JlTuple VectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, JlHomographyMethod method, JlTuple covXX1, JlTuple covYY1, JlTuple covXY1, JlTuple covXX2, JlTuple covYY2, JlTuple covXY2)
+	{
+		return VectorToProjHomMat2d(px, py, qx, qy, method.ToNative(), covXX1, covYY1, covXY1, covXX2, covYY2, covXY2);
+	}
+
+	/// <summary>使用强类型坐标轴执行局部斜切。</summary>
+	public JlHomMat2D HomMat2dSlantLocal(JlTuple theta, JlAxis axis)
+	{
+		return HomMat2dSlantLocal(theta, axis.ToNative());
+	}
+
+	/// <summary>使用强类型坐标轴执行局部斜切（标量重载）。</summary>
+	public JlHomMat2D HomMat2dSlantLocal(double theta, JlAxis axis)
+	{
+		return HomMat2dSlantLocal(theta, axis.ToNative());
+	}
+
+	/// <summary>使用强类型坐标轴执行定点斜切。</summary>
+	public JlHomMat2D HomMat2dSlant(JlTuple theta, JlAxis axis, JlTuple px, JlTuple py)
+	{
+		return HomMat2dSlant(theta, axis.ToNative(), px, py);
+	}
+
+	/// <summary>使用强类型坐标轴执行定点斜切（标量重载）。</summary>
+	public JlHomMat2D HomMat2dSlant(double theta, JlAxis axis, double px, double py)
+	{
+		return HomMat2dSlant(theta, axis.ToNative(), px, py);
+	}
+
+	/// <summary>使用强类型算法选项估计本质矩阵。</summary>
+	public JlHomMat2D VectorToEssentialMatrix(JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlHomMat2D camMat2, JlHomographyMethod method, out JlTuple covEMat, out JlTuple error, out JlTuple x, out JlTuple y, out JlTuple z, out JlTuple covXYZ)
+	{
+		return VectorToEssentialMatrix(rows1, cols1, rows2, cols2, covRR1, covRC1, covCC1, covRR2, covRC2, covCC2, camMat2, method.ToNative(), out covEMat, out error, out x, out y, out z, out covXYZ);
+	}
+
+	/// <summary>使用强类型算法选项估计本质矩阵（标量误差重载）。</summary>
+	public JlHomMat2D VectorToEssentialMatrix(JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlHomMat2D camMat2, JlHomographyMethod method, out JlTuple covEMat, out double error, out JlTuple x, out JlTuple y, out JlTuple z, out JlTuple covXYZ)
+	{
+		return VectorToEssentialMatrix(rows1, cols1, rows2, cols2, covRR1, covRC1, covCC1, covRR2, covRC2, covCC2, camMat2, method.ToNative(), out covEMat, out error, out x, out y, out z, out covXYZ);
+	}
+
+	/// <summary>使用强类型插值选项变换区域。</summary>
+	public JlRegion ProjectiveTransRegion(JlRegion regions, JlInterpolationMode interpolation)
+	{
+		return ProjectiveTransRegion(regions, interpolation.ToNative());
+	}
+
+	/// <summary>使用强类型插值选项变换区域（仿射版本）。</summary>
+	public JlRegion AffineTransRegion(JlRegion region, JlInterpolationMode interpolation)
+	{
+		return AffineTransRegion(region, interpolation.ToNative());
+	}
+
+	/// <summary>使用强类型插值和域选项执行透视图像变换。</summary>
+	public JlImage ProjectiveTransImageSize(JlImage image, JlInterpolationMode interpolation, int width, int height, JlBooleanOption transformDomain)
+	{
+		return ProjectiveTransImageSize(image, interpolation.ToNative(), width, height, transformDomain.ToNative());
+	}
+
+	/// <summary>使用强类型插值、尺寸和域选项执行透视图像变换。</summary>
+	public JlImage ProjectiveTransImage(JlImage image, JlInterpolationMode interpolation, JlBooleanOption adaptImageSize, JlBooleanOption transformDomain)
+	{
+		return ProjectiveTransImage(image, interpolation.ToNative(), adaptImageSize.ToNative(), transformDomain.ToNative());
+	}
+
+	/// <summary>使用强类型插值选项执行仿射图像变换。</summary>
+	public JlImage AffineTransImageSize(JlImage image, JlInterpolationMode interpolation, int width, int height)
+	{
+		return AffineTransImageSize(image, interpolation.ToNative(), width, height);
+	}
+
+	/// <summary>使用强类型插值和尺寸选项执行仿射图像变换。</summary>
+	public JlImage AffineTransImage(JlImage image, JlInterpolationMode interpolation, JlBooleanOption adaptImageSize)
+	{
+		return AffineTransImage(image, interpolation.ToNative(), adaptImageSize.ToNative());
 	}
 
 

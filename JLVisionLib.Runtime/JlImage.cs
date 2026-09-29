@@ -246,6 +246,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 		GC.KeepAlive(this);
 	}
 
+	/// <summary>使用强类型像素类型创建一张图像。</summary>
+	public JlImage(JlImageType type, int width, int height)
+		: this(type.ToNative(), width, height)
+	{
+	}
+
 	/// <summary>
 	///   以 JlTuple 传入文件名从磁盘读图（原生 id 1578 的元组重载），像素原地写进当前对象；手里只有一个文件名时走 string 重载免元组固定开销。
 	/// </summary>
@@ -4698,6 +4704,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>bitsPerChannel 与 type 位数不匹配会截断高位 [待实测]；本方法不复制像素，Free 固定句柄后继续用该图像读取像素属未定义行为。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImageInterleaved(IntPtr pixelPointer, string colorFormat, int originalWidth, int originalHeight, int alignment, string type, int imageWidth, int imageHeight, int startRow, int startColumn, int bitsPerChannel, int bitShift)
 	{
 		Dispose();
@@ -4754,6 +4761,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>与 GenImage3Extern 的区别：本算子假定内存生命周期由调用方管理且无释放回调；需要在图像销毁时自动回收非托管内存应改用 GenImage3Extern。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImage3(string type, int width, int height, IntPtr pixelPointerRed, IntPtr pixelPointerGreen, IntPtr pixelPointerBlue)
 	{
 		Dispose();
@@ -4794,8 +4802,9 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///       h.Free();
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>域（domain）为整幅矩形；只想造一块全常数图（不需要外部内存）应改用 <see cref="GenImageConst"/>，由运行时管理内存、无悬挂指针风险。</para>
+	///   <para><b>资源与坑</b>域（domain）为整幅矩形；只想造一块全常数图（不需要外部内存）应改用 <see cref="M:JLVisionLib.JlImage.GenImageConst(System.String,System.Int32,System.Int32)"/>，由运行时管理内存、无悬挂指针风险。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImage1(string type, int width, int height, IntPtr pixelPointer)
 	{
 		Dispose();
@@ -4839,6 +4848,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 		GC.KeepAlive(this);
 	}
 
+	/// <summary>使用强类型像素类型生成常数图像。</summary>
+	public void GenImageConst(JlImageType type, int width, int height)
+	{
+		GenImageConst(type.ToNative(), width, height);
+	}
+
 	/// <summary>生成线性灰度坡图像（坡率按行/列方向给定），原地改写当前句柄。</summary>
 	/// <param name="alpha">沿行方向（row 增大）每行灰度增量。Default: 1.0</param>
 	/// <param name="beta">沿列方向（column 增大）每列灰度增量。Default: 1.0</param>
@@ -4850,7 +4865,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 604。像素灰度按 gray(r,c) = mean + alpha*(r-row) + beta*(c-column) 线性铺展；方法体先 Dispose 再 Load，属<b>原地改写</b>。</para>
 	///   <para><b>约束或前提</b>参考点 (row,column) 不必落在图内，落在图外则整幅位于坡面同一侧；byte 类型下越出 0…255 的像素会按饱和处理 [待实测]，标定照明均匀性时建议先用 float 类型验证坡幅。</para>
-	///   <para><b>与相邻算子的取舍</b>要常数底图用 <see cref="GenImageConst"/>；要模拟渐晕/平场不均时本算子的两个独立坡率（行、列）比先建图再乘系数更省一步，但无法表达径向渐变。</para>
+	///   <para><b>与相邻算子的取舍</b>要常数底图用 <see cref="M:JLVisionLib.JlImage.GenImageConst(System.String,System.Int32,System.Int32)"/>；要模拟渐晕/平场不均时本算子的两个独立坡率（行、列）比先建图再乘系数更省一步，但无法表达径向渐变。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlImage ramp = new JlImage();
@@ -4902,6 +4917,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>示例传 0 意味着自行负责释放三块 HGlobal 内存；若把某块内存交给 clearProc 接管后又手动释放同一块，会二次释放崩溃。图像存续期内不得移动或释放缓冲。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImage3Extern(string type, int width, int height, IntPtr pointerRed, IntPtr pointerGreen, IntPtr pointerBlue, IntPtr clearProc)
 	{
 		Dispose();
@@ -4940,6 +4956,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>同一块内存被注册给两张图像（clearProc 非 0）会二次释放；本示例因回调传 0 而手动配对释放。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImage1Extern(string type, int width, int height, IntPtr pixelPointer, IntPtr clearProc)
 	{
 		Dispose();
@@ -4985,6 +5002,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>示例因 doCopy="true" 才允许在 finally 立即解除固定；若传 "false"，h.Free() 之后图像像素即为悬挂读。clearProc 语义同 <see cref="GenImage1Extern"/>。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GenImage1Rect(IntPtr pixelPointer, int width, int height, int verticalPitch, int horizontalBitPitch, int bitsPerPixel, string doCopy, IntPtr clearProc)
 	{
 		Dispose();
@@ -5025,6 +5043,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>指针存活期受图像句柄约束（实现末尾 GC.KeepAlive(this) 只保证本次调用内不被释放）：任何原地改写 img 的 Gen*/Paint* 之后再解 ptr 都是悬挂读；Marshal.ReadByte 示例仅演示读取第一像素，逐行遍历须 ptr + n*verticalPitch。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr GetImagePointer1Rect(out int width, out int height, out int verticalPitch, out int horizontalBitPitch, out int bitsPerPixel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(608);
@@ -5106,6 +5125,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>三个指针在 rgb 被原地改写或 Dispose 后立即失效；示例中的构造仅示意形式，真实调用前三通道前提必须成立。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void GetImagePointer3(out IntPtr pointerRed, out IntPtr pointerGreen, out IntPtr pointerBlue, out string type, out int width, out int height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(609);
@@ -5142,7 +5162,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple ptrs = img.GetImagePointer1(out JlTuple type, out JlTuple width, out JlTuple height);
 	///   img.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的指针值只在 img 存活且未被原地改写期间有效；JlTuple 不实现 IDisposable，无释放负担但也不要跨线程长期持有指针。</para>
+	///   <para><b>资源与坑</b>返回的指针值只在 img 存活且未被原地改写期间有效；JlTuple 实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无释放负担但也不要跨线程长期持有指针。</para>
 	/// </remarks>
 	public JlTuple GetImagePointer1(out JlTuple type, out JlTuple width, out JlTuple height)
 	{
@@ -5178,6 +5198,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>返回指针的有效期止于 img 的 Dispose 或任何原地改写；type/width/height 与指针同源，遍历前先用它们核对缓冲长度。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public IntPtr GetImagePointer1(out string type, out int width, out int height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(610);
@@ -7171,7 +7192,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   tmpl.SetShapeModelMetric(model, hom, "use_polarity");
 	///   tmpl.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>JlHomMat2D 不实现 IDisposable，无释放负担；model 句柄调用后仍归调用方管理；示例中 hom 为恒等阵，与建模型时的缺省变换一致。</para>
+	///   <para><b>资源与坑</b>JlHomMat2D 实现 IDisposable，无释放负担；model 句柄调用后仍归调用方管理；示例中 hom 为恒等阵，与建模型时的缺省变换一致。</para>
 	/// </remarks>
 	public void SetShapeModelMetric(JlShapeModel modelID, JlHomMat2D homMat2D, string metric)
 	{
@@ -16291,7 +16312,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage mosaic = img.GenProjectiveMosaic(0, mappingSource, mappingDest, homMatrices2D,
 	///       new JlTuple("default"), "false", out JlHomMat2D[] mosaicMatrices2D);
 	///   </code>
-	///   <para><b>资源与坑</b>返回句柄与新数组均需释放/弃用；<c>JlHomMat2D</c> 不实现 IDisposable，勿对其写 using。本重载 <paramref name="stackingOrder"/> 走 <c>Store</c>+<c>UnpinTuple</c>（钉元组），单值字符串场景用 string 重载更省。</para>
+	///   <para><b>资源与坑</b>返回句柄与新数组均需释放/弃用；<c>JlHomMat2D</c> 实现 IDisposable，勿对其写 using。本重载 <paramref name="stackingOrder"/> 走 <c>Store</c>+<c>UnpinTuple</c>（钉元组），单值字符串场景用 string 重载更省。</para>
 	/// </remarks>
 	public JlImage GenProjectiveMosaic(int startImage, JlTuple mappingSource, JlTuple mappingDest, JlHomMat2D[] homMatrices2D, JlTuple stackingOrder, string transformDomain, out JlHomMat2D[] mosaicMatrices2D)
 	{
@@ -16389,7 +16410,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D h = new JlHomMat2D().HomMat2dTranslate(20.0, 10.0);
 	///   using JlImage outImg = img.ProjectiveTransImageSize(h, "bilinear", 640, 480, "false");
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；<c>JlHomMat2D</c> 不实现 IDisposable，示例中不要对它写 using。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；<c>JlHomMat2D</c> 实现 IDisposable，示例中不要对它写 using。</para>
 	/// </remarks>
 	public JlImage ProjectiveTransImageSize(JlHomMat2D homMat2D, string interpolation, int width, int height, string transformDomain)
 	{
@@ -16427,7 +16448,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D h = new JlHomMat2D().HomMat2dTranslate(20.0, 10.0);
 	///   using JlImage outImg = img.ProjectiveTransImage(h, "bilinear", "false", "false");
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 不实现 IDisposable，示例中不要对它写 using。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 实现 IDisposable，示例中不要对它写 using。</para>
 	/// </remarks>
 	public JlImage ProjectiveTransImage(JlHomMat2D homMat2D, string interpolation, string adaptImageSize, string transformDomain)
 	{
@@ -16464,7 +16485,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D h = new JlHomMat2D().HomMat2dTranslate(20.0, 10.0);
 	///   using JlImage outImg = img.AffineTransImageSize(h, "constant", 640, 480);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 不实现 IDisposable，示例中不要对它写 using。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 实现 IDisposable，示例中不要对它写 using。</para>
 	/// </remarks>
 	public JlImage AffineTransImageSize(JlHomMat2D homMat2D, string interpolation, int width, int height)
 	{
@@ -16500,7 +16521,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D h = new JlHomMat2D().HomMat2dTranslate(20.0, 10.0);
 	///   using JlImage outImg = img.AffineTransImage(h, "constant", "true");
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 不实现 IDisposable，示例中不要对它写 using。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；<c>JlHomMat2D</c> 实现 IDisposable，示例中不要对它写 using。</para>
 	/// </remarks>
 	public JlImage AffineTransImage(JlHomMat2D homMat2D, string interpolation, string adaptImageSize)
 	{
@@ -16687,7 +16708,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   把本图像（位移向量场）拟合近似成一个 2D 齐次仿射矩阵（原生算子 id 1551）。
 	/// </summary>
-	/// <returns>新建的 JlHomMat2D 矩阵对象；注意 JlHomMat2D 派生自 JlData、不实现 IDisposable，不需要也不能 Dispose。</returns>
+	/// <returns>新建的 JlHomMat2D 矩阵对象；注意 JlHomMat2D 派生自 JlData、实现 IDisposable，使用后应调用 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作为唯一输入，输出经 JlHomMat2D.LoadNew 新建。本质是对整场位移做一次仿射近似，逐像素的非刚性分量会被抹平。</para>
 	///   <para><b>约束或前提</b>输入必须是向量场图像（两通道位移场，如由 RealToVectorField(row 场, col 场, type) 合成的那种），普通灰度图没有意义[待实测其报错行为]。type 用 relative 还是 absolute 构造会改变位移量纲解释，拟合结果随之不同。</para>
@@ -16699,7 +16720,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage field = row.RealToVectorField(col, "vector_field_relative");
 	///   JlHomMat2D m = field.VectorFieldToHomMat2d();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的是 JlData 系对象，不要写 m.Dispose()（编译不过）；示例里三个 JlImage 都是句柄对象须释放。RealToVectorField 的返回值是新句柄。</para>
+	///   <para><b>资源与坑</b>返回的是 JlData 系对象，使用后应调用 m.Dispose()；示例里三个 JlImage 都是句柄对象须释放。RealToVectorField 的返回值是新句柄。</para>
 	/// </remarks>
 	public JlHomMat2D VectorFieldToHomMat2d()
 	{
@@ -17211,7 +17232,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlRegion roi = new JlRegion(10.0, 10.0, 50.0, 50.0);
 	///   double mean = img.Intensity(roi, out double deviation);
 	///   </code>
-	///   <para><b>资源与坑</b>标量输出无需释放；GC.KeepAlive 表示调用期间图像与区域都不能 Dispose。</para>
+	///   <para><b>资源与坑</b>标量输出无需释放；调用期间应保持图像与区域有效，GC.KeepAlive 用于避免它们过早回收。</para>
 	/// </remarks>
 	public double Intensity(JlRegion regions, out double deviation)
 	{
@@ -17931,7 +17952,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="homography">世界坐标到像素坐标的单应矩阵（iconc 0，钉固传入后 UnpinTuple）。</param>
 	/// <param name="cameraMatrix">相机标定内参矩阵 K（iconc 1）。</param>
 	/// <param name="method">位姿求解方式字符串。Default: "decomposition"</param>
-	/// <returns>新建的 JlPose；JlPose 派生自 JlData、不实现 IDisposable，不需要也不能 Dispose。</returns>
+	/// <returns>新建的 JlPose；JlPose 派生自 JlData、实现 IDisposable，使用后应调用 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>静态方法，无 this；单应与 K 以 Store 传句柄、method 以 StoreS 写控制槽 2，输出 JlPose.LoadNew。世界坐标的单位长度会直接进入位姿平移分量（平移单位=世界单位[待实测]）。</para>
 	///   <para><b>约束或前提</b>单应必须真是同一平面物体在"世界系→像素系"下的映射，且 K 与其标定一致——K 错则角度与距离一起错。分解类解法存在镜像歧义（两个几何可行的位姿），返回给哪一个[待实测]。</para>
@@ -17942,7 +17963,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlHomMat2D h = new JlHomMat2D();
 	///   JlPose pose = JlImage.ProjHomMat2dToPose(h, k, "decomposition");
 	///   </code>
-	///   <para><b>资源与坑</b>示例矩阵需换成标定/拟合所得真值；JlHomMat2D 与 JlPose 都不是 IDisposable，别对它们写 Dispose/using（编译不过）。</para>
+	///   <para><b>资源与坑</b>示例矩阵需换成标定/拟合所得真值；JlHomMat2D 与 JlPose 都是 IDisposable，使用后应调用 Dispose/using。</para>
 	/// </remarks>
 	public static JlPose ProjHomMat2dToPose(JlHomMat2D homography, JlHomMat2D cameraMatrix, string method)
 	{
@@ -17957,6 +17978,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 		err = JlPose.LoadNew(proc, 0, err, out var obj);
 		JlNativeApi.PostCall(proc, err);
 		return obj;
+	}
+
+	/// <summary>使用强类型投影估计算法从单应矩阵恢复位姿。</summary>
+	public static JlPose ProjHomMat2dToPose(JlHomMat2D homography, JlHomMat2D cameraMatrix, JlHomographyMethod method)
+	{
+		return ProjHomMat2dToPose(homography, cameraMatrix, method.ToNative());
 	}
 
 
@@ -18490,7 +18517,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   values.Dispose();
 	///   noClutter.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回区域与 out 元组要 Dispose；JlHomMat2D 不是 IDisposable，别 mat.Dispose()；modelID 由调用方管。</para>
+	///   <para><b>资源与坑</b>返回区域与 out 元组要 Dispose；JlHomMat2D 是 IDisposable，使用后调用 mat.Dispose()；modelID 由调用方管。</para>
 	/// </remarks>
 	public static JlRegion GetShapeModelClutter(JlShapeModel modelID, JlTuple genParamName, out JlTuple genParamValue, out JlHomMat2D homMat2D, out int clutterContrast)
 	{

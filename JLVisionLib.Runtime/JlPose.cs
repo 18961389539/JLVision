@@ -21,26 +21,31 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose pose = new JlPose();
 	///   pose.CreatePose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 继承 <c>JlData</c> 且 <b>不实现 IDisposable</b>，无需 <c>Dispose()</c> 或 <c>using</c>（写了会 CS1061）；空实例的 <c>RawData.Length</c> 为 0，可据此判断是否已被写入。</para>
+	///   <para><b>资源与坑</b>JlPose 继承 <c>JlData</c> 并实现 <c>IDisposable</c>；空实例的 <c>RawData.Length</c> 为 0，可据此判断是否已被写入。</para>
 	/// </remarks>
 	public JlPose()
 	{
 	}
 
 	/// <remarks>
-	///   <para><b>功能说明</b>转调 <c>base(JlTuple)</c>（即 <c>JlData(JlTuple t)</c>，内部 <c>tuple = t</c>），把一个已含 7 个位姿分量的元组<b>按引用</b>采纳为位姿，不发任何原生调用，是纯托管包装。</para>
-	///   <para><b>约束或前提</b>因是引用采纳（非拷贝）：传入元组与 <c>pose.RawData</c> 指向同一对象，之后任一方改动都会被对方看到。元组必须已按原生布局装满 7 分量（3 平移 + 3 旋转 + 1 表示类型码），长度或类型码不合法时后续原生调用行为未定义 [待实测：具体报错]。分量的内部排列顺序由原生侧决定，不能凭 C# 形参序臆测 [待实测]。</para>
+	///   <para><b>功能说明</b>转调 <c>base(tuple)</c>，复制一个已含 7 个位姿分量的元组作为本实例的独立存储，不发任何原生调用，是纯托管包装。</para>
+	///   <para><b>约束或前提</b>传入元组与新位姿互不共享所有权；调用方仍负责传入元组本身的 Dispose。元组必须已按原生布局装满 7 分量（3 平移 + 3 旋转 + 1 表示类型码），长度或类型码不合法时后续原生调用行为未定义 [待实测：具体报错]。分量的内部排列顺序由原生侧决定，不能凭 C# 形参序臆测 [待实测]。</para>
 	///   <para><b>与相邻算子的取舍</b>手上是 9 个独立数值时用 9 参构造器（走原生 id 1816 生成规范类型码），不要手拼 7 元组喂本重载；本重载更适合承接别处已是合法位姿元组的场合。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose src = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
-	///   JlTuple raw = src.RawData;
+	///   using JlTuple raw = src.RawData;
 	///   JlPose wrapped = new JlPose(raw);
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable；上例中 <c>wrapped</c> 与 <c>src</c> 共享同一元组，要彼此独立请先 <c>src.Clone()</c> 而不是用本构造器。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable；<c>wrapped</c> 与 <c>src</c> 彼此独立，两个实例分别负责释放自己的元组。</para>
 	/// </remarks>
 	public JlPose(JlTuple tuple)
 		: base(tuple)
+	{
+	}
+
+	internal JlPose(JlTuple tuple, bool takeOwnership)
+		: base(tuple, takeOwnership)
 	{
 	}
 
@@ -52,7 +57,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	internal static int LoadNew(IntPtr proc, int parIndex, JlTupleType type, int err, out JlPose obj)
 	{
 		err = JlTuple.LoadNew(proc, parIndex, err, out var t);
-		obj = new JlPose(new JlData(t));
+		obj = new JlPose(t, takeOwnership: true);
 		return err;
 	}
 
@@ -67,7 +72,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlPose[] array = new JlPose[num];
 		for (int i = 0; i < num; i++)
 		{
-			array[i] = new JlPose(new JlData(data.TupleSelectRange(i * 7, (i + 1) * 7 - 1)));
+			array[i] = new JlPose(data.TupleSelectRange(i * 7, (i + 1) * 7 - 1), takeOwnership: true);
 		}
 		return array;
 	}
@@ -92,7 +97,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   <code>
 	///   JlPose pose = new JlPose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable；示例数值分量一律用 double 字面量，以免与 <c>JlPose(JlTuple)</c> 重载产生 CS0121 二义。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable；示例数值分量一律用 double 字面量，以免与 <c>JlPose(JlTuple)</c> 重载产生 CS0121 二义。</para>
 	/// </remarks>
 	public JlPose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
@@ -111,6 +116,20 @@ public class JlPose : JlData, ISerializable, ICloneable
 		err = Load(proc, 0, err);
 		JlNativeApi.PostCall(proc, err);
 		GC.KeepAlive(this);
+	}
+
+	/// <summary>使用 <see cref="JlPoseOptions"/> 创建位姿，避免在调用点散落表示字符串。</summary>
+	public JlPose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, JlPoseOptions options)
+		: this(transX, transY, transZ, rotX, rotY, rotZ,
+			RequireOptions(options).OrderOfTransform,
+			RequireOptions(options).OrderOfRotation,
+			RequireOptions(options).ViewOfTransform)
+	{
+	}
+
+	private static JlPoseOptions RequireOptions(JlPoseOptions options)
+	{
+		return options ?? throw new ArgumentNullException(nameof(options));
 	}
 
 	void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
@@ -137,7 +156,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose restored = new JlPose(info, default(System.Runtime.Serialization.StreamingContext));
 	///   int n = restored.RawData.Length;        // 7 个位姿分量
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 系（<c>JlData</c>）不实现 <c>IDisposable</c>，别对它写 <c>Dispose()</c> 或 <c>using</c>（CS1061）；负载非法时构造中途抛异常，实例停在只有空元组的未初始化态。</para>
+	///   <para><b>资源与坑</b>JlPose 系（<c>JlData</c>）实现 <c>IDisposable</c>，使用后应调用 <c>Dispose()</c> 或 <c>using</c>；负载非法时构造中途抛异常，实例停在只有空元组的未初始化态。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlPose(SerializationInfo info, StreamingContext context)
@@ -148,7 +167,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	/// <summary>把位姿按库自有二进制格式写入流。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现 = <c>SerializePose()</c>（原生 id 1834，取字节缓冲）+ <c>JlSerializationBuffer.WriteToStream</c> 落流；位姿的 7 个分量（3 旋转 + 3 平移 + 1 表示类型码）如何编码进字节由原生侧决定。</para>
-	///   <para><b>约束或前提</b>JlPose 底层是 7 元数据（3 旋转 + 3 平移 + 1 表示类型码），序列化是否连表示形式（orderOfTransform/orderOfRotation/viewOfTransform）一起带走、读回后要不要重新 ConvertPoseType，无法由本文件代码判定 [待实测]。JlPose 系（JlData）不实现 IDisposable，没有句柄释放问题。</para>
+	///   <para><b>约束或前提</b>JlPose 底层是 7 元数据（3 旋转 + 3 平移 + 1 表示类型码），序列化是否连表示形式（orderOfTransform/orderOfRotation/viewOfTransform）一起带走、读回后要不要重新 ConvertPoseType，无法由本文件代码判定 [待实测]。JlPose 系（JlData）实现 IDisposable，使用后应释放内部元组。</para>
 	///   <para><b>与相邻算子的取舍</b>只要内存字节（如塞进自定义报文）用 <c>SerializePose</c>/<c>DeserializePose</c> 一对；落盘文本给人读用 <c>WritePose</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -166,7 +185,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	}
 
 	/// <summary>从 <c>Serialize(Stream)</c> 写出的流读出一个新位姿。</summary>
-	/// <returns>承载流内容的新 JlPose 实例（非原地改写；JlPose 不实现 IDisposable，无需释放）。</returns>
+	/// <returns>承载流内容的新 JlPose 实例（非原地改写；JlPose 实现 IDisposable，使用后应释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现 = 先 <c>new JlPose()</c>（未初始化实例），再 <c>DeserializePose(byte[])</c>（原生 id 1833）覆写自身，读流偏移由 <c>JlSerializationBuffer.ReadFromStream</c> 决定。</para>
 	///   <para><b>约束或前提</b>字节必须是本库 <c>Serialize(Stream)</c>/<c>SerializePose()</c> 产出的格式；内容不合法时报错来自原生层 [待实测]。表示形式是否随流内类型码原样还原 [待实测]。</para>
@@ -196,10 +215,10 @@ public class JlPose : JlData, ISerializable, ICloneable
 	}
 
 	/// <summary>序列化/反序列化往返得到的独立位姿副本。</summary>
-	/// <returns>新 JlPose 实例；与原对象数据完全解耦（JlPose 不实现 IDisposable，无需释放）。</returns>
+	/// <returns>新 JlPose 实例；与原对象数据完全解耦（JlPose 实现 IDisposable，使用后应释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现 = <c>SerializePose()</c> 取字节 → <c>new JlPose()</c> → <c>DeserializePose(byte[])</c> 覆写，走两次原生调用（id 1834/1833），比引用赋值贵。</para>
-	///   <para><b>约束或前提</b>JlPose 内部是共享 JlTuple 包装：直接赋值只是多一个引用，改动会互相可见 [待实测：JlData 语义]，需要冻结现场值时才 Clone。</para>
+	///   <para><b>约束或前提</b>JlPose 的数据构造和 RawData 访问都使用独立元组副本；需要连同原生表示重新计算时才使用 Clone。</para>
 	///   <para><b>与相邻算子的取舍</b>只是想"在旧值基础上继续复合、保留本对象"，用 <c>PoseCompose</c>/<c>SetOriginPose</c> 这类本就返回新实例的运算即可，不必 Clone。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -235,7 +254,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose p2 = new JlPose(0.2, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose mean = JlPose.PoseAverage(new JlPose[] { p1, p2 }, new JlTuple(), "iterative", "auto", "auto", out JlTuple quality);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新 JlPose（JlData 系，不实现 IDisposable，无需释放）；单实例版差异见 double 重载。</para>
+	///   <para><b>资源与坑</b>返回新 JlPose（JlData 系实现 IDisposable，使用后应释放）；单实例版差异见 double 重载。</para>
 	/// </remarks>
 	public static JlPose PoseAverage(JlPose[] poses, JlTuple weights, string mode, JlTuple sigmaT, JlTuple sigmaR, out JlTuple quality)
 	{
@@ -259,6 +278,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 		return obj;
 	}
 
+	/// <summary>使用枚举模式求位姿平均。</summary>
+	public static JlPose PoseAverage(JlPose[] poses, JlTuple weights, JlPoseAverageMode mode, JlTuple sigmaT, JlTuple sigmaR, out JlTuple quality)
+	{
+		return PoseAverage(poses, weights, mode.ToNative(), sigmaT, sigmaR, out quality);
+	}
+
 	/// <summary>对一组位姿求（加权）平均（标量 sigma 版）。</summary>
 	/// <param name="poses">参与平均的位姿数组。</param>
 	/// <param name="weights">空元组=等权；否则每个位姿一个权重。Default: []</param>
@@ -276,7 +301,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose p2 = new JlPose(0.2, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose mean = JlPose.PoseAverage(new JlPose[] { p1, p2 }, new JlTuple(), "iterative", 1.0, 1.0, out JlTuple quality);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新 JlPose（不实现 IDisposable）。</para>
+	///   <para><b>资源与坑</b>返回新 JlPose（实现 IDisposable）。</para>
 	/// </remarks>
 	public static JlPose PoseAverage(JlPose[] poses, JlTuple weights, string mode, double sigmaT, double sigmaR, out JlTuple quality)
 	{
@@ -298,6 +323,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 		return obj;
 	}
 
+	/// <summary>使用枚举模式和标量权重求位姿平均。</summary>
+	public static JlPose PoseAverage(JlPose[] poses, JlTuple weights, JlPoseAverageMode mode, double sigmaT, double sigmaR, out JlTuple quality)
+	{
+		return PoseAverage(poses, weights, mode.ToNative(), sigmaT, sigmaR, out quality);
+	}
+
 	/// <summary>逐元素求逆位姿（数组版），返回同样长度的新数组。</summary>
 	/// <param name="pose">待求逆的位姿数组（内部压平为 7n 元组再传入）。</param>
 	/// <returns>新的 JlPose[]，第 i 项为输入第 i 项的逆变换。</returns>
@@ -310,7 +341,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose p1 = new JlPose(0.1, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose[] inverses = JlPose.PoseInvert(new JlPose[] { p1 });
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，返回数组由 GC 管理。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，返回数组由 GC 管理。</para>
 	/// </remarks>
 	public static JlPose[] PoseInvert(JlPose[] pose)
 	{
@@ -337,7 +368,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose p = new JlPose(0.1, 0.0, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose inv = p.PoseInvert();
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，使用后应释放。</para>
 	/// </remarks>
 	public JlPose PoseInvert()
 	{
@@ -366,7 +397,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose b = new JlPose(0.0, 0.2, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose[] composed = JlPose.PoseCompose(new JlPose[] { a }, new JlPose[] { b });
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，返回数组由 GC 管理。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，返回数组由 GC 管理。</para>
 	/// </remarks>
 	public static JlPose[] PoseCompose(JlPose[] poseLeft, JlPose[] poseRight)
 	{
@@ -400,7 +431,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose right = new JlPose(0.0, 0.2, 0.0, 0.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose combined = left.PoseCompose(right);
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，使用后应释放。</para>
 	/// </remarks>
 	public JlPose PoseCompose(JlPose poseRight)
 	{
@@ -465,7 +496,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   <code>
 	///   JlPose[] poses = JlPose.CreateCamPoseLookAtPoint(0.0, 0.0, -1.0, 0.0, 0.0, 0.0, "-y", 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，使用后应释放。</para>
 	/// </remarks>
 	public static JlPose[] CreateCamPoseLookAtPoint(JlTuple camPosX, JlTuple camPosY, JlTuple camPosZ, JlTuple lookAtX, JlTuple lookAtY, JlTuple lookAtZ, JlTuple refPlaneNormal, JlTuple camRoll)
 	{
@@ -513,7 +544,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose camPose = new JlPose();
 	///   camPose.CreateCamPoseLookAtPoint(0.0, 0.0, -1.0, 0.0, 0.0, 0.0, "-y", 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>refPlaneNormal 以字符串字面量传入时依赖 string→JlTuple 隐式转换；本库该参数族没有 string 版重载，勿与 <c>SetCurrentDir(string)</c> 之类接口想当然类比。JlPose 不实现 IDisposable。</para>
+	///   <para><b>资源与坑</b>refPlaneNormal 以字符串字面量传入时依赖 string→JlTuple 隐式转换；本库该参数族没有 string 版重载，勿与 <c>SetCurrentDir(string)</c> 之类接口想当然类比。JlPose 实现 IDisposable。</para>
 	/// </remarks>
 	public void CreateCamPoseLookAtPoint(double camPosX, double camPosY, double camPosZ, double lookAtX, double lookAtY, double lookAtZ, JlTuple refPlaneNormal, double camRoll)
 	{
@@ -637,7 +668,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose pose = new JlPose(0.1, 0.1, 0.1, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   JlPose moved = pose.SetOriginPose(0.05, 0.0, 0.0);
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable；参数名 DX/DY/DZ 大写是签名的一部分，示例保持一致。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable；参数名 DX/DY/DZ 大写是签名的一部分，示例保持一致。</para>
 	/// </remarks>
 	public JlPose SetOriginPose(double DX, double DY, double DZ)
 	{
@@ -691,6 +722,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 		return stringValue;
 	}
 
+	/// <summary>读取本位姿当前的表示选项。</summary>
+	public JlPoseOptions GetPoseOptions()
+	{
+		string orderOfTransform = GetPoseType(out string orderOfRotation, out string viewOfTransform);
+		return new JlPoseOptions(orderOfTransform, orderOfRotation, viewOfTransform);
+	}
+
 	/// <summary>
 	///   换一种表示形式描述同一刚体变换，返回新位姿。
 	/// </summary>
@@ -707,7 +745,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose pose = new JlPose(0.1, 0.1, 0.1, 90.0, 90.0, 90.0, "Rp+T", "gba", "point");
 	///   JlPose converted = pose.ConvertPoseType("T+Rp", "gba", "point");
 	///   </code>
-	///   <para><b>资源与坑</b>JlPose 不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlPose 实现 IDisposable，使用后应释放。</para>
 	/// </remarks>
 	public JlPose ConvertPoseType(string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
@@ -723,6 +761,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.PostCall(proc, err);
 		GC.KeepAlive(this);
 		return obj;
+	}
+
+	/// <summary>使用 <see cref="JlPoseOptions"/> 转换位姿表示。</summary>
+	public JlPose ConvertPoseType(JlPoseOptions options)
+	{
+		JlPoseOptions value = RequireOptions(options);
+		return ConvertPoseType(value.OrderOfTransform, value.OrderOfRotation, value.ViewOfTransform);
 	}
 
 	/// <summary>
@@ -746,7 +791,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	///   JlPose pose = new JlPose();
 	///   pose.CreatePose(0.1, 0.1, 0.5, 90.0, 0.0, 0.0, "Rp+T", "gba", "point");
 	///   </code>
-	///   <para><b>资源与坑</b>void 返回、无新对象；JlPose 不实现 IDisposable。</para>
+	///   <para><b>资源与坑</b>void 返回、无新对象；JlPose 实现 IDisposable。</para>
 	/// </remarks>
 	public void CreatePose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
@@ -767,13 +812,20 @@ public class JlPose : JlData, ISerializable, ICloneable
 		GC.KeepAlive(this);
 	}
 
+	/// <summary>使用 <see cref="JlPoseOptions"/> 原地创建或覆写位姿。</summary>
+	public void CreatePose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, JlPoseOptions options)
+	{
+		JlPoseOptions value = RequireOptions(options);
+		CreatePose(transX, transY, transZ, rotX, rotY, rotZ, value.OrderOfTransform, value.OrderOfRotation, value.ViewOfTransform);
+	}
+
 
 
 	/// <summary>用 <c>SerializePose()</c> 得到的字节覆写本位姿（原地改写）。</summary>
 	/// <param name="serializedItemHandle">库自有二进制格式的位姿字节（不是句柄数值，是完整负载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1833；字节先包进 <c>JlSerializationBuffer</c>（using 释放），调用后用 <c>Load(proc,0)</c> 把结果写回自身——这是原地改写而非返回新对象。</para>
-	///   <para><b>约束或前提</b>本方法来自 <c>ISerializable</c> 反序列化路径（.NET 二进制序列化构造器也调它），字节来源不合法时报错出自原生层 [待实测]。JlPose 不实现 IDisposable。</para>
+	///   <para><b>约束或前提</b>本方法来自 <c>ISerializable</c> 反序列化路径（.NET 二进制序列化构造器也调它），字节来源不合法时报错出自原生层 [待实测]。JlPose 实现 IDisposable。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlPose src = new JlPose(0.1, 0.1, 0.1, 90.0, 90.0, 90.0, "Rp+T", "gba", "point");

@@ -76,7 +76,7 @@ public class JlMisc
 	///   JlTuple radius = new double[] { 1.0, 1.0 };
 	///   JlMisc.ConvertPoint3dSpherToCart(longitude, latitude, radius, "-y", "-z", out JlTuple x, out JlTuple y, out JlTuple z);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 不实现 IDisposable，x/y/z 无需释放；radius 为负时的行为 [待实测]。</para>
+	///   <para><b>资源与坑</b>JlTuple 实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，x/y/z 无需释放；radius 为负时的行为 [待实测]。</para>
 	/// </remarks>
 	public static void ConvertPoint3dSpherToCart(JlTuple longitude, JlTuple latitude, JlTuple radius, string equatPlaneNormal, string zeroMeridian, out JlTuple x, out JlTuple y, out JlTuple z)
 	{
@@ -151,7 +151,7 @@ public class JlMisc
 	///   JlTuple z = new double[] { 0.0, 1.0 };
 	///   JlTuple longitude = JlMisc.ConvertPoint3dCartToSpher(x, y, z, "-y", "-z", out JlTuple latitude, out JlTuple radius);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放；忘记接收返回值就丢失经度是本接口签名带来的典型误用。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放；忘记接收返回值就丢失经度是本接口签名带来的典型误用。</para>
 	/// </remarks>
 	public static JlTuple ConvertPoint3dCartToSpher(JlTuple x, JlTuple y, JlTuple z, string equatPlaneNormal, string zeroMeridian, out JlTuple latitude, out JlTuple radius)
 	{
@@ -259,7 +259,7 @@ public class JlMisc
 	///   JlTuple measurement = new double[] { 1.0, 2.0 };
 	///   JlTuple dimensionOut = JlMisc.UpdateKalman("kalman.updt", dimension, model, measurement, out JlTuple modelOut, out JlTuple measurementOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable；输入元组钉住传入（Store+UnpinTuple），标量开销比 double 版略高但可获得多值维度；返回值被丢弃时新维度信息即丢失。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；输入元组钉住传入（Store+UnpinTuple），标量开销比 double 版略高但可获得多值维度；返回值被丢弃时新维度信息即丢失。</para>
 	/// </remarks>
 	public static JlTuple UpdateKalman(string fileName, JlTuple dimensionIn, JlTuple modelIn, JlTuple measurementIn, out JlTuple modelOut, out JlTuple measurementOut)
 	{
@@ -302,7 +302,7 @@ public class JlMisc
 	///   JlTuple predictionIn = new double[] { 0.0, 0.0, 0.0, 0.0, 180.5, 0.0, 0.0, 0.0, 100.0, 0.0, 100.0, 0.0 };
 	///   JlTuple predictionOut = JlMisc.FilterKalman(dimension, model, measurement, predictionIn, out JlTuple estimate);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable；本拍忽略返回值 predictionOut 会导致下一拍外推没有增量信息。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；本拍忽略返回值 predictionOut 会导致下一拍外推没有增量信息。</para>
 	/// </remarks>
 	public static JlTuple FilterKalman(JlTuple dimension, JlTuple model, JlTuple measurement, JlTuple predictionIn, out JlTuple estimate)
 	{
@@ -410,7 +410,7 @@ public class JlMisc
 	///   JlTuple column2 = new double[] { 0.0 };
 	///   JlMisc.ProjectionPl(row, column, row1, column1, row2, column2, out JlTuple rowProj, out JlTuple colProj);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void ProjectionPl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple rowProj, out JlTuple colProj)
 	{
@@ -554,7 +554,7 @@ public class JlMisc
 	///   JlTuple columnB2 = new double[] { 0.0 };
 	///   JlMisc.IntersectionLl(rowA1, columnA1, rowA2, columnA2, rowB1, columnB1, rowB2, columnB2, out JlTuple row, out JlTuple column, out JlTuple isParallel);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void IntersectionLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple row, out JlTuple column, out JlTuple isParallel)
 	{
@@ -640,7 +640,7 @@ public class JlMisc
 	///   JlTuple column2 = new double[] { 10.0 };
 	///   JlTuple phi = JlMisc.AngleLx(row1, column1, row2, column2);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple AngleLx(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
@@ -710,7 +710,7 @@ public class JlMisc
 	///   JlTuple columnB2 = new double[] { 10.0 };
 	///   JlTuple phi = JlMisc.AngleLl(rowA1, columnA1, rowA2, columnA2, rowB1, columnB1, rowB2, columnB2);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple AngleLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2)
 	{
@@ -797,7 +797,7 @@ public class JlMisc
 	///   JlTuple columnB2 = new double[] { 5.0 };
 	///   JlMisc.DistanceSl(rowA1, columnA1, rowA2, columnA2, rowB1, columnB1, rowB2, columnB2, out JlTuple distanceMin, out JlTuple distanceMax);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void DistanceSl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
@@ -887,7 +887,7 @@ public class JlMisc
 	///   JlTuple columnB2 = new double[] { 5.0 };
 	///   JlMisc.DistanceSs(rowA1, columnA1, rowA2, columnA2, rowB1, columnB1, rowB2, columnB2, out JlTuple distanceMin, out JlTuple distanceMax);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void DistanceSs(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
@@ -973,7 +973,7 @@ public class JlMisc
 	///   JlTuple column2 = new double[] { 0.0 };
 	///   JlMisc.DistancePs(row, column, row1, column1, row2, column2, out JlTuple distanceMin, out JlTuple distanceMax);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void DistancePs(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
@@ -1050,7 +1050,7 @@ public class JlMisc
 	///   JlTuple column2 = new double[] { 0.0 };
 	///   JlTuple dist = JlMisc.DistancePl(row, column, row1, column1, row2, column2);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple DistancePl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
@@ -1120,7 +1120,7 @@ public class JlMisc
 	///   JlTuple column2 = new double[] { 4.0 };
 	///   JlTuple dist = JlMisc.DistancePp(row1, column1, row2, column2);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple DistancePp(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
@@ -1474,7 +1474,7 @@ public class JlMisc
 	///   JlTuple colEndIn = new double[] { 4.0, 6.0 };
 	///   JlMisc.SelectLinesLongest(rowBeginIn, colBeginIn, rowEndIn, colEndIn, 1, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放；端点为浮点测量值时，优先用 LinePosition 自行按 length 排序以避免取整。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放；端点为浮点测量值时，优先用 LinePosition 自行按 length 排序以避免取整。</para>
 	/// </remarks>
 	public static void SelectLinesLongest(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, int num, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
@@ -1532,7 +1532,7 @@ public class JlMisc
 	///   JlTuple max = new double[] { 100.0 };
 	///   JlMisc.PartitionLines(rowBeginIn, colBeginIn, rowEndIn, colEndIn, feature, "and", min, max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable；落选项也要分析时才值得付 8 个出参的成本。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；落选项也要分析时才值得付 8 个出参的成本。</para>
 	/// </remarks>
 	public static void PartitionLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, string operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut)
 	{
@@ -1601,7 +1601,7 @@ public class JlMisc
 	///   JlTuple colEndIn = new double[] { 4.0, 6.0 };
 	///   JlMisc.PartitionLines(rowBeginIn, colBeginIn, rowEndIn, colEndIn, "length", "and", "min", "max", out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void PartitionLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, string feature, string operation, string min, string max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut)
 	{
@@ -1666,7 +1666,7 @@ public class JlMisc
 	///   JlTuple max = new string[] { "max" };
 	///   JlMisc.SelectLines(rowBeginIn, colBeginIn, rowEndIn, colEndIn, feature, "and", min, max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void SelectLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, string operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
@@ -1723,7 +1723,7 @@ public class JlMisc
 	///   JlTuple colEndIn = new double[] { 4.0, 6.0 };
 	///   JlMisc.SelectLines(rowBeginIn, colBeginIn, rowEndIn, colEndIn, "length", "and", "min", "max", out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void SelectLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, string feature, string operation, string min, string max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
@@ -1773,7 +1773,7 @@ public class JlMisc
 	///   JlTuple colEnd = new double[] { 8.0 };
 	///   JlMisc.LinePosition(rowBegin, colBegin, rowEnd, colEnd, out JlTuple rowCenter, out JlTuple colCenter, out JlTuple length, out JlTuple phi);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void LinePosition(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd, out JlTuple rowCenter, out JlTuple colCenter, out JlTuple length, out JlTuple phi)
 	{
@@ -1848,7 +1848,7 @@ public class JlMisc
 	///   JlTuple colEnd = new double[] { 1.0 };
 	///   JlTuple phi = JlMisc.LineOrientation(rowBegin, colBegin, rowEnd, colEnd);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple LineOrientation(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd)
 	{
@@ -2046,7 +2046,7 @@ public class JlMisc
 	///   JlTuple point2Z = new double[] { 0.0 };
 	///   JlTuple dist = JlMisc.DistancePointLine(pointX, pointY, pointZ, point1X, point1Y, point1Z, point2X, point2Y, point2Z);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable；线两点重合时结果未定义 [待实测]。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose；线两点重合时结果未定义 [待实测]。</para>
 	/// </remarks>
 	public static JlTuple DistancePointLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z)
 	{
@@ -2138,7 +2138,7 @@ public class JlMisc
 	///   JlTuple lineMomentZ = new double[] { 0.0 };
 	///   JlTuple dist = JlMisc.DistancePointPlueckerLine(pointX, pointY, pointZ, lineDirectionX, lineDirectionY, lineDirectionZ, lineMomentX, lineMomentY, lineMomentZ);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static JlTuple DistancePointPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ)
 	{
@@ -2229,7 +2229,7 @@ public class JlMisc
 	///   JlTuple lineMomentZ = new double[] { 0.0 };
 	///   JlMisc.PlueckerLineToPointDirection(lineDirectionX, lineDirectionY, lineDirectionZ, lineMomentX, lineMomentY, lineMomentZ, out JlTuple pointX, out JlTuple pointY, out JlTuple pointZ, out JlTuple directionX, out JlTuple directionY, out JlTuple directionZ);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void PlueckerLineToPointDirection(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple pointX, out JlTuple pointY, out JlTuple pointZ, out JlTuple directionX, out JlTuple directionY, out JlTuple directionZ)
 	{
@@ -2331,7 +2331,7 @@ public class JlMisc
 	///   JlTuple lineMomentZ = new double[] { 0.0 };
 	///   JlMisc.PlueckerLineToPoints(lineDirectionX, lineDirectionY, lineDirectionZ, lineMomentX, lineMomentY, lineMomentZ, out JlTuple point1X, out JlTuple point1Y, out JlTuple point1Z, out JlTuple point2X, out JlTuple point2Y, out JlTuple point2Z);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void PlueckerLineToPoints(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple point1X, out JlTuple point1Y, out JlTuple point1Z, out JlTuple point2X, out JlTuple point2Y, out JlTuple point2Z)
 	{
@@ -2433,7 +2433,7 @@ public class JlMisc
 	///   JlTuple directionZ = new double[] { 0.0 };
 	///   JlMisc.PointDirectionToPlueckerLine(pointX, pointY, pointZ, directionX, directionY, directionZ, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void PointDirectionToPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple directionX, JlTuple directionY, JlTuple directionZ, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{
@@ -2535,7 +2535,7 @@ public class JlMisc
 	///   JlTuple point2Z = new double[] { 0.0 };
 	///   JlMisc.PointsToPlueckerLine(point1X, point1Y, point1Z, point2X, point2Y, point2Z, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 系不实现 IDisposable，无需释放。</para>
+	///   <para><b>资源与坑</b>JlTuple 系实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，无需释放。</para>
 	/// </remarks>
 	public static void PointsToPlueckerLine(JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{

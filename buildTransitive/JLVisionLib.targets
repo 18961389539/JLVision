@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <!--
+    JLVisionLib 包自带的原生核心库 JLVisionCore.dll（win-x64）需要位于应用程序目录，
+    P/Invoke 才能按 DllImport("JLVisionCore") 解析成功。
+    这里显式把运行时资产复制到消费方的输出目录与发布目录，
+    兼容未指定 RID 的构建以及 .NET Framework 消费方。
+  -->
+  <ItemGroup Condition="'$(JLVisionCopyNativeCore)' != 'false' and '$(OS)' == 'Windows_NT' and ('$(RuntimeIdentifier)' == '' or '$(RuntimeIdentifier)' == 'win-x64')">
+    <None Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\JLVisionCore.dll"
+          Link="JLVisionCore.dll"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

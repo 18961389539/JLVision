@@ -7,7 +7,7 @@ namespace JLVisionLib;
 /// 原生算子调用失败时抛出的异常，是库对外最主要的异常类型。派生自 <see cref="T:JLVisionLib.JlException"/>。
 /// </summary>
 /// <remarks>
-///   <para><b>与基类的差异</b>本类的 <see cref="M:JLVisionLib.JlOperatorException.GetErrorMessage"/> 与 <c>GetErrorText</c>
+///   <para><b>与基类的差异</b>本类的 <see cref="P:JLVisionLib.JlException.ErrorMessage"/> 与 <c>GetErrorMessage</c>
 ///   会按错误码去查原生消息表，而不是原样返回构造文本，因此同一错误码总能拿到一致的说明。</para>
 ///   <para><b>何时抛出</b>当算子返回的码不等于 2(<c>Jl_MSG_OK</c>) 时，由 <see cref="M:JLVisionLib.JlOperatorException.throwOperator(System.Int32,System.String)"/>
 ///   等入口抛出；调用方用 <c>catch (JlException ex)</c> 即可捕获（本类是其派生类）。</para>
@@ -22,7 +22,7 @@ public class JlOperatorException : JlException
 	///   <para><b>功能说明</b>把错误码与说明转交基类构造；说明为空串时用 <c>JlNativeApi.GetErrorMessage(err)</c> 补一条与错误码对应的一致文本，避免抛出无说明的异常。</para>
 	/// </remarks>
 	public JlOperatorException(int err, string sInfo, Exception inner)
-		: base(err, (sInfo == "") ? JlNativeApi.GetErrorMessage(err) : sInfo, inner)
+		: base(err, string.IsNullOrEmpty(sInfo) ? JlNativeApi.GetErrorMessage(err) : sInfo, inner)
 	{
 	}
 
@@ -47,24 +47,26 @@ public class JlOperatorException : JlException
 	{
 	}
 
-	/// <summary>已废弃：改用 <see cref="M:JLVisionLib.JlOperatorException.GetErrorMessage"/>。按错误码返回原生消息文本。</summary>
-	[Obsolete("GetErrorText is deprecated, please use GetErrorMessage instead.")]
+/// <summary>已废弃：改用 <see cref="P:JLVisionLib.JlException.ErrorMessage"/>。按错误码返回原生消息文本。</summary>
+	[Obsolete("GetErrorText is deprecated, please use ErrorMessage or GetErrorMessage instead.")]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public new string GetErrorText()
+	public override string GetErrorText()
 	{
-		return JlNativeApi.GetErrorMessage(GetErrorCode());
+		return ErrorMessage;
 	}
 
-	/// <summary>按当前错误码返回对应的原生消息文本。</summary>
+/// <summary>按当前错误码返回对应的原生消息文本；新代码优先使用 <see cref="P:JLVisionLib.JlException.ErrorMessage"/>。</summary>
 	/// <returns>由 <c>GetErrorCode()</c> 查原生消息表得到的文本；与基类 <see cref="M:JLVisionLib.JlException.GetErrorMessage"/> 返回的构造文本可能不同。</returns>
 	/// <remarks>
-	///   <para><b>隐藏基类实现</b>本方法用 <c>new</c> 隐藏基类版本：不返回 <c>Message</c>，而是每次实时按错误码查原生消息表，保证文本与库版本一致。</para>
-	///   <para><b>注意</b>经基类 <see cref="T:JLVisionLib.JlException"/> 引用调用时走的是基类实现（返回 <c>Message</c>），要拿原生文本需以 <see cref="T:JLVisionLib.JlOperatorException"/> 类型接收异常。</para>
+///   <para><b>统一行为</b>属性和方法都会按错误码实时查原生消息表，保证经 <see cref="T:JLVisionLib.JlException"/> 引用访问时也得到同一文本。</para>
 	/// </remarks>
-	public new string GetErrorMessage()
+	public override string GetErrorMessage()
 	{
-		return JlNativeApi.GetErrorMessage(GetErrorCode());
+		return ErrorMessage;
 	}
+
+	/// <summary>按错误码从原生消息表读取统一错误说明。</summary>
+	public override string ErrorMessage => JlNativeApi.GetErrorMessage(ErrorCode);
 
 	/// <summary>取回扩展错误码（细粒度子码）。</summary>
 	/// <returns>本托管运行时不生成扩展错误码，恒返回 <c>0</c>。</returns>
@@ -73,7 +75,7 @@ public class JlOperatorException : JlException
 	/// </remarks>
 	public long GetExtendedErrorCode()
 	{
-		return 0L;
+		return ExtendedErrorCode;
 	}
 
 	/// <summary>取回扩展错误说明（对应 <see cref="M:JLVisionLib.JlOperatorException.GetExtendedErrorCode"/> 的文本）。</summary>
@@ -83,8 +85,14 @@ public class JlOperatorException : JlException
 	/// </remarks>
 	public string GetExtendedErrorMessage()
 	{
-		return "";
+		return ExtendedErrorMessage;
 	}
+
+	/// <summary>当前运行库未填充扩展错误码，统一返回 <c>0</c>。</summary>
+	public override long ExtendedErrorCode => 0L;
+
+	/// <summary>当前运行库未填充扩展错误说明，统一返回空字符串。</summary>
+	public override string ExtendedErrorMessage => string.Empty;
 
 	/// <summary>检查算子返回码，失败则抛出带算子名的 <see cref="T:JLVisionLib.JlOperatorException"/>；成功则静默返回。</summary>
 	/// <param name="err">原生算子返回码。等于 2(<c>Jl_MSG_OK</c>) 视为成功、不抛异常。</param>

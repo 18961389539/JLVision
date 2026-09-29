@@ -305,6 +305,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	///   </code>
 	///   <para><b>资源与坑</b>原地改写：调用后 this 拥有新句柄、旧句柄已释放。<paramref name="surrogateTuple"/> 指向的原对象所有权仍归原持有者，本方法不负责释放它；示例中 <c>image</c> 必须先于 <c>restored</c> 的使用保持存活。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void IntegerToObj(IntPtr surrogateTuple)
 	{
 		Dispose();

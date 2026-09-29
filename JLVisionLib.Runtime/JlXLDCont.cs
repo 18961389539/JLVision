@@ -2453,7 +2453,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	/// <returns>变换后轮廓的新句柄（LoadNew 新建，需 Dispose()）；本实例不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 47：<c>homMat2D</c> 走 <c>Store(proc,0)</c> 钉固定 + 调用后 <c>UnpinTuple</c>，轮廓在索引 1；输出 <c>LoadNew</c> 新建句柄。点在齐次坐标下乘矩阵再除以第三个分量（w 除法），因此直线仍映为直线，但平行性与长度比例不保持。</para>
-	///   <para><b>约束或前提</b><c>JlHomMat2D</c> 派生自 JlData、不实现 IDisposable——对它写 <c>Dispose()</c>/<c>using</c> 是编译错误。矩阵可用 <c>new JlHomMat2D()</c> 起步，经 <c>HomMat2dRotate</c>/<c>HomMat2dTranslate</c>/<c>HomMat2dCompose</c> 叠加。</para>
+	///   <para><b>约束或前提</b><c>JlHomMat2D</c> 派生自 JlData、实现 IDisposable——对它写 <c>Dispose()</c>/<c>using</c> 是编译错误。矩阵可用 <c>new JlHomMat2D()</c> 起步，经 <c>HomMat2dRotate</c>/<c>HomMat2dTranslate</c>/<c>HomMat2dCompose</c> 叠加。</para>
 	///   <para><b>与相邻算子的取舍</b>纯旋转/平移/缩放用 <see cref="AffineTransContourXld(JlHomMat2D)"/>（2x3、语义受控不易出 w 问题）；本算子只在真有透视/镜头倾斜需求时用，且矩阵奇异或点落在消隐线附近会产生爆点/NaN 级坐标 [待实测]。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2490,7 +2490,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	/// <returns>变换后轮廓的新句柄（LoadNew 新建，需 Dispose()）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 49：<c>homMat2D</c> 走 <c>Store(proc,0)</c> 钉固定 + 调用后 <c>UnpinTuple</c>（矩阵到 JlTuple 的隐式转换），轮廓在索引 1；输出 <c>LoadNew</c> 新建句柄。仿射保持直线性、平行性与长度比例，角度只在纯旋转时保持。</para>
-	///   <para><b>约束或前提</b>矩阵用 <c>new JlHomMat2D()</c>（单位阵）起步叠加 <c>HomMat2dRotate(phi,px,py)</c>/<c>HomMat2dTranslate(tx,ty)</c> 得到，<c>phi</c> 弧度。注意这些方法返回的都是新矩阵对象，且 <c>JlHomMat2D</c> 不实现 IDisposable，不要写 <c>using</c>。</para>
+	///   <para><b>约束或前提</b>矩阵用 <c>new JlHomMat2D()</c>（单位阵）起步叠加 <c>HomMat2dRotate(phi,px,py)</c>/<c>HomMat2dTranslate(tx,ty)</c> 得到，<c>phi</c> 弧度。注意这些方法返回的都是新矩阵对象，且 <c>JlHomMat2D</c> 实现 IDisposable，不要写 <c>using</c>。</para>
 	///   <para><b>顺序/状态依赖</b>变换只动点坐标：此前用 <c>Fit*ContourXld</c> 得到的椭圆/圆参数不会跟着变，必须对结果重新拟合；非均匀缩放会使曲率类属性失真 [待实测]。</para>
 	///   <para><b>与相邻算子的取舍</b>要透视效果用 <see cref="ProjectiveTransContourXld(JlHomMat2D)"/>；只想按像素平移，本算子仍要建矩阵，简单场景可考虑点级平移（生成新 JlXLDCont）。</para>
 	///   <para><b>用法</b></para>
@@ -3180,7 +3180,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///       JlTuple angles = edges.GetContourAngleXld("abs", "range", 3);
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>返回普通 <c>JlTuple</c>，不实现 IDisposable；多轮廓容器下角度元组的拼接组织同 <c>GetContourXld</c> [待实测]。</para>
+	///   <para><b>资源与坑</b>返回普通 <c>JlTuple</c>，实现 IDisposable；多轮廓容器下角度元组的拼接组织同 <c>GetContourXld</c> [待实测]。</para>
 	/// </remarks>
 	public JlTuple GetContourAngleXld(string angleMode, string calcMode, int lookaround)
 	{
@@ -3419,7 +3419,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///       edges.GetContourXld(out JlTuple row, out JlTuple col);
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>out 元组不实现 IDisposable，无需释放；点序与起点即该轮廓内部参数化，起点变化会让数值序列整体旋转。</para>
+	///   <para><b>资源与坑</b>out 元组实现 IDisposable，无需释放；点序与起点即该轮廓内部参数化，起点变化会让数值序列整体旋转。</para>
 	/// </remarks>
 	public void GetContourXld(out JlTuple row, out JlTuple col)
 	{
@@ -4411,7 +4411,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///       edges.DistanceCc(shifted, "point_to_point", out double dMin, out double dMax);
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b><c>JlHomMat2D</c> 不实现 IDisposable；示例中 <c>edges</c> 需自行 <c>Dispose()</c>。两侧条数不等时的配对 [待实测]。</para>
+	///   <para><b>资源与坑</b><c>JlHomMat2D</c> 实现 IDisposable；示例中 <c>edges</c> 需自行 <c>Dispose()</c>。两侧条数不等时的配对 [待实测]。</para>
 	/// </remarks>
 	public void DistanceCc(JlXLDCont contour2, string mode, out double distanceMin, out double distanceMax)
 	{
@@ -5019,7 +5019,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///       int n = world.CountObj();
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>返回值需 <c>Dispose()</c>；<c>UnpinTuple</c> 在调用后立即执行，传入的 <c>JlTuple</c>/<c>JlPose</c> 不实现 IDisposable，无需额外处置。</para>
+	///   <para><b>资源与坑</b>返回值需 <c>Dispose()</c>；<c>UnpinTuple</c> 在调用后立即执行，传入的 <c>JlTuple</c>/<c>JlPose</c> 实现 IDisposable，无需额外处置。</para>
 	/// </remarks>
 	public JlXLDCont ContourToWorldPlaneXld(JlTuple cameraParam, JlPose worldPose, JlTuple scale)
 	{
@@ -5102,7 +5102,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///           out JlTuple r1, out JlTuple c1, out JlTuple r2, out JlTuple c2);
 	///   }
 	///   </code>
-	///   <para><b>资源与坑</b>本算子不产生新句柄，返回的是普通 <c>JlTuple</c>（不实现 IDisposable，不要 Dispose）；5 个 out 元组同理。</para>
+	///   <para><b>资源与坑</b>本算子不产生新句柄，返回的是普通 <c>JlTuple</c>（实现 IDisposable，不要 Dispose）；5 个 out 元组同理。</para>
 	/// </remarks>
 	public JlTuple DistanceCcMinPoints(JlXLDCont contour2, JlTuple mode, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{

@@ -24,6 +24,36 @@
 
 
 
+  <!-- NuGet 打包元数据（包内包含托管包装 JLVisionLib.dll 与原生核心 JLVisionCore.dll） -->
+
+  <PropertyGroup>
+
+    <IsPackable>true</IsPackable>
+
+    <PackageId>JLVisionLib</PackageId>
+
+    <VersionPrefix>1.0.0</VersionPrefix>
+
+    <Authors>JLVision</Authors>
+
+    <Description>Headless .NET vision library (HALCON-style operators, single managed assembly) with the native x64 core runtime bundled for Windows.</Description>
+
+    <PackageTags>vision;machine-vision;image-processing;native;interop</PackageTags>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <PackageLicenseExpression>EPL-2.0</PackageLicenseExpression>
+
+    <PackageProjectUrl>https://github.com/18961389539/JLVision</PackageProjectUrl>
+
+    <RepositoryUrl>https://github.com/18961389539/JLVision.git</RepositoryUrl>
+
+    <RepositoryType>git</RepositoryType>
+
+  </PropertyGroup>
+
+
+
   <ItemGroup>
 
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -38,7 +68,19 @@
     <Content Include="Libs\JLVisionCore.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>JLVisionCore.dll</Link>
+      <!-- 原生核心库按 win-x64 运行时资产随包分发 -->
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\native\</PackagePath>
     </Content>
+  </ItemGroup>
+
+
+
+  <!-- 消费方构建时把原生核心库复制到输出目录，保证 DllImport("JLVisionCore") 可解析 -->
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="LICENSE" Pack="true" PackagePath="\" />
+    <None Update="buildTransitive\JLVisionLib.targets" Pack="true" PackagePath="buildTransitive\JLVisionLib.targets" Visible="false" />
   </ItemGroup>
 
 

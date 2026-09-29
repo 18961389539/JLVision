@@ -8091,7 +8091,7 @@ public class JlErrorDef
 	/// <summary>serialized item 里不含合法的二维齐次矩阵（取值 5753），内嵌文本 <c>Serialized item does not contain a valid homogeneous matrix</c>。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>把一个 <c>serialized_item</c> 按二维齐次矩阵（hom_mat2d）反序列化，内容解析不出来（类型不符或损坏）。属 5700~5764 序列化族，与 5752（版本不支持）区分。</para>
-	///   <para><b>可达性</b><c>JlHomMat2D</c> 在本运行时仍保留，故二维齐次矩阵的序列化写出/读回是活路径，本码可真实触发。注意 <c>JlHomMat2D</c> 派生自 <c>JlData</c>、不实现 <c>IDisposable</c>，无需（也不能）对它 <c>Dispose</c>。</para>
+	///   <para><b>可达性</b><c>JlHomMat2D</c> 在本运行时仍保留，故二维齐次矩阵的序列化写出/读回是活路径，本码可真实触发。注意 <c>JlHomMat2D</c> 派生自 <c>JlData</c>、实现 <c>IDisposable</c>，使用完毕应对它调用 <c>Dispose</c>。</para>
 	///   <para><b>归类</b>≥1000，<c>JlNativeApi.IsError</c> 判 true、<c>IsFailure</c> 判失败，经统一返回码检查会抛 <c>JlOperatorException</c>。</para>
 	///   <para><b>处置</b>确认字节流确由二维齐次矩阵写出且完整；别用二维的读取路径去解三维矩阵（5754/5755）或别的对象。</para>
 	/// </remarks>

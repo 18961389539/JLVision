@@ -1267,7 +1267,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	///   using JlXLDCont c = new JlXLDCont(new double[] { 0, 0, 40, 40, 0 }, new double[] { 0, 20, 20, 0, 0 });
 	///   JlTuple anisometry = c.EccentricityXld(out JlTuple bulkiness, out JlTuple structureFactor);
 	///   </code>
-	///   <para><b>资源与坑</b>：仅产生 JlTuple 结果（不实现 IDisposable）；本容器需 Dispose。</para>
+	///   <para><b>资源与坑</b>：仅产生 JlTuple 结果（实现 IDisposable）；本容器需 Dispose。</para>
 	/// </remarks>
 	public JlTuple EccentricityXld(out JlTuple bulkiness, out JlTuple structureFactor)
 	{

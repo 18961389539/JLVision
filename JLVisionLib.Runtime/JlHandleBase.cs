@@ -214,9 +214,46 @@ public class JlHandleBase : IDisposable
 			return err;
 		}
 		err = JlNativeApi.LoadH(proc, parIndex, err, out var handleValue);
-		SetHandleInternal(handleValue.Handle, copy: true);
-		handleValue.Dispose();
+		try
+		{
+			if (!JlNativeApi.IsFailure(err))
+			{
+				TransferOwnership(handleValue);
+			}
+		}
+		finally
+		{
+			handleValue.Dispose();
+		}
 		return err;
+	}
+
+	/// <summary>
+	///   把 source 持有的那一份句柄引用整体转移到本实例，不复制引用；source 转为空壳。
+	/// </summary>
+	/// <param name="source">交出句柄的临时包装。调用后 source 的句柄为 UNDEF。</param>
+	/// <remarks>
+	///   <para>所有权转移只发生一次，接收方已有句柄会先释放，避免 Load/工厂路径先 CopyHandle 再 ClearHandle 的无效往返。</para>
+	///   <para>该入口只供运行库内部使用；业务代码应使用复制构造或 Clone 获得独立资源。</para>
+	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	internal void TransferOwnership(JlHandleBase source)
+	{
+		if (ReferenceEquals(source, this))
+		{
+			return;
+		}
+
+		Dispose();
+		if (source == null)
+		{
+			return;
+		}
+
+		mHandle = source.mHandle;
+		source.mHandle = UNDEF;
+		suppressedFinalization = false;
+		GC.ReRegisterForFinalize(this);
 	}
 
 	/// <summary>
@@ -315,6 +352,7 @@ public class JlHandleBase : IDisposable
 	///   </code>
 	///   <para><b>资源与坑</b>源对象一旦 <c>Dispose()</c>，先前转出的裸值即悬垂；长期保存请把源对象一起存活，别只留 <c>IntPtr</c>。</para>
 	/// </remarks>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static implicit operator IntPtr(JlHandleBase handle)
 	{
 		return handle?.mHandle ?? UNDEF;

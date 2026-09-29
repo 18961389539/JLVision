@@ -97,7 +97,7 @@ internal class JlTupleString : JlTupleImplementation
 		}
 	}
 
-	public static int Load(IntPtr tuple, out JlTupleString data, bool force_utf8)
+	internal static int Load(IntPtr tuple, out JlTupleString data, bool force_utf8)
 	{
 		int num = 2;
 		JlNativeApi.GetTupleLength(tuple, out var length);

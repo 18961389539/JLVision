@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -439,6 +440,7 @@ internal abstract class JlTupleImplementation
 
 	public abstract int CopyFrom(JlTupleImplementation impl, int offset);
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public virtual void Store(IntPtr proc, int parIndex)
 	{
 		JlTupleType type;
@@ -464,12 +466,13 @@ internal abstract class JlTupleImplementation
 
 	protected abstract void StoreData(IntPtr proc, IntPtr tuple);
 
-	public static int Load(IntPtr proc, int parIndex, JlTupleType type, out JlTupleImplementation data)
+	internal static int Load(IntPtr proc, int parIndex, JlTupleType type, out JlTupleImplementation data)
 	{
 		JlNativeApi.GetOutputTuple(proc, parIndex, handleType: false, out var tuple);
 		return LoadData(tuple, type, out data, force_utf8: false);
 	}
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static int LoadData(IntPtr tuple, JlTupleType type, out JlTupleImplementation data, bool force_utf8)
 	{
 		int result = 2;
