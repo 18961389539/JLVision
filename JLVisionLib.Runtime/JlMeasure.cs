@@ -796,7 +796,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>与单边缘版共享同一套模糊隶属函数（ResetFuzzyMeasure 复位）；首个输出位置没有前一条边缘对可用于计算相邻间距；调用方不要把该位置当作有效 interDistance，具体占位值由目标 HALCON 算子定义。</para>
+	///   <para>与单边缘版共享同一套模糊隶属函数（ResetFuzzyMeasure 复位）；interDistance[i] 表示第 i 对第二条边到第 i+1 对第一条边的距离，因此它比其它输出少一个元素，不存在对应第一对的值。</para>
 	/// </remarks>
 	public void FuzzyMeasurePairs(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter, out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance)
 	{

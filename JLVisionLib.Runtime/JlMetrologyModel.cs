@@ -1634,7 +1634,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加矩形测量对象（原生 id 791），返回新对象 index（int）：以 (row, column) 为中心、phi（弧度）为长轴方向、length1/length2 为半边的名义矩形，沿四条边各布一排微卡尺，Apply 时对四边联合拟合出一个整体矩形。几何量与取边参数（measureLength1 垂直边界的搜索半长、measureLength2 沿边切向平均半长、sigma 平滑、measureThreshold 最小边缘幅值）可传 JlTuple 多值。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；genParamName/genParamValue 按名称和值配对，可设置 num_instances、min_score、measure_transition、measure_select 等对象参数。返回的 index 是后续 Set/GetMetrologyObjectParam、GetMetrologyObjectResult*、ClearMetrologyObject 的唯一寻址凭据。</para>
+	///   <para><b>约束或前提</b>建议先 SetMetrologyModelImageSize；genParamName/genParamValue 按名称和值配对，可设置 num_instances、min_score、measure_transition、measure_select 等对象参数。返回的 index 是后续 Set/GetMetrologyObjectParam、GetMetrologyObjectResult*、ClearMetrologyObject 的唯一寻址凭据。</para>
 	///   <para><b>与相邻算子的取舍</b>只测一条边用 Line；要整体矩形（中心+角度+两边长）用本算子——四边信息互相约束，比 4 条独立线卡尺抗噪。矩形的 all_param 结果顺序为 [row, column, phi, length1, length2]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1753,7 +1753,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加直线测量对象（原生 id 792），返回新对象 index：以两点 (rowBegin, columnBegin)-(rowEnd, columnEnd) 为名义线段，沿线段在其法向两侧布微卡尺取边，Apply 时把采到的边缘点拟合成一条直线；结果参数可通过 GetMetrologyObjectResult 的 "all_param" 读取为 [rowBegin, columnBegin, rowEnd, columnEnd, distance]。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；measureLength1 是垂直线段方向的搜索半长（工件位置偏差要落在这里面）、measureLength2 沿线段切向的平均半长。index 之后用于 Set/GetMetrologyObjectParam 与取结果，语义同其它 Add 算子。</para>
+	///   <para><b>约束或前提</b>建议先 SetMetrologyModelImageSize；measureLength1 是垂直线段方向的搜索半长（工件位置偏差要落在这里面）、measureLength2 沿线段切向的平均半长。index 之后用于 Set/GetMetrologyObjectParam 与取结果，语义同其它 Add 算子。</para>
 	///   <para><b>与相邻算子的取舍</b>只要一个边缘坐标（如测件左边界位置）用 JlMeasure 1D 卡尺单点即可；要整条边的位置+角度、并对整条边几十个边缘点做平均降噪，用本算子。两条边宽度/厚度成对输出用 JlMeasure.MeasurePairs。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1869,7 +1869,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加椭圆/椭圆弧测量对象（原生 id 793），返回新对象 index：中心 (row, column)、长轴方向 phi（弧度）、半轴 radius1（长）/radius2（短）。Apply 时沿椭圆周布微卡尺取边并整体拟合。radius1 应不小于 radius2；两者相等时几何上退化为圆。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize。只测部分弧段时，genParamName/genParamValue 可使用 "start_phi"、"end_phi" 和 "point_order" 限定弧段。index 后续寻址语义同其它 Add 算子。</para>
+	///   <para><b>约束或前提</b>建议先 SetMetrologyModelImageSize。只测部分弧段时，genParamName/genParamValue 可使用 "start_phi"、"end_phi" 和 "point_order" 限定弧段。index 后续寻址语义同其它 Add 算子。</para>
 	///   <para><b>与相邻算子的取舍</b>目标是圆就用 AddMetrologyObjectCircleMeasure（参数少、拟合更稳）；椭圆度/长宽比本身是被测量时才用本算子。椭圆的 all_param 结果顺序为 [row, column, phi, radius1, radius2]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1988,7 +1988,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加圆/圆弧测量对象（原生 id 794），返回新对象 index：圆心 (row, column)、名义半径 radius（像素）。Apply 时沿圆周等间隔布微卡尺径向取边，把所有边缘点联合最小二乘拟合出圆心与半径——几十个点的平均使半径重复精度远高于单点卡尺。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；圆心半径是名义值，真实位置偏差由 measureLength1（径向搜索半长）兜住。只见部分圆弧时，通过 "start_phi"、"end_phi" 和 "point_order" 限定弧段；弧段太短或有效边缘点不足时，圆心和半径会欠约束。index 是后续按对象设参/取结果的凭据。</para>
+	///   <para><b>约束或前提</b>建议先 SetMetrologyModelImageSize；圆心半径是名义值，真实位置偏差由 measureLength1（径向搜索半长）兜住。只见部分圆弧时，通过 "start_phi"、"end_phi" 和 "point_order" 限定弧段；弧段太短或有效边缘点不足时，圆心和半径会欠约束。index 是后续按对象设参/取结果的凭据。</para>
 	///   <para><b>与相邻算子的取舍</b>只测孔壁上一点到基准的距离用 JlMeasure 圆弧卡尺（GenMeasureArc）；要完整拟合圆心+半径用本算子。圆的 all_param 结果顺序为 [row, column, radius]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
