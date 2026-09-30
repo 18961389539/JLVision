@@ -128,7 +128,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   JlMeasure ring = new JlMeasure(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>传入多值数组是否会展开为多个卡尺或仅取首元素 （具体边界行为以对应 HALCON 算子文档为准）。句柄用毕请 Dispose（或 CloseMeasure，但见 CloseMeasure 注释中的坑）。</para>
+	///   <para>本层直接把多值元组传给原生算子，不展开也不做长度校验；是否支持多值由原生算子定义。句柄用毕请 Dispose（或 CloseMeasure，但见 CloseMeasure 注释中的坑）。</para>
 	/// </remarks>
 	public JlMeasure(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, string interpolation)
 	{
@@ -796,7 +796,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>与单边缘版共享同一套模糊隶属函数（ResetFuzzyMeasure 复位）；interDistance 首元素无相邻对时的取值 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>与单边缘版共享同一套模糊隶属函数（ResetFuzzyMeasure 复位）；首个输出位置没有前一条边缘对可用于计算相邻间距；调用方不要把该位置当作有效 interDistance，具体占位值由原生算子定义。</para>
 	/// </remarks>
 	public void FuzzyMeasurePairs(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter, out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance)
 	{
@@ -1044,7 +1044,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>平移后卡尺区域可能部分越出图像边界，越界处的采样行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>平移后卡尺区域可能部分越出图像边界；本层不裁剪坐标，越界处的采样取值由原生算子定义。</para>
 	/// </remarks>
 	public void TranslateMeasure(JlTuple row, JlTuple column)
 	{
@@ -1113,7 +1113,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   ring.GenMeasureArc(centerRow, centerCol, radius, angleStart, angleExtent, annulusRadius, 512, 512, "nearest_neighbor");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>调用即丢弃原卡尺配置；若同一原生句柄还被其它 JlMeasure 变量引用（如 JlMeasure(handle) 包装所得），旧句柄被释放后的共享行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>调用即丢弃本包装对象当前持有的卡尺配置；通过 JlMeasure(handle) 取得的其他包装拥有独立引用，当前对象释放后仍可使用，但其内容不会随本次重建同步更新。</para>
 	/// </remarks>
 	public void GenMeasureArc(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, string interpolation)
 	{

@@ -259,7 +259,7 @@ public class JlObjectVector : JlVector
 	///   head.Dispose();
 	///   tail.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>clone:false 时 shared 与 tail 各含同一实例，先 Dispose shared 会释放该实例、tail 再 Dispose 时对同一实例二次走释放路径；托管壳把 key 复位 UNDEF 后二次 Dispose 不再进原生调用，实际安全性 （具体边界行为以对应 HALCON 算子文档为准）。Dispose 过 shared 之后勿再读 tail 的该格。</para>
+	///   <para><b>资源与坑</b>clone:false 时 shared 与 tail 各含同一实例，先 Dispose shared 会释放该实例、tail 再 Dispose 时对同一实例二次走释放路径；托管壳把 key 复位 UNDEF 后二次 Dispose 不再进原生调用，同一托管子向量第二次调用 Dispose() 时因 key 已复位为 UNDEF，不会再次调用原生释放；但 tail 中该格已是未初始化对象，不能继续使用。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlObjectVector Concat(JlObjectVector vector, bool clone)
@@ -317,7 +317,7 @@ public class JlObjectVector : JlVector
 	///   v.Dispose();
 	///   more.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>示例末两行让共享实例先后被两侧各释放一次；托管壳把 key 复位 UNDEF 后二次 Dispose 不再进原生调用，实际安全性 （具体边界行为以对应 HALCON 算子文档为准）。要彻底避开就 clone:true 或先 Dispose 一侧再掏空另一侧。</para>
+	///   <para><b>资源与坑</b>示例末两行让共享实例先后被两侧各释放一次；托管壳把 key 复位 UNDEF 后二次 Dispose 不再进原生调用，第二次调用 Dispose() 时因 key 已复位为 UNDEF，不会再次调用原生释放；另一侧列表中的该格仍指向已释放的托管对象，不能继续使用。若两侧都要独立使用，请设 clone:true。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlObjectVector Append(JlObjectVector vector, bool clone)
@@ -369,7 +369,7 @@ public class JlObjectVector : JlVector
 	///   int n = v.Length;           // 1
 	///   v.Dispose();                // 该格由 v 释放；此后不要再单独 Dispose leaf
 	///   </code>
-	///   <para><b>资源与坑</b>示例里 leaf 的释放责任已转移给 v——再写一次 leaf.Dispose() 属二次释放同一托管壳，其幂等性 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>示例里 leaf 的释放责任已转移给 v——再写一次 leaf.Dispose() 属二次释放同一托管壳，重复调用 Dispose() 是安全的：首次释放后 key 会复位为 UNDEF，后续调用不再进入原生释放。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlObjectVector Insert(int index, JlObjectVector vector, bool clone)

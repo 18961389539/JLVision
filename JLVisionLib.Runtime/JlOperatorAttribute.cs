@@ -5,7 +5,7 @@ namespace JLVisionLib;
 /// <summary>标记算子（Operator）包装方法，携带其对应的原生逻辑名称。</summary>
 /// <remarks>
 ///   <para><b>功能说明</b>：把某个托管静态方法声明为某原生 Vision 算子的包装，并在 <c>LogicalName</c> 里记录该算子在原生运行时的逻辑名称，供按名查找/反射调用时读取，避免在多处硬编码算子字符串。它是纯元数据，不改变被标注方法的运行时行为。</para>
-///   <para><b>约束</b>：<c>AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)</c>——只能贴方法、不可被子类继承、单方法至多一次。<c>LogicalName</c> 是 <c>virtual</c> 只读属性（读私有字段），构造器只收一个 <c>string</c> 且不做非空/合法性校验，逻辑名拼错在托管侧不会被拦下 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+///   <para><b>约束</b>：<c>AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)</c>——只能贴方法、不可被子类继承、单方法至多一次。<c>LogicalName</c> 是 <c>virtual</c> 只读属性（读私有字段），构造器只收一个 <c>string</c> 且不做非空/合法性校验，构造器不校验逻辑名；名称为空或拼写错误时，是否失败取决于后续读取该名称的调用方。</para>
 ///   <para><b>与相邻能力的取舍</b>想知道"当前正在执行的过程"叫什么，用 <c>JlNativeApi.GetLogicalName(proc/procIndex)</c> 的运行时查询；本特性是编译期静态标注，二者不是一回事。</para>
 ///   <para><b>用法</b></para>
 ///   <code>
