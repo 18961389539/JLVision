@@ -4508,7 +4508,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>：调用原生算子（id 188，tuple_fmod）。在浮点域取余、余数符号与被除数一致，与整数 <see cref="TupleMod"/> 不同；结果按 DOUBLE 装载。</para>
 	///   <para><b>与实例重载的取舍</b>：链式可用 <see cref="JlTuple.TupleFmod(JlTuple)"/>；本静态版两操作数显式传入、结果走 out。</para>
 	///   <para><b>参数取向</b>：t1、t2 按原生序 0/1 由 Store 钉入、调用后自动解钉；fmod 由 LoadNew 新建，不改输入。</para>
-	///   <para><b>资源与坑</b>：t2 为 0 时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）；长度不等时的广播规则由原生语义决定 （具体边界行为以对应 HALCON 算子文档为准）；fmod 为独立新元组、纯数值不持句柄。</para>
+	///   <para><b>资源与坑</b>：t2 为 0 时属于除零输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则由原生语义决定；fmod 为独立新元组、纯数值不持句柄。</para>
 	/// </remarks>
 	public static void TupleFmod(JlTuple t1, JlTuple t2, out JlTuple fmod)
 	{
@@ -4777,7 +4777,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>：调用原生算子（id 201，tuple_atan2）。据 x、y 判象限得到完整方向角；结果按 DOUBLE 装载。单参数比值用 <see cref="TupleAtan"/>。</para>
 	///   <para><b>与实例重载的取舍</b>：链式可用 <see cref="JlTuple.TupleAtan2(JlTuple)"/>（实例为 y、参数为 x）；本静态版 y、x 都是显式入参、结果走 out。</para>
 	///   <para><b>参数取向</b>：y、x 按原生序 0/1 由 Store 钉入、调用后自动解钉；ATan 由 LoadNew 新建，不改输入。</para>
-	///   <para><b>资源与坑</b>：y、x 同为 0 时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）；长度不等时的广播规则由原生语义决定 （具体边界行为以对应 HALCON 算子文档为准）；ATan 为独立新元组、纯数值不持句柄。</para>
+	///   <para><b>资源与坑</b>：y、x 同为 0 时属于退化输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则由原生语义决定；ATan 为独立新元组、纯数值不持句柄。</para>
 	/// </remarks>
 	public static void TupleAtan2(JlTuple y, JlTuple x, out JlTuple ATan)
 	{
@@ -23270,7 +23270,7 @@ public class JlOperatorSet
 	/// <param name="RGBImage">Three-channel RBG image.</param>
 	/// <param name="grayImage">灰度图像。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对一张三通道图按亮度加权降为单通道灰度；输入必须是三通道，否则结果未定义。与 Rgb3ToGray 的区别是这里三通道打包在同一图像句柄内。原生算子 id 1501，输出为新句柄。</para>
+	///   <para><b>功能说明</b>对一张三通道图按亮度加权降为单通道灰度；输入应为三通道；本层不检查通道数，其他通道数交给原生算子处理。与 Rgb3ToGray 的区别是这里三通道打包在同一图像句柄内。原生算子 id 1501，输出为新句柄。</para>
 	///   <para><b>与实例重载的取舍</b>类型化入口见 <see cref="JlImage.Rgb1ToGray()"/>，以本三通道图为输入、返回 JlImage；本静态版两端放开为裸 JlObject。</para>
 	///   <para><b>资源与坑</b>grayImage 须 Dispose；RGBImage 由 GC.KeepAlive 保活。仅需某一通道时用通道抽取族，不必整体转灰度。</para>
 	/// </remarks>
@@ -27184,7 +27184,7 @@ public class JlOperatorSet
 	/// <param name="colEnd">输入直线终点的列坐标序列。</param>
 	/// <param name="phi">Orientation of the input lines.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>纯控制值几何：四路入参是平行数组，第 i 条线由各自第 i 个元素确定，phi 为起点指向终点的方向角，弧度制；取值区间与正方向（row 向下为正带来的翻转）无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）。两端点重合的退化线段结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>纯控制值几何：四路入参是平行数组，第 i 条线由各自第 i 个元素确定，phi 为起点指向终点的方向角，弧度制；取值区间与正方向（row 向下为正带来的翻转）无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）。两端点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与包装类的取舍</b>JlMisc 有同名静态重载（<see cref="JlMisc.LineOrientation(JlTuple, JlTuple, JlTuple, JlTuple)"/>）把 phi 作返回值给出，另有逐标量 double 版。除角度还要中点与长度时改用 LinePosition。</para>
 	///   <para><b>参数取向</b>四路输入按声明序占控制槽 0..3，钉固传入、调用后逐个 UnpinTuple；单个 out 以 InitOCT(0) 登记后经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>无图标输入故无 GC.KeepAlive 约束；输入输出皆纯数值元组，Dispose 无操作。</para>

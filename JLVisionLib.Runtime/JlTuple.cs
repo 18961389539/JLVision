@@ -3495,7 +3495,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>DOUBLE 类型的逐元素浮点余数。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 188，tuple_fmod）。余数符号与被除数（本元组）一致；与整数取余 <see cref="TupleMod"/> 不同，本算子在浮点域进行、结果按 DOUBLE 装载。</para>
-	///   <para><b>约束或前提</b>：t2 为 0 时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）；长度不等时的广播规则由原生语义决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：t2 为 0 时属于除零输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则也由原生语义决定。</para>
 	///   <para><b>钉固定</b>：Store(proc,0) 经 InitPCT 钉住本元组、JlNativeApi.Store(proc,1,t2) 钉住 t2，CallProcedure 之后 UnpinTuple() 与 JlNativeApi.UnpinTuple(t2) 解除；调用方不参与钉/解固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3858,7 +3858,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>角度（弧度），落在 (-π, π]。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 201，tuple_atan2）。本元组是 y（分子），参数 x 是横坐标；据此判定象限，得到完整方向角。</para>
-	///   <para><b>约束或前提</b>：y、x 同为 0 时的结果未定义 （具体边界行为以对应 HALCON 算子文档为准）；长度不等时的广播规则由原生语义决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：y、x 同为 0 时属于退化输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则也由原生语义决定。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要单参数比值用 <see cref="TupleAtan"/>。</para>
 	///   <para><b>钉固定</b>：Store(proc,0) 经 InitPCT 钉住本元组、JlNativeApi.Store(proc,1,x) 钉住 x，CallProcedure 之后 UnpinTuple() 与 JlNativeApi.UnpinTuple(x) 解除；调用方不参与钉/解固定。</para>
 	///   <para><b>用法</b></para>
