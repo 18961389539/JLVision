@@ -160,7 +160,7 @@ public abstract class JlVector : ICloneable, IDisposable
 	///   src.Dispose();
 	///   dst.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>调用后仍按旧 <c>src</c> 去读只会拿到空容器，不会报错；本类未定义析构函数，<c>Dispose</c> 里的 <c>GC.SuppressFinalize</c> 与这里的 <c>ReRegisterForFinalize</c> 对无终结器类型只是形式动作 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>资源与坑</b>调用后仍按旧 <c>src</c> 去读只会拿到空容器，不会报错；本类未定义析构函数，<c>Dispose</c> 里的 <c>GC.SuppressFinalize</c> 与这里的 <c>ReRegisterForFinalize</c> 对无终结器类型只是形式动作 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public void TransferOwnership(JlVector source)
@@ -624,7 +624,7 @@ public abstract class JlVector : ICloneable, IDisposable
 	///   int left = v.Length;   // 0：容器仍在，可继续 Append
 	///   v.Dispose();           // 重复调用安全，List 已空
 	///   </code>
-	///   <para><b>资源与坑</b>索引器与 <c>At</c> 交出的都是内部引用，<c>Dispose</c> 之后它们一律悬垂；本类未定义析构函数，<c>SuppressFinalize</c> 只是形式动作 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；由 <c>using</c> 或 <c>finally</c> 保证调用，别指望垃圾回收替你释放原生句柄。</para>
+	///   <para><b>资源与坑</b>索引器与 <c>At</c> 交出的都是内部引用，<c>Dispose</c> 之后它们一律悬垂；本类未定义析构函数，<c>SuppressFinalize</c> 只是形式动作 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；由 <c>using</c> 或 <c>finally</c> 保证调用，别指望垃圾回收替你释放原生句柄。</para>
 	/// </remarks>
 	public void Dispose()
 	{
