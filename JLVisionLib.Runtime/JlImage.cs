@@ -394,6 +394,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 		return Clone();
 	}
 
+	/// <summary>通过序列化往返创建当前图像的独立副本。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b><c>Clone()</c> 通过 <c>SerializeImage()</c>+<c>DeserializeImage()</c> 做一次<b>深拷贝</b>：
 	///   新对象的像素内存是重新分配的，改副本不影响原图。这与 <c>CopyImage()</c>（原生 id 571，同为深拷贝但走原生端）

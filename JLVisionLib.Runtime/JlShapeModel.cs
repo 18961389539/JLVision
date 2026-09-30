@@ -808,6 +808,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		return Clone();
 	}
 
+	/// <summary>通过序列化往返创建当前形状模型的独立副本。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
 	///   <para>按 SerializeShapeModel + DeserializeShapeModel 做数据级深拷贝，返回独立的新句柄。</para>

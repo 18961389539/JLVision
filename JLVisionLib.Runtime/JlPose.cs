@@ -31,6 +31,8 @@ public class JlPose : JlData, ISerializable, ICloneable
 	{
 	}
 
+	/// <summary>用已有元组创建一个独立的位姿副本。</summary>
+	/// <param name="tuple">包含 7 个位姿元素的元组；元素顺序为平移、旋转和表示类型码。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>复制一个已有位姿元组，形成独立的托管存储，不执行原生算子。</para>
 	///   <para><b>输入要求</b><paramref name="tuple"/>必须包含 7 个元素，并遵循 HALCON 的位姿元素顺序；输入元组与新对象不共享所有权，调用方仍负责释放输入元组。</para>

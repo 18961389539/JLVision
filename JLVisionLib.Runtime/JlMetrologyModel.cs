@@ -236,6 +236,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		return Clone();
 	}
 
+	/// <summary>通过序列化往返创建当前模型的独立副本。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
 	///   <para>深拷贝整个模型（含所有 metrology object 与参数）：走 SerializeMetrologyModel→DeserializeMetrologyModel 的字节数组往返，返回独立新句柄的新对象。</para>
