@@ -662,7 +662,7 @@ public class JlTupleElements
 		return hTuple + hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的加运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的加运算符；字符串输入按 HALCON 的字符串加法规则拼接，返回新 JlTuple。</summary>
 	public static JlTuple operator +(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -717,7 +717,7 @@ public class JlTupleElements
 		return hTuple - hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的减运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的减运算符；字符串输入不支持减法，数值输入返回新 JlTuple。</summary>
 	public static JlTuple operator -(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -772,7 +772,7 @@ public class JlTupleElements
 		return hTuple * hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的乘运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的乘运算符；字符串输入不支持乘法，数值输入返回新 JlTuple。</summary>
 	public static JlTuple operator *(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -795,7 +795,7 @@ public class JlTupleElements
 		return hTuple * t2;
 	}
 
-	/// <summary>把元素视图转为元组后逐元素除以 int 标量，返回新 JlTuple；整数商口径（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>把元素视图转为元组后逐元素除以 int 标量，返回新 JlTuple；整数除法按整数口径返回结果；除数必须非零。</summary>
 	public static JlTuple operator /(JlTupleElements e1, int t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -803,7 +803,7 @@ public class JlTupleElements
 		return hTuple / hTuple2;
 	}
 
-	/// <summary>把元素视图转为元组后逐元素除以 long 标量，返回新 JlTuple；整数商口径（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>把元素视图转为元组后逐元素除以 long 标量，返回新 JlTuple；整数除法按整数口径返回结果；除数必须非零。</summary>
 	public static JlTuple operator /(JlTupleElements e1, long t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -827,7 +827,7 @@ public class JlTupleElements
 		return hTuple / hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的除运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的除运算符；字符串输入不支持除法，除数必须非零，返回新 JlTuple。</summary>
 	public static JlTuple operator /(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -866,7 +866,7 @@ public class JlTupleElements
 		return hTuple % hTuple2;
 	}
 
-	/// <summary>把元素视图转为元组后逐元素对 float 标量取余，返回新 JlTuple；浮点取余口径（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>把元素视图转为元组后逐元素对 float 标量取余，返回新 JlTuple；浮点除数必须非零，结果按 DOUBLE 余数口径返回。</summary>
 	public static JlTuple operator %(JlTupleElements e1, float t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -874,7 +874,7 @@ public class JlTupleElements
 		return hTuple % hTuple2;
 	}
 
-	/// <summary>把元素视图转为元组后逐元素对 double 标量取余，返回新 JlTuple；浮点取余口径（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>把元素视图转为元组后逐元素对 double 标量取余，返回新 JlTuple；浮点除数必须非零，结果按 DOUBLE 余数口径返回。</summary>
 	public static JlTuple operator %(JlTupleElements e1, double t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -882,7 +882,7 @@ public class JlTupleElements
 		return hTuple % hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的取余运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的取余运算符；字符串输入不支持取余；数值除数必须非零，返回新 JlTuple。</summary>
 	public static JlTuple operator %(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -921,7 +921,7 @@ public class JlTupleElements
 		return hTuple & hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位与运算符与 float 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位与运算符与 float 标量组合；按位与只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator &(JlTupleElements e1, float t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -929,7 +929,7 @@ public class JlTupleElements
 		return hTuple & hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位与运算符与 double 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位与运算符与 double 标量组合；按位与只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator &(JlTupleElements e1, double t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -937,7 +937,7 @@ public class JlTupleElements
 		return hTuple & hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的按位与运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的按位与运算符；字符串输入不支持按位与，返回新 JlTuple。</summary>
 	public static JlTuple operator &(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -976,7 +976,7 @@ public class JlTupleElements
 		return hTuple | hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位或运算符与 float 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位或运算符与 float 标量组合；按位或只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator |(JlTupleElements e1, float t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -984,7 +984,7 @@ public class JlTupleElements
 		return hTuple | hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位或运算符与 double 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位或运算符与 double 标量组合；按位或只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator |(JlTupleElements e1, double t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -992,7 +992,7 @@ public class JlTupleElements
 		return hTuple | hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的按位或运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的按位或运算符；字符串输入不支持按位或，返回新 JlTuple。</summary>
 	public static JlTuple operator |(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1031,7 +1031,7 @@ public class JlTupleElements
 		return hTuple ^ hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位异或运算符与 float 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位异或运算符与 float 标量组合；按位异或只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator ^(JlTupleElements e1, float t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1039,7 +1039,7 @@ public class JlTupleElements
 		return hTuple ^ hTuple2;
 	}
 
-	/// <summary>转为元组后按 JlTuple 的按位异或运算符与 double 标量组合；浮点元素适用性（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>转为元组后按 JlTuple 的按位异或运算符与 double 标量组合；按位异或只接受 INTEGER/LONG；浮点输入会抛访问异常，返回新 JlTuple。</summary>
 	public static JlTuple operator ^(JlTupleElements e1, double t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1047,7 +1047,7 @@ public class JlTupleElements
 		return hTuple ^ hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的按位异或运算符；字符串元素的行为（具体边界行为以对应 HALCON 算子文档为准），返回新 JlTuple。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的按位异或运算符；字符串输入不支持按位异或，返回新 JlTuple。</summary>
 	public static JlTuple operator ^(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1102,7 +1102,7 @@ public class JlTupleElements
 		return hTuple < hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的小于运算符，返回 bool；字符串元素的比较行为（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的小于运算符，返回 bool；字符串按字典序比较。</summary>
 	public static bool operator <(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1157,7 +1157,7 @@ public class JlTupleElements
 		return hTuple > hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的大于运算符，返回 bool；字符串元素的比较行为（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的大于运算符，返回 bool；字符串按字典序比较。</summary>
 	public static bool operator >(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1212,7 +1212,7 @@ public class JlTupleElements
 		return hTuple <= hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的小于等于运算符，返回 bool；字符串元素的比较行为（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的小于等于运算符，返回 bool；字符串按字典序比较。</summary>
 	public static bool operator <=(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
@@ -1267,7 +1267,7 @@ public class JlTupleElements
 		return hTuple >= hTuple2;
 	}
 
-	/// <summary>两侧转为元组后转调 JlTuple 的大于等于运算符，返回 bool；字符串元素的比较行为（具体边界行为以对应 HALCON 算子文档为准）。</summary>
+	/// <summary>两侧转为元组后转调 JlTuple 的大于等于运算符，返回 bool；字符串按字典序比较。</summary>
 	public static bool operator >=(JlTupleElements e1, string t2)
 	{
 		using JlTuple hTuple = (JlTuple)e1;
