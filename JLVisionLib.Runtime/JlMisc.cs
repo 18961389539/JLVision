@@ -357,7 +357,9 @@ public class JlMisc
 	/// <returns>承载映射数据的新 JlImage 句柄（非原地改写，用毕须释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>由"标定图上网格点在畸变图像中的位置"生成一张投影映射图，供后续按图校正任意畸变，对应原生算子 id 1108。gridSpacing/gridWidth/imageWidth/imageHeight 以整型直写（StoreI），row/column 以元组钉住传入；映射数据以新句柄返回（JlImage.LoadNew，非原地改写）。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（标定辅助与几何/卡尔曼混在一起），本库内部没有任何调用者。row/column 必须是同一网格逐点展开的等长元组，且与 gridWidth、imageWidth/imageHeight 自洽；<c>mapType</c> 的合法取值集与插值细节无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。本库不提供 3D/显示能力，映射图只能配合本库仍存在的图像变换算子使用。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（标定辅助与几何/卡尔曼混在一起），本库内部没有任何调用者。row/column 必须按行展开同一网格且等长，
+	///   gridSpacing、imageWidth、imageHeight 必须大于 0，gridWidth 必须与每行点数一致；<c>mapType</c> 只能取 <c>"bilinear"</c> 或 <c>"coord_map_sub_pix"</c>。
+	///   本库不提供 3D/显示能力，映射图只能配合本库仍存在的图像变换算子使用。</para>
 	///   <para><b>与相邻算子的取舍</b>规则网格畸变优先用 <c>JlXLDPoly.GenGridRectificationMap</c>（本库仍在，按正交网格点拟合）；本方法面向"任意畸变"——网格点可不规则时用 <see cref="CreateRectificationGrid"/> 打图、量测出实际点位后再生成映射。网格点越密内存越大，够用即止。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

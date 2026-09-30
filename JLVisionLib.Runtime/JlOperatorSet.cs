@@ -18149,7 +18149,8 @@ public class JlOperatorSet
 	/// <param name="column">格点的列坐标。</param>
 	/// <param name="mapType">映射类型。Default: "bilinear"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1107：以规则网格的实测格点 (row/column) 与连接线反推镜头畸变，产出可直接喂给图像校正的映射图；map 与 meshes 均为新建句柄。rotation 用 "auto" 时由算子自行判定网格朝向，数值则手工指定（允许的 rotation/mapType 取值集合；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1107：以规则网格的实测格点 (row/column) 与连接线反推镜头畸变，产出可直接喂给图像校正的映射图；map 与 meshes 均为新建句柄。rotation 用 "auto" 时由算子自行判定网格朝向，数值只能指定 0、90、180 或 270 度。</para>
+	///   <para><b>参数约束</b><c>gridSpacing</c> 必须大于 0，<c>row</c> 与 <c>column</c> 必须等长；<c>mapType</c> 只能取 <c>"bilinear"</c> 或 <c>"coord_map_sub_pix"</c>。托管层不提前校验，非法值由 HALCON 报错。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlImage.GenGridRectificationMap(JlXLD, out JlXLD, int, JlTuple, JlTuple, JlTuple, string)"/> 以畸变图为 this、返回强类型 JlImage 并 out 出 JlXLD；本静态版两端裸 JlObject，另有把 connectingLines 也放开为裸句柄的调用点。</para>
 	///   <para><b>参数取向</b>image 在图标槽 1、connectingLines 在图标槽 2，gridSpacing/rotation/row/column/mapType 按声明序占控制槽 0..4；两个对象输出以 InitOCT(1)/InitOCT(2) 登记、各经 JlObject.LoadNew 新建。</para>
 	///   <para><b>资源与坑</b>map 与 meshes 都是新句柄须 Dispose；image、connectingLines 由 GC.KeepAlive 保住，原生调用结束前不得释放；格点顺序须与上游检测一致，否则映射静默错位。</para>
