@@ -1016,7 +1016,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1107。本对象（多边形）作为第二路图标输入 Store 到参数 2，image 输入参数 1；控制参数 gridSpacing/rotation(row/column)/mapType 分别 Store 到 0..4。产出两路输出：JlImage.LoadNew 得到映射图像（返回值），LoadNew 得到 out meshes 网格多边形。</para>
-	///   <para><b>约束或前提</b>gridSpacing 为校正图中网格点间距（像素），应为正数 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。rotation 走元组版直接 Store 并在调用后 UnpinTuple，"auto" 由算法自动取向；显式给角度时单位为弧度 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。row/column 是网格点坐标，须成对等长。</para>
+	///   <para><b>约束或前提</b><c>gridSpacing</c> 为校正图中网格点间距，必须为正整数；<c>rotation</c> 走元组版直接 Store 并在调用后 UnpinTuple，可取 <c>"auto"</c>、0、90、180 或 270（角度单位为度）；<c>row</c>/<c>column</c> 是网格点坐标，须成对等长。</para>
 	///   <para><b>与相邻算子的取舍</b>只传单一旋转标量时用 string rotation 重载；rotation 需多值/批量配置时用本元组重载。</para>
 	///   <para><b>参数取向</b>返回新 JlImage，out 出参 meshes 也是新句柄，二者都需释放。</para>
 	///   <para><b>用法</b></para>
@@ -1067,7 +1067,7 @@ public class JlXLDPoly : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新图像句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>算子 id 1107，与元组版同 id。本重载把 rotation 作为字符串用 StoreS 直写（如 "auto"），无需钉固定与解钉；其余图标输入 this(参数 2)、image(参数 1) 与控制输入 gridSpacing(0)、row(2)、column(3)、mapType(4) 布局同元组版。双路输出：返回值 JlImage 映射图、out meshes 网格多边形。</para>
-	///   <para><b>约束或前提</b>gridSpacing 应为正的像素间距 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；row/column 须成对等长；mapType 常用 "bilinear"，其它取值语义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b><c>gridSpacing</c> 必须为正整数像素间距；<c>row</c>/<c>column</c> 必须等长并按位置配对；<c>mapType</c> 只能取 <c>"bilinear"</c> 或 <c>"coord_map_sub_pix"</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>rotation 只有一个模式串时用本重载；需多值 rotation 用 JlTuple 重载。</para>
 	///   <para><b>参数取向</b>返回新 JlImage，out meshes 也是新句柄，均须释放。</para>
 	///   <para><b>用法</b></para>

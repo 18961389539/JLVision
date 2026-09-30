@@ -14839,7 +14839,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>转原生算子 id 863：输入只有 Store 进原生槽 0 的句柄；InitOCT 预置一路对象输出，调用后 LoadNew 返回独立新句柄，this 之外的原句柄不被改动。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlMatrix.CopyMatrix"/>：矩阵由 this 充当、副本走返回值。调 *Mod 系列前用它存快照是最常用搭配；跨进程/存档走序列化通道而非本算子。</para>
 	///   <para><b>参数取向</b>out 仅 1 个新句柄。</para>
-	///   <para><b>资源与坑</b>副本句柄必须释放，否则原生内存要到终结器才回收；是否深拷贝从托管侧无法判断 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；维度信息随副本一起复制。</para>
+	///   <para><b>资源与坑</b>副本句柄必须释放，否则原生内存要到终结器才回收。HALCON 会复制输入矩阵的全部元素，副本与原矩阵相互独立；维度信息随副本一起复制。</para>
 	/// </remarks>
 	public static void CopyMatrix(JlTuple matrixID, out JlTuple matrixCopyID)
 	{
@@ -14935,7 +14935,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>转原生算子 id 867：句柄与四个整型参数按形参序 Store 进原生槽 0 至 4；InitOCT 预置一路对象输出，调用后 LoadNew 把子块装成新句柄写进 out，原矩阵不变。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlMatrix.GetSubMatrix"/>：矩阵由 this 充当、结果走返回值。只读几个离散点用 GetValueMatrix；取整块等价 CopyMatrix 不必用本方法；写回必须显式调 SetSubMatrix，本方法给不到原矩阵的写权限。</para>
 	///   <para><b>参数取向</b>out 仅 1 个新句柄；坐标 0 基、原点在左上角。</para>
-	///   <para><b>资源与坑</b>返回句柄必须释放；越界与 rowsSub/columnsSub 给 0 的行为由目标 HALCON 版本定义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；子块是否与原矩阵共享内存目标 HALCON 版本定义的该细则，稳妥做法是改完再 SetSubMatrix 写回。</para>
+	///   <para><b>资源与坑</b>返回句柄必须释放；<c>row</c>/<c>column</c> 必须为非负且子块完全落在输入矩阵内，<c>rowsSub</c>/<c>columnsSub</c> 必须至少为 1。算子会把子块复制到新矩阵，修改结果不会写回原矩阵。</para>
 	/// </remarks>
 	public static void GetSubMatrix(JlTuple matrixID, JlTuple row, JlTuple column, JlTuple rowsSub, JlTuple columnsSub, out JlTuple matrixSubID)
 	{

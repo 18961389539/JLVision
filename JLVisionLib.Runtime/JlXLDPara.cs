@@ -685,14 +685,14 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	/// <param name="image">畸变输入图（提供尺寸/坐标系）。</param>
 	/// <param name="meshes">本次映射实际使用的网格线对新容器（新句柄）。</param>
 	/// <param name="gridSpacing">校正图中网格点间距，像素整数。</param>
-	/// <param name="rotation">施加给点网格的旋转角，数值元组（按本库角度约定应为弧度）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；调用期间被钉固。Default: "auto"</param>
+	/// <param name="rotation">施加给点网格的旋转角，数值元组，可取 0、90、180 或 270（单位为度）；调用期间被钉固。Default: "auto"</param>
 	/// <param name="row">网格点行坐标元组（像素）。</param>
 	/// <param name="column">网格点列坐标元组（像素）。</param>
 	/// <param name="mapType">映射类型串。Default: "bilinear"</param>
 	/// <returns>承载映射数据的 <c>JlImage</c> 新句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1107，与 string 重载同一算子：image 进 iconic 输入槽 1、本实例进 iconic 输入槽 2；控制槽 0..4 为 gridSpacing/rotation/row/column/mapType；本重载把 <c>rotation</c> 连同 <c>row</c>/<c>column</c> 一起 <c>Store</c> 钉固、调用后逐个 <c>UnpinTuple</c>，string 重载则 <c>StoreS</c> 直写旋转串。</para>
-	///   <para><b>约束或前提</b>数值 rotation 只能表达确定角度，拿不到 "auto"（自动定角）行为，自动对齐请走 string 重载；角度单位与正方向未在托管侧体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>数值 <c>rotation</c> 只能表达 0、90、180 或 270 度，拿不到 <c>"auto"</c>（自动定角）行为，自动对齐请走 string 重载。</para>
 	///   <para><b>与相邻算子的取舍</b>要"auto"选 <see cref="GenGridRectificationMap(JlImage,out JlXLDPara,int,string,JlTuple,JlTuple,string)"/>；要按已知安装角固定网格朝向才用本重载；标定参数已知时优先标定族。</para>
 	///   <para><b>参数取向</b>返回新 <c>JlImage</c> 句柄，<c>out meshes</c> 为新 <c>JlXLDPara</c> 句柄，两者都要 <c>Dispose()</c>。</para>
 	///   <para><b>用法</b></para>
@@ -744,7 +744,7 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	/// <returns>承载映射数据的 <c>JlImage</c> 新句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1107：注意槽位——image 进 iconic 输入槽 1，本实例进 iconic 输入槽 2（本容器在这里是输入不是输出）；控制槽 0..4 依次 gridSpacing/rotation/row/column/mapType；两个 iconic 输出槽 1/2 分别用 <c>JlImage.LoadNew</c> 与本类 <c>LoadNew</c> 取回。</para>
-	///   <para><b>约束或前提</b><c>row</c>/<c>column</c> 是你在畸变图上量出的网格点坐标，二者配对；<c>gridSpacing</c> 是校正后图的网格步长，模板示例里的 <c>0</c> 是否为合法"自动"值未证实 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；<c>rotation</c> 用 <c>StoreS</c> 按 STRING 直写，接受 "auto" 这类控制串，本重载省掉 rotation 的钉固（元组重载还要多钉一个）。</para>
+	///   <para><b>约束或前提</b><c>row</c>/<c>column</c> 是你在畸变图上量出的网格点坐标，二者必须等长并按位置配对；<c>gridSpacing</c> 是校正后图的网格步长，必须为正整数；字符串重载用于传 <c>"auto"</c>，需要显式指定 0/90/180/270 度时改用元组重载，本重载省掉 rotation 的钉固。</para>
 	///   <para><b>与相邻算子的取舍</b>已知相机标定参数时用标定族直接生成映射，不必量网格；网格线在图上清晰可提取（本项目里平行线对容器正好当网格线用）才轮到本算子；只要校正单个四边形区域用 find_quad+映射族更直接。</para>
 	///   <para><b>参数取向</b>返回新 <c>JlImage</c> 句柄，<c>out meshes</c> 也是新 <c>JlXLDPara</c> 句柄，两个都要 <c>Dispose()</c>。</para>
 	///   <para><b>用法</b></para>
@@ -857,8 +857,8 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	/// <returns>包含给定点的元素组成的新容器，可能为空容器。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1595，与标量重载同一算子；本方法 <c>Store</c> 钉住 <c>row</c>/<c>column</c> 两个元组、调用后逐个 <c>UnpinTuple</c>，比 <c>StoreD</c> 直写多四次交互。</para>
-	///   <para><b>约束或前提</b>两元组长度应一致（逐位配对成点）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；给单值元组与标量重载等价，但白担钉固开销。</para>
-	///   <para><b>与相邻算子的取舍</b>只测一个点用 <see cref="SelectXldPoint(double,double)"/>；本重载的存在意义是给"多点/多区间"留通道，其真实多值语义未经证实，生产上按标量逐点调用更稳。</para>
+	///   <para><b>约束或前提</b>两元组长度应一致，按相同下标配成测试点；HALCON 在 tuple level 对这些点自动并行处理。给单值元组与标量重载等价，但会多一次钉固/解钉开销。</para>
+	///   <para><b>与相邻算子的取舍</b>只测一个点用 <see cref="SelectXldPoint(double,double)"/>；需要批量测试多个点时使用本重载，返回的对象栈按原生算子结果返回。</para>
 	///   <para><b>参数取向</b>返回新句柄需 <c>Dispose()</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -894,7 +894,7 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1595：本实例进 iconic 槽 1，两点坐标用 <c>StoreD</c> 直写 DOUBLE 控制槽 0/1，无钉固；"包含"对线段而言指点落在线段路径上（相邻像素容差内）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），不是指点在线对围成的带状区域内部。</para>
 	///   <para><b>约束或前提</b>坐标以像素计、以图像左上角为原点，与 <c>GetParallelsXld</c> 的 row/col 同一坐标系；点在图像外不报错，只是大概率筛空。</para>
-	///   <para><b>与相邻算子的取舍</b>要"围住点的那块区域"应该先转 <c>JlRegion</c> 侧再做内点测试；按几何特征筛用 <c>SelectShapeXld</c>；需要同时测多个点并取并集时用元组重载 <see cref="SelectXldPoint(JlTuple,JlTuple)"/>，但多值语义未证实 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），稳妥做法是逐点调用后各自处理结果容器。</para>
+	///   <para><b>与相邻算子的取舍</b>要"围住点的那块区域"应该先转 <c>JlRegion</c> 侧再做内点测试；按几何特征筛用 <c>SelectShapeXld</c>；需要批量测试多个点并取原生返回的对象栈时用元组重载 <see cref="SelectXldPoint(JlTuple,JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>返回新句柄需 <c>Dispose()</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

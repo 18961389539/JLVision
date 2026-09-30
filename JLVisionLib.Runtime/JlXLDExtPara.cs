@@ -505,12 +505,12 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   基于规则网格点集计算畸变图到校正图的映射，返回映射图像并导出网格轮廓（rotation 为数值弧度元组的重载）。
+	///   基于规则网格点集计算畸变图到校正图的映射，返回映射图像并导出网格轮廓（rotation 为数值角度元组的重载）。
 	/// </summary>
 	/// <param name="image">输入灰度图，进 iconic 槽 1。</param>
 	/// <param name="meshes">输出的网格轮廓（新 <c>JlXLDExtPara</c> 句柄），原生 iconic 输出槽 2。</param>
 	/// <param name="gridSpacing">校正图中网格点间距，整数像素。Default: 由调用方给定</param>
-	/// <param name="rotation">施加于点网格的旋转，数值弧度，元组钉固定写入。Default: "auto"</param>
+	/// <param name="rotation">施加于点网格的旋转，数值角度元组，可取 0、90、180 或 270（单位为度）。Default: "auto"</param>
 	/// <param name="row">网格点的行坐标元组。</param>
 	/// <param name="column">网格点的列坐标元组。</param>
 	/// <param name="mapType">映射类型字符串，StoreS 写入。Default: "bilinear"</param>
@@ -519,7 +519,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1107。注意槽序与 C# 形参序不一致：<c>image</c> 占 iconic 输入 1、<c>this</c> 占 iconic 输入 2；控制参数序为 gridSpacing(0)、rotation(1)、row(2)、column(3)、mapType(4)。两个 iconic 输出经 <c>InitOCT</c> 声明：槽 1 以 <c>JlImage.LoadNew</c> 取回作返回值，槽 2 以 <c>LoadNew</c> 取回赋给 <c>meshes</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para><c>row</c>/<c>column</c> 需等长成对且与网格几何自洽；本重载 rotation 是数值弧度（对应 string 重载可传 "auto"）。多通道图是否可用未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><c>row</c>/<c>column</c> 需等长成对且与网格几何自洽；本重载 <c>rotation</c> 是数值角度，可取 0、90、180 或 270 度（对应 string 重载可传 <c>"auto"</c>）。输入图像须为单通道 byte 或 uint2。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>本重载传数值 rotation 精确控制网格转角；想让程序自动选旋转用 <c>GenGridRectificationMap(..., string rotation, ...)</c> 重载。</para>
 	///   <para><b>用法</b></para>
@@ -574,9 +574,9 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1107，槽序与形参序不一致：<c>image</c> 占 iconic 输入 1、<c>this</c> 占 iconic 输入 2；控制参数 gridSpacing(0 StoreI)、rotation(1 StoreS)、row(2)、column(3)、mapType(4 StoreS)。输出 <c>InitOCT</c> 槽 1 作返回值（<c>JlImage.LoadNew</c>），槽 2 赋给 <c>meshes</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>本重载 rotation 走字符串（StoreS，无需 UnpinTuple）；<c>"auto"</c> 由目标 HALCON 版本定义，本层不改写网格旋转。给数值弧度请改用 JlTuple rotation 重载。</para>
+	///   <para>本重载 rotation 走字符串（StoreS，无需 UnpinTuple），用于传 <c>"auto"</c>；需要显式指定数值角度时改用 JlTuple rotation 重载。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>想让程序自动选旋转用本重载；需精确指定旋转角用 <c>GenGridRectificationMap(..., JlTuple rotation, ...)</c>。</para>
+	///   <para>想让程序自动选旋转用本重载；需精确指定 0/90/180/270 度时用 <c>GenGridRectificationMap(..., JlTuple rotation, ...)</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("byte", 640, 480);

@@ -323,13 +323,13 @@ public class JlXLDModPara : JlXLD, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把本容器中从 index 起的 numObj 个连续元素复制成新容器（原生 id 568）。</summary>
+	///   把本容器中从 index 起的 numObj 个连续元素放入新容器（原生 id 568；元素数据共享原生对象存储）。</summary>
 	/// <param name="index">复制区段起始序号。Default: 1</param>
 	/// <param name="numObj">复制个数，或 -1。Default: 1</param>
 	/// <returns>复制出的新 JlXLDModPara 句柄；本容器不改动。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：两个参数都经 StoreI 以 INTEGER 直写控制槽 0/1，无元组钉固开销；输出走本类 LoadNew（OCT 槽 1），是独立新句柄。</para>
-	///   <para><b>约束或前提</b>：起始序号默认值为 1、包装层不换算，判为 1 基 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；numObj=-1 的英文文档原文只说 "or -1"，未证实即"全部" （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；越界行为调用前用 CountObj() 核对元素数。</para>
+	///   <para><b>约束或前提</b>：起始序号从 1 开始；<c>numObj=-1</c> 表示从 <paramref name="index"/> 复制到容器末尾，<c>numObj</c> 不能为 0，且区间必须落在对象数内。返回容器中的元素与原容器共享原生对象存储，不是像素/轮廓数据的深拷贝。</para>
 	///   <para><b>与相邻算子的取舍</b>：CopyObj 只取连续区段；任意/含重复的序号用 SelectObj（id 572，传 JlTuple）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -581,8 +581,8 @@ public class JlXLDModPara : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新 JlImage 句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：image 存图标槽 1、本实例存图标槽 2（本类只是两个 OCT 输出中槽 2 的装载壳，见 Store 行为）；控制槽 0–4 依次是 gridSpacing/rotation/row/column/mapType。双输出：槽 1 经 JlImage.LoadNew 得映射图，槽 2 经本类 LoadNew 得 meshes，都是新句柄。</para>
-	///   <para><b>约束或前提</b>：row/column 成对给出校正后图像中的格点坐标，row/column 必须等长，gridSpacing 必须为正整数；这些约束由目标 HALCON 版本定义，本层不改写；rotation 数值单位为弧度 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
-	///   <para><b>与相邻算子的取舍</b>：本重载 rotation 走 Store+UnpinTuple，固定传 "auto" 或角度字符串时用 string 重载（StoreS）更直接；只需网格不需映射图时也要接住返回值释放，别只 Dispose meshes。</para>
+	///   <para><b>约束或前提</b>：row/column 成对给出校正后图像中的格点坐标，row/column 必须等长，gridSpacing 必须为正整数；数值 <c>rotation</c> 只能取 0、90、180 或 270（单位为度），<c>"auto"</c> 需使用 string 重载。</para>
+	///   <para><b>与相邻算子的取舍</b>：本重载 rotation 走 Store+UnpinTuple，固定传角度时使用；需要 <c>"auto"</c> 时用 string 重载（StoreS）更直接；只需网格不需映射图时也要接住返回值释放，别只 Dispose meshes。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("byte", 640, 480);
@@ -633,7 +633,7 @@ public class JlXLDModPara : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新 JlImage 句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：与 JlTuple rotation 重载同一 id/槽位；唯一区别是 rotation 经 StoreS 直写 STRING，"auto" 这类关键字只能走本重载或再包一层字符串元组。</para>
-	///   <para><b>约束或前提</b>："auto" 时原生如何定网格朝向 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；row/column 与 gridSpacing 的组合合法性由目标 HALCON 运行时校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），托管侧不做任何前置检查。</para>
+	///   <para><b>约束或前提</b>：字符串重载的 <c>rotation="auto"</c> 按校正网格标记估计方向；需要显式给出 0、90、180 或 270 度时改用元组重载。<c>row</c>/<c>column</c> 必须等长，<c>gridSpacing</c> 必须为正整数，<c>mapType</c> 只能取 <c>"bilinear"</c> 或 <c>"coord_map_sub_pix"</c>；托管侧不做前置检查。</para>
 	///   <para><b>与相邻算子的取舍</b>：要显式给角度数值用 JlTuple 重载传弧度 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；本重载适合"自动定朝向"的标准校正流程。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

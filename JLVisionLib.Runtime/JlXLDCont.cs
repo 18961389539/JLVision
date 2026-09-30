@@ -4170,7 +4170,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	/// <returns>包含映射数据的图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1107 主重载：<c>rotation</c>/<c>row</c>/<c>column</c> 以元组 <c>Store</c>+<c>UnpinTuple</c> 送控制索引 1~3；本实例（网格轮廓）放 iconic 索引 2、<c>image</c> 放索引 1。输出两个新句柄：映射图 <c>JlImage</c>（返回值）与网格轮廓 <c>JlXLDCont</c>（<c>out meshes</c>）。</para>
-	///   <para><b>约束或前提</b><c>gridSpacing</c> 是校正后图像中的网格点间距（<c>StoreI</c> 整数像素）。<c>rotation</c> 传 0、90、180 或 270；给字符串 "auto" 会绑定到 <see cref="GenGridRectificationMap(JlImage, out JlXLDCont, int, string, JlTuple, JlTuple, string)"/>。网格点过少或畸变过重时由原生返回错误。</para>
+	///   <para><b>约束或前提</b><c>gridSpacing</c> 是校正后图像中的网格点间距，必须为正整数。数值重载的 <c>rotation</c> 取 0、90、180 或 270 度；字符串重载用于传 <c>"auto"</c>。网格点过少或畸变过重时由原生返回错误。</para>
 	///   <para><b>与相邻算子的取舍</b>已知解析畸变模型时用 <c>camera_calibration</c> 族直接求映射；本算子适合"镜头畸变无标定、但视场里有规则点阵/网格"的免标定校正。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4219,7 +4219,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	/// <returns>包含映射数据的图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1107（<c>rotation</c> 为字符串的便捷重载）：本实例应是覆盖在畸变网格图案上的轮廓——实现体把它放在 iconic 索引 2、<c>image</c> 放索引 1。由网格点拟合畸变→校正的映射：<c>LoadNew</c> 返回映射图 <c>JlImage</c>（供 image processing 类算子使用），<c>out meshes</c> 是另一条新 <c>JlXLDCont</c> 句柄。</para>
-	///   <para><b>约束或前提</b><c>gridSpacing</c> 是<b>校正后图像</b>中网格点间距（整数像素，<c>StoreI</c>）；与实际零件网格不符会收敛出错误映射。<c>rotation="auto"</c> 由数据估计网格旋转，其余合法字符串 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。<c>row</c>/<c>column</c> 传空元组时是否自动取网格交点 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b><c>gridSpacing</c> 是<b>校正后图像</b>中网格点间距，必须为正整数；<c>row</c>/<c>column</c> 必须等长并按位置配对。<c>rotation</c> 只能取 <c>"auto"</c>、<c>0</c>、<c>90</c>、<c>180</c> 或 <c>270</c>；<c>mapType</c> 只能取 <c>"bilinear"</c> 或 <c>"coord_map_sub_pix"</c>。</para>
 	///   <para><b>与主重载的实际差异</b>主重载（<see cref="GenGridRectificationMap(JlImage, out JlXLDCont, int, JlTuple, JlTuple, JlTuple, string)"/>）<c>rotation</c> 为 <c>JlTuple</c>，可传数值角；本重载 <c>StoreS</c> 只给字符串。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4228,7 +4228,8 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   grid.GenContourPolygonXld(new JlTuple(100.0, 100.0, 400.0, 400.0),
 	///       new JlTuple(100.0, 400.0, 100.0, 400.0));
 	///   JlImage mapping = grid.GenGridRectificationMap(img, out JlXLDCont meshes,
-	///       32, "auto", new JlTuple(), new JlTuple(), "bilinear");
+	///       32, "auto", new JlTuple(100.0, 100.0, 400.0, 400.0),
+	///       new JlTuple(100.0, 400.0, 100.0, 400.0), "bilinear");
 	///   mapping.GetImageSize(out int w, out int h);
 	///   </code>
 	///   <para><b>资源与坑</b>返回值映射图与 <c>out meshes</c> 都是新句柄，两个都要 <c>Dispose()</c>；<c>GC.KeepAlive(image)</c> 表明 <c>img</c> 在调用结束前不可释放。</para>

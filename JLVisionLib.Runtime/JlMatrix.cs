@@ -2132,7 +2132,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double before = snapshot[0, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的新句柄用完必须 Dispose，否则原生内存要到终结器才回收。副本是否为深拷贝（改原矩阵不影响副本）从托管侧无法判断；维度信息随副本一起复制。</para>
+	///   <para><b>资源与坑</b>返回的新句柄用完必须 Dispose，否则原生内存要到终结器才回收。HALCON 会把输入矩阵的全部元素复制到新矩阵，因此改原矩阵不影响副本，反之亦然；维度信息随副本一起复制。</para>
 	/// </remarks>
 	public JlMatrix CopyMatrix()
 	{
