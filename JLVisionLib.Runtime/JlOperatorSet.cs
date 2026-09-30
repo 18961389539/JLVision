@@ -559,7 +559,7 @@ public class JlOperatorSet
 	/// <param name="contours">待写出的轮廓（裸句柄）。</param>
 	/// <param name="fileName">目标文件路径。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>轮廓进图标槽 1、fileName 钉到控制槽 0，调用后不装载输出；输入不被改写。开闭轮廓在文件里的记法差异未在托管层处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>轮廓进图标槽 1、fileName 钉到控制槽 0，调用后不装载输出；输入不被改写。输出遵循 HALCON ARC/INFO generate 文件格式，轮廓闭合方式由该格式的原生读写约定处理。</para>
 	///   <para><b>与实例重载的取舍</b>与实例版 <see cref="JlXLDCont.WriteContourXldArcInfo(string)"/> 同 id 同槽位；静态版不要求先有 JlXLDCont 包装。读回用配对的 ReadContourXldArcInfo。</para>
 	///   <para><b>参数取向</b>void，无 out。</para>
 	///   <para><b>资源与坑</b>contours 在原生调用结束前受 GC.KeepAlive 保护。</para>
@@ -6981,7 +6981,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 431。逐像素把两幅图的取值当二维坐标，落在 <paramref name="featureSpace"/> 某个区域内即归该类，因此它是"在特征平面上画好的样板"，不是图像上的 ROI。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.Class2dimSup(JlImage,JlRegion)"/>：实例版以第一幅图为调用者、直接返回 <c>JlRegion</c>；本静态版三路图标输入全部显式给出（槽 1、2、3），结果走 out，适合手上只有裸句柄或要把结果与其它图标输出成组管理的场合。</para>
 	///   <para><b>参数取向</b>本算子没有任何数值控制参数，三路输入都是 <c>Store</c> 的图标对象；<c>InitOCT(proc, 1)</c> 声明单路图标输出。</para>
-	///   <para><b>资源与坑</b>结果是新句柄，需 <c>Dispose</c>；两幅图必须逐像素配对，尺寸或类型不一致时的行为托管层未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；输出块数与类别顺序是否严格跟随 <paramref name="featureSpace"/> 的对象序 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；三路输入均由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>结果是新句柄，需 <c>Dispose</c>；两幅输入图必须是等尺寸、等数量的单通道图像，算子使用两幅图定义域的交集进行分类；featureSpace 的区域数组与输入图像数组按 HALCON 的 tuple-level 规则配对。三路输入均由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void Class2dimSup(JlObject imageCol, JlObject imageRow, JlObject featureSpace, out JlObject regionClass2Dim)
 	{
@@ -7749,7 +7749,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 464。等价于"阈值分割加一次小对象剔除"，但把两件事合进一次原生调用，省去中间句柄的分配与传递。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.FastThreshold(double,double,int)"/>（<c>StoreD</c>/<c>StoreI</c> 直写单值）与 <see cref="JlImage.FastThreshold(JlTuple,JlTuple,int)"/>；本静态版三个参数都走通用 <c>Store</c> 的 <see cref="JlTuple"/>。</para>
 	///   <para><b>参数取向</b>控制槽 0、1、2 与形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>"快"具体牺牲了什么（是否跳过某些像素或改用粗化扫描）托管层未体现 （详见目标 HALCON 版本的对应 HALCON 算子文档；与 <see cref="JlOperatorSet.Threshold(JlObject,out JlObject,JlTuple,JlTuple)"/> 再筛面积的结果是否逐像素一致）；<paramref name="minSize"/> 直接丢弃小对象，需要保留细小时改用普通阈值；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>该算子直接按灰度范围提取并保留面积不小于 <paramref name="minSize"/> 的对象；它不是普通 <c>Threshold</c> 之后再调用 <c>Connection</c> 的逐步等价别名，边界和对象选择由 HALCON 的 fast_threshold 实现决定。需要保留细小时改用普通阈值；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void FastThreshold(JlObject image, out JlObject region, JlTuple minGray, JlTuple maxGray, JlTuple minSize)
 	{
@@ -8235,7 +8235,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>输入一组区域，输出填充其间缝隙的分隔区域，把平面 partition 成块。原生 id 484。</para>
 	///   <para><b>与实例重载的取舍</b>常规用 <see cref="JlRegion.Interjacent(string)"/>，它直接返回 JlRegion；静态版 mode 走钉固定元组路径（调用后 <c>UnpinTuple</c>），需要以元组形态传模式时才用静态版。</para>
 	///   <para><b>参数取向</b>控制参数 mode 在原生参数 0，iconic 输入 region 在 1；输出经 <c>LoadNew</c> 装载。</para>
-	///   <para><b>资源与坑</b>mode 除默认值外的其它合法取值本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；输入句柄由 <c>GC.KeepAlive</c> 保活到调用结束，输出新句柄用毕 Dispose。</para>
+	///   <para><b>资源与坑</b>mode 除默认值外的其它合法取值由原生算子校验；输入句柄由 <c>GC.KeepAlive</c> 保活到调用结束，输出新句柄用毕 Dispose。</para>
 	/// </remarks>
 	public static void Interjacent(JlObject region, out JlObject regionInterjacent, JlTuple mode)
 	{
@@ -8564,7 +8564,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>type 决定用几邻域判定孤立像素（默认 n_4 即 4-邻域模式）。原生 id 497。</para>
 	///   <para><b>与实例重载的取舍</b>常规用 <see cref="JlRegion.RemoveNoiseRegion(string)"/>；静态版留给需要裸句柄的场合。</para>
 	///   <para><b>参数取向</b>inputRegion 在 iconic 参数 1、type 在控制参数 0（钉固定，调用后解钉）；输出经 <c>LoadNew</c> 装载。</para>
-	///   <para><b>资源与坑</b>type 的其它合法取值本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；输入句柄由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>type 的其它合法取值由原生算子校验；输入句柄由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void RemoveNoiseRegion(JlObject inputRegion, out JlObject outputRegion, JlTuple type)
 	{
@@ -8587,7 +8587,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>逐个输入对象变换成对应的新形状（如凸包），变换按对象进行、对象数不变。原生 id 498。</para>
 	///   <para><b>与实例重载的取舍</b>常规用 <see cref="JlRegion.ShapeTrans(string)"/>；静态版留给需要裸句柄的场合。</para>
 	///   <para><b>参数取向</b>region 在 iconic 参数 1、type 在控制参数 0；输出经 <c>LoadNew</c> 装载。</para>
-	///   <para><b>资源与坑</b>除默认的 convex 外其它变换取值本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；输入句柄由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>除默认的 convex 外其它变换取值由原生算子校验；输入句柄由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void ShapeTrans(JlObject region, out JlObject regionTrans, JlTuple type)
 	{
@@ -8881,7 +8881,7 @@ public class JlOperatorSet
 	/// <param name="numCopyObj">Number of copy accesses.</param>
 	/// <param name="writeChord">写访问标志。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 557，静态独有。三个控制参数的确切语义（chord 指什么、合法取值范围）实现体未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），本块按形参名保守描述。</para>
+	///   <para><b>功能说明</b>原生 id 557，静态独有。<paramref name="numReadChord"/>、<paramref name="numCopyObj"/> 和 <paramref name="writeChord"/> 分别写入 HALCON 的访问测试控制槽；本层只负责传递这些原生参数，不对取值范围或 chord 语义做二次解释。</para>
 	///   <para><b>何时用静态版</b>该算子没有实例双胞胎，只在验证对象访问行为/引用计数机制时用；日常处理对象请走各 Jl* 托管方法。</para>
 	///   <para><b>参数取向</b>objectVal 在 iconic 参数 1；控制参数原生序 numReadChord/numCopyObj/writeChord 依次 0/1/2；输出 dummy 经 <c>LoadNew</c> 装载。</para>
 	///   <para><b>资源与坑</b>dummy 是新句柄，用毕 Dispose；objectVal 由 <c>GC.KeepAlive</c> 保活到调用结束，调用后 objectVal 自身是否被改变 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
@@ -8997,7 +8997,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>Paint 不改输入图像；原地改的是 OverpaintRegion。原生 id 561。</para>
 	///   <para><b>与实例重载的取舍</b>实例版有 grayval 为 JlTuple/double 两型重载（见 <c>JlRegion.PaintRegion</c>）；静态版两路控制参数走钉固定、可传裸句柄图像。</para>
 	///   <para><b>参数取向</b>region 在 iconic 参数 1、image 在 2；控制参数 grayval/type 依次 0/1；输出经 <c>LoadNew</c> 装载。</para>
-	///   <para><b>资源与坑</b>type 除默认填充外"仅描边"模式的具体取值字符串本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；region 内对象数多于 grayval 元素数时的广播规则 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两路输入被 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>type 除默认填充外"仅描边"模式的具体取值字符串由原生算子校验；region 内对象数多于 grayval 元素数时的广播规则 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两路输入被 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void PaintRegion(JlObject region, JlObject image, out JlObject imageResult, JlTuple grayval, JlTuple type)
 	{
@@ -9355,7 +9355,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>分量级信息查询：图像按通道号取，区域/XLD 无通道概念传 0。原生 id 578。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlObject.GetChannelInfo(string,int)"/> 经 LoadS 只读第一个字符串、多值被静默丢弃；要一次拿全多通道/多值信息必须用静态版（JlTuple.LoadNew 装载全部原生输出）。</para>
 	///   <para><b>参数取向</b>objectVal 在 iconic 参数 1；控制参数 request/channel 依次 0/1，两路钉固定调用后解钉；information 经 JlTuple.LoadNew（类型随原生推断）装载。</para>
-	///   <para><b>资源与坑</b>request 除默认值外的合法取值集合本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；information 是新元组要 Dispose；objectVal 被 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>request 除默认值外的合法取值集合由原生算子校验；information 是新元组要 Dispose；objectVal 被 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void GetChannelInfo(JlObject objectVal, JlTuple request, JlTuple channel, out JlTuple information)
 	{
@@ -11065,7 +11065,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生 id 720。以指定的 Golay 元素（含旋转）做一次 hit-or-miss 剔除，得到细化后的区域。元素名与旋转是控制参数，不是句柄。</para>
 	///   <para><b>与实例重载的取舍</b>静态门面以 <c>JlObject</c> 收区域、经 <c>out</c> 吐裸句柄，无类型校验；常规写法请用 <c>JlRegion</c> 上的同名实例方法（见 <see cref="JlRegion"/>），它以强类型区域返回结果。要跨算子手管句柄时才用本版。</para>
 	///   <para><b>参数取向</b>1 路对象输出：实现体 <c>InitOCT(proc,1)</c> 后用 <c>JlObject.LoadNew(proc,1,...)</c> 装载 → <c>regionThin</c> 是新句柄。<c>golayElement</c>/<c>rotation</c> 走控制槽并被钉住/解固定。</para>
-	///   <para><b>资源与坑</b><c>region</c> 由 <c>GC.KeepAlive</c> 保活到调用结束，调用后仍可继续使用；<c>regionThin</c> 需自行释放。多区域输入时控制参数与元素的配对规则本层未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b><c>region</c> 由 <c>GC.KeepAlive</c> 保活到调用结束，调用后仍可继续使用；<c>regionThin</c> 需自行释放。算子在区域元组层自动并行，<paramref name="golayElement"/> 与 <paramref name="rotation"/> 按 HALCON 的 tuple-level 配对处理；每个元素只接受其文档列出的有效旋转。</para>
 	/// </remarks>
 	public static void ThinningGolay(JlObject region, out JlObject regionThin, JlTuple golayElement, JlTuple rotation)
 	{
@@ -14506,7 +14506,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>转原生算子 id 848：句柄与 sumType 串按形参序 Store 进原生槽 0、1；InitOCT 预置一路对象输出，调用后 LoadNew 把结果装成新句柄写进 out，输入不被改动。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlMatrix.SumMatrix"/>：矩阵由 this 充当、结果走返回值。要平均值用 MeanMatrix（id 847），逐列最大最小用 MaxMatrix/MinMatrix；要单个总和就读回结果首元素，别拿范数当求和。</para>
 	///   <para><b>参数取向</b>out 仅 1 个新句柄。</para>
-	///   <para><b>资源与坑</b>返回句柄必须释放；"columns" 下输出排布方向与可取值集合托管层本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），越界读前先取回维度。</para>
+	///   <para><b>资源与坑</b>返回句柄必须释放；sumType 只能是 <c>"columns"</c>、<c>"rows"</c> 或 <c>"full"</c>，输出形状分别为 1×列数、行数×1 或 1×1；越界读前先取回维度。</para>
 	/// </remarks>
 	public static void SumMatrix(JlTuple matrixID, JlTuple sumType, out JlTuple matrixSumID)
 	{
@@ -14744,7 +14744,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>转原生算子 id 859：A、B 两句柄与 multType 串按形参序 Store 进原生槽 0 至 2，乘积类型排在两矩阵之后、与形参序一致；方法体没有 InitOCT/LoadNew，乘积由目标 HALCON 运行时直接写回 matrixAID 所指句柄。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlMatrix.MultMatrixMod"/>：A 就是 this。循环里累乘同一变换矩阵用本方法避免每轮多一个待释放句柄；一次性求积且要保留 A 用 MultMatrix（id 860）。逐元素点乘是 MultElementMatrixMod（id 851），别混。</para>
 	///   <para><b>参数取向</b>无 out；A 既当输入又当输出，乘完后维度按乘积形状改变。</para>
-	///   <para><b>资源与坑</b>multType 可取字符串集合（如带转置的组合）本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；A 原内容不可回取，留底靠 CopyMatrix。</para>
+	///   <para><b>资源与坑</b>multType 只能是 <c>"AB"</c>、<c>"ATB"</c>、<c>"ABT"</c> 或 <c>"ATBT"</c>，分别表示是否转置 A/B；A 原内容不可回取，留底靠 CopyMatrix。</para>
 	/// </remarks>
 	public static void MultMatrixMod(JlTuple matrixAID, JlTuple matrixBID, JlTuple multType)
 	{
@@ -16693,7 +16693,7 @@ public class JlOperatorSet
 	/// <param name="genericName">可选控制参数名，空元组表示不带附加参数。Default: []</param>
 	/// <param name="genericValue">可选控制参数值。Default: []</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>成分模型流水线第一步：滞后双阈值加连通域把目标切成"初始成分"，英文 doc 明确输出是轮廓区域（contour regions）而非普通二值域；要求 contrastLow ≤ contrastHigh （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），mode 与 genericName 的合法取值集合本层未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>成分模型流水线第一步：滞后双阈值加连通域把目标切成"初始成分"，输出是轮廓区域（contour regions）而非普通二值域；<paramref name="contrastLow"/> 和 <paramref name="contrastHigh"/> 必须为正值且后者不小于前者，<paramref name="mode"/> 只接受 <c>"connection"</c>，<paramref name="genericName"/> 只接受 <c>"merge_distance"</c> 或 <c>"merge_fraction"</c>。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlImage.GenInitialComponents(JlTuple,JlTuple,JlTuple,string,JlTuple,JlTuple)"/>：图像由 this 充当、结果带类型返回 JlRegion，可直接用区域栈 API；本静态版两端都是裸 JlObject，只在跨来源句柄、无托管包装对象时用。只要普通二值域时用 Threshold+Connection 即可，不必进本链路。</para>
 	///   <para><b>参数取向</b>六个控制参数按形参序 Store 进控制槽 0..5、调用后逐个 UnpinTuple；modelImage 作图标输入 Store，InitOCT(1) 登记单个 out，经 JlObject.LoadNew 新建句柄。</para>
 	///   <para><b>资源与坑</b>initialComponents 是新句柄须释放；末尾 GC.KeepAlive(modelImage)，原生调用结束前输入图不得 Dispose。其下游是 CreateComponentsTraining 等成分训练算子；输出区域栈顺序由连通域扫描序决定，跨阈值参数不保证稳定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
@@ -19787,7 +19787,7 @@ public class JlOperatorSet
 	/// <param name="function">输入函数。</param>
 	/// <param name="inverseFunction">Inverse of the input function.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1317：这里的"inverse"是坐标互换（把曲线转 90° 用），不是数值取倒数、也不是 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/> 的变号。对非单调函数 y 值有重复时，反函数的分支选择策略代码未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），这类曲线建议先裁单调段再求逆。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1317：这里的"inverse"是坐标互换（把曲线转 90° 用），不是数值取倒数、也不是 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/> 的变号。输入函数必须单调；非单调函数由原生算子报错，不会由本层选择分支。</para>
 	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；输入不被改写、产物为新函数；互逆后再求 <see cref="ComposeFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 是否回到原曲线 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；inverseFunction 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；水平线段（互换后成垂直线，非函数形态）时的处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
@@ -19808,10 +19808,10 @@ public class JlOperatorSet
 	/// <param name="mode">Type of derivative Default: "first"</param>
 	/// <param name="derivative">Derivative of the input function</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1318：在离散控制点上数值求导（非解析导数），斜率的物理量纲 = y 单位 / x 单位——x 若是像素列距，得到的就是"每像素灰度变化"。mode 默认 "first"，是否支持 "second" 等高阶、导数曲线的控制点数与 x 对齐方式（差分通常少一个点）代码未体现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1318：在离散控制点上以二阶精度有限差分求导（非解析导数），输出与输入函数使用相同采样点。<paramref name="mode"/> 只接受 <c>"first"</c> 或 <c>"second"</c>，分别表示一阶和二阶导数。</para>
 	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；输入不被改写、产物为新函数，可安全保留原曲线。含噪剖面直接微分会把噪声放大成主导信号——先 <see cref="SmoothFunct1dGauss(JlTuple,JlTuple,out JlTuple)"/> 平滑再求导，或用 <see cref="DerivateFunct1d"/> 结果过零判拐点而非极值。</para>
 	///   <para><b>参数取向</b>function 与 mode 走 Store 钉固、调用后 UnpinTuple；derivative 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
-	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；仅 1 个控制点的退化函数求导结果 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；输入函数必须有足够采样点计算所选阶数，只有一个控制点时由原生算子报错。</para>
 	/// </remarks>
 	public static void DerivateFunct1d(JlTuple function, JlTuple mode, out JlTuple derivative)
 	{
@@ -27202,7 +27202,7 @@ public class JlOperatorSet
 	/// <param name="colEnd">输入直线终点的列坐标序列。</param>
 	/// <param name="phi">Orientation of the input lines.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>纯控制值几何：四路入参是平行数组，第 i 条线由各自第 i 个元素确定，phi 为起点指向终点的方向角，弧度制；取值区间与正方向（row 向下为正带来的翻转）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。两端点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
+	///   <para><b>功能说明</b>纯控制值几何：四路入参是平行数组，第 i 条线由各自第 i 个元素确定，phi 为起点指向终点的方向角，弧度制，范围为 [-π, π)。两端点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与包装类的取舍</b>JlMisc 有同名静态重载（<see cref="JlMisc.LineOrientation(JlTuple, JlTuple, JlTuple, JlTuple)"/>）把 phi 作返回值给出，另有逐标量 double 版。除角度还要中点与长度时改用 LinePosition。</para>
 	///   <para><b>参数取向</b>四路输入按声明序占控制槽 0..3，钉固传入、调用后逐个 UnpinTuple；单个 out 以 InitOCT(0) 登记后经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>无图标输入故无 GC.KeepAlive 约束；输入输出皆纯数值元组，Dispose 无操作。</para>
@@ -30277,7 +30277,7 @@ public class JlOperatorSet
 	/// <param name="genParamName">Name of the parameter to be returned. Default: "type"</param>
 	/// <param name="genParamValue">Value of the parameter.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2153。读取一个测量对象的命名参数（如 "type"、卡尺几何参数等），与设置类算子成读/写对；合法参数名集合本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。注意 measureHandle 在此是 JlTuple 形态的句柄，托管侧不校验其确为测量对象。</para>
+	///   <para><b>功能说明</b>原生算子 id 2153。读取一个测量对象的命名参数（如 "type"、卡尺几何参数等），与设置类算子成读/写对；合法参数名集合由原生算子校验。注意 measureHandle 在此是 JlTuple 形态的句柄，托管侧不校验其确为测量对象。</para>
 	///   <para><b>与实例重载的取舍</b>JlMeasure 上有强类型重载 <see cref="JlMeasure.GetMeasureParam(string)"/>，返回值即参数值；本静态版以裸 JlTuple 传句柄、结果走 out，适合自管句柄的场合。</para>
 	///   <para><b>参数取向</b>控制槽 0=handle、1=name 与形参序一致；out 经 JlTuple.LoadNew 默认类型装载。</para>
 	///   <para><b>资源与坑</b>两入参钉固后 UnpinTuple；genParamValue 纯数值/字符串时可不 Dispose，若含句柄元素须释放。</para>
@@ -30357,7 +30357,7 @@ public class JlOperatorSet
 	/// <param name="name">JlDevelop 语言常量的名称字符串。Default: "H_INT32_MIN"</param>
 	/// <param name="value">常量的值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2168。用字符串名查一个内建语言常数的数值（如整型极值、π 之类），把结果装成元组返回；合法常数名的完整清单本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），传未知名时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 2168。用字符串名查一个内建语言常数的数值（如整型极值、π 之类），把结果装成元组返回；合法常数名的完整清单由原生算子校验，传未知名时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与实例重载的取舍</b>JlTuple 上有同名静态包装 <see cref="JlTuple.TupleConstant(JlTuple)"/>，返回值即结果元组；本静态版结果走 out。</para>
 	///   <para><b>参数取向</b>入参只占控制槽 0；out 经 JlTuple.LoadNew 默认类型装载。</para>
 	///   <para><b>资源与坑</b>name 钉固后 UnpinTuple；value 为纯数值元组，可不 Dispose。</para>
@@ -30427,7 +30427,7 @@ public class JlOperatorSet
 	/// <param name="count">输出：计得的目标个数（INTEGER 新元组，多路输入时逐图对应；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
 	/// <param name="deepCountingResult">输出：结果字典组成的新元组。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2173。对单图/图集执行密集计数推理；字典内字段集合本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 2173。对单图/图集执行密集计数推理；字典内字段集合由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>本库无对应实例包装；Deep Counting 族模型句柄走 JlTuple 而非强类型模型类。</para>
 	///   <para><b>参数取向</b>槽序与 C# 形参序错位：image 占图标槽 1，deepCountingHandle 占控制槽 0；两路输出分别经 InitOCT(0)/InitOCT(1) 声明，count 按 INTEGER、deepCountingResult 按默认类型 LoadNew。</para>
 	///   <para><b>资源与坑</b>deepCountingHandle 在 CallProcedure 之后才 UnpinTuple，此前不得释放其内容；image 被 GC.KeepAlive 保住；deepCountingResult 若含句柄类元素须 Dispose，count 纯数值可不处理。</para>
@@ -30452,7 +30452,7 @@ public class JlOperatorSet
 	/// <param name="genParamValue">参数值。Default: []</param>
 	/// <param name="deepCountingHandle">用于对象计数的 Deep Counting 模型。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2174。创建一个空的密集计数模型，是"创建→喂模板 → 推理"链路的起点，产出的句柄供 `PrepareDeepCountingModel` / `ApplyDeepCountingModel` 使用；生成期可传入的参数名与取值集合本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 2174。创建一个空的密集计数模型，是"创建→喂模板 → 推理"链路的起点，产出的句柄供 `PrepareDeepCountingModel` / `ApplyDeepCountingModel` 使用；生成期可传入的参数名与取值集合由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>本库无对应实例包装；Deep Counting 族模型句柄统一走 JlTuple 而非强类型模型类。</para>
 	///   <para><b>参数取向</b>控制槽 0=name、1=value 与 C# 形参序一致；out 经 JlTuple.LoadNew 从输出索引 0 装载。</para>
 	///   <para><b>资源与坑</b>两入参钉固后 UnpinTuple；deepCountingHandle 含句柄类元素，用毕须 Dispose 该 JlTuple 以释放模型。</para>
@@ -30476,7 +30476,7 @@ public class JlOperatorSet
 	/// <param name="genParamName">要查询的参数名。Default: "angle_start"</param>
 	/// <param name="genParamValue">输出：该参数当前值的新元组。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2176。与 SetDeepCountingModelParam（id 2179）互为读/写对；可查询的参数名集合本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 2176。与 SetDeepCountingModelParam（id 2179）互为读/写对；可查询的参数名集合由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>本库无对应实例包装，模型句柄走 JlTuple。</para>
 	///   <para><b>参数取向</b>控制槽 0=handle、1=name，与 C# 形参序一致；out 经 JlTuple.LoadNew 从输出索引 0 装载。</para>
 	///   <para><b>资源与坑</b>两入参钉固后 UnpinTuple；genParamValue 为纯数值/字符串时可不 Dispose，若含句柄元素则须释放。</para>
@@ -30539,7 +30539,7 @@ public class JlOperatorSet
 	/// <param name="genParamName">要设置的参数名。Default: "min_score"</param>
 	/// <param name="genParamValue">对应的参数值。Default: 0.5</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2179。名与值按逐元素配对传入，一次可设多个参数；合法参数名与取值域本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 2179。名与值按逐元素配对传入，一次可设多个参数；合法参数名与取值域由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>本库无对应实例包装，Deep Counting 族模型句柄走 JlTuple 而非强类型模型类。</para>
 	///   <para><b>参数取向</b>控制槽 0=handle、1=name、2=value，与 C# 形参序一致；三路均 Store 钉固、调用后逐一 UnpinTuple。</para>
 	///   <para><b>资源与坑</b>设置作用于模型本体，句柄无需重建；名值元组长度不等时的配对行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
@@ -30718,7 +30718,7 @@ public class JlOperatorSet
 	/// <param name="distance">输出：逐对字符串的新距离元组。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 2193。默认 levenshtein：把一个串改成另一个所需的最少单字符编辑次数。字符串精确匹配用相等类算子更便宜，此算子的价值在"差一两个字符"的模糊比对。</para>
-	///   <para><b>约束或前提</b>两输入按逐元素配对，单元素时的广播规则及长度不匹配的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；除 "levenshtein" 外支持的度量名本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>两输入按逐元素配对，单元素时的广播规则及长度不匹配的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；除 "levenshtein" 外支持的度量名由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>日常用 <see cref="JlTuple.TupleStrDistance(JlTuple, JlTuple)"/>（同为 id 2193）在元组上直接调；本门面版把第 1 路串也提成显式形参，三路元组均 Store 钉固后 UnpinTuple。控制槽 0/1/2 与 C# 形参序一致。</para>
 	///   <para><b>参数取向</b>out distance 经 JlTuple.LoadNew 按 INTEGER 装载——距离是整数而非浮点；纯数值元组无需 Dispose。</para>
 	/// </remarks>
@@ -30767,7 +30767,7 @@ public class JlOperatorSet
 	/// <param name="genParamValue">附加参数值。Default: []</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 2208。把 row1/column1 → row2/column2 四组点集当作稀疏对应点，按 method 拟合出全图范围的坐标映射，再以 mapType 指定的形态物化为映射图。四组对应点坐标元组的长度必须相等，不等长时的配对行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
-	///   <para><b>约束或前提</b>method、mapType、genParamName 的可取值集合以原生定义为准，本层未枚举 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>method、mapType、genParamName 的可取值集合以原生定义为准，由原生算子校验。</para>
 	///   <para><b>与实例重载的取舍</b>本库无对应实例包装，本门面即唯一托管入口。</para>
 	///   <para><b>参数取向</b>12 个控制形参的原生槽号 0..11 与 C# 声明序完全一致；out map 经 JlObject.LoadNew 从输出索引 1 新建。</para>
 	///   <para><b>资源与坑</b>全部入参元组 Store 钉固、调用后逐一 UnpinTuple；map 须 Dispose。</para>

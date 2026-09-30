@@ -1582,7 +1582,8 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各均值按 meanType 方向排布），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 847。输入原生参数序 0=this（Store 句柄）、1=meanType（StoreS 字符串直传，托管层不校验取值）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>meanType 支持的取值集合与各值下输出的行列形状本层不展开该规则；请按目标 HALCON 版本的算子文档确认，拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
+	///   <para><b>约束或前提</b>meanType 只能是 <c>"columns"</c>、<c>"rows"</c> 或 <c>"full"</c>：分别得到每列、每行或全矩阵均值；
+	///   输出形状分别为 1×列数、行数×1 或 1×1。拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
 	///   <para><b>与相邻算子的取舍</b>它做的是统计归约，不是图像均值滤波——要给矩阵做平滑/卷积没有本算子，别被模板旧文案"图像滤波与预处理"误导；只要总和用 SumMatrix（id 848），要一个标量指标用 NormMatrix（id 846）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

@@ -5052,7 +5052,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>触发场景</b>OpenCL 路径下申请设备内存失败：输入图像过大、一次性送入的元组/区域数量过多、或多算子并发把显存占满时，分配调用返回本码。</para>
 	///   <para><b>语义要点</b>指设备侧显存耗尽，不是主机内存不足；重试同一作业不会好转，需缩小输入、降低并发或释放上一批未在用的设备对象。与 Jl_ERR_INVALID_SHAPE(4105) 区别：本码是容量问题，后者是参数形状非法。</para>
-	///   <para><b>同族对照</b>同属 4100~4105 OpenCL 段；无可用设备见 Jl_ERR_NO_COMPUTE_DEVICES(4102)，参数无设备实现见 Jl_ERR_NO_DEVICE_IMPL(4103)，通用 OpenCL 错误见 Jl_ERR_OPENCL_ERROR(4101)。（具体语义以 HALCON 错误码说明和算子文档为准） 本库未在托管层显式回收设备缓冲，触发点由目标 HALCON 算子定义。</para>
+	///   <para><b>同族对照</b>同属 4100~4105 OpenCL 段；无可用设备见 Jl_ERR_NO_COMPUTE_DEVICES(4102)，参数无设备实现见 Jl_ERR_NO_DEVICE_IMPL(4103)，通用 OpenCL 错误见 Jl_ERR_OPENCL_ERROR(4101)。设备缓冲的分配与释放由目标 HALCON 算子和运行时管理。</para>
 	/// </remarks>
 	public const int Jl_ERR_OUT_OF_DEVICE_MEM = 4104;
 
@@ -8444,7 +8444,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>释放/查询操作携带的内存元素标识在临时内存管理表里查无此记录；常量名 CNFMEM = could not find memory。常见指向是该元素早已被释放过（重复释放），或指针其实属于另一管理区。属 6004~6007 临时内存管理族。</para>
 	///   <para><b>归类</b>≥1000，<c>JlNativeApi.IsError</c> 判 true、<c>IsFailure</c> 判失败，经统一返回码检查会抛 <c>JlOperatorException</c>；文本可由 <c>JlNativeApi.GetErrorMessage(err)</c> 现查。</para>
 	///   <para><b>何时遇到</b>与前两码分工：6004 是"该区没分配过"、6005 是"指针为 NULL"，本码是"指针非空但表里没有它的记录"，最典型对应 double free 或跨池释放 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>处置</b>按"释放发生了两次"排查：每份分配只释放一次，释放后即视为失效不再复用。报本码时本层未枚举第一次释放是否已成功，先定位重复释放的源头，再决定是否重跑流程。</para>
+	///   <para><b>处置</b>按"释放发生了两次"排查：每份分配只释放一次，释放后即视为失效不再复用。错误码不区分第一次释放是否成功，先定位重复释放的源头，再决定是否重跑流程。</para>
 	/// </remarks>
 	public const int Jl_ERR_CNFMEM = 6006;
 

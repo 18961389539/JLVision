@@ -132,7 +132,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度（-0.39 约等于 -22.4 度）。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度，相对 angleStart 的增量（0.79 约等于 45.3 度）。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度离散步长（弧度，决定模型训练精度）；传 "auto" 自动选择。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量；"use_polarity" 要求模板与目标的灰度极性一致（亮对亮），取 "ignore_polarity" 等其它值时原样透传原生层，支持集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量：<c>"use_polarity"</c> 要求模板与目标灰度极性一致，<c>"ignore_global_polarity"</c> 允许整体反相。Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>构造 JlNCCModel：训练灰度相关（NCC）匹配模板（原生 id 947，与 CreateNccModel 同一算子）。模型存的是模板域内各金字塔层的灰度图，FindNccModel 时按归一化互相关打分。</para>
 	///   <para><b>约束或前提</b>模板内容来自 template 的 domain：整幅图直接传入会把背景一起编进模型。NCC 靠灰度值本身，对光照漂移、整体对比度变化敏感，且低对比度/近纹理化目标会失效——这类目标应改用形状模板（JlShapeModel，靠梯度边缘，不怕整体光照变化但怕无边缘目标）；反之，弱边缘、依赖灰度差分区分的目标形状模板也测不到，两套机制互补选型。</para>
@@ -173,7 +173,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度步长，弧度数值（不能传 "auto"）。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量，如 "use_polarity"；本重载本就是 string 形参，取值集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量：<c>"use_polarity"</c> 或 <c>"ignore_global_polarity"</c>。Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>JlNCCModel(JlImage, JlTuple, ...) 的标量重载：同原生 id 947 训练灰度相关模板；差异仅在 numLevels/angleStep 以 StoreI/StoreD 直写、无钉固定元组开销，也失去了传 "auto" 字符串的能力。</para>
 	///   <para><b>约束或前提</b>建模语义（domain 成模、角度弧度、无尺度参数、NCC 与形状模板的取舍）详见 JlTuple 重载注释。</para>
@@ -635,7 +635,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="minScore">接受实例的最低相关得分（0~1 域；上限含义以 HALCON 算子文档为准）。Minimum score of the instances of the model to be found. Default: 0.8</param>
 	/// <param name="numMatches">要找的实例数；0 表示给出分的所有实例。Number of instances of the model to be found (or 0 for all matches). Default: 1</param>
 	/// <param name="maxOverlap">两实例允许的最大重叠比例（0~1）；numMatches=0 时它控制重叠峰抑制的松紧。Maximum overlap of the instances of the model to be found. Default: 0.5</param>
-	/// <param name="subPixel">是否亚像素精化，"true"/"none" 之类，取值集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。Subpixel accuracy. Default: "true"</param>
+	/// <param name="subPixel">是否亚像素精化：<c>"true"</c> 启用，<c>"false"</c> 关闭。Default: "true"</param>
 	/// <param name="numLevels">本帧匹配用的金字塔层数（JlTuple 可传负数二元组：按英文说明 |NumLevels| = 2 时第二值指定最低层）。Number of pyramid levels used in the matching (and lowest pyramid level to use if $|NumLevels| = 2$). Default: 0</param>
 	/// <param name="row">各实例参考点行坐标（= SetNccModelOrigin 所设参考点）。Row coordinate of the found instances of the model.</param>
 	/// <param name="column">各实例参考点列坐标。Column coordinate of the found instances of the model.</param>
@@ -785,7 +785,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="angleStart">最小旋转角，弧度。Smallest rotation of the pattern. Default: -0.39</param>
 	/// <param name="angleExtent">角度覆盖范围，弧度。Extent of the rotation angles. Default: 0.79</param>
 	/// <param name="angleStep">角度步长，弧度，可 "auto"。Step length of the angles (resolution). Default: "auto"</param>
-	/// <param name="metric">匹配度量（灰度极性约定），取值集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。Match metric. Default: "use_polarity"</param>
+	/// <param name="metric">匹配度量：<c>"use_polarity"</c> 或 <c>"ignore_global_polarity"</c>。Default: "use_polarity"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>在既有 JlNCCModel 对象上重建模型（原生 id 947，与构造器同一算子）。方法体先 Dispose() 旧句柄再把新模型句柄装入本对象——原地换柄，训练语义见构造器注释（domain 成模、弧度角、NCC 无尺度参数、怕光照漂移）。</para>
 	///   <para><b>与相邻算子的取舍</b>想保留旧对象另存新模型就直接用构造器 new；本方法适合"同一个模型变量反复换内容"的示教流程。measure_operation 类可选值（use_prealignment / gradient / rotation 等）在本绑定签名中无入口，只能寄望 SetNccModelParam，支持与否 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>

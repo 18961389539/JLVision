@@ -16,7 +16,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>索引器直接转调 <c>SelectObj(JlTuple)</c>，返回一个新容器而不是原地改写 <c>this</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号从 1 起算（HALCON 对象元组约定），传 0 并非第一个元素；越界与负序号（HALCON 里负数从尾部倒数）的托管侧行为未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。形参是 JlTuple，故 <c>ext[1]</c> 走 int→JlTuple 隐式转换。</para>
+	///   <para>序号从 1 起算；索引必须大于等于 1，越界索引由原生算子报错。此方法只转发索引元组，不把负数解释为从尾部倒数。形参是 JlTuple，故 <c>ext[1]</c> 走 int→JlTuple 隐式转换。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按位置取元素用本索引器或 <c>SelectObj</c>；按几何形状特征筛选用 <c>SelectShapeXld</c>；按某点是否落在轮廓上筛选用 <c>SelectXldPoint</c>。</para>
 	///   <para><b>用法</b></para>
@@ -364,7 +364,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>与 <c>SelectObj(JlTuple)</c> 同为原生 id 572：<c>this</c> 进 iconic 槽 1，<c>index</c> 用 <c>StoreI</c> 按 INTEGER 直写控制参数 0，免去钉固定/解钉开销，输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基，一次只取一个元素；越界行为未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>序号 1 基，一次只取一个元素；索引必须大于等于 1 且不超过当前对象数，非法索引由原生算子报错。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>取一个元素用本重载；取多个任意序号用 <c>SelectObj(JlTuple)</c>；取连续一段用 <c>CopyObj</c>。</para>
 	///   <para><b>用法</b></para>
@@ -400,7 +400,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 573：<c>this</c> 进 iconic 槽 1、<c>objects2</c> 进槽 2，<c>epsilon</c> 作控制参数 0 用 <c>Store</c> 钉固定，调用后 <c>UnpinTuple</c>，输出以 <c>InitOCT</c>/<c>LoadI</c> 按 INTEGER 取回。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>epsilon=0.0 要求坐标逐位精确相等；平行线对含行、列等坐标分量，容差按像素距离解释。给多值 epsilon 时的逐元素配对行为未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>epsilon=0.0 要求坐标逐位精确相等；平行线对含行、列等坐标分量，容差按 HALCON 的单个最大差值解释。该重载应传单元素 epsilon 元组；本层不把多值元组拆成逐元素容差。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>需要自定义容差判等用本方法；无需容差、直接判全等用 <c>TestEqualObj</c>；求集合差用 <c>ObjDiff</c>。</para>
 	///   <para><b>用法</b></para>
@@ -891,7 +891,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2003：<c>this</c> 进 iconic 槽 1、<c>objectsInsert</c> 进槽 2，<c>index</c> 用 <c>StoreI</c> 写控制参数 0；输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>插入位置 1 基，<c>index</c> 超出当前元素数时按 HALCON 规则处理，具体越界行为未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。与 <c>ConcatObj</c> 不同，本方法把元素放到中间而非尾部。</para>
+	///   <para>插入位置为单个 1 基索引；本层原样转发，不会把越界值改写或截断，非法位置由原生算子处理。与 <c>ConcatObj</c> 不同，本方法把元素放到指定位置而非固定追加到尾部。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>插到指定位置用本方法；只往末尾追加用 <c>ConcatObj</c>；就替换指定位元素用 <c>ReplaceObj</c>。</para>
 	///   <para><b>用法</b></para>
@@ -929,7 +929,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2005：<c>this</c> 进 iconic 槽 1，<c>index</c> 作控制参数 0 用 <c>Store</c> 钉固定、调用后 <c>UnpinTuple</c>，输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基；越界或重复序号的行为未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。返回的剩余元素保持原相对顺序。</para>
+	///   <para>序号 1 基；HALCON 会忽略重复索引和越界索引，返回的剩余元素保持原相对顺序。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按序号删元素用本方法；反过来保留指定序号用 <c>SelectObj</c>；只删单个元素可用 <c>int</c> 重载。</para>
 	///   <para><b>用法</b></para>
@@ -1002,7 +1002,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2006：<c>this</c> 进 iconic 槽 1、<c>objectsReplace</c> 进槽 2，<c>index</c> 作控制参数 0 用 <c>Store</c> 钉固定、调用后 <c>UnpinTuple</c>，输出 <c>LoadNew</c> 取回新句柄。注意 C# 形参序是 (objectsReplace, index)，而原生侧 objectsReplace 占 iconic 2、index 占控制 0。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基；<c>index</c> 个数与 <c>objectsReplace</c> 元素数如何配对未校验 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。替换不改变元组长度。</para>
+	///   <para>序号 1 基；<c>objectsReplace</c> 只有一个对象时，该对象会替换所有指定索引；多个对象时按索引顺序配对。索引超过当前长度会扩展结果并以空区域填充，替换后的长度可能增加。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>就地覆盖指定位置用本方法；在该位置挤入新元素（增长元组）用 <c>InsertObj</c>；只删不补用 <c>RemoveObj</c>。</para>
 	///   <para><b>用法</b></para>

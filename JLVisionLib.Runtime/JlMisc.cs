@@ -57,7 +57,7 @@ public class JlMisc
 
 
 	/// <summary>把 3D 点的球坐标（经度/纬度/半径）换算为直角坐标 x/y/z。</summary>
-	/// <param name="longitude">经度元组，逐点配对参与换算。单位约定见 remarks （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）</param>
+	/// <param name="longitude">经度元组，逐点配对参与换算，单位为弧度。</param>
 	/// <param name="latitude">纬度元组，与 longitude 等长。</param>
 	/// <param name="radius">半径（距离球心的距离，单位与输出坐标一致）元组。</param>
 	/// <param name="equatPlaneNormal">赤道面法向量（指向北极），轴名带符号串。Default: "-y"</param>
@@ -67,7 +67,7 @@ public class JlMisc
 	/// <param name="z">换算后 z 坐标（DOUBLE 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按"赤道面法向 + 零子午线轴向"两个字符串约定，把球坐标（经度、纬度、半径）换算成直角坐标 x/y/z，对应原生算子 id 996。三个坐标参数按 DOUBLE 装载（LoadNew + JlTupleType.DOUBLE），即输出恒为浮点，即便输入是整型元组。输入元组钉住传入、调用后解钉。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（3D 计算与 2D 几何、卡尔曼等混在一起），本库内部对它没有任何调用者。本库已不提供 3D 类型族（<c>JlHomMat3D</c> 等已删除），但本算子只做纯数值元组换算，不依赖那些类型。经度/纬度用弧度还是角度、正方向约定无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；<c>equatPlaneNormal</c>/<c>zeroMeridian</c> 是形如 <c>"-y"</c>/<c>"-z"</c> 的轴名带符号串，取值合法性由原生侧校验。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（3D 计算与 2D 几何、卡尔曼等混在一起），本库内部对它没有任何调用者。本库已不提供 3D 类型族（<c>JlHomMat3D</c> 等已删除），但本算子只做纯数值元组换算，不依赖那些类型。经度与纬度均为弧度；<c>equatPlaneNormal</c> 与 <c>zeroMeridian</c> 必须分别取 <c>"x"</c>/<c>"-x"</c>/<c>"y"</c>/<c>"-y"</c>/<c>"z"</c>/<c>"-z"</c>，且两轴不能平行。</para>
 	///   <para><b>与相邻算子的取舍</b>反向换算用 <see cref="ConvertPoint3dCartToSpher(JlTuple,JlTuple,JlTuple,string,string,out JlTuple,out JlTuple)"/>；需要的是刚体变换而非坐标换算是位姿类接口的职责，不在本门面内。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -76,7 +76,7 @@ public class JlMisc
 	///   JlTuple radius = new double[] { 1.0, 1.0 };
 	///   JlMisc.ConvertPoint3dSpherToCart(longitude, latitude, radius, "-y", "-z", out JlTuple x, out JlTuple y, out JlTuple z);
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，x/y/z 无需释放；radius 为负时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>JlTuple 实现 IDisposable；纯数值/字符串元组无需释放，含句柄元组使用后应 Dispose，x/y/z 无需释放；radius 参与坐标缩放。</para>
 	/// </remarks>
 	public static void ConvertPoint3dSpherToCart(JlTuple longitude, JlTuple latitude, JlTuple radius, string equatPlaneNormal, string zeroMeridian, out JlTuple x, out JlTuple y, out JlTuple z)
 	{
@@ -100,7 +100,7 @@ public class JlMisc
 	}
 
 	/// <summary>把 3D 点的球坐标（经度/纬度/半径）换算为直角坐标 x/y/z（标量版）。</summary>
-	/// <param name="longitude">经度标量，单位约定见 remarks （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。Default: 0</param>
+	/// <param name="longitude">经度标量，单位为弧度。Default: 0</param>
 	/// <param name="latitude">纬度标量。</param>
 	/// <param name="radius">半径（距离球心的距离，单位与输出坐标一致）。Default: 0</param>
 	/// <param name="equatPlaneNormal">赤道面法向量（指向北极），轴名带符号串。Default: "-y"</param>
@@ -110,7 +110,7 @@ public class JlMisc
 	/// <param name="z">换算后 z 坐标。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按"赤道面法向 + 零子午线轴向"两个字符串约定，把单个点的球坐标（经度、纬度、半径）换算成直角坐标 x/y/z，对应原生算子 id 996（与本类中的元组版 <see cref="ConvertPoint3dSpherToCart(JlTuple,JlTuple,JlTuple,string,string,out JlTuple,out JlTuple,out JlTuple)"/> 同一算子）。本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>经度/纬度用弧度还是角度、正方向约定无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；半径取负的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>经度与纬度按弧度传入；半径参与坐标缩放，非法轴组合由原生算子拒绝。</para>
 	/// </remarks>
 	public static void ConvertPoint3dSpherToCart(double longitude, double latitude, double radius, string equatPlaneNormal, string zeroMeridian, out double x, out double y, out double z)
 	{
@@ -138,11 +138,11 @@ public class JlMisc
 	/// <param name="zeroMeridian">零子午线对应的坐标轴，须与正向换算同值。Default: "-z"</param>
 	/// <param name="latitude">纬度（DOUBLE 装载）。</param>
 	/// <param name="radius">半径（DOUBLE 装载，与输入坐标同单位）。</param>
-	/// <returns>经度（DOUBLE 装载的新元组）；单位约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</returns>
+	/// <returns>经度（DOUBLE 装载的新元组，单位为弧度）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把直角坐标 x/y/z 换算回球坐标，对应原生算子 id 997。注意出参分配不对称：经度走<b>返回值</b>，纬度与半径走 out 参数，三者都按 DOUBLE 装载。输入元组钉住传入、调用后解钉。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面，本库内部没有任何调用者；本库已不提供 3D 类型族（<c>JlHomMat3D</c> 等已删除），本算子为纯数值元组换算不受影响。经纬度的弧度/角度约定与反变换一致，无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。<c>equatPlaneNormal</c>/<c>zeroMeridian</c> 须与当初正向换算所用相同，否则得到另一套球坐标。</para>
-	///   <para><b>与相邻算子的取舍</b>正向换算用 <see cref="ConvertPoint3dSpherToCart(JlTuple,JlTuple,JlTuple,string,string,out JlTuple,out JlTuple,out JlTuple)"/>；原点处的点（x=y=z=0）半径为 0、经纬度不定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面，本库内部没有任何调用者；本库已不提供 3D 类型族（<c>JlHomMat3D</c> 等已删除），本算子为纯数值元组换算不受影响。经纬度按弧度返回；<c>equatPlaneNormal</c>/<c>zeroMeridian</c> 须与当初正向换算所用相同，否则得到另一套球坐标。</para>
+	///   <para><b>与相邻算子的取舍</b>正向换算用 <see cref="ConvertPoint3dSpherToCart(JlTuple,JlTuple,JlTuple,string,string,out JlTuple,out JlTuple,out JlTuple)"/>；原点处的点（x=y=z=0）半径为 0、经纬度没有唯一值。</para>
 	///   <para><b>参数取向</b>返回值=经度，out=纬度、半径，与签名一致。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -183,11 +183,11 @@ public class JlMisc
 	/// <param name="zeroMeridian">零子午线对应的坐标轴，须与正向换算同值。Default: "-z"</param>
 	/// <param name="latitude">纬度（标量装载）。</param>
 	/// <param name="radius">半径（标量装载，与输入坐标同单位）。</param>
-	/// <returns>经度；单位约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</returns>
+	/// <returns>经度，单位为弧度。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>把单个点的直角坐标换算回球坐标，对应原生算子 id 997（与本类元组版 <see cref="ConvertPoint3dCartToSpher(JlTuple,JlTuple,JlTuple,string,string,out JlTuple,out JlTuple)"/> 同一算子）。本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
 	///   <para><b>参数取向</b>返回值=经度，out=纬度、半径，与本签名一致；忘记接收返回值就丢失经度是本接口签名带来的典型误用。</para>
-	///   <para><b>资源与坑</b>经纬度的弧度/角度约定与反变换一致，无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；原点处（x=y=z=0）半径为 0、经纬度不定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>经纬度按弧度返回；原点处（x=y=z=0）半径为 0，经纬度没有唯一值。</para>
 	/// </remarks>
 	public static double ConvertPoint3dCartToSpher(double x, double y, double z, string equatPlaneNormal, string zeroMeridian, out double latitude, out double radius)
 	{
@@ -216,7 +216,7 @@ public class JlMisc
 	/// <returns>状态/测量/控制三维数三元组（INTEGER 装载的新元组）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>从描述文件读取卡尔曼滤波的整套初始参数并装载为元组，对应原生算子 id 1053。返回值是 [状态维数, 测量维数, 控制维数] 三元组，按 INTEGER 装载。</para>
-	///   <para><b>资源与坑</b>文件缺失或格式不合法时抛原生错误；描述文件的键名/矩阵拼接顺序无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。要在线调参文件时用 <see cref="UpdateKalman"/>，逐拍递推用 <see cref="FilterKalman"/>。</para>
+	///   <para><b>资源与坑</b>文件缺失或格式不合法时抛原生错误；描述文件的键名/矩阵拼接顺序由目标 HALCON 版本的对应算子定义。要在线调参文件时用 <see cref="UpdateKalman"/>，逐拍递推用 <see cref="FilterKalman"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple dimension = JlMisc.ReadKalman("kalman.init", out JlTuple model, out JlTuple measurement, out JlTuple prediction);
@@ -249,7 +249,7 @@ public class JlMisc
 	/// <returns>并入后的维度三元组（INTEGER 装载的新元组）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>读取卡尔曼滤波"更新文件"并把其中的模型/测量参数并入传入的当前参数，对应原生算子 id 1054。维度三元组按 INTEGER 装载，模型与测量矩阵按 DOUBLE 装载；A、C、Q（及可选 G、u、L）与 R 均为行主序展平的一维数组。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（卡尔曼参数管理与本库其它能力混在一起）；本库内部没有任何调用者，也没有把卡尔曼矩阵包装成类型——维数、行主序展平、矩阵拼接全部由调用方自己维护，本方法仅做文件合并。更新文件的格式/键名无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。dimensionIn 与 modelIn/measurementIn 的长度必须自洽（n×m 矩阵要填 n*m 个元素），原生侧对越界访问的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面（卡尔曼参数管理与本库其它能力混在一起）；本库内部没有任何调用者，也没有把卡尔曼矩阵包装成类型——维数、行主序展平、矩阵拼接全部由调用方自己维护，本方法仅做文件合并。更新文件的格式/键名由目标 HALCON 版本的对应算子定义。dimensionIn 与 modelIn/measurementIn 的长度必须自洽（n×m 矩阵要填 n*m 个元素），原生侧对越界访问的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>从零初始化整套参数用 <see cref="ReadKalman"/>；逐拍的状态递推用 <see cref="FilterKalman"/>；本方法只用于"调参文件覆盖了哪些矩阵"这种离线合并场景。</para>
 	///   <para><b>参数取向</b>返回值为新维度三元组，out 为新模型/新测量，与签名一致。</para>
 	///   <para><b>用法</b></para>
@@ -632,7 +632,7 @@ public class JlMisc
 	/// <returns>转角元组（DOUBLE 装载，弧度制）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>返回从横轴（column 方向）转到两点连线的角度，单位弧度，对应原生算子 id 1309。输出按 DOUBLE 装载，多组配对输入逐条给出。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。因 row 向下为正，旋转正方向在屏幕上表现为顺时针；取值区间（如 [0,2π) 或 (-π,π]）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。两点重合时角度未定义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。结果为弧度，范围为 [-π, π)；角度方向取决于两点顺序，row 向下为正时在图像坐标中表现为顺时针。两点重合时输入退化。</para>
 	///   <para><b>与相邻算子的取舍</b>要"两条线之间的夹角"用 <see cref="AngleLl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/>，不要拿两次 AngleLx 相减再自行归一化。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -670,7 +670,7 @@ public class JlMisc
 	/// <returns>转角（弧度）标量。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>返回从横轴（column 方向）转到两点连线的角度，单位弧度，对应原生算子 id 1309（与本类元组版 <see cref="AngleLx(JlTuple,JlTuple,JlTuple,JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>取值区间与旋转正方向约定（row 向下为正导致的翻转）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两点重合时角度未定义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>结果范围为 [-π, π)，角度方向取决于两点顺序；两点重合时输入退化，原生算子会报告参数错误。</para>
 	/// </remarks>
 	public static double AngleLx(double row1, double column1, double row2, double column2)
 	{
@@ -698,7 +698,7 @@ public class JlMisc
 	/// <returns>夹角元组（DOUBLE 装载，弧度制）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>返回两条直线（各由两点确定）之间的夹角，单位弧度，对应原生算子 id 1310；输出按 DOUBLE 装载，支持逐点配对的多元组输入。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。夹角是否区分方向（有向角/无向角）、取值区间无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；平行或垂直时的返回值由目标 HALCON 算子定义，使用前应按 HALCON 文档确认。任一方向量退化（两点重合）时输入不满足几何前提；本层不校验，调用结果交给原生层处理。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。返回有向夹角，范围为 [-π, π]；角度取决于两条线及各自端点的顺序。任一方向量退化（两点重合）时输入不满足几何前提；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与相邻算子的取舍</b>只要"线对水平轴的倾角"用 <see cref="AngleLx(JlTuple,JlTuple,JlTuple,JlTuple)"/>；要判平行优先 <see cref="IntersectionLl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 的 isParallel（INTEGER，语义明确），别拿角度比较浮点。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -752,7 +752,7 @@ public class JlMisc
 	/// <returns>两条直线的夹角（弧度）标量。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>返回两条由两点确定的直线之间的夹角，单位弧度，对应原生算子 id 1310（与本类元组版 <see cref="AngleLl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>夹角是否区分方向（有向/无向）、取值区间无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；方向量退化（两点重合）时输入不满足几何前提；本层不校验，调用结果交给原生层处理。</para>
+	///   <para><b>资源与坑</b>返回有向夹角，范围为 [-π, π]；方向量退化（两点重合）时输入不满足几何前提；本层不校验，调用结果交给原生层处理。</para>
 	/// </remarks>
 	public static double AngleLl(double rowA1, double columnA1, double rowA2, double columnA2, double rowB1, double columnB1, double rowB2, double columnB2)
 	{
@@ -1173,7 +1173,7 @@ public class JlMisc
 	/// <returns>滤波器核宽度（约 size × size 像素）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>查询指定平滑滤波器对应的核宽度，并可选地拿到 gauss 滤波器的 1D 半幅系数，对应原生算子 id 1358；核宽度走返回值（int），coeffs 走 out 且按 INTEGER 装载。</para>
-	///   <para><b>资源与坑</b>不同 <c>filter</c> 所支持的取值与 <c>alpha</c> 合法区间无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；仅 gauss 才给出系数；其余滤波器是否返回系数由目标 HALCON 算子定义，应按 HALCON 文档确认。</para>
+	///   <para><b>资源与坑</b>不同 <c>filter</c> 所支持的取值与 <c>alpha</c> 合法区间由目标 HALCON 版本的对应算子定义；仅 gauss 才给出系数；其余滤波器是否返回系数由目标 HALCON 算子定义，应按 HALCON 文档确认。</para>
 	/// </remarks>
 	public static int InfoSmooth(string filter, double alpha, out JlTuple coeffs)
 	{
@@ -1263,7 +1263,7 @@ public class JlMisc
 	/// <returns>滤波器核宽度（像素）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>查询指定边沿算子的滤波核宽度，并可取得对应系数，对应原生算子 id 1486；核宽度走返回值（int），coeffs 走 out 且按 INTEGER 装载。</para>
-	///   <para><b>资源与坑</b><c>filter</c>/<c>mode</c> 支持的取值集合与 <c>alpha</c> 合法区间无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b><c>filter</c>/<c>mode</c> 支持的取值集合与 <c>alpha</c> 合法区间由目标 HALCON 版本的对应算子定义。</para>
 	/// </remarks>
 	public static int InfoEdges(string filter, string mode, double alpha, out JlTuple coeffs)
 	{
@@ -1593,7 +1593,7 @@ public class JlMisc
 	/// <param name="failColEOut">未通过线段终点 column 坐标（INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与元组版 <c>PartitionLines</c> 同一原生算子（id 1656），区别仅在参数以字符串直写（StoreS，不钉固定元组）：单个特征名 + 单组上下限。输出同样按 INTEGER 装载，端点取整。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。feature 的合法特征名集合（length/angle 等）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；min/max 传特殊串 <c>"min"</c>/<c>"max"</c> 表示该侧不设限。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。feature 的合法特征名集合（length/angle 等）由目标 HALCON 版本的对应算子定义；min/max 传特殊串 <c>"min"</c>/<c>"max"</c> 表示该侧不设限。</para>
 	///   <para><b>与相邻算子的取舍</b>多特征组合必须用元组重载（本重载一次只问一个条件）；只要通过堆、不需要落选项时用 SelectLines。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1655,7 +1655,7 @@ public class JlMisc
 	/// <param name="colEndOut">通过线段终点 column 坐标（INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按特征区间筛选线段、只回通过堆，对应原生算子 id 1657；四个输出按 INTEGER 装载（端点取整）。本重载 feature/min/max 为元组，可多特征各配上下限，operation 给特征间 "and"/"or" 组合。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。四个端点输入元组必须等长；feature 合法名集合与 min/max 特殊串行为同 PartitionLines，无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。四个端点输入元组必须等长；feature 合法名集合与 min/max 特殊串行为同 PartitionLines，由目标 HALCON 版本的对应算子定义。</para>
 	///   <para><b>与相邻算子的取舍</b>还要落选项用 PartitionLines；纯按长度取前 N 用 SelectLinesLongest；单条件筛选用下面的 string 重载（无钉固开销）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1715,7 +1715,7 @@ public class JlMisc
 	/// <param name="colEndOut">通过线段终点 column 坐标（INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与元组版同一原生算子（id 1657）：单个特征名、单组上下限，全部以字符串直写（StoreS，无钉固定元组开销）；四个输出仍按 INTEGER 装载（端点取整）。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。<c>"min"</c>/<c>"max"</c> 作为特殊串表示该侧不设限；feature 合法名集合无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。若以字面量实参调用，编译器按重载解析会选中本重载（string 恒等转换优先于隐式 JlTuple 转换）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的线段筛选组，本库内部没有任何调用者。<c>"min"</c>/<c>"max"</c> 作为特殊串表示该侧不设限；feature 合法名集合由目标 HALCON 版本的对应算子定义。若以字面量实参调用，编译器按重载解析会选中本重载（string 恒等转换优先于隐式 JlTuple 转换）。</para>
 	///   <para><b>与相邻算子的取舍</b>多特征组合必须用元组重载；还要落选项用 PartitionLines；取最长 N 条用 SelectLinesLongest。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1762,11 +1762,11 @@ public class JlMisc
 	/// <param name="rowCenter">中点 row 坐标（DOUBLE 装载）。</param>
 	/// <param name="colCenter">中点 column 坐标（DOUBLE 装载）。</param>
 	/// <param name="length">线段欧氏长度（DOUBLE 装载，像素）。</param>
-	/// <param name="phi">方向角（DOUBLE 装载），约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
+	/// <param name="phi">方向角（DOUBLE 装载，弧度制，范围为 (-π/2, π/2]）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>由线段两端点算中点（重心）、欧氏长度与方向角，对应原生算子 id 1658；四个输出全部按 DOUBLE 装载，输入元组钉住传入。注意"重心"就是两端点平均，不是任何像素加权结果。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组（与 LineOrientation 功能重叠，见取舍），本库内部没有任何调用者。length 单位像素；phi 的方向约定（取值区间、正方向）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
-	///   <para><b>与相邻算子的取舍</b>只要方向角时用 <see cref="LineOrientation(JlTuple,JlTuple,JlTuple,JlTuple)"/>（单次调用、少两个出参）；两端点重合时 length=0、phi 未定义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组（与 LineOrientation 功能重叠，见取舍），本库内部没有任何调用者。length 单位像素；phi 为弧度，范围为 (-π/2, π/2]。</para>
+	///   <para><b>与相邻算子的取舍</b>只要方向角时用 <see cref="LineOrientation(JlTuple,JlTuple,JlTuple,JlTuple)"/>（单次调用、少两个出参）；两端点重合时 length=0，phi 没有唯一值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple rowBegin = new double[] { 0.0 };
@@ -1808,10 +1808,10 @@ public class JlMisc
 	/// <param name="rowCenter">中点 row 坐标。</param>
 	/// <param name="colCenter">中点 column 坐标。</param>
 	/// <param name="length">线段欧氏长度（像素）。</param>
-	/// <param name="phi">方向角，约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
+	/// <param name="phi">方向角，弧度制，范围为 (-π/2, π/2]。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>由线段两端点算中点（两端点平均）、欧氏长度与方向角，对应原生算子 id 1658（与本类元组版 <see cref="LinePosition(JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>length 单位像素；phi 方向约定无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两端点重合时 length=0、phi 未定义。</para>
+	///   <para><b>资源与坑</b>length 单位像素；phi 为弧度且范围为 (-π/2, π/2]；两端点重合时 length=0，方向没有唯一值。</para>
 	/// </remarks>
 	public static void LinePosition(double rowBegin, double colBegin, double rowEnd, double colEnd, out double rowCenter, out double colCenter, out double length, out double phi)
 	{
@@ -1837,10 +1837,10 @@ public class JlMisc
 	/// <param name="colBegin">各线段起点 column 坐标元组。</param>
 	/// <param name="rowEnd">各线段终点 row 坐标元组。</param>
 	/// <param name="colEnd">各线段终点 column 坐标元组。</param>
-	/// <returns>方向角元组（DOUBLE 装载，弧度制），取值区间约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</returns>
+	/// <returns>方向角元组（DOUBLE 装载，弧度制，范围为 [-π, π)）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>由线段两端点算方向角，对应原生算子 id 1659；输出按 DOUBLE 装载，输入元组钉住传入。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。弧度制；取值区间与正方向（row 向下为正带来的翻转）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。结果为弧度，取值范围为 [-π, π)；方向取决于起点和终点顺序。两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与相邻算子的取舍</b>与 <see cref="LinePosition(JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 底层是同族功能：要中点/长度选 LinePosition，只要角度用本方法；对任意两线的夹角用 AngleLl。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1875,10 +1875,10 @@ public class JlMisc
 	/// <param name="colBegin">线段起点 column 坐标。</param>
 	/// <param name="rowEnd">线段终点 row 坐标。</param>
 	/// <param name="colEnd">线段终点 column 坐标。</param>
-	/// <returns>方向角（弧度）标量，取值区间约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</returns>
+	/// <returns>方向角（弧度）标量，范围为 [-π, π)。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>由线段两端点算方向角，对应原生算子 id 1659（与本类元组版 <see cref="LineOrientation(JlTuple,JlTuple,JlTuple,JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>弧度制；取值区间与正方向（row 向下为正带来的翻转）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
+	///   <para><b>资源与坑</b>结果为弧度，取值范围为 [-π, π)；方向取决于起点和终点顺序。两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	/// </remarks>
 	public static double LineOrientation(double rowBegin, double colBegin, double rowEnd, double colEnd)
 	{
@@ -1970,7 +1970,7 @@ public class JlMisc
 	/// <param name="order">分割顺序：线段为 0、圆弧段为 1（INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按一组平滑/曲率/权重参数把轮廓点链用圆弧与直线段逐段逼近并输出各部分几何，对应原生算子 id 1661。输出除 arcAngle 按 DOUBLE 装载外，其余均按 INTEGER 装载（坐标被取整）。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的轮廓逼近组，本库内部没有任何调用者；row/column 须等长。诸阈值/宽度/权重的合法取值范围与相互约束无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），本层不校验参数范围，超出合法范围时由目标 HALCON 版本处理。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的轮廓逼近组，本库内部没有任何调用者；row/column 须等长。诸阈值/宽度/权重的合法取值范围与相互约束由目标 HALCON 版本的对应算子定义，本层不校验参数范围，超出合法范围时由目标 HALCON 版本处理。</para>
 	///   <para><b>资源与坑</b>各部分输出通过不同出参返回，编号下标之间并不一定对齐到同一条边，使用时需结合 order 判读 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；不需要精细调参时用更简单的 <see cref="ApproxChainSimple"/>。</para>
 	/// </remarks>
 	public static void ApproxChain(JlTuple row, JlTuple column, double minWidthCoord, double maxWidthCoord, double threshStart, double threshEnd, double threshStep, double minWidthSmooth, double maxWidthSmooth, int minWidthCurve, int maxWidthCurve, double weight1, double weight2, double weight3, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)
@@ -2125,7 +2125,7 @@ public class JlMisc
 	/// <returns>最短距离元组（DOUBLE 装载，单位与输入坐标一致）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>3D 点到 Plücker 坐标表示的直线的最短距离：线由方向向量 + 力矩向量共 6 个分量给出，对应原生算子 id 2141；输出按 DOUBLE 装载。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者；本库已不提供 3D 类型族但本方法纯数值。力矩向量与方向向量的耦合关系（moment = point × direction，及方向向量是否须单位化）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），传入不满足 Plücker 约束的向量时结果不可信。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者；本库已不提供 3D 类型族但本方法纯数值。力矩向量与方向向量的耦合关系（moment = point × direction，及方向向量是否须单位化）由目标 HALCON 版本的对应算子定义，传入不满足 Plücker 约束的向量时结果不可信。</para>
 	///   <para><b>与相邻算子的取舍</b>手里是"线上两点"用 <see cref="DistancePointLine(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/>；要先把 Plücker 拆开再算用 <see cref="PlueckerLineToPointDirection(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>，但绕这一圈不如直接调本方法。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2183,7 +2183,7 @@ public class JlMisc
 	/// <returns>最短距离标量（单位与输入坐标一致）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>3D 点到 Plücker 坐标表示的直线的最短距离：线由方向向量 + 力矩向量共 6 个分量给出，对应原生算子 id 2141（与本类元组版 <see cref="DistancePointPlueckerLine(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>力矩向量与方向向量的耦合关系（moment = point × direction）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），传入不满足 Plücker 约束的向量时结果不可信。</para>
+	///   <para><b>资源与坑</b>力矩向量与方向向量的耦合关系（moment = point × direction）由目标 HALCON 版本的对应算子定义，传入不满足 Plücker 约束的向量时结果不可信。</para>
 	/// </remarks>
 	public static double DistancePointPlueckerLine(double pointX, double pointY, double pointZ, double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ)
 	{
@@ -2219,7 +2219,7 @@ public class JlMisc
 	/// <param name="directionZ">直线方向 z 分量（DOUBLE 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 Plücker 坐标（方向向量 + 力矩向量）的直线拆成"点 + 方向"表示，对应原生算子 id 2144；六个输出均按 DOUBLE 装载。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者。返回的点是线上哪一点（原点向直线作垂线的垂足？任取一点？）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——不要假设它给出某个特定点（如离原点最近的点），拿到结果后应自行验证。输入方向向量须非零。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者。返回的点是线上哪一点（原点向直线作垂线的垂足？任取一点？）由目标 HALCON 版本的对应算子定义——不要假设它给出某个特定点（如离原点最近的点），拿到结果后应自行验证。输入方向向量须非零。</para>
 	///   <para><b>与相邻算子的取舍</b>要两个点用 <see cref="PlueckerLineToPoints(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；反向转换用 PointDirectionToPlueckerLine。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2279,7 +2279,7 @@ public class JlMisc
 	/// <param name="directionZ">直线方向 z 分量。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 Plücker 坐标（方向向量 + 力矩向量）的直线拆成"点 + 方向"表示，对应原生算子 id 2144（与本类元组版 <see cref="PlueckerLineToPointDirection(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>返回的点是线上哪一点无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），不要假设它给出某个特定点；输入方向向量须非零。</para>
+	///   <para><b>资源与坑</b>返回的点是线上哪一点由目标 HALCON 版本的对应算子定义，不要假设它给出某个特定点；输入方向向量须非零。</para>
 	/// </remarks>
 	public static void PlueckerLineToPointDirection(double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ, out double pointX, out double pointY, out double pointZ, out double directionX, out double directionY, out double directionZ)
 	{
@@ -2321,7 +2321,7 @@ public class JlMisc
 	/// <param name="point2Z">第二个线上点 z 坐标（DOUBLE 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 Plücker 坐标的直线展开为线上两个点（各 3 分量），对应原生算子 id 2145；六个输出均按 DOUBLE 装载。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者。这两个点的选取规则（是否含离原点最近点、间距多少）无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），不要拿它们当"端点"做线段运算。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 3D 点线几何组，本库内部没有任何调用者。这两个点的选取规则（是否含离原点最近点、间距多少）由目标 HALCON 版本的对应算子定义，不要拿它们当"端点"做线段运算。</para>
 	///   <para><b>与相邻算子的取舍</b>只要"点+方向"用 <see cref="PlueckerLineToPointDirection(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>；反向转换用 PointsToPlueckerLine。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -2381,7 +2381,7 @@ public class JlMisc
 	/// <param name="point2Z">第二个线上点 z 坐标。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>把 Plücker 坐标的直线展开为线上两个点（各 3 分量），对应原生算子 id 2145（与本类元组版 <see cref="PlueckerLineToPoints(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>这两个点的选取规则无法由代码判定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），不要拿它们当"端点"做线段运算。</para>
+	///   <para><b>资源与坑</b>这两个点的选取规则由目标 HALCON 版本的对应算子定义，不要拿它们当"端点"做线段运算。</para>
 	/// </remarks>
 	public static void PlueckerLineToPoints(double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ, out double point1X, out double point1Y, out double point1Z, out double point2X, out double point2Y, out double point2Z)
 	{

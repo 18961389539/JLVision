@@ -9730,7 +9730,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <c>regionIndex2</c> 第 n 个来自 <c>regions2</c>，成对满足 <c>direction</c> 所述方位。
 	///   序号是 1 基，可直接喂 <see cref="SelectObj(JlTuple)"/> 取区域。</para>
 	///   <para><b>约束或前提</b>方位判定用的参考点（质心还是包围盒边缘）以及边界相切算不算命中（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；
-	///   <c>direction</c> 合法取值集合本层未枚举（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。两侧必须是同一坐标系同一尺度的区域，
+	///   <c>direction</c> 使用 HALCON 支持的空间关系方向字符串；非法值由原生算子拒绝。两侧必须是同一坐标系同一尺度的区域，
 	///   <c>Connection</c> 之后的顺序若变，序号指向的域随之改变，务必在同一处理阶段取序号、同一阶段用序号。</para>
 	///   <para><b>与相邻算子的取舍</b>要"重叠面积占比 + 双方各自的方位字符串"用
 	///   <c>SpatialRelation</c>（id 1642），它多收一个 percent 门限；只要方位不需面积占比用本算子。
@@ -10621,7 +10621,10 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>各区域各特征的取值，统一按 DOUBLE 装载成一条元组。</returns>
 	/// <remarks>
 	///   <para><b>它量什么</b>把 <c>this</c> 里每个区域当作 ROI，在 <c>image</c> 上算 <c>features</c>
-	///   列出的灰度量（均值、偏差一类，可用名字清单本层未枚举；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。
+	///   列出的灰度量。支持 <c>"alpha"</c>、<c>"anisotropy"</c>、<c>"area"</c>、<c>"beta"</c>、<c>"column"</c>、
+	///   <c>"deviation"</c>、<c>"entropy"</c>、<c>"fuzzy_entropy"</c>、<c>"fuzzy_perimeter"</c>、<c>"max"</c>、
+	///   <c>"mean"</c>、<c>"min"</c>、<c>"moments_column"</c>、<c>"moments_row"</c>、<c>"phi"</c>、
+	///   <c>"plane_deviation"</c>、<c>"ra"</c>、<c>"rb"</c>、<c>"row"</c>。
 	///   所有值都按 DOUBLE 装载，连"像素计数"类特征也是浮点，取整需自己转。</para>
 	///   <para><b>约束或前提</b>返回元组是"区域 × 特征"的展开，主次顺序（先遍历区域还是先遍历特征）
 	///   包装层不展开该细则（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），多特征时务必先用单特征调用核对一次排布，否则按下标取值会静默拿错列。
@@ -11545,7 +11548,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <param name="image">提供权重的灰度图像。</param>
 	/// <param name="rb">短半轴长（像素）。</param>
-	/// <param name="phi">主轴与 x 轴夹角（弧度制（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），正方向与值域未在托管层注明）。</param>
+	/// <param name="phi">主轴与 x 轴夹角，单位为弧度；正方向遵循 HALCON 的行列坐标约定。</param>
 	/// <returns>长半轴长 ra（像素，double 标量）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1682：用区域内像素灰度作权重求二阶矩，再分解出
@@ -11815,7 +11818,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   对象元组插入：把 objectsInsert 的元素插入本区域元组的 index 位置，返回加长后的新元组。
 	/// </summary>
 	/// <param name="objectsInsert">要插入的区域（可为多元素元组，整体并入）。</param>
-	/// <param name="index">插入位置（插到该位置元素之前）；索引基数及"末尾追加"的写法未在托管层枚举（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
+	/// <param name="index">插入位置，使用 1 基索引并插到该位置元素之前；按 HALCON 约定传入末尾位置即可追加。</param>
 	/// <returns>插入后的新区域对象元组句柄；两个输入均不被原地修改。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 2003。结果长度 = 原长度 + objectsInsert 元素数，
@@ -11897,7 +11900,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <summary>
 	///   对象元组删除（标量索引版）：从本区域元组移除第 index 个元素，返回剩余元素组成的新元组。
 	/// </summary>
-	/// <param name="index">要移除的元素位置；索引基数与越界行为未在托管层枚举（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
+	/// <param name="index">要移除的元素位置，使用 1 基索引；重复或越界索引由 HALCON 忽略。</param>
 	/// <returns>删除后的新区域对象元组句柄；本句柄不被原地修改。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 2005，结果长度 = 原长度 − 1（索引有效时）。
@@ -11980,7 +11983,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   对象元组替换（标量索引版）：把本区域元组第 index 个元素换成 objectsReplace，返回新元组。
 	/// </summary>
 	/// <param name="objectsReplace">用于替换的区域（本身也可为多元素元组，展开后并入）。</param>
-	/// <param name="index">被替换元素的位置索引；0 基还是 1 基、越界行为未在托管层枚举（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</param>
+	/// <param name="index">被替换元素的位置索引，使用 1 基索引；超出当前长度的索引会以空区域补齐后再替换。</param>
 	/// <returns>替换后的新区域对象元组句柄；本句柄与 objectsReplace 均不被原地修改。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 2006，与 <c>JlTuple</c> 索引重载同一算子；本重载
