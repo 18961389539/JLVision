@@ -2725,8 +2725,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   轮廓得先经 <c>GenRegionContourXld("filled")</c> 才能变回区域，且面积不再与像素网格严格对应。</para>
 	///   <para><b>易踩</b>它只看灰度等于 <paramref name="threshold"/> 的位置，没有幅值/梯度门限，
 	///   所以噪声图上会得到大量几像素长的闭合碎轮廓，可用 <c>LengthXld()</c> 返回的逐条长度筛掉。
-	///   多个灰度值经元组一次提多条等灰度线时，输出是单个多轮廓对象还是对象数组，本层无法判断，
-	///   用 <c>CountObj()</c> 确认（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   输出是 XLD 轮廓对象数组；一幅输入图对应一组 level-crossing 轮廓，<c>CountObj()</c> 返回实际轮廓条数。
+	///   元组版 threshold 由 HALCON 按 tuple level 处理，多个灰度级的结果仍按原生对象数组返回。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -3443,9 +3443,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新区域句柄；输入图像不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 458，与 <see cref="LocalMin()"/>（id 455）互为镜像：本层同样不传任何控制参数，
-	///   只有一路 <c>InitOCT</c>/<c>JlRegion.LoadNew</c> 的区域输出。注意英文说明把本算子的输出写成单数
-	///   （"as a region"）而 <c>LocalMin</c>/<c>Lowlands</c> 写成复数，是否真会合并成一个对象本层无法判断，
-	///   用 <c>CountObj()</c> 确认（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   只有一路 <c>InitOCT</c>/<c>JlRegion.LoadNew</c> 的区域输出。HALCON 将每幅输入图的所有局部极大像素放入一个区域对象；
+	///   多幅图输入时输出对象数与输入图数对应，<c>CountObj()</c> 可核对对象栈长度。</para>
 	///   <para><b>没有参数意味着什么</b>尺度与容差不可调，噪声亮点逐个成为区域，区域数随噪声密度线性增长（具体取值见目标 HALCON 版本的算子文档）；
 	///   要控制粒度只能先在输入上做 <see cref="RankRect(int,int,int)"/>/<see cref="GaussImage(int)"/> 一类的尺度滤波。</para>
 	///   <para><b>与相邻算子的取舍</b>检"比局部平均亮若干的亮斑"更该用
@@ -3631,8 +3630,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>BinaryThreshold</c>；要按多个区间分层用 <c>AutoThreshold</c>（id 462，直方图多峰切分，
 	///   且 <c>sigma</c> 可调）；光照不均时它们都不合适，改用 <c>DynThreshold</c>/<c>VarThreshold</c>。
 	///   本方法是"只想先看一眼能不能分开"的探索档，不建议留在量产流程里。</para>
-	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。输出是像素的并还是按目标分块的数组
-	///   本层无法判断，用 <c>CountObj()</c> 确认（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>输入前提</b>应为单通道灰度图，本层不检查通道数。输出是区域数组：每个自动确定的灰度区间对应一个区域，
+	///   <c>CountObj()</c> 可取得本次分出的区间数量。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
