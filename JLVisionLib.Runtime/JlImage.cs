@@ -2479,8 +2479,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>窗口与代价</b><paramref name="maskWidth"/>/<paramref name="maskHeight"/> 是 <c>int</c>（<c>StoreI</c>），
 	///   窗口需大于目标尺寸才有意义，但逐窗统计的开销按面积增长，大图上它比 <c>Threshold</c> 慢得多（具体取值见目标 HALCON 版本的算子文档）。
 	///   偶数窗口与 1×1 窗口本层不校验（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。窗口边缘像素的补齐方式（是否等同 <c>Reflection</c>/<c>Representative</c> 那类边界处理）在本层没有体现（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
-	///   <para><b>参数取向</b><paramref name="stdDevScale"/>、<paramref name="absThreshold"/> 接受元组，
-	///   多值语义（是否按通道或按区间展开）本层无法判断（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；单值场景请直接用
+	///   <para><b>参数取向</b><paramref name="stdDevScale"/>、<paramref name="absThreshold"/> 接受 HALCON 数值元组，算子按 tuple level 处理这些输入并自动并行；元组长度和多参数配对由原生校验。单值场景请直接用
 	///   <see cref="VarThreshold(int,int,double,double,string)"/>，省掉固定/解固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4300,8 +4299,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="grayval">输出图像的常数灰度值；尺寸与域取自本图。Default: 0</param>
 	/// <returns>新图像句柄（LoadNew）；原型图不变。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 563。<c>this</c> 只贡献尺寸与域（<c>Store(proc,1)</c>），grayval 整条钉传到
-	///   控制槽 0、调用后 <c>UnpinTuple</c>。多值元组的语义（按通道展开还是只取首值）本层未体现（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>原生算子 id 563。<c>this</c> 提供尺寸、像素类型与域（<c>Store(proc,1)</c>），grayval 整条钉传到
+	///   控制槽 0、调用后 <c>UnpinTuple</c>；输出仍保持原型图的像素类型和域。需要单个常数值时使用标量重载。</para>
 	///   <para><b>与标量重载的取舍</b>单值请写 <see cref="GenImageProto(double)"/>：同 id、<c>StoreD</c> 直写、无钉固定开销。
 	///   注意裸 int 字面量（如 <c>0</c>）会同时在 int→double 与 int→JlTuple 两条隐式转换间二义（CS0121），
 	///   本重载必须显式写 <c>new JlTuple(...)</c>，标量版必须写 double 字面量。</para>
@@ -4312,8 +4311,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage proto = new JlImage("byte", 64, 48);
 	///   using JlImage flat = proto.GenImageProto(new JlTuple(128));
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；输出像素类型由原生按 grayval 选定、与原型类型不必一致（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。
-	///   末尾 <c>GC.KeepAlive(this)</c>，调用结束前原型图不得释放。</para>
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；输出与原型图同尺寸、同像素类型、同域，仅把有效像素设为 grayval。
+	///   对 direction 图，超出合法方向值的结果像素按 HALCON 规则标记为 255。末尾 <c>GC.KeepAlive(this)</c>，调用结束前原型图不得释放。</para>
 	/// </remarks>
 	public JlImage GenImageProto(JlTuple grayval)
 	{
