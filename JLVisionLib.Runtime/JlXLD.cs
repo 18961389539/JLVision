@@ -12,7 +12,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <summary>按索引从当前轮廓容器取出一条或多条轮廓，返回新句柄容器；系 SelectObj(JlTuple) 的属性语法糖，索引不做换算直接透传原生，序号语义依赖上游输出顺序。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>：按索引从当前轮廓容器中取出一条或多条轮廓，返回新容器；实现即 SelectObj(JlTuple) 的属性语法糖，索引不做换算、直接透传原生。</para>
-	///   <para><b>约束与前提</b>：索引按默认值 1 判为 1 基 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；在空容器或未初始化容器上调用会抛 JlOperatorException。</para>
+	///   <para><b>约束与前提</b>：索引按默认值 1 判为 1 基 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；在空容器或未初始化容器上调用会抛 JlOperatorException。</para>
 	///   <para><b>与相邻算子的取舍</b>：按形状特征筛选改用 SelectShapeXld，不依赖轮廓顺序。</para>
 	///   <para><b>参数取向</b>：index 的每个元素是要取的轮廓序号，序号指上游 GenContourRegionXld/Connection 类算子的输出顺序，顺序变化会静默取错轮廓。</para>
 	///   <para><b>调用示例</b></para>
@@ -125,7 +125,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	///   ms.Position = 0;
 	///   using JlXLD b = JlXLD.Deserialize(ms);
 	///   </code>
-	///   <para><b>资源与坑</b>：返回新容器，需 Dispose；流格式与版本绑定，跨版本读取的兼容性 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>资源与坑</b>：返回新容器，需 Dispose；流格式与版本绑定，跨版本读取的兼容性 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	/// </remarks>
 	public new static JlXLD Deserialize(Stream stream)
 	{
@@ -168,7 +168,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="phi2">与多边形 P2 上线段法向量所成的角度。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：把容器中的轮廓按"平行线段对"读出：返回 P1/P2 两侧线段的端点行、列、长度与法向角，共 8 组 DOUBLE 元组。</para>
-	///   <para><b>约束与前提</b>：仅对成对平行线段成立的轮廓（如经分割得到的矩形类轮廓）有实际意义；结果长度是找到的平行对数，不一定等于轮廓数 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：仅对成对平行线段成立的轮廓（如经分割得到的矩形类轮廓）有实际意义；结果长度是找到的平行对数，不一定等于轮廓数 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要整体外接矩形用 SmallestRectangle2Xld，需要逐段平行关系（对边检测、卡尺标定）才用本方法。</para>
 	///   <para><b>参数取向</b>：全部为 out JlTuple，每条轮廓可能贡献多组值。</para>
 	///   <para><b>调用示例</b></para>
@@ -209,7 +209,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>Objects 中不属于 ObjectsSub 的对象。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：从本容器中剔除与 objectsSub 内容相同的轮廓，返回剩余元素组成的新容器。</para>
-	///   <para><b>约束与前提</b>：按轮廓内容逐对判等（epsilon 取默认 0，即精确比较 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）），与容器内顺序无关。</para>
+	///   <para><b>约束与前提</b>：按轮廓内容逐对判等（epsilon 取默认 0，即精确比较；具体规则见目标 HALCON 版本的对应 HALCON 算子文档），与容器内顺序无关。</para>
 	///   <para><b>与相邻算子的取舍</b>：按序号剔除用 RemoveObj，按内容剔除用本方法。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
@@ -241,9 +241,9 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>包含结果的图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：把容器中的轮廓按给定灰度描画到 image 的副本上，返回新图像；输入图像不被改动。</para>
-	///   <para><b>约束与前提</b>：轮廓经亚像素折线光栅化后落位，与区域填充算子的覆盖规则不同 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；多条轮廓覆盖同一像素时的先后次序按容器顺序。</para>
+	///   <para><b>约束与前提</b>：轮廓经亚像素折线光栅化后落位，与区域填充算子的覆盖规则不同 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；多条轮廓覆盖同一像素时的先后次序按容器顺序。</para>
 	///   <para><b>与相邻算子的取舍</b>：要像素区域用 GenRegionContourXld 转 JlRegion 再做区域运算；只要像素化轮廓本身用本方法。</para>
-	///   <para><b>参数取向</b>：元组版 grayval 可按轮廓逐个给灰度（主实现，内部 Store 后 UnpinTuple）；每条轮廓一个值，长度不匹配时的行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>参数取向</b>：元组版 grayval 可按轮廓逐个给灰度（主实现，内部 Store 后 UnpinTuple）；每条轮廓一个值，长度不匹配时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("byte", 640, 480);
@@ -304,7 +304,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>复制出的对象。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：复制本容器中从 index 起的 numObj 条轮廓为新容器；原容器不改动。</para>
-	///   <para><b>约束与前提</b>：index 为 1 基（参数默认值为 1，包装层不换算）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告），越界与 numObj=-1 的确切行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：index 为 1 基（参数默认值为 1，包装层不换算）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），越界与 numObj=-1 的确切行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：CopyObj 取连续区段；任意/重复索引改用 SelectObj。</para>
 	///   <para><b>参数取向</b>：index 起点序号，numObj 个数。</para>
 	///   <para><b>调用示例</b></para>
@@ -365,7 +365,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>筛选出的对象。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：按 1 基索引把选中的轮廓装入新容器；本容器不改动。</para>
-	///   <para><b>约束与前提</b>：参数默认值为 1，包装层 Store 不做索引换算，判为 1 基 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；越界索引的行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告），调用前先用 CountObj 核对元素数。</para>
+	///   <para><b>约束与前提</b>：参数默认值为 1，包装层 Store 不做索引换算，判为 1 基 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；越界索引的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），调用前先用 CountObj 核对元素数。</para>
 	///   <para><b>与相邻算子的取舍</b>：需要"第几条"依赖上游 Connection/GenContourRegionXld 的输出顺序，顺序不稳定时用 SelectShapeXld 按特征选取更稳。</para>
 	///   <para><b>参数取向</b>：主实现（元组版），index 可含多个序号、可重复；调用后 UnpinTuple 解除钉住。</para>
 	///   <para><b>调用示例</b></para>
@@ -425,7 +425,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>布尔结果值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：带容差地逐对比较两个容器的轮廓内容，返回布尔判定（int）。</para>
-	///   <para><b>约束与前提</b>：要求两容器元素数一致，不一致时的返回值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；epsilon=0 为逐坐标精确比较。</para>
+	///   <para><b>约束与前提</b>：要求两容器元素数一致，不一致时的返回值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；epsilon=0 为逐坐标精确比较。</para>
 	///   <para><b>与相邻算子的取舍</b>：无需容差的快速判等可用 TestEqualObj；需要"坐标差 ≤ epsilon 即算相等"用本方法。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：epsilon 可按对象对逐个给值，Store 后 UnpinTuple；结果经 LoadI 以 int 取回。</para>
 	///   <para><b>调用示例</b></para>
@@ -487,7 +487,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>布尔结果值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：不带容差地判断两个轮廓容器是否逐元素相等，返回 int 判定。</para>
-	///   <para><b>约束与前提</b>：对 xld 内容的相等判据（坐标逐点一致才算等）与元素数不同时的行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：对 xld 内容的相等判据（坐标逐点一致才算等）与元素数不同时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：拟合/近似结果比对必须用 CompareObj 带 epsilon；只有同源拷贝的核对适合本方法。</para>
 	///   <para><b>参数取向</b>：无控制参数；结果经 LoadI 以 int 取回。</para>
 	///   <para><b>调用示例</b></para>
@@ -523,7 +523,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>包含映射数据的图像。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：基于规则网格点位计算畸变图与校正图之间的映射：返回映射图像（JlImage），并把网格线轮廓输出到 meshes。</para>
-	///   <para><b>约束与前提</b>：image 与网格点（row/column）必须同源同标定；本容器作为图标输入 2 随 image（输入 1）一起传给原生，其对结果的作用 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：image 与网格点（row/column）必须同源同标定；本容器作为图标输入 2 随 image（输入 1）一起传给原生，其对结果的作用 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：已有解析标定参数时直接用投影变换族，不必由网格反推映射。</para>
 	///   <para><b>参数取向</b>：主实现（rotation 为 JlTuple，Store 后 UnpinTuple）；gridSpacing 以 StoreI 整数直传；mapType 以 StoreS 字符串直传；row/column 是网格点坐标，长度须配对。</para>
 	///   <para><b>调用示例</b></para>
@@ -697,9 +697,9 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>计算出的矩。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：把轮廓/多边形当作点集计算任意阶几何矩 M(p,q)，点集口径与轮廓方向无关。</para>
-	///   <para><b>约束与前提</b>：mode、area、centerRow、centerCol 按本容器 AreaCenterPointsXld/AreaCenterXld 的输出对应提供，作为矩的参考量 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：mode、area、centerRow、centerCol 按本容器 AreaCenterPointsXld/AreaCenterXld 的输出对应提供，作为矩的参考量 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要固定二阶矩用 MomentsPointsXld；按区域口径（考虑方向）用 MomentsAnyXld。</para>
-	///   <para><b>参数取向</b>：主实现（元组版）：area/centerRow/centerCol 每条轮廓一组值，p/q 为矩阶次，各元组长度须与轮廓数匹配 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；返回 DOUBLE 元组。</para>
+	///   <para><b>参数取向</b>：主实现（元组版）：area/centerRow/centerCol 每条轮廓一组值，p/q 为矩阶次，各元组长度须与轮廓数匹配 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；返回 DOUBLE 元组。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   using JlXLDCont c = new JlXLDCont(new double[] { 10, 20, 30 }, new double[] { 10, 25, 12 });
@@ -773,7 +773,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形的各向异性。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：点集口径的长细度（anisometry，等价椭圆长半轴/短半轴 ra/rb），每条轮廓一个 DOUBLE 值。</para>
-	///   <para><b>约束与前提</b>：轮廓点近似各向同性（ra≈rb）时该比值不稳定 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：轮廓点近似各向同性（ra≈rb）时该比值不稳定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：需要 ra、rb、phi 全套参数用 EllipticAxisPointsXld；区域口径用 EccentricityXld。</para>
 	///   <para><b>参数取向</b>：无参。</para>
 	///   <para><b>调用示例</b></para>
@@ -861,7 +861,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形的方向（弧度）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：点集口径的主方向角（由二阶矩导出，弧度），每条轮廓一个 DOUBLE 值。</para>
-	///   <para><b>约束与前提</b>：各向同性的点集方向不定，值抖动大 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：各向同性的点集方向不定，值抖动大 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：区域口径方向用 OrientationXld；要主轴+半轴一起取用 EllipticAxisPointsXld。</para>
 	///   <para><b>参数取向</b>：无参。</para>
 	///   <para><b>调用示例</b></para>
@@ -950,7 +950,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="column">质心的列坐标。</param>
 	/// <returns>点集的面积。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：把轮廓当作点集求"面积与质心"——这里的 area 是点集的"面积"，按点云口径等于每条轮廓的点数 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告），不是闭合区域几何面积；row/column 为点集的算术质心。</para>
+	///   <para><b>功能说明</b>：把轮廓当作点集求"面积与质心"——这里的 area 是点集的"面积"，按点云口径等于每条轮廓的点数 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），不是闭合区域几何面积；row/column 为点集的算术质心。</para>
 	///   <para><b>约束与前提</b>：对开放轮廓同样成立（这正是它与 AreaCenterXld 的关键差异，后者需闭合并按方向求带符号面积）。</para>
 	///   <para><b>与相邻算子的取舍</b>：要闭合区域的几何面积用 AreaCenterXld；要按点数排序/筛选用本方法。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：返回 DOUBLE 元组（每条轮廓一个点数），out row/column 为 DOUBLE 元组。</para>
@@ -1035,7 +1035,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>包含该测试点的全部轮廓或多边形。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：从容器中选出"经过给定点"的轮廓子集，返回新容器；不改动本容器。</para>
-	///   <para><b>约束与前提</b>：这里的 row/column 是每个轮廓各给一组测试点坐标（元组长度一般应与轮廓数一致，逐条配对）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：这里的 row/column 是每个轮廓各给一组测试点坐标（元组长度一般应与轮廓数一致，逐条配对）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：判"点是否被闭合轮廓包含"用 TestXldPoint（内外关系）；本方法是"轮廓是否恰好经过该点"（命中轮廓上的点）。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：row/column 以 Store 传入、调用后 UnpinTuple。</para>
 	///   <para><b>调用示例</b></para>
@@ -1099,7 +1099,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>布尔数值元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：判断给定点是否被闭合轮廓/多边形"包围"（内外关系），返回 INTEGER 布尔元组（1 在内、0 在外）。</para>
-	///   <para><b>约束与前提</b>：只对闭合轮廓有意义，开放轮廓的包围判定不可靠；结果与"轮廓-点"配对顺序相关，元组排列规则 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：只对闭合轮廓有意义，开放轮廓的包围判定不可靠；结果与"轮廓-点"配对顺序相关，元组排列规则 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：判"轮廓是否经过该点"用 SelectXldPoint；本方法判"点在轮廓内/外"。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：可一次给多个测试点 row/column，Store 后 UnpinTuple。</para>
 	///   <para><b>调用示例</b></para>
@@ -1161,7 +1161,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>满足条件的轮廓或多边形。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：按形状特征值区间筛选轮廓，返回满足条件的新容器；不改动本容器。</para>
-	///   <para><b>约束与前提</b>：可用特征名清单与 open 轮廓下各特征的口径 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；min/max 可用字符串 'min'/'max' 表示不设下界/上界。</para>
+	///   <para><b>约束与前提</b>：可用特征名清单与 open 轮廓下各特征的口径 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；min/max 可用字符串 'min'/'max' 表示不设下界/上界。</para>
 	///   <para><b>与相邻算子的取舍</b>：按序号选取用 SelectObj，受上游输出顺序影响；本方法按特征值选取，顺序变化不致配方静默错位，优先用于稳定筛选。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：features 与 min/max 逐特征配对，operation 取 "and"/"or" 组合多特征条件；各元组 Store 后 UnpinTuple。</para>
 	///   <para><b>调用示例</b></para>
@@ -1231,7 +1231,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形的方向（弧度）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：按闭合轮廓所围区域求主方向角（弧度，DOUBLE 元组，每条轮廓一个值）。</para>
-	///   <para><b>约束与前提</b>：区域口径由所围面积的矩导出，需闭合轮廓；开放轮廓按首末点相连闭合处理 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。各向同性区域方向不定。</para>
+	///   <para><b>约束与前提</b>：区域口径由所围面积的矩导出，需闭合轮廓；开放轮廓按首末点相连闭合处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。各向同性区域方向不定。</para>
 	///   <para><b>与相邻算子的取舍</b>：想按"点集"口径（与是否闭合无关）求方向用 OrientationPointsXld。</para>
 	///   <para><b>参数取向</b>：无参。</para>
 	///   <para><b>调用示例</b></para>
@@ -1259,7 +1259,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形的各向异性。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：由等价椭圆参数导出的形状因子组（原生 id 1599）：返回 anisometry（长细度），out 给出 bulkiness（丰度）与 structureFactor（结构因子），每条轮廓各一组 DOUBLE 值。</para>
-	///   <para><b>约束与前提</b>：三个量由等价椭圆半轴 ra/rb 导出（见 EllipticAxisXld，id 1604）；三者的确切公式与 rb 趋于 0 时的取值从包装层不可判 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：三个量由等价椭圆半轴 ra/rb 导出（见 EllipticAxisXld，id 1604）；三者的确切公式与 rb 趋于 0 时的取值从包装层不可判 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要长细度一个量用 EccentricityPointsXld（id 1589，点集口径）；要 ra/rb/phi 原始椭圆参数用 EllipticAxisXld。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：返回与两个 out 均按 DOUBLE 装载，长度等于容器内轮廓数。</para>
 	///   <para><b>调用示例</b></para>
@@ -1319,8 +1319,8 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>输入轮廓或多边形的紧凑度。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：紧凑度因子（原生 id 1600），衡量轮廓接近圆程度的纯数，每条轮廓一个 DOUBLE 值。</para>
-	///   <para><b>约束与前提</b>：由所围面积与边界长度导出，通常越接近 1 越圆 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>与相邻算子的取舍</b>：判"接近圆"还可看 CircularityXld（id 1603，另一种圆度口径，具体公式 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））与 ConvexityXld（凹陷程度）；三者口径不同，按检测目标选用，不要互换阈值。</para>
+	///   <para><b>约束与前提</b>：由所围面积与边界长度导出，通常越接近 1 越圆 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>与相邻算子的取舍</b>：判"接近圆"还可看 CircularityXld（id 1603，另一种圆度口径，具体公式；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）与 ConvexityXld（凹陷程度）；三者口径不同，按检测目标选用，不要互换阈值。</para>
 	///   <para><b>参数取向</b>：无参；结果按 DOUBLE 元组装载。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
@@ -1349,7 +1349,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="diameter">轮廓或多边形两个极值点间的距离。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：逐条轮廓求点集最大间距（原生 id 1601）：out 出两个极值点的 row/column 与二者距离 diameter，共 5 组 DOUBLE 元组，即轮廓的"直径"及取到直径的端点。</para>
-	///   <para><b>约束与前提</b>：极值在轮廓顶点集中搜索，顶点稀疏采样的长轮廓会低估真实跨度；对称/圆形轮廓存在多组等价极值点对，具体返回哪一对不保证稳定 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：极值在轮廓顶点集中搜索，顶点稀疏采样的长轮廓会低估真实跨度；对称/圆形轮廓存在多组等价极值点对，具体返回哪一对不保证稳定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只用最大跨度的数值做筛选时用 SelectShapeXld 按特征过滤，不必回读极值点坐标；要轴向包围盒尺寸用 HeightWidthRatioXld。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：每条轮廓给一组 5 值，装载顺序 row1、column1、row2、column2、diameter。</para>
 	///   <para><b>调用示例</b></para>
@@ -1416,8 +1416,8 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <summary>求衡量轮廓偏离凸形程度的凸度因子（凹口越深值越小），每条轮廓一个 DOUBLE 值返回元组；要凸包轮廓本身继续做几何运算改用 ShapeTransXld("convex")。</summary>
 	/// <returns>输入轮廓或多边形的凸度。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：凸度因子（原生 id 1602），衡量轮廓偏离凸形的程度，每条轮廓一个 DOUBLE 值；无凹陷时最大，凹口越深值越小 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>约束与前提</b>：依赖所围面积与凸包面积之比口径，开放轮廓的处理 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>功能说明</b>：凸度因子（原生 id 1602），衡量轮廓偏离凸形的程度，每条轮廓一个 DOUBLE 值；无凹陷时最大，凹口越深值越小 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束与前提</b>：依赖所围面积与凸包面积之比口径，开放轮廓的处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：要凸包轮廓本身（后续继续做几何运算）用 ShapeTransXld("convex")；只要"凸不凸"这个数用本方法。</para>
 	///   <para><b>参数取向</b>：无参；结果按 DOUBLE 元组装载。</para>
 	///   <para><b>调用示例</b></para>
@@ -1442,8 +1442,8 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <summary>求衡量轮廓与圆相似程度的圆度因子，每条轮廓一个 DOUBLE 值返回元组；对单个噪声/缺失顶点敏感，勿与长细度、凸度混用阈值。</summary>
 	/// <returns>输入轮廓或多边形的圆度。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：圆度因子（原生 id 1603），衡量轮廓与圆的相似程度，每条轮廓一个 DOUBLE 值；轮廓越圆值越大 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>约束与前提</b>：对单个噪声/缺失顶点敏感，轮廓断续会显著拉低圆度值；开放轮廓口径 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>功能说明</b>：圆度因子（原生 id 1603），衡量轮廓与圆的相似程度，每条轮廓一个 DOUBLE 值；轮廓越圆值越大 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束与前提</b>：对单个噪声/缺失顶点敏感，轮廓断续会显著拉低圆度值；开放轮廓口径 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：区分"长细"用 EccentricityXld 的 anisometry（椭圆轴比），区分"凹凸"用 ConvexityXld；圆度只反映与圆的偏离，三者不要混用阈值。</para>
 	///   <para><b>参数取向</b>：无参；结果按 DOUBLE 元组装载。</para>
 	///   <para><b>调用示例</b></para>
@@ -1473,7 +1473,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>长半轴。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：等价椭圆参数（原生 id 1604）：返回长半轴 ra（DOUBLE 元组），out 短半轴 rb 与主轴方向 phi——phi 为弧度制，是主轴与 x 轴（column 轴）的夹角。</para>
-	///   <para><b>约束与前提</b>：各向同性轮廓（近圆）时主轴方向不定，phi 抖动大；ra/rb 与 phi 每条轮廓各一组值。phi 的取值区间（如 (-π,π]）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：各向同性轮廓（近圆）时主轴方向不定，phi 抖动大；ra/rb 与 phi 每条轮廓各一组值。phi 的取值区间（如 (-π,π]）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：点集口径的同名算子是 EllipticAxisPointsXld（id 1590，明确按 point cloud 计算）；只要轴比导出的形状因子用 EccentricityXld。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：返回与 out 均按 DOUBLE 装载。</para>
 	///   <para><b>调用示例</b></para>
@@ -1541,7 +1541,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="length2">外接矩形的第二半径（半宽）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：逐条轮廓求任意方向最小面积外接矩形（原生 id 1605）：out 中心 row/column、方向 phi（弧度）、两条半边长 length1/length2——注意是半长半宽，整边长要乘 2。</para>
-	///   <para><b>约束与前提</b>：拟合对象是轮廓的 double 顶点点集（本库轮廓即 (row,col) 浮点点列，见 JlXLDCont(JlTuple, JlTuple)），开放轮廓同样按顶点集处理；phi 角度起点与 length1/length2 谁长谁短的约定 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：拟合对象是轮廓的 double 顶点点集（本库轮廓即 (row,col) 浮点点列，见 JlXLDCont(JlTuple, JlTuple)），开放轮廓同样按顶点集处理；phi 角度起点与 length1/length2 谁长谁短的约定 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：JlRegion.SmallestRectangle2 拟合的是像素区域，结果带像素边界量化；需要亚像素尺寸（如测量零件长宽）用本方法，别拿区域拟合结果当亚像素精度。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：5 个 out 均按 DOUBLE 装载，每条轮廓一组值。</para>
 	///   <para><b>调用示例</b></para>
@@ -1616,7 +1616,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="column2">外接矩形右下角点的列坐标。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：逐条轮廓求轴向（平行于坐标轴）外接矩形（原生 id 1606）：out 左上角 (row1, column1) 与右下角 (row2, column2)，4 组 DOUBLE 元组，坐标即顶点集的行列极值。</para>
-	///   <para><b>约束与前提</b>：row = y 向下为正、column = x 向右为正，故恒有 row1≤row2、column1≤column2 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；不含旋转信息，斜放物体请用 SmallestRectangle2Xld。</para>
+	///   <para><b>约束与前提</b>：row = y 向下为正、column = x 向右为正，故恒有 row1≤row2、column1≤column2 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；不含旋转信息，斜放物体请用 SmallestRectangle2Xld。</para>
 	///   <para><b>与相邻算子的取舍</b>：JlRegion.SmallestRectangle1 给的是像素边界（其 out int 重载，整数行列极值），本方法给 double 顶点极值——做亚像素测量用本方法；两套口径的数值有系统性差异，不要互相换算。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：4 个 out 均按 DOUBLE 装载，每条轮廓一组值。</para>
 	///   <para><b>调用示例</b></para>
@@ -1748,14 +1748,14 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>变换后的轮廓或多边形。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：形状变换生成新轮廓容器（原生 id 1608）：type="convex" 时对每条输入轮廓生成凸包轮廓，返回新 JlXLD，本容器不改动。</para>
-	///   <para><b>约束与前提</b>：type 确证的合法值目前只有 "convex"（凸包），是否还有其它取值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；凸包由顶点集导出，开放轮廓的凸包是否自动闭合 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：type 确证的合法值目前只有 "convex"（凸包），是否还有其它取值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；凸包由顶点集导出，开放轮廓的凸包是否自动闭合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要凸度数值用 ConvexityXld（id 1602），要能继续做几何运算的凸包轮廓用本方法；凸包轮廓面积/矩等须对结果重新计算，原轮廓的量不继承。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   using JlXLDCont c = new JlXLDCont(new double[] { 0, 0, 40, 40, 0 }, new double[] { 0, 20, 20, 0, 0 });
 	///   using JlXLD hull = c.ShapeTransXld("convex");
 	///   </code>
-	///   <para><b>资源与坑</b>：返回新句柄需 Dispose，与本容器共享底层数据与否 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；本容器仍需 Dispose。</para>
+	///   <para><b>资源与坑</b>：返回新句柄需 Dispose，与本容器共享底层数据与否 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；本容器仍需 Dispose。</para>
 	/// </remarks>
 	public JlXLD ShapeTransXld(string type)
 	{
@@ -1776,7 +1776,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形的长度。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：逐条轮廓的折线长度（原生 id 1609），单位像素：相邻顶点欧氏距离之和，返回 DOUBLE 元组。</para>
-	///   <para><b>约束与前提</b>：闭合轮廓是否把末点回首点的封口段计入、开放轮廓首尾是否相连 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；长度取决于顶点密度，经 SegmentContoursXld 直线化后的轮廓长度会小于原采样轮廓。</para>
+	///   <para><b>约束与前提</b>：闭合轮廓是否把末点回首点的封口段计入、开放轮廓首尾是否相连 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；长度取决于顶点密度，经 SegmentContoursXld 直线化后的轮廓长度会小于原采样轮廓。</para>
 	///   <para><b>与相邻算子的取舍</b>：区域像素边界长度用 JlRegion.Contlength()，与折线长度口径不同、数值不可互换；要按长度筛选用 SelectShapeXld 或先取本结果再 SelectObj。</para>
 	///   <para><b>参数取向</b>：无参；结果按 DOUBLE 元组装载，长度等于轮廓数。</para>
 	///   <para><b>调用示例</b></para>
@@ -1811,7 +1811,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>计算出的矩。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：按"所围区域"口径计算轮廓/多边形的任意阶几何矩 M(p,q)（原生 id 1610），返回 DOUBLE 元组；与点集口径的 MomentsAnyPointsXld（id 1588）不同，本算子由闭合边界的面积分导出。</para>
-	///   <para><b>约束与前提</b>：area/centerRow/centerCol 应传入本容器 AreaCenterXld 对应输出的值作参考量（三者与 p/q 均为每条轮廓一组值，长度须与轮廓数配对，不匹配时行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））；pointOrder 声明各轮廓顶点序（"positive"/"negative"），方向给错会得到符号错误的矩 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：area/centerRow/centerCol 应传入本容器 AreaCenterXld 对应输出的值作参考量（三者与 p/q 均为每条轮廓一组值，长度须与轮廓数配对，不匹配时行为；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；pointOrder 声明各轮廓顶点序（"positive"/"negative"），方向给错会得到符号错误的矩 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要二阶矩 M20/M02/M11 用 MomentsXld（id 1611，免配参考量）；点集口径用 MomentsAnyPointsXld。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：pointOrder/area/centerRow/centerCol/p/q 逐轮廓成组，Store 钉固定后 UnpinTuple；mode 为标量串。</para>
 	///   <para><b>调用示例</b></para>
@@ -1895,8 +1895,8 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="m02">沿列轴的二阶矩。</param>
 	/// <returns>混合二阶矩。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：所围区域口径的二阶几何矩（原生 id 1611）：返回混合矩 m11，out 行向 m20、列向 m02，均为 DOUBLE 元组、每条轮廓一组；等价椭圆参数（EllipticAxisXld）即由这三个二阶矩换算而来 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>约束与前提</b>：矩按闭合边界面积分计算，开放轮廓的处理 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；无需外部参考量（区别于 MomentsAnyXld 要传 area/质心/pointOrder）。</para>
+	///   <para><b>功能说明</b>：所围区域口径的二阶几何矩（原生 id 1611）：返回混合矩 m11，out 行向 m20、列向 m02，均为 DOUBLE 元组、每条轮廓一组；等价椭圆参数（EllipticAxisXld）即由这三个二阶矩换算而来 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束与前提</b>：矩按闭合边界面积分计算，开放轮廓的处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；无需外部参考量（区别于 MomentsAnyXld 要传 area/质心/pointOrder）。</para>
 	///   <para><b>与相邻算子的取舍</b>：任意阶 (p,q) 用 MomentsAnyXld；点集口径（与闭合与否无关）用 MomentsPointsXld（id 1592）。两者数值对同一轮廓不相等，别混用阈值。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：3 个结果均按 DOUBLE 装载。</para>
 	///   <para><b>调用示例</b></para>
@@ -1963,7 +1963,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>轮廓或多边形所围区域的面积。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：闭合轮廓所围面积与质心（原生 id 1612）：返回 area（DOUBLE 元组），out 质心 row/column 与 pointOrder（字符串元组，"positive"/"negative"，报告该轮廓实际的顶点绕行方向）。</para>
-	///   <para><b>约束与前提</b>：面积按闭合边界的积分口径计算 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；area 是否随绕行方向带符号、还是恒为正而把方向单列在 pointOrder，从装载代码判不了 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）——把 area 用于面积差/叠加运算前务必先实测。开放轮廓的处理 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：面积按闭合边界的积分口径计算 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；area 是否随绕行方向带符号、还是恒为正而把方向单列在 pointOrder，从装载代码判不了 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——把 area 用于面积差/叠加运算前务必先实测。开放轮廓的处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：点集口径的"面积"是点数（AreaCenterPointsXld，id 1593），像素区域面积（JlRegion.AreaCenter）又是另一套口径；三者定义互不相同，不可互换。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：前 3 个输出按 DOUBLE 装载，pointOrder 经无类型标注的 LoadNew 按字符串元组取回；pointOrder 可直接回传给 MomentsAnyXld。</para>
 	///   <para><b>调用示例</b></para>
@@ -2037,7 +2037,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <param name="ratio">外接矩形的长宽比。</param>
 	/// <returns>外接矩形的高度。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：轴向外接矩形的高、宽与长宽比（原生 id 2002）：返回 height（row 方向边长），out width（column 方向边长）与 ratio（长宽比 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）），均 DOUBLE 元组。</para>
+	///   <para><b>功能说明</b>：轴向外接矩形的高、宽与长宽比（原生 id 2002）：返回 height（row 方向边长），out width（column 方向边长）与 ratio（长宽比；具体规则见目标 HALCON 版本的对应 HALCON 算子文档），均 DOUBLE 元组。</para>
 	///   <para><b>约束与前提</b>：量的是平行于坐标轴的包围盒——物体斜放时高宽被外扩的包围盒放大，此时应改用 SmallestRectangle2Xld 的 length1/length2。</para>
 	///   <para><b>与相邻算子的取舍</b>：SmallestRectangle1Xld（id 1606）给角点坐标，本方法直接给尺寸与比值，省一次减法；区域口径的同名算子 JlRegion.HeightWidthRatio 按像素数计且其标量重载高/宽为 int，精度与定义都不同。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：3 个结果均按 DOUBLE 装载，每条轮廓一组值。</para>
@@ -2104,7 +2104,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>扩充后的对象元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：把 objectsInsert 的全部轮廓插入本容器第 index 个位置之前，返回扩展后的新容器（原生 id 2003）；本容器与 objectsInsert 均不改动。</para>
-	///   <para><b>约束与前提</b>：index 直接透传原生、包装层不做基数换算，基数（1 基或 0 基）与越界行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）——用 0 试插入时先在实测环境验证，别按 C# 数组习惯假定。两容器元素类型须同为 xld 对象。</para>
+	///   <para><b>约束与前提</b>：index 直接透传原生、包装层不做基数换算，基数（1 基或 0 基）与越界行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——用 0 试插入时先在实测环境验证，别按 C# 数组习惯假定。两容器元素类型须同为 xld 对象。</para>
 	///   <para><b>与相邻算子的取舍</b>：只往末尾接用 ConcatObj（id 569）；按位置覆盖用 ReplaceObj（id 2006）；本方法是"挤开插入"，原元素整体后移。</para>
 	///   <para><b>参数取向</b>：index 以 StoreI 写入原生控制参数 0（原生序在图标参数 2 之前）。</para>
 	///   <para><b>调用示例</b></para>
@@ -2137,7 +2137,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>剩余的对象元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：把 index 指定的轮廓从本容器中剔除，其余按原顺序装入新容器返回（原生 id 2005）；本容器不改动。</para>
-	///   <para><b>约束与前提</b>：index 透传原生不换算基数，与 SelectObj（id 572）同族、1 基与否 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；重复索引与越界索引的行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告），调用前用 CountObj 核对轮廓数。</para>
+	///   <para><b>约束与前提</b>：index 透传原生不换算基数，与 SelectObj（id 572）同族、1 基与否 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；重复索引与越界索引的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），调用前用 CountObj 核对轮廓数。</para>
 	///   <para><b>与相邻算子的取舍</b>：按内容剔除用 ObjDiff（id 558），不受顺序影响；按序号剔除只在顺序稳定（同一上游、同参数）时可靠，上游 Connection/SegmentContoursXld 输出顺序变化会静默删错轮廓。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：index 可含多个序号，Store 钉固定后 UnpinTuple。</para>
 	///   <para><b>调用示例</b></para>
@@ -2201,7 +2201,7 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// <returns>替换元素后的元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：用 objectsReplace 中的轮廓按位替换本容器第 index 个元素，返回替换后的新容器（原生 id 2006）；本容器与 objectsReplace 均不改动，元素总数不变。</para>
-	///   <para><b>约束与前提</b>：index 透传原生不换算基数，与 SelectObj/RemoveObj 同族，1 基与否 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；objectsReplace 元素数与 index 数不等时的配对行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束与前提</b>：index 透传原生不换算基数，与 SelectObj/RemoveObj 同族，1 基与否 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；objectsReplace 元素数与 index 数不等时的配对行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：ReplaceObj 是"原位覆盖"，容器长度不变——想在中间加元素用 InsertObj（会挤后移），想删用 RemoveObj；三者的 index 语义互不相同，不要照抄参数。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：index 可含多个序号，Store 钉固定后 UnpinTuple；原生控制参数序把 index 放在图标参数之前。</para>
 	///   <para><b>调用示例</b></para>
@@ -2269,8 +2269,8 @@ public class JlXLD : JlObject, ISerializable, ICloneable
 	/// </summary>
 	/// <returns>输入轮廓或多边形的矩形度。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：矩形度因子（原生 id 2063），衡量轮廓与矩形的相似程度，每条轮廓一个 DOUBLE 值；越接近规则矩形值越大 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>约束与前提</b>：开放轮廓与噪声顶点下的口径 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；阈值筛选用的特征名是否即 "rectangularity" 需对照 SelectShapeXld 支持清单 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>功能说明</b>：矩形度因子（原生 id 2063），衡量轮廓与矩形的相似程度，每条轮廓一个 DOUBLE 值；越接近规则矩形值越大 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束与前提</b>：开放轮廓与噪声顶点下的口径 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；阈值筛选用的特征名是否即 "rectangularity" 需对照 SelectShapeXld 支持清单 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：要矩形几何参数（中心/方向/边长）用 SmallestRectangle2Xld；要"像不像矩形"这一个数用本方法，省一次拟合再比值的代码。</para>
 	///   <para><b>参数取向</b>：无参；结果按 DOUBLE 元组装载。</para>
 	///   <para><b>调用示例</b></para>

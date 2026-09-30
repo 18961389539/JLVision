@@ -26,7 +26,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   using JlShapeModel wrapper = new JlShapeModel(src.Handle);
 	///   </code>
 	///   <para><b>资源与坑</b>两壳各自 Dispose 各自那份引用；对 src 换柄（ReadShapeModel 先 Dispose 再 Load）不影响 wrapper 继续持有旧柄；
-	///   对句柄内容的原地改写（SetShapeModelParam）wrapper 是否同步可见 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   对句柄内容的原地改写（SetShapeModelParam）wrapper 是否同步可见 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlShapeModel(IntPtr handle)
@@ -52,7 +52,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   using JlShapeModel alias = new JlShapeModel(src);
 	///   </code>
 	///   <para><b>资源与坑</b>这是"第二个名字指向同一原生资源"级别的浅别名：壳独立、各还各的引用，一侧 Dispose 不影响另一侧继续使用；
-	///   底层共享程度对原地改写是否可见 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   底层共享程度对原地改写是否可见 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlShapeModel(JlHandle handle)
@@ -92,7 +92,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>构造时读取 WriteShapeModel 写出的形状模型文件。与 ReadShapeModel 共用原生算子 id 875：本重载在新对象上取得模型句柄，ReadShapeModel 则先 Dispose 旧句柄再原地换入。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>文件必须是合法的模型文件；文件不存在或格式错误时构造抛出异常，不会留下半成品对象。文件在不同版本间是否兼容 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>文件必须是合法的模型文件；文件不存在或格式错误时构造抛出异常，不会留下半成品对象。文件在不同版本间是否兼容 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
@@ -871,7 +871,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>从文件读取模型并原地换入本对象（先 Dispose 旧句柄），与构造器 JlShapeModel(string) 共用原生 id 875，差别仅在是否复用对象。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>fileName 为 WriteShapeModel 写出的路径，含扩展名；跨版本兼容性 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>fileName 为 WriteShapeModel 写出的路径，含扩展名；跨版本兼容性 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel();
@@ -987,7 +987,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>返回指定金字塔层上的模型轮廓（原生 id 879，返回独立 JlXLDCont 新句柄）。用于检查训练得到的模型点是否合理，或把轮廓喂给 CreateShapeModelXld 系列做二次训练。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>level 是已训练的层索引，超出范围的行为 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）（含索引起点）；层数可用 GetShapeModelParams 返回的 num_levels 核对。</para>
+	///   <para>level 是已训练的层索引，超出范围的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）（含索引起点）；层数可用 GetShapeModelParams 返回的 num_levels 核对。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>本库无显示族；取回轮廓后可自行转存或做点数统计，代替在线可视化调试。</para>
 	///   <para><b>示例</b></para>
@@ -1028,7 +1028,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>回读训练时定下的模型参数（原生 id 881）：返回值是金字塔层数，角度经 LoadD 读标量，scaleMin/scaleMax/scaleStep 以 JlTuple 读出（尺度训练过多值时完整保留），metric 字符串、minContrast 整数。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>训练后核对"auto 展开出的实际值"、以及确认模型是否带尺度，都应先用它，再决定用哪支 Find。角度/尺度范围训练后不能改（本类只有 SetShapeModelParam 通用口，能否覆盖这些 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））。</para>
+	///   <para>训练后核对"auto 展开出的实际值"、以及确认模型是否带尺度，都应先用它，再决定用哪支 Find。角度/尺度范围训练后不能改（本类只有 SetShapeModelParam 通用口，能否覆盖这些；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
@@ -1083,7 +1083,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>同原生 id 881 的标量读出版：层数经 LoadI 返回 int，scaleMin/scaleMax/scaleStep 按单值 LoadD 读取。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>模型带多个尺度值时，单值读法会丢失其余值或报错 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；多尺度模型请改用 JlTuple 重载。</para>
+	///   <para>模型带多个尺度值时，单值读法会丢失其余值或报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；多尺度模型请改用 JlTuple 重载。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
@@ -1156,7 +1156,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>设置模型参考点（原生 id 883，原地修改）。之后所有 Find* 的 row/column 都相对新参考点报告，且 WriteShapeModel 保存的也是新参考点。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>坐标是模型（训练图）像素坐标系下的位置；参考点落在轮廓外是否允许 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>坐标是模型（训练图）像素坐标系下的位置；参考点落在轮廓外是否允许 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage template = new JlImage("label.png");
@@ -1202,9 +1202,9 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>一次调用在同图搜索多个各向异性模型（原生 id 884）。实现上先把 modelIDs 数组经 ConcatArray 拼成句柄元组作为控制参数 0，图像作为图标参数 1。输出七个等长元组，model 为命中实例对应输入数组的下标。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>数组中所有模型须都是 CreateAnisoShapeModel(*/Xld) 训练 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；各模型共用同一组搜索区间与阈值。</para>
+	///   <para>数组中所有模型须都是 CreateAnisoShapeModel(*/Xld) 训练 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；各模型共用同一组搜索区间与阈值。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>逐模型循环调 FindAnisoShapeModel 结果等价，但每模型都要完整扫一遍图像；批量版只在原生层共享预处理。多结果时 num_matches 是全部模型合计取前 N，与 min_score 谁先卡住谁 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>逐模型循环调 FindAnisoShapeModel 结果等价，但每模型都要完整扫一遍图像；批量版只在原生层共享预处理。多结果时 num_matches 是全部模型合计取前 N，与 min_score 谁先卡住谁 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("scene.png");
@@ -1214,11 +1214,11 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   JlShapeModel.FindAnisoShapeModels(img, models, -0.39, 0.79, 0.9, 1.1, 0.9, 1.1, 0.5, 1, 0.5, "least_squares", 0, 0.9, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score, out JlTuple model);
 	///   if (model.Length &gt; 0)
 	///   {
-	///       int which = model[0].I; // 命中模型的数组下标，起点是否 0-based （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）
+	///       int which = model[0].I; // 命中模型的数组下标，起点是否 0-based （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>无匹配时 out 为空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；七个 out 元组按同一 i 对齐取值。</para>
+	///   <para>无匹配时 out 为空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；七个 out 元组按同一 i 对齐取值。</para>
 	/// </remarks>
 	public static void FindAnisoShapeModels(JlImage image, JlShapeModel[] modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score, out JlTuple model)
 	{
@@ -1296,7 +1296,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="model">找到的实例对应的模型索引。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>批量各向异性搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 884；参数标量直写、无 pin/unpin；model 输出为每个命中实例所属模型的下标，单模型时全部同值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>批量各向异性搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 884；参数标量直写、无 pin/unpin；model 输出为每个命中实例所属模型的下标，单模型时全部同值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>单模型场景直接用它或 FindAnisoShapeModel（id 887）皆可，前者多回传一个 model 下标。</para>
 	///   <para><b>示例</b></para>
@@ -1366,7 +1366,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>一次调用在同图搜索多个各向同性缩放模型（原生 id 885）：modelIDs 经 ConcatArray 拼为句柄元组，输出六个等长元组，model 为命中实例的输入数组下标。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>数组中模型须经 CreateScaledShapeModel(*/Xld) 训练出尺度；各模型共用同一组搜索区间与阈值。默认模板里 angle_extent 用 0.78 而训练侧用 0.79，弧度值本身无含义差异，但提示搜索/训练区间要各自显式对齐 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>数组中模型须经 CreateScaledShapeModel(*/Xld) 训练出尺度；各模型共用同一组搜索区间与阈值。默认模板里 angle_extent 用 0.78 而训练侧用 0.79，弧度值本身无含义差异，但提示搜索/训练区间要各自显式对齐 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("scene.png");
@@ -1376,7 +1376,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   JlShapeModel.FindScaledShapeModels(img, models, -0.39, 0.78, 0.9, 1.1, 0.5, 1, 0.5, "least_squares", 0, 0.9, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score, out JlTuple model);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>六个 out 元组等长；无匹配时空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。其余搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
+	///   <para>六个 out 元组等长；无匹配时空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。其余搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>CreateShapeModel、VectorAngleToRigid、GetShapeModelContours</para>
 	/// </remarks>
@@ -1447,7 +1447,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="model">找到的实例对应的模型索引。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>批量各向同性搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 885；参数标量直写、无 pin/unpin，model 输出为命中实例所属模型下标（单模型时全部同值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））。搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
+	///   <para>批量各向同性搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 885；参数标量直写、无 pin/unpin，model 输出为命中实例所属模型下标（单模型时全部同值；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("scene.png");
@@ -1508,7 +1508,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="model">找到的实例对应的模型索引。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>一次调用在同图搜索多个无尺度模型（原生 id 886）：modelIDs 经 ConcatArray 拼为句柄元组，输出五个等长元组，model 为命中实例的输入数组下标 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>一次调用在同图搜索多个无尺度模型（原生 id 886）：modelIDs 经 ConcatArray 拼为句柄元组，输出五个等长元组，model 为命中实例的输入数组下标 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>约束或前提</b></para>
 	///   <para>各模型共用同一组搜索区间与阈值；对带尺度的模型改用 FindScaledShapeModels/FindAnisoShapeModels 才能取回尺度。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
@@ -1522,7 +1522,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   JlShapeModel.FindShapeModels(img, models, -0.39, 0.79, 0.5, 10, 0.5, "least_squares", 0, 0.9, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score, out JlTuple model);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>无匹配时 out 为空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；其余搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
+	///   <para>无匹配时 out 为空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；其余搜索参数取向见 FindShapeModel(JlTuple 版)。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>CreateShapeModel、VectorAngleToRigid、GetShapeModelContours</para>
 	/// </remarks>
@@ -1584,7 +1584,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="model">找到的实例对应的模型索引。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>批量无尺度搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 886；参数标量直写、无 pin/unpin，model 输出为命中实例所属模型下标（单模型时全部同值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））。</para>
+	///   <para>批量无尺度搜索的原地版：本对象作为唯一模型写入模型槽位，原生 id 同为 886；参数标量直写、无 pin/unpin，model 输出为命中实例所属模型下标（单模型时全部同值；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage("scene.png");
@@ -1649,7 +1649,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>在图像内搜索各向异性缩放模型（原生 id 887）：行、列方向各自给定尺度区间，输出 row/column/angle/scaleR/scaleC/score 六个等长元组。适用于非等比形变（如打印拉伸、料斗内受压变形）的目标。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>模型须经 CreateAnisoShapeModel(*/Xld) 训练；搜索区间应落在训练区间内 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。各向异性搜索空间是行尺度份数×列尺度份数，比各向同性更费时间。</para>
+	///   <para>模型须经 CreateAnisoShapeModel(*/Xld) 训练；搜索区间应落在训练区间内 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。各向异性搜索空间是行尺度份数×列尺度份数，比各向同性更费时间。</para>
 	///   <para><b>参数取向</b></para>
 	///   <para>其余搜索参数取向同 FindShapeModel(JlTuple 版)；若行列尺度总是相同，用 FindScaledShapeModel 更快。</para>
 	///   <para><b>示例</b></para>
@@ -1660,7 +1660,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.FindAnisoShapeModel(img, -0.39, 0.79, 0.9, 1.1, 0.9, 1.1, 0.6, 1, 0.5, "least_squares", 0, 0.9, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>六个 out 元组等长；无匹配时空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>六个 out 元组等长；无匹配时空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	/// </remarks>
 	public void FindAnisoShapeModel(JlImage image, double angleStart, double angleExtent, double scaleRMin, double scaleRMax, double scaleCMin, double scaleCMax, JlTuple minScore, int numMatches, double maxOverlap, JlTuple subPixel, JlTuple numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score)
 	{
@@ -1790,7 +1790,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>在图像内搜索各向同性缩放模型（原生 id 888）。与 FindShapeModel 的差别只在于额外给出尺度搜索区间并回传 scale：row/column/angle/scale/score 五个等长元组。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>模型须经 CreateScaledShapeModel(*/Xld) 训练出尺度；未训练尺度时 scale 输出如何取值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。搜索的角与尺度区间应落在训练范围内 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>模型须经 CreateScaledShapeModel(*/Xld) 训练出尺度；未训练尺度时 scale 输出如何取值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。搜索的角与尺度区间应落在训练范围内 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>参数取向</b></para>
 	///   <para>min_score/num_matches/max_overlap/sub_pixel/num_levels/greediness 同 FindShapeModel(JlTuple 版)；scaleMin/scaleMax 区间越大耗时越长。</para>
 	///   <para><b>示例</b></para>
@@ -1801,7 +1801,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.FindScaledShapeModel(img, -0.39, 0.79, 0.9, 1.1, 0.6, 1, 0.5, "least_squares", 0, 0.9, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>五个 out 元组等长，按同一 i 取值；无匹配时是空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>五个 out 元组等长，按同一 i 取值；无匹配时是空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>CreateShapeModel、VectorAngleToRigid、GetShapeModelContours</para>
 	/// </remarks>
@@ -1921,11 +1921,11 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>在图像内搜索单个无尺度形状模型的最佳匹配（原生 id 889）：模型句柄作为控制输入先写、图像后写，row/column/angle/score 四个 JlTuple 输出长度相同，等于实际匹配数。形状匹配基于边缘梯度而非灰度相关，对整体光照漂移较稳，但依赖模板边缘对比度。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>模型须已训练（CreateShapeModel/CreateShapeModelXld 系）；搜索角区间应落在训练角区间内，越界的处理 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；搜索图与模板通道格式要求一致 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>模型须已训练（CreateShapeModel/CreateShapeModelXld 系）；搜索角区间应落在训练角区间内，越界的处理 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；搜索图与模板通道格式要求一致 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>目标可能缩放时改用 FindScaledShapeModel/FindAnisoShapeModel，代价是搜索空间按尺度份数成倍变慢；多个模型同图搜索用 FindShapeModels，省去每个模型各扫一遍图像。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>min_score 越高误匹配越少、漏检越多，需按现场噪声标定；num_matches 给 0 收集全部合格实例 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；max_overlap 用于实例重叠去重，是否仅在 num_matches=0 时生效 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；greediness 越大越快但按英文参数说明可能漏检；sub_pixel 给 "none" 则结果为整像素，"least_squares" 做亚像素精化，是否另有 "max_score" 等取值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；num_levels 给 0 使用全部已训练层（含负值与双元素形式的语义 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））。结果顺序（按 score 降序）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>min_score 越高误匹配越少、漏检越多，需按现场噪声标定；num_matches 给 0 收集全部合格实例 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；max_overlap 用于实例重叠去重，是否仅在 num_matches=0 时生效 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；greediness 越大越快但按英文参数说明可能漏检；sub_pixel 给 "none" 则结果为整像素，"least_squares" 做亚像素精化，是否另有 "max_score" 等取值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；num_levels 给 0 使用全部已训练层（含负值与双元素形式的语义；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。结果顺序（按 score 降序）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
@@ -1937,7 +1937,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>无匹配时 out 是空元组还是抛异常 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告），稳妥写法是先判 row.Length；out 元组建议用完 Dispose。</para>
+	///   <para>无匹配时 out 是空元组还是抛异常 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），稳妥写法是先判 row.Length；out 元组建议用完 Dispose。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>CreateShapeModel、VectorAngleToRigid、GetShapeModelContours</para>
 	/// </remarks>
@@ -2038,9 +2038,9 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>为"从 XLD 轮廓训练"的模型事后修改匹配 metric（原生 id 890，原地改）。轮廓本身无灰度信息，极性要靠一张真实图像确定：实现中 image 写图标参数通道、homMat2D 写控制参数通道（代码里两处的 parIndex 同为 1 但属不同类别），原生层用 homMat2D 把 image 摆到模型坐标系后逐点判定梯度极性。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>仅适用于 CreateShapeModelXld 系列训练出的模型 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；homMat2D 应描述该 image 相对模型的实际位姿。</para>
+	///   <para>仅适用于 CreateShapeModelXld 系列训练出的模型 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；homMat2D 应描述该 image 相对模型的实际位姿。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>训练期 metric 在 Create* 里定；训练后只有这条通道能改 metric，其余训练参数不可再改（SetShapeModelParam 能否覆盖 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告））。</para>
+	///   <para>训练期 metric 在 Create* 里定；训练后只有这条通道能改 metric，其余训练参数不可再改（SetShapeModelParam 能否覆盖；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlXLDCont contours = new JlXLDCont(new double[] { 0, 0, 40, 40, 0 }, new double[] { 0, 20, 20, 0, 0 });
@@ -2074,16 +2074,16 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamValue">参数值。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>模型通用参数写入口（原生 id 891）：genParamName 与 genParamValue 按位置配对，两个元组都在调用期间 pin、调用后 unpin。粗到细匹配的两阶段机制经由这类通用参数调节——先在金字塔高层（降采样强、特征粗）快速全图筛候选，再在低层/原分辨率对候选精化，num_level_fine、pyramid_level_high_last 等即控制精化层数与高层截止位置，参数名与取值集合 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>模型通用参数写入口（原生 id 891）：genParamName 与 genParamValue 按位置配对，两个元组都在调用期间 pin、调用后 unpin。粗到细匹配的两阶段机制经由这类通用参数调节——先在金字塔高层（降采样强、特征粗）快速全图筛候选，再在低层/原分辨率对候选精化，num_level_fine、pyramid_level_high_last 等即控制精化层数与高层截止位置，参数名与取值集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>角度/尺度范围、层数这类训练参数训练后是否还能经此覆盖 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；本类没有对应的 getter，只能靠 GetShapeModelParams 读训练参数部分。</para>
+	///   <para>角度/尺度范围、层数这类训练参数训练后是否还能经此覆盖 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；本类没有对应的 getter，只能靠 GetShapeModelParams 读训练参数部分。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
 	///   model.SetShapeModelParam(new JlTuple("angle"), new JlTuple(0.5));
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>参数名写错通常原生层报错 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；改完记得 WriteShapeModel 固化，否则重启丢失。</para>
+	///   <para>参数名写错通常原生层报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；改完记得 WriteShapeModel 固化，否则重启丢失。</para>
 	/// </remarks>
 	public void SetShapeModelParam(JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -2121,7 +2121,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>约束或前提</b></para>
 	///   <para>轮廓集合须描出目标边缘；没有模板图可依据，模型点梯度极性未知，故 metric 默认 "ignore_local_polarity"、minContrast 为必给整数（默认值见参数列表）。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>angle_start/angle_extent 为弧度且 extent 是从 start 起的区间宽度；角度份数=extent/step+1，行、列尺度份数各自 (max-min)/step+1，训练耗时与模型内存随三者乘积增长 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。行列尺度总是相等时用 CreateScaledShapeModelXld 或 CreateShapeModelXld，模型更小、匹配更快。</para>
+	///   <para>angle_start/angle_extent 为弧度且 extent 是从 start 起的区间宽度；角度份数=extent/step+1，行、列尺度份数各自 (max-min)/step+1，训练耗时与模型内存随三者乘积增长 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。行列尺度总是相等时用 CreateScaledShapeModelXld 或 CreateShapeModelXld，模型更小、匹配更快。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel src = new JlShapeModel("part.shm");
@@ -2342,7 +2342,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>约束或前提</b></para>
 	///   <para>轮廓没有灰度信息，故本族没有 contrast 参数、minContrast 为必给整数、metric 默认 "ignore_local_polarity"（极性未知时不敢假定）；极性确定后可再用 SetShapeModelMetric 改回 use_polarity。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>有一张真实模板图时优先 CreateShapeModel：由对比度筛边比手工轮廓更稳。optimization 通过抽稀轮廓点控制训练规模 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>有一张真实模板图时优先 CreateShapeModel：由对比度筛边比手工轮廓更稳。optimization 通过抽稀轮廓点控制训练规模 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlShapeModel src = new JlShapeModel("part.shm");
@@ -2351,7 +2351,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.CreateShapeModelXld(contours, "auto", -0.39, 0.79, "auto", "auto", "ignore_local_polarity", 5);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>训练耗时随角度份数与点数增长 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；本对象旧模型在此调用开始时已被释放。</para>
+	///   <para>训练耗时随角度份数与点数增长 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；本对象旧模型在此调用开始时已被释放。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>FindShapeModel、GetShapeModelContours、ClearShapeModel</para>
 	/// </remarks>
@@ -2444,9 +2444,9 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>用模板图 domain 内像素训练各向异性缩放模型（原生 id 895，先 Dispose 再原地换入）。行、列方向独立给尺度区间与步长，匹配用 FindAnisoShapeModel(s) 取回 scaleR/scaleC。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>模板须单通道 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；只取 domain 内像素，用全图当模板会把背景边缘收进模型，先 Threshold+ReduceDomain 圈定目标。</para>
+	///   <para>模板须单通道 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；只取 domain 内像素，用全图当模板会把背景边缘收进模型，先 Threshold+ReduceDomain 圈定目标。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>contrast 可为单阈值或迟滞双阈值再加最小连接点数（英文参数说明），给 "auto" 由模板反比度自动选；取值过高模型点太少、匹配脆弱，过低则背景噪声入模、训练与匹配都变慢。minContrast 用 "auto" 时取值策略 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。尺度份数与耗时乘积关系同 CreateAnisoShapeModelXld；行列尺度总相等时改 CreateScaledShapeModel。</para>
+	///   <para>contrast 可为单阈值或迟滞双阈值再加最小连接点数（英文参数说明），给 "auto" 由模板反比度自动选；取值过高模型点太少、匹配脆弱，过低则背景噪声入模、训练与匹配都变慢。minContrast 用 "auto" 时取值策略 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。尺度份数与耗时乘积关系同 CreateAnisoShapeModelXld；行列尺度总相等时改 CreateScaledShapeModel。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   using JlImage template = new JlImage("label.png");
@@ -2456,7 +2456,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.CreateAnisoShapeModel(roi, "auto", -0.39, 0.79, "auto", 0.9, 1.1, "auto", 0.9, 1.1, "auto", "auto", "use_polarity", new JlTuple(new double[] { 20.0, 40.0, 5.0 }), 15);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>迟滞三元组按位置解释 (low, high, min_size) （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；训练失败旧模型已释放。</para>
+	///   <para>迟滞三元组按位置解释 (low, high, min_size) （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；训练失败旧模型已释放。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>FindShapeModel、GetShapeModelContours、ClearShapeModel</para>
 	/// </remarks>
@@ -2566,8 +2566,8 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="minContrast">搜索图像中目标的最小对比度。Default: "auto"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：用模板图像在其 domain 内的像素原地训练各向同性缩放模型（原生 id 896，与构造器同 id；实现先 Dispose 旧句柄再换入新句柄，基类 Load 拒绝写已初始化句柄）。角度/尺度/层数训练后即固化，用 GetShapeModelParams 回读 "auto" 展开出的实际值。</para>
-	///   <para><b>约束或前提</b>：模型点取自模板图像的梯度边缘，低对比度目标训不出足够边缘点；只取 domain 内像素，全图当模板会把背景边缘收进模型，应先 Threshold+ReduceDomain 圈定目标。模板是否必须单通道 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>参数取向</b>：主实现（元组版）：numLevels/angleStep/scaleStep/optimization/contrast/minContrast 均可传 "auto"（JlTuple 钉固定后 UnpinTuple）。angle_start 为弧度、angle_extent 是自 start 起的区间宽度；num_levels 越多训练越快但小目标高层无特征 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；contrast 可给单阈值或迟滞参数组，位置语义 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；尺度区间 (max-min)/step 的份数直接乘进训练与搜索耗时，无各向异性形变时比 Aniso 版省一半尺度份数。</para>
+	///   <para><b>约束或前提</b>：模型点取自模板图像的梯度边缘，低对比度目标训不出足够边缘点；只取 domain 内像素，全图当模板会把背景边缘收进模型，应先 Threshold+ReduceDomain 圈定目标。模板是否必须单通道 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>参数取向</b>：主实现（元组版）：numLevels/angleStep/scaleStep/optimization/contrast/minContrast 均可传 "auto"（JlTuple 钉固定后 UnpinTuple）。angle_start 为弧度、angle_extent 是自 start 起的区间宽度；num_levels 越多训练越快但小目标高层无特征 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；contrast 可给单阈值或迟滞参数组，位置语义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；尺度区间 (max-min)/step 的份数直接乘进训练与搜索耗时，无各向异性形变时比 Aniso 版省一半尺度份数。</para>
 	///   <para><b>与相邻算子的取舍</b>：不需要尺度时用 CreateShapeModel（模型最小、匹配最快）；行列独立缩放才用 CreateAnisoShapeModel。本方法训练的模型必须配 FindScaledShapeModel/FindScaledShapeModels 才能取回 scale。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
@@ -2675,8 +2675,8 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="minContrast">搜索图像中目标的最小对比度。Default: "auto"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>：用模板图像在其 domain 内的像素原地训练无尺度形状模型（原生 id 897，与构造器同 id；先 Dispose 旧句柄再换入）。模型点为模板梯度边缘的离散点，匹配返回位姿含旋转角，取不回尺度。</para>
-	///   <para><b>约束或前提</b>：形状匹配基于梯度边缘而非灰度相关——整体光照漂移鲁棒，但低对比度目标边缘点稀少、易失效；全图当模板会把背景边缘收进模型，应先 Threshold+ReduceDomain 圈定目标。模板通道数要求 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>参数取向</b>：主实现（元组版）：numLevels/angleStep/optimization/contrast/minContrast 均可 "auto"（钉固后 UnpinTuple）。angle_start/angle_extent 弧度制、extent 为自 start 起的宽度；angle_step 越小角度分辨率越高但角度份数增多、训练与搜索时间线性上涨；num_levels 影响金字塔粗筛层数与鲁棒性 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；contrast 可给单阈值或迟滞参数组，位置语义 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；minContrast 用 "auto" 时的取值策略 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束或前提</b>：形状匹配基于梯度边缘而非灰度相关——整体光照漂移鲁棒，但低对比度目标边缘点稀少、易失效；全图当模板会把背景边缘收进模型，应先 Threshold+ReduceDomain 圈定目标。模板通道数要求 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>参数取向</b>：主实现（元组版）：numLevels/angleStep/optimization/contrast/minContrast 均可 "auto"（钉固后 UnpinTuple）。angle_start/angle_extent 弧度制、extent 为自 start 起的宽度；angle_step 越小角度分辨率越高但角度份数增多、训练与搜索时间线性上涨；num_levels 影响金字塔粗筛层数与鲁棒性 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；contrast 可给单阈值或迟滞参数组，位置语义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；minContrast 用 "auto" 时的取值策略 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：目标在图像中尺寸会变时用 CreateScaledShapeModel/CreateAnisoShapeModel（代价是尺度份数乘进耗时）；轮廓不来自照片时用 CreateShapeModelXld 族。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
@@ -2684,7 +2684,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   using JlShapeModel model = new JlShapeModel();
 	///   model.CreateShapeModel(template, "auto", -0.39, 0.79, "auto", "auto", "use_polarity", 30, 15);
 	///   </code>
-	///   <para><b>资源与坑</b>：训练失败旧模型已释放、句柄失效需重建；训练参数固化后用 GetShapeModelParams 回读实际值，SetShapeModelParam 能否覆盖 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>资源与坑</b>：训练失败旧模型已释放、句柄失效需重建；训练参数固化后用 GetShapeModelParams 回读实际值，SetShapeModelParam 能否覆盖 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>FindShapeModel、GetShapeModelContours、ClearShapeModel</para>
 	/// </remarks>
@@ -2770,7 +2770,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <returns>不应出现干扰的区域。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：查询模型的 clutter（杂乱边缘拒检）参数（原生 id 2055）：返回"不允许出现杂乱"的区域（新 JlRegion 句柄），并按 genParamName 列出的参数名读回取值 genParamValue、变换 homMat2D 与杂乱最小对比度 clutterContrast（INTEGER）。</para>
-	///   <para><b>约束或前提</b>：需先用 SetShapeModelClutter 写入配置才有意义，未配置时各输出的取值 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；除 "use_clutter" 外支持的参数名全集与语义 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>约束或前提</b>：需先用 SetShapeModelClutter 写入配置才有意义，未配置时各输出的取值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；除 "use_clutter" 外支持的参数名全集与语义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：本方法只读；改配置走 SetShapeModelClutter（id 2057）。普通定位不需要 clutter，仅在同料不同工件、边缘区常被无关高对比结构污染时才值得配置。</para>
 	///   <para><b>参数取向</b>：主实现（元组版）：genParamName 钉固后 UnpinTuple；输出装载序为区域（图标 1）、值（控制 0）、变换（控制 1）、对比度（控制 2）。</para>
 	///   <para><b>调用示例</b></para>
@@ -2846,10 +2846,10 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamName">参数名。</param>
 	/// <param name="genParamValue">参数值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>：为模型写入 clutter 拒检配置（原生 id 2057，原地修改、无返回值）：clutterRegion 标出"不允许出现杂乱边缘"的区域，clutterContrast 为杂乱判定的最小对比度；匹配时若该区域内出现不低于此对比度的结构，则拒绝该候选位姿 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
-	///   <para><b>约束或前提</b>：homMat2D 与 clutterRegion 的坐标系关系（模型系还是图像系、匹配时如何参与）从包装层判不了 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）；区域用 JlRegion 构造或 Threshold 圈出，随 WriteShapeModel 一并保存与否 （该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>功能说明</b>：为模型写入 clutter 拒检配置（原生 id 2057，原地修改、无返回值）：clutterRegion 标出"不允许出现杂乱边缘"的区域，clutterContrast 为杂乱判定的最小对比度；匹配时若该区域内出现不低于此对比度的结构，则拒绝该候选位姿 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>：homMat2D 与 clutterRegion 的坐标系关系（模型系还是图像系、匹配时如何参与）从包装层判不了 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；区域用 JlRegion 构造或 Threshold 圈出，随 WriteShapeModel 一并保存与否 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>：读回用 GetShapeModelClutter（id 2055）；一般误匹配先调 min_score/greediness/域裁剪，clutter 是"特定位置总有干扰边"时的定点手段，不要当默认步骤。</para>
-	///   <para><b>参数取向</b>：主实现（元组版）：genParamName/genParamValue 按位置配对、钉固后 UnpinTuple；homMat2D 同样经 Store/UnpinTuple 传递；参数名取值集合（示例中 "use_clutter" 的确切语义与合法值）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>参数取向</b>：主实现（元组版）：genParamName/genParamValue 按位置配对、钉固后 UnpinTuple；homMat2D 同样经 Store/UnpinTuple 传递；参数名取值集合（示例中 "use_clutter" 的确切语义与合法值）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   using JlShapeModel model = new JlShapeModel("part.shm");
@@ -2858,7 +2858,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   pose.HomMat2dIdentity();
 	///   model.SetShapeModelClutter(clutter, pose, 128, new string[] { "use_clutter" }, new double[] { 1.0 });
 	///   </code>
-	///   <para><b>资源与坑</b>：改完需再次 WriteShapeModel 才能固化到文件；JlHomMat2D 实现 IDisposable，使用后应 Dispose；传入的 clutter 区域调用返回后能否立即 Dispose（原生侧是否留存引用）（该规则由目标 HALCON 版本定义；错误由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>资源与坑</b>：改完需再次 WriteShapeModel 才能固化到文件；JlHomMat2D 实现 IDisposable，使用后应 Dispose；传入的 clutter 区域调用返回后能否立即 Dispose（原生侧是否留存引用）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
 	/// </remarks>
 	public void SetShapeModelClutter(JlRegion clutterRegion, JlHomMat2D homMat2D, int clutterContrast, JlTuple genParamName, JlTuple genParamValue)
 	{

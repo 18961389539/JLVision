@@ -2256,7 +2256,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	///   double corner = sub[0, 0];
 	///   m.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄，用完 Dispose（示例用 using 接管）。子块是独立拷贝还是与原矩阵共享内存，从托管侧本层未提供该细则；要保证写回，稳妥做法是改完 sub 再 SetSubMatrix(sub, 1, 2)。</para>
+	///   <para><b>资源与坑</b>返回新句柄，用完 Dispose（示例用 using 接管）。子块是独立拷贝还是与原矩阵共享内存，HALCON 的 get_sub_matrix 会创建独立矩阵并复制选中元素；修改 sub 不会回写原矩阵。需要写回时再调用 SetSubMatrix(sub, 1, 2)。</para>
 	/// </remarks>
 	public JlMatrix GetSubMatrix(int row, int column, int rowsSub, int columnsSub)
 	{
@@ -2278,7 +2278,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="values">待设置的值。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 868。输入原生参数序 0=this、1=values；元组经 JlNativeApi.Store 钉成固定内存写入，调用后 UnpinTuple 解除固定。void 返回、原地改写，不装载任何输出句柄。</para>
-	///   <para><b>约束或前提</b>只覆盖元素值、不改矩阵维度：values 的元素个数应等于已建矩阵的 NumRows×NumColumns；本层不做长度检查，长度不匹配时由目标 HALCON 版本处理。展平顺序（行优先或列优先）托管侧本层未提供该细则，须与 GetFullMatrix 读出时的顺序一致，跨行列定位前建议先小规模核对。</para>
+	///   <para><b>约束或前提</b>只覆盖元素值、不改矩阵维度：values 的元素个数应等于已建矩阵的 NumRows×NumColumns；本层不做长度检查，长度不匹配时由目标 HALCON 版本处理。values 必须按 HALCON 规定的行优先（row-major，逐行）排列；元素个数必须为 1 或 NumRows×NumColumns，长度不符由 HALCON 报错。</para>
 	///   <para><b>与相邻算子的取舍</b>整表填同一个常数用标量重载 SetFullMatrix(double)，省一次钉内存开销；只改个别点用索引器 this[row,column] 或 SetValueMatrix；改连续一块用 SetSubMatrix。只有逐元素给不同值时才用本元组重载一次写回。</para>
 	///   <para><b>参数取向</b>void 返回，只有一个入参，无 out。</para>
 	///   <para><b>用法</b></para>
@@ -2331,7 +2331,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>矩阵元素的值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 869：输入只有 0=this；输出 InitOCT(0) 后用 JlTuple.LoadNew 以 JlTupleType.DOUBLE 装载成一条新元组。元组是数值元组，不含句柄元素。</para>
-	///   <para><b>约束或前提</b>元素总数 = GetSizeMatrix 的 rows × columns；展平是行优先还是列优先，托管侧本层未提供该细则，跨行列定位前先小规模验证或用 GetValueMatrix 显式给坐标。</para>
+	///   <para><b>约束或前提</b>元素总数 = GetSizeMatrix 的 rows × columns；GetFullMatrix 按 HALCON 规定以行优先（row-major，逐行）返回全部元素；索引换算可直接使用 row * NumColumns + column，或改用 GetValueMatrix 显式取坐标。</para>
 	///   <para><b>与相邻算子的取舍</b>只想求和、求均值、求极值不必把整表搬回托管侧再 LINQ，用 SumMatrix/MeanMatrix/MaxMatrix/MinMatrix 让原生层归约；只要少数几个点用 GetValueMatrix，别为读 2 个数读回 10000 个。写回用 SetFullMatrix，或逐项 SetValueMatrix。</para>
 	///   <para><b>参数取向</b>只有一个返回值元组，没有 out。</para>
 	///   <para><b>用法</b></para>
