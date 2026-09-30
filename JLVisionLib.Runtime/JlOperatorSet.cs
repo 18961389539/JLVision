@@ -2973,7 +2973,8 @@ public class JlOperatorSet
 	/// <param name="tuple">输入元组。</param>
 	/// <param name="max">只含最大值的新元组，类型档位随输入。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 118。数值与字符串混排的 MIXED 元组结果不可预期，先筛再求；字符串比较口径与空元组行为均 （具体边界行为以对应 HALCON 算子文档为准）。要最大值的下标时对本结果再用 TupleFind 定位。</para>
+	///   <para><b>功能说明</b>：原生算子 id 118，扫描并返回单个最大值。</para>
+	///   <para><b>约束或前提</b>：输入必须全为字符串或全为数值，不能混合；空输入抛异常。</para>
 	///   <para><b>与实例重载的取舍</b>常规取最大值用 <see cref="JlTuple.TupleMax()"/>（结果可隐式转 double）；逐元素与另一元组比大小走 TupleMax2/TupleMin2 一族。静态版仅在需要裸句柄 out 结果时使用。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出装载进 max。</para>
 	///   <para><b>资源与坑</b>max 为 LoadNew 新建的单值元组，用毕释放；与 <see cref="JlTuple.TupleMin()"/> 成对调用可得值域两端。</para>
@@ -2993,7 +2994,8 @@ public class JlOperatorSet
 	/// <param name="tuple">输入元组。</param>
 	/// <param name="min">只含最小值的新元组，类型档位随输入。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 119，与 TupleMax 对称。字符串比较口径与空元组行为 （具体边界行为以对应 HALCON 算子文档为准）；归一化时与最大值成对调用求值域两端。</para>
+	///   <para><b>功能说明</b>：原生算子 id 119，扫描并返回单个最小值。</para>
+	///   <para><b>约束或前提</b>：输入必须全为字符串或全为数值，不能混合；空输入抛异常。</para>
 	///   <para><b>与实例重载的取舍</b>首选 <see cref="JlTuple.TupleMin()"/> 直接取返回值；逐元素上限钳位改走 TupleMin2 一族，本静态版只用于统一算子调度的场合。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0、调用后解固定，第 0 路对象输出装载进 min。</para>
 	///   <para><b>资源与坑</b>min 由 LoadNew 新建，需自行释放；对乱序数据本算子只扫描一次、不改动输入顺序。</para>
@@ -3013,7 +3015,8 @@ public class JlOperatorSet
 	/// <param name="tuple">输入元组，要求数值型。</param>
 	/// <param name="cumul">与输入等长的前缀和元组，类型档位随输入。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 120。用于累计分布、按累计权重抽样等需要每一位部分和的场合；对字符串元组的行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>：原生算子 id 120，计算逐位前缀和；只接受数值元组。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入返回空元组；结果与输入等长。</para>
 	///   <para><b>与实例重载的取舍</b>只要总和时 <see cref="JlTuple.TupleSum()"/> 输出单值、开销更小；链式代码用实例版 <see cref="JlTuple.TupleCumul()"/>，门面逃生口才用本静态版。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出装载进 cumul。</para>
 	///   <para><b>资源与坑</b>cumul 为 LoadNew 新建元组、用毕释放；其末项与 TupleSum 同值，不必重复调用两者。</para>
@@ -3031,13 +3034,14 @@ public class JlOperatorSet
 
 	/// <summary>按排名取元素：返回升序排列后第 rankIndex 位的值，不改动输入元组。</summary>
 	/// <param name="tuple">输入元组。</param>
-	/// <param name="rankIndex">名次（单值；0 是否对应最小值 （具体边界行为以对应 HALCON 算子文档为准））。</param>
+	/// <param name="rankIndex">单个整数名次，使用 0 基索引。</param>
 	/// <param name="selected">选中的元素，单值新元组，类型档位随输入。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 121。与先排序再按下标取相比，本算子不生成整个有序副本，取单个分位点更省；中位数直接用 <see cref="JlTuple.TupleMedian()"/>。</para>
+	///   <para><b>约束或前提</b>：rankIndex 必须是单个整数并使用 0 基名次；调用前应确保其位于 0 到 tuple.Length−1 之间；空 rankIndex 返回空元组。</para>
 	///   <para><b>与实例重载的取舍</b>业务代码用 <see cref="JlTuple.TupleSelectRank(JlTuple)"/> 拿返回值即可；本静态门面留给统一算子调度、需 out 结果的场景。</para>
 	///   <para><b>参数取向</b>两入单出：tuple、rankIndex 按形参序钉入槽 0、1，调用后解固定，第 0 路对象输出装载进 selected。</para>
-	///   <para><b>资源与坑</b>selected 为 LoadNew 新建、需释放；名次超出元素数时报错还是截断 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：selected 是 LoadNew 新建的单值元组，使用后按项目约定释放。</para>
 	/// </remarks>
 	public static void TupleSelectRank(JlTuple tuple, JlTuple rankIndex, out JlTuple selected)
 	{
@@ -3054,9 +3058,10 @@ public class JlOperatorSet
 
 	/// <summary>求元组元素的中位数，单值新元组经 out 给出。</summary>
 	/// <param name="tuple">输入元组。</param>
-	/// <param name="median">中位数（元素数为偶数时取中间两数平均还是取下者 （具体边界行为以对应 HALCON 算子文档为准））。</param>
+	/// <param name="median">数值元组的中位数单值结果；偶数个元素取较大的中间值。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 122。对离群值比均值稳，统计背景灰度等抗噪场合优先于 TupleMean；它是"一组数的中位数"，与图像中值滤波无关。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；偶数个元素取 N/2 位置的较大中间值；空输入抛异常。</para>
 	///   <para><b>与实例重载的取舍</b>常规写法用 <see cref="JlTuple.TupleMedian()"/>；要任意分位数改 <see cref="JlTuple.TupleSelectRank(JlTuple)"/>；静态门面仅服务裸句柄统一调度。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出装载进 median。</para>
 	///   <para><b>资源与坑</b>median 为 LoadNew 新建、用毕释放；不改动输入元组顺序。</para>
@@ -3073,13 +3078,14 @@ public class JlOperatorSet
 	}
 
 	/// <summary>求全部元素之和，单值新元组经 out 给出。</summary>
-	/// <param name="tuple">输入元组，要求数值型。</param>
+	/// <param name="tuple">输入元组，必须全为字符串或全为数值。</param>
 	/// <param name="sum">总和，整数输入得整数和（类型档位随输入）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 123。需要逐位部分和用 TupleCumul（其末项与本结果同值）；要平均数改用 TupleMean，它总是按 DOUBLE 装载。</para>
+	///   <para><b>约束或前提</b>：字符串执行拼接，数值执行求和；字符串与数值不能混合；空输入返回空元组。</para>
 	///   <para><b>与实例重载的取舍</b>链式取总和首选 <see cref="JlTuple.TupleSum()"/>（可隐式转 int）；本静态版只在需要 out 裸结果或统一算子通道时使用。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出装载进 sum。</para>
-	///   <para><b>资源与坑</b>sum 为 LoadNew 新建、需释放；空元组的求和行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：sum 是 LoadNew 新建的单值元组，使用后按项目约定释放。</para>
 	/// </remarks>
 	public static void TupleSum(JlTuple tuple, out JlTuple sum)
 	{
@@ -3096,7 +3102,8 @@ public class JlOperatorSet
 	/// <param name="tuple">输入元组，要求数值型。</param>
 	/// <param name="mean">平均值，恒为 DOUBLE 单值元组。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 124。门面侧装载写死 DOUBLE：即使输入全为整数，结果也带小数、不会整数截断。空元组的除零行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>：原生算子 id 124，按 DOUBLE 装载返回算术平均值。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入抛异常；结果为 DOUBLE。</para>
 	///   <para><b>与实例重载的取舍</b>日常取均值用 <see cref="JlTuple.TupleMean()"/>；易受离群值拉扯时抗噪场景换 <see cref="JlTuple.TupleMedian()"/>，需要离散度配 TupleDeviation。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出按 DOUBLE 装载进 mean。</para>
 	///   <para><b>资源与坑</b>mean 为 LoadNew 新建、用毕释放；阈值自适应常与 TupleDeviation 组合取均值加减若干倍标准差。</para>
@@ -3114,9 +3121,10 @@ public class JlOperatorSet
 
 	/// <summary>求元组元素的标准差，out 按 DOUBLE 档位强制装载为单值新元组。</summary>
 	/// <param name="tuple">输入元组，要求数值型。</param>
-	/// <param name="deviation">标准差（除以 N 的总体口径还是除以 N−1 的样本口径 （具体边界行为以对应 HALCON 算子文档为准））。</param>
+	/// <param name="deviation">标准差单值结果，按 DOUBLE 装载。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 125。门面侧装载写死 DOUBLE，整数输入也得到带小数的离散度；单元素元组返回 0 还是异常 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>：原生算子 id 125，计算数值元组的离差并按 DOUBLE 装载。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入抛异常。</para>
 	///   <para><b>与实例重载的取舍</b>常规写法 <see cref="JlTuple.TupleDeviation()"/>；阈值自适应常取均值加减若干倍本结果，两者需分别调用。静态版仅用于统一算子通道。</para>
 	///   <para><b>参数取向</b>单入单出：tuple 钉入槽 0，调用后解固定，第 0 路对象输出按 DOUBLE 装载进 deviation。</para>
 	///   <para><b>资源与坑</b>deviation 为 LoadNew 新建、用毕释放；要值域两端用 TupleMax/TupleMin 一对。</para>
@@ -4508,7 +4516,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>：调用原生算子（id 188，tuple_fmod）。在浮点域取余、余数符号与被除数一致，与整数 <see cref="TupleMod"/> 不同；结果按 DOUBLE 装载。</para>
 	///   <para><b>与实例重载的取舍</b>：链式可用 <see cref="JlTuple.TupleFmod(JlTuple)"/>；本静态版两操作数显式传入、结果走 out。</para>
 	///   <para><b>参数取向</b>：t1、t2 按原生序 0/1 由 Store 钉入、调用后自动解钉；fmod 由 LoadNew 新建，不改输入。</para>
-	///   <para><b>资源与坑</b>：t2 为 0 时属于除零输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则由原生语义决定；fmod 为独立新元组、纯数值不持句柄。</para>
+	///   <para><b>资源与坑</b>：fmod 是 LoadNew 新建的 DOUBLE 元组，使用后按项目约定释放；两输入等长或一方为单元素时按位计算。</para>
 	/// </remarks>
 	public static void TupleFmod(JlTuple t1, JlTuple t2, out JlTuple fmod)
 	{
@@ -4531,7 +4539,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>：调用原生算子（id 189，tuple_mod）。在整数域取余，与浮点 <see cref="TupleFmod"/> 不同；结果按 INTEGER 装载。</para>
 	///   <para><b>与实例重载的取舍</b>：链式可用 <see cref="JlTuple.TupleMod(JlTuple)"/>；本静态版两操作数显式传入、结果走 out。</para>
 	///   <para><b>参数取向</b>：t1、t2 按原生序 0/1 由 Store 钉入、调用后自动解钉；mod 由 LoadNew 新建，不改输入。</para>
-	///   <para><b>资源与坑</b>：t2 含 0 会出错或产生未定义结果 （具体边界行为以对应 HALCON 算子文档为准）；负数余数符号约定 （具体边界行为以对应 HALCON 算子文档为准）；mod 为独立新元组、纯数值不持句柄。</para>
+	///   <para><b>资源与坑</b>：mod 是 LoadNew 新建的 INTEGER 元组，使用后按项目约定释放；除数不能为 0，两输入等长或一方为单元素时按位计算。</para>
 	/// </remarks>
 	public static void TupleMod(JlTuple t1, JlTuple t2, out JlTuple mod)
 	{

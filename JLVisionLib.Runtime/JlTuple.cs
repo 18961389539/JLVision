@@ -1181,8 +1181,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 111（tuple_regexp_replace 语义）；两路入参的钉固定/解固定
 	///   在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：替换串是否支持捕获组反向引用（如 \1、$1）（具体边界行为以对应 HALCON 算子文档为准）；是替换全部命中还是
-	///   仅首个命中 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：默认每个字符串只替换第一个匹配；replace_all=true 时替换全部。模板支持 $0 表示完整匹配、$1..$9 表示捕获组、$$ 表示字面 $；输入元组为空返回空，输入非空而 replace 为空时抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：固定文本（非正则）的前后替换用 <see cref="TupleStrReplace(JlTuple, JlTuple)"/>；
 	///   只想删除命中内容时把 <paramref name="replace"/> 传空串。</para>
 	///   <para><b>用法</b></para>
@@ -1215,6 +1214,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 112（tuple_regexp_match 语义）；钉固定/解固定在本方法内部
 	///   成对完成。</para>
+	///   <para><b>约束或前提</b>：普通模式下每个输入字符串对应一个输出；无匹配时对应输出为空字符串。表达式含捕获组且输入只有一个字符串时，输出会展开为所有捕获子串；输入有多个字符串时，每个输入只输出第一个捕获组。</para>
 	///   <para><b>与相邻算子的取舍</b>：筛选"整条是否匹配"用 <see cref="TupleRegexpSelect(JlTuple)"/>；
 	///   固定位置截取用 <see cref="TupleSubstr(JlTuple, JlTuple)"/>；本方法用于按模式抠出串内片段
 	///   （如从路径里取文件名数字段）。</para>
@@ -1223,8 +1223,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple names = new string[] { "img001.bmp", "img042.bmp" };
 	///   JlTuple nums = names.TupleRegexpMatch("img([0-9]+)");
 	///   </code>
-	///   <para><b>资源与坑</b>：捕获组是否单独成项、未命中元素如何占位 （具体边界行为以对应 HALCON 算子文档为准）——解析结果前先核对
-	///   <see cref="Length"/>，不要假设与输入一一对应。</para>
+	///   <para><b>资源与坑</b>：结果长度可能与输入不同，调用方不要假定逐元素一一对应。</para>
 	/// </remarks>
 	public JlTuple TupleRegexpMatch(JlTuple expression)
 	{
@@ -1319,7 +1318,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 116（tuple_max2 语义）；两路入参钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>约束或前提</b>：要求元素可比较；长度相等时逐位比较，长度不等时其中一路必须为单元素并广播到较长元组，否则由原生层报错。</para>
+	///   <para><b>约束或前提</b>：两元组等长时逐位比较；一方长度为 1 时广播到另一方；相应元素必须同为字符串或同为数值；任一输入为空返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：把值压进 [min, max] 区间可用一次 <c>Max2</c> 加一次
 	///   <see cref="TupleMin2(JlTuple)"/>；求整个元组的最大值用 <see cref="TupleMax()"/>（单值输出）。</para>
 	///   <para><b>用法</b></para>
@@ -1350,7 +1349,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 117（tuple_min2 语义）；两路入参钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>约束或前提</b>：要求可比较的元素类型；两路长度不等时的广播/报错规则在原生侧 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：两元组等长时逐位比较；一方长度为 1 时广播到另一方；相应元素必须同为字符串或同为数值；任一输入为空返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：下限钳位用 <see cref="TupleMax2(JlTuple)"/>；整个元组的最小值用
 	///   <see cref="TupleMin()"/>（单值输出）。两者组合可把灰度值压进任意区间。</para>
 	///   <para><b>用法</b></para>
@@ -1378,7 +1377,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>只含最大值的新元组（MIXED 装载，类型档位随输入）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 118（tuple_max 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：元素必须全部是字符串或全部是数值，不能混合字符串和数值；空元组会抛异常，字符串按 HALCON 的字符串比较规则求最大值。MIXED 元组应先筛选类型。</para>
+	///   <para><b>约束或前提</b>：输入必须全为字符串或全为数值，不能混合；空输入抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：要最大值的<b>下标</b>用 <see cref="TupleFind(JlTuple)"/> 配合
 	///   <see cref="TupleSortIndex()"/>，或对结果再找位置；逐元素与另一元组比大小用
 	///   <see cref="TupleMax2(JlTuple)"/>。</para>
@@ -1407,7 +1406,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>只含最小值的新元组（MIXED 装载，类型档位随输入）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 119（tuple_min 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：元素必须全部是字符串或全部是数值，不能混合字符串和数值；空元组会抛异常，字符串按 HALCON 的字符串比较规则求最小值。</para>
+	///   <para><b>约束或前提</b>：输入必须全为字符串或全为数值，不能混合；空输入抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：归一化时常与 <see cref="TupleMax()"/> 成对使用求值域两端；
 	///   逐元素上限钳位改用 <see cref="TupleMin2(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1433,7 +1432,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>与输入等长的新元组，数值档位随输入（MIXED 口径装载）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 120（tuple_cumul 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：输入须为数值元组；对字符串元组的行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入返回空元组；结果元素类型随计算结果而定。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要总和用 <see cref="TupleSum()"/>（单值，开销更小）；本方法用于
 	///   分布函数、按累计权重抽样等需要每一位部分和的场合。</para>
 	///   <para><b>用法</b></para>
@@ -1457,11 +1456,12 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>按"排名"取元素：返回排序后第 <paramref name="rankIndex"/> 位的值，不改动本元组。</summary>
-	/// <param name="rankIndex">名次（单值；0 = 最小值，<see cref="Length"/>−1 = 最大值，若为 0 基）（具体边界行为以对应 HALCON 算子文档为准）。</param>
-	/// <returns>选中的元素（单值新元组，类型档位随输入）。</returns>
+	/// <param name="rankIndex">名次（单值；0 = 最小值，<see cref="Length"/>−1 = 最大值，使用 0 基）。</param>
+	///   <returns>按 rankIndex 指定名次选出的单值元组；rankIndex 为空时返回空元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 121（tuple_select_rank 语义）；两路入参钉固定/解固定在本方法
 	///   内部成对完成。</para>
+	///   <para><b>约束或前提</b>：rankIndex 必须是单个整数并使用 0 基名次；空 rankIndex 返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：与 <see cref="TupleSort()"/> 后按下标取相比，本方法不产生整个有序
 	///   副本，取单个分位点更省；中位数直接考虑 <see cref="TupleMedian()"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1469,7 +1469,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple v = new double[] { 7.0, 1.0, 4.0 };
 	///   double lowest = v.TupleSelectRank(0);
 	///   </code>
-	///   <para><b>资源与坑</b>：名次超出元素数时的行为（报错或截断）（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：调用前确保 rankIndex 在 0 到 <see cref="Length"/>−1 之间，避免把无效名次传入原生算子。</para>
 	/// </remarks>
 	public JlTuple TupleSelectRank(JlTuple rankIndex)
 	{
@@ -1487,9 +1487,10 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>求元组元素的中位数（单值输出）。</summary>
-	/// <returns>只含中位数的新元组；元素数为偶数时取法（中间两数平均或取下者）（具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	///   <returns>数值元组的中位数单值元组；偶数个元素取较大的中间值；空输入抛异常。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 122（tuple_median 语义）；钉固定/解固定在本方法内部成对完成。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；元素个数为偶数时取较大的中间值（N/2 位置，0 基）；空输入抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：对离群值比 <see cref="TupleMean()"/> 稳；要任意分位数用
 	///   <see cref="TupleSelectRank(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1513,11 +1514,10 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>求全部元素之和（单值输出）。</summary>
-	/// <returns>只含总和的新元组，数值档位随输入（整数输入得整数和）。</returns>
+	///   <returns>字符串拼接结果或数值求和结果的单值元组；空输入返回空元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 123（tuple_sum 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：输入须为数值元组；需要逐位部分和用 <see cref="TupleCumul()"/>（其末项
-	///   与本方法同值）。</para>
+	///   <para><b>约束或前提</b>：输入必须全为字符串或全为数值，不能混合；字符串执行拼接，数值执行求和；空输入返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：要平均数用 <see cref="TupleMean()"/>，它内部等价于 Sum 除以
 	///   <see cref="Length"/> 且总是按 DOUBLE 装载。</para>
 	///   <para><b>用法</b></para>
@@ -1540,10 +1540,10 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>求数值元组的算术平均，输出按 DOUBLE 装载的单值元组。</summary>
-	/// <returns>平均值（DOUBLE——即使输入全为整数，结果也带小数，不会整数截断）。</returns>
+	///   <returns>DOUBLE 型平均值单值元组；空输入抛异常。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 124（tuple_mean 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：要求数值元组；空元组除零行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：易受离群值拉扯，抗噪场景改用 <see cref="TupleMedian()"/>；
 	///   需要离散度时配 <see cref="TupleDeviation()"/> 一起用。</para>
 	///   <para><b>用法</b></para>
@@ -1566,10 +1566,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>求元组元素的标准差（DOUBLE 装载的单值输出）。</summary>
-	/// <returns>标准差；是总体标准差（除以 N）还是样本标准差（除以 N−1）（具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	///   <returns>DOUBLE 型离差单值元组；空输入抛异常。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 125（tuple_deviation 语义）；输出按 DOUBLE 装载——整数输入
 	///   也会得到带小数的离散度；钉固定/解固定在本方法内部成对完成。</para>
+	///   <para><b>约束或前提</b>：只接受数值元组；空输入抛异常；结果为 DOUBLE。</para>
 	///   <para><b>与相邻算子的取舍</b>：阈值自适应常取 <c>Mean ± k·Deviation</c>，两者都要单独调用；
 	///   要值域两端用 <see cref="TupleMax()"/>/<see cref="TupleMin()"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1577,7 +1578,6 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple v = new double[] { 1.0, 2.0, 3.0 };
 	///   double sd = v.TupleDeviation();
 	///   </code>
-	///   <para><b>资源与坑</b>：单元素元组返回 0 还是异常 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple TupleDeviation()
 	{
@@ -1620,12 +1620,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 
 	/// <summary>从尾部向前找 <paramref name="toFind"/>（作为子序列）最后一次出现的起始下标。</summary>
 	/// <param name="toFind">要查找的值（单值或多值，多值按连续子序列匹配）。</param>
-	/// <returns>INTEGER 型单值元组：起始下标；未找到时为 <c>-1</c> （具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	///   <returns>INTEGER 型单值元组：最后一次出现的起始下标；未找到时为 <c>-1</c>；任一输入为空时返回空元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 127（tuple_find_last 语义），输出按 INTEGER 装载；两路入参
 	///   钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：下标基（0 基/1 基）以原生侧为准 （具体边界行为以对应 HALCON 算子文档为准）——与托管索引器
-	///   <c>this[i]</c>（0 基）配合使用时先换算。</para>
+	///   <para><b>约束或前提</b>：子序列下标从 0 开始；允许字符串与数值混合；未找到时返回 -1；任一输入为空返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：第一次出现用 <see cref="TupleFindFirst(JlTuple)"/>；要所有出现位置用
 	///   <see cref="TupleFind(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1653,10 +1652,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 
 	/// <summary>从头向后找 <paramref name="toFind"/>（作为子序列）第一次出现的起始下标。</summary>
 	/// <param name="toFind">要查找的值（单值或多值，多值按连续子序列匹配）。</param>
-	/// <returns>INTEGER 型单值元组：起始下标；未找到时为 <c>-1</c> （具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	///   <returns>INTEGER 型单值元组：第一次出现的起始下标；未找到时为 <c>-1</c>；任一输入为空时返回空元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 128（tuple_find_first 语义），输出按 INTEGER 装载；两路入参
 	///   钉固定/解固定在本方法内部成对完成。</para>
+	///   <para><b>约束或前提</b>：子序列下标从 0 开始；允许字符串与数值混合；未找到时返回 -1；任一输入为空返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要一个位置时 First/Last 都比 <see cref="TupleFind(JlTuple)"/>
 	///   语义明确；需要全部命中位置（如把所有某值的下标收集出来再 <see cref="TupleSelect(JlTuple)"/>）
 	///   用 <c>Find</c>。</para>
@@ -1665,8 +1665,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple hay = new int[] { 3, 7, 3, 9 };
 	///   int idx = hay.TupleFindFirst(7);
 	///   </code>
-	///   <para><b>资源与坑</b>：下标基以原生侧为准 （具体边界行为以对应 HALCON 算子文档为准）；未命中的 <c>-1</c> 传入索引器会抛
-	///   <see cref="JlTupleAccessException"/>。</para>
+	///   <para><b>资源与坑</b>：子序列匹配按 0 基下标返回；未命中时返回 -1，不要直接传给索引器。</para>
 	/// </remarks>
 	public JlTuple TupleFindFirst(JlTuple toFind)
 	{
@@ -1685,11 +1684,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 
 	/// <summary>查找 <paramref name="toFind"/> 在本元组中的出现位置，返回下标集合（INTEGER 装载）。</summary>
 	/// <param name="toFind">要查找的值。</param>
-	/// <returns>命中位置的下标元组；未找到的项以 <c>-1</c> 占位还是直接缺席 （具体边界行为以对应 HALCON 算子文档为准）。对
-	/// <paramref name="toFind"/> 逐元素给位置、还是给出全部命中点 （具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	///   <returns>INTEGER 型下标元组：返回所有连续子序列命中的起始下标（例如 [3,4] 在 [3,4,5,6,1,2,3,4,0] 中返回 [0,6]）；未找到时返回 [-1]；任一输入为空时返回空元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 129（tuple_find 语义）；两路入参钉固定/解固定在本方法内部
 	///   成对完成。</para>
+	///   <para><b>约束或前提</b>：子序列下标从 0 开始；允许字符串与数值混合；未找到时返回 [-1]；任一输入为空返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要"首个/末个位置"用 <see cref="TupleFindFirst(JlTuple)"/>/
 	///   <see cref="TupleFindLast(JlTuple)"/>，结果恒为单值，消费更省心。</para>
 	///   <para><b>用法</b></para>
@@ -1698,8 +1697,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple where = hay.TupleFind(3);
 	///   int[] idxs = where;
 	///   </code>
-	///   <para><b>资源与坑</b>：下标可能含 <c>-1</c>，未过滤直接传给 <c>this[i]</c> 会抛
-	///   <see cref="JlTupleAccessException"/>。</para>
+	///   <para><b>资源与坑</b>：可混合字符串与数值；返回为 -1 时请先判断再作索引访问。</para>
 	/// </remarks>
 	public JlTuple TupleFind(JlTuple toFind)
 	{
@@ -1717,10 +1715,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	}
 
 	/// <summary>排序并返回"名次→原下标"的置换索引元组，本元组不变。</summary>
-	/// <returns>INTEGER 型下标元组，等长于输入；用它配 <see cref="TupleSelect(JlTuple)"/> 可复现 <see cref="TupleSort()"/> 的结果。</returns>
+	///   <returns>INTEGER 下标元组，等长于输入；每个元素是排序后位置对应的原始 0 基下标，可与 <see cref="TupleSelect(JlTuple)"/> 配合重建排序结果。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 130（tuple_sort_index 语义），输出按 INTEGER 装载；
 	///   钉固定/解固定在本方法内部成对完成。</para>
+	///   <para><b>约束或前提</b>：元素必须可比较：要么全是字符串，要么全是数值；整数与浮点数可混合；空输入返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要有序值用 <see cref="TupleSort()"/>；需要"排序后还能追回原始
 	///   对象"（如按分数排序后保留对应文件名）才用本方法。</para>
 	///   <para><b>用法</b></para>
@@ -1729,8 +1728,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple order = v.TupleSortIndex();
 	///   JlTuple sorted = v.TupleSelect(order);
 	///   </code>
-	///   <para><b>资源与坑</b>：下标基以原生侧为准 （具体边界行为以对应 HALCON 算子文档为准），配合索引器 <c>this[i]</c>（0 基）前先验证；
-	///   稳定排序与否（相等元素保持原序？）（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：返回的下标是输入元组的 0 基下标；本方法不改动输入。</para>
 	/// </remarks>
 	public JlTuple TupleSortIndex()
 	{
@@ -1749,8 +1747,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>升序结果（MIXED 口径装载，类型档位随输入）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 131（tuple_sort 语义）；钉固定/解固定在本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：字符串按字典序、数值按大小；MIXED 元组中数值与字符串混排的次序
-	///   （具体边界行为以对应 HALCON 算子文档为准）。降序可对结果调用 <see cref="TupleInverse()"/>。</para>
+	///   <para><b>约束或前提</b>：元素必须可比较：要么全是字符串，要么全是数值；整数与浮点数可混合；空输入返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：要"全量去重"先 Sort 再 <see cref="TupleUniq()"/>（Uniq 只删相邻重复）；
 	///   需要原始下标映射时用 <see cref="TupleSortIndex()"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1823,14 +1820,14 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		return tuple;
 	}
 
-	/// <summary>截取连续一段：从下标 <paramref name="leftindex"/> 到 <paramref name="rightindex"/>（两端含闭 （具体边界行为以对应 HALCON 算子文档为准））的元素。</summary>
+	/// <summary>按 0 基下标截取包含两端的连续片段：从 <paramref name="leftindex"/> 到 <paramref name="rightindex"/>。</summary>
 	/// <param name="leftindex">首个被选元素的下标。</param>
 	/// <param name="rightindex">末个被选元素的下标。</param>
 	/// <returns>选中片段组成的新元组；顺序不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 134（tuple_select_range 语义）；两路下标的钉固定/解固定在
 	///   本方法内部成对完成。</para>
-	///   <para><b>约束或前提</b>：下标基（0/1 基）与越界（如右端超过 <see cref="Length"/>−1）的处理 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：两个下标必须是单个整数值并使用 0 基索引；两端都包含，两下标相等时只选一个元素，右端等于左端减 1 时返回空元组。两个下标都为空时返回空元组，仅一个或输入元组为空时抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：非连续的任意位置用 <see cref="TupleSelect(JlTuple)"/>；固定从头部/
 	///   尾部截取用 <see cref="TupleFirstN(JlTuple)"/>/<see cref="TupleLastN(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1856,20 +1853,20 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		return tuple;
 	}
 
-	/// <summary>从下标 <paramref name="index"/> 起到元组末尾的所有元素（参数是"起始下标"，不是个数）。</summary>
+	/// <summary>从 0 基下标 <paramref name="index"/> 起截取到元组末尾；参数是起始下标，不是个数。</summary>
 	/// <param name="index">首个被选元素的下标。</param>
 	/// <returns>尾部片段新元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 135（tuple_last_n 语义）；下标钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>与相邻算子的取舍</b>：名字带 "N" 但收的是下标；要"末尾 k 个"得先取
-	///   <c>Length − k</c>（注意下标基 （具体边界行为以对应 HALCON 算子文档为准）），或整段对比 <see cref="TupleSelectRange(JlTuple, JlTuple)"/>。</para>
+	///   <para><b>约束或前提</b>：index 使用 0 基下标且必须是单个整数值；输入空元组会抛异常。</para>
+	///   <para><b>与相邻算子的取舍</b>：名字带 N 但接收起始下标；要末尾 k 个元素可从 <c>Length−k</c> 开始，或使用 <see cref="TupleSelectRange(JlTuple, JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple v = new int[] { 10, 20, 30, 40 };
 	///   JlTuple tail = v.TupleLastN(2);
 	///   </code>
-	///   <para><b>资源与坑</b>：<c>index</c> 超过末下标时结果为空元组还是越界报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：index 是起始位置，不是要保留的元素个数；超出末尾时结果为空元组。</para>
 	/// </remarks>
 	public JlTuple TupleLastN(JlTuple index)
 	{
@@ -1888,12 +1885,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 
 	/// <summary>从头取下标 <paramref name="index"/> 为止的所有元素（参数是"末个元素的下标"，不是个数）。</summary>
 	/// <param name="index">末个被选元素的下标。</param>
-	/// <returns>头部片段新元组（含闭端 （具体边界行为以对应 HALCON 算子文档为准））。</returns>
+	///   <returns>包含 0 到 <paramref name="index"/>（含）的前 index+1 个元素；index 必须为整数。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 136（tuple_first_n 语义）；下标钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>与相邻算子的取舍</b>：要"前 k 个元素"且按个数传参，本方法并不满足——需把个数换算成
-	///   下标（考虑 0/1 基 （具体边界行为以对应 HALCON 算子文档为准））；对称的尾部截取用 <see cref="TupleLastN(JlTuple)"/>。</para>
+	///   <para><b>约束或前提</b>：index 使用 0 基下标且必须是单个整数值；输入空元组会抛异常。</para>
+	///   <para><b>资源与坑</b>：index 是最后一个要保留的下标，不是元素个数；index 超出末尾时按算子规则截取到末尾。</para>
+	///   <para><b>与相邻算子的取舍</b>：要前 k 个元素需把个数换算成最后一个 0 基下标；对称的尾部截取用 <see cref="TupleLastN(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple v = new int[] { 10, 20, 30, 40 };
@@ -1918,11 +1916,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <summary>在下标 <paramref name="index"/> 处插入 <paramref name="insertTuple"/> 的各元素，其后元素整体后移；返回加长后的新元组。</summary>
 	/// <param name="index">插入位置（起始下标）。</param>
 	/// <param name="insertTuple">要插入的一个或多个元素。</param>
-	/// <returns>插入结果新元组，长度为原长 + <c>insertTuple.Length</c>；本元组不变。</returns>
+	///   <returns>插入结果新元组，长度为原长 + <c>insertTuple.Length</c>；本元组不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 137（tuple_insert 语义）；两路入参钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>约束或前提</b>：插入位置的下标基 （具体边界行为以对应 HALCON 算子文档为准）；插入类型与原有元素不一致时整体升级 MIXED。</para>
+	///   <para><b>约束或前提</b>：使用 0 基下标，插入下标必须是单个整数值；下标等于原元组长度时追加到尾部；插入类型不一致时结果升级 MIXED。</para>
 	///   <para><b>与相邻算子的取舍</b>：覆盖已有位置用 <see cref="TupleReplace(JlTuple, JlTuple)"/>（长度不变）；
 	///   只在尾部追加用 <see cref="Append(JlTuple)"/> 或 <see cref="TupleConcat(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -1930,7 +1928,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple v = new int[] { 1, 2, 3 };
 	///   JlTuple w = v.TupleInsert(1, 99);
 	///   </code>
-	///   <para><b>资源与坑</b>：插入后原元组的旧下标整体错位，凡缓存过下标的后续逻辑都要重算。</para>
+	///   <para><b>资源与坑</b>：插入后旧元素下标会整体后移，凡缓存过下标的后续逻辑都要重算。</para>
 	/// </remarks>
 	public JlTuple TupleInsert(JlTuple index, JlTuple insertTuple)
 	{
@@ -1956,8 +1954,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 138（tuple_replace 语义）；两路入参钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>约束或前提</b>：多下标对多替换值的配对规则（逐位对应/广播）（具体边界行为以对应 HALCON 算子文档为准）；替换值类型与原
-	///   元素不一致时结果升级 MIXED。</para>
+	///   <para><b>约束或前提</b>：下标使用 0 基且必须为整数；替换元组为单元素时对所有下标广播，多元素时逐位对应；超出原元组长度的下标会把结果扩展并用零初始化；替换值类型不一致时结果升级 MIXED。</para>
 	///   <para><b>与相邻算子的取舍</b>：不覆盖而是"挤入"新位置用 <see cref="TupleInsert(JlTuple, JlTuple)"/>；
 	///   只改单点也可以直接用索引器写入 <c>t[i] = ...</c>（原地、无原生调用）。</para>
 	///   <para><b>用法</b></para>
@@ -1991,7 +1988,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <remarks>
 	///   <para><b>功能说明</b>：原生算子 id 139（tuple_remove 语义）；下标元组钉固定/解固定在本方法内部
 	///   成对完成。</para>
-	///   <para><b>约束或前提</b>：重复下标只删一次还是多次删除、越界下标忽略还是报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：下标使用 0 基且必须为整数；重复下标与超出范围的下标会被忽略；输入空时返回空元组。</para>
 	///   <para><b>与相邻算子的取舍</b>：反向操作（按掩码"保留"）用 <see cref="TupleSelectMask(JlTuple)"/>；
 	///   逻辑取反掩码后即可当作删除使用。</para>
 	///   <para><b>用法</b></para>
@@ -2023,8 +2020,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   <para><b>功能说明</b>：原生算子 id 140（tuple_select_mask 语义）；掩码钉固定/解固定在本方法内部
 	///   成对完成。逐位条件筛选要配 <c>*Elem</c> 系比较（如 <see cref="TupleGreaterElem(JlTuple)"/>）——
 	///   注意运算符 <c>v &gt; 4.0</c> 返回的是<b>单个 bool</b>，不是逐位 0/1 元组。</para>
-	///   <para><b>约束或前提</b>：掩码长度应与元组一致；不等长时按哪一方截断 （具体边界行为以对应 HALCON 算子文档为准）。注意判据是
-	///   <c>&gt; 0</c>，负值与 0 都算不选。</para>
+	///   <para><b>约束或前提</b>：mask 与元组必须等长且只能包含整数或浮点数；mask 值大于 0 时保留对应元素。两路都空时返回空元组，仅一路为空时抛异常。</para>
 	///   <para><b>与相邻算子的取舍</b>：已知具体下标用 <see cref="TupleSelect(JlTuple)"/>（可重复选取同一
 	///   位置，本方法不行）。</para>
 	///   <para><b>用法</b></para>
@@ -2056,8 +2052,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   <para><b>功能说明</b>：原生算子 id 141（tuple_select 语义）；下标元组钉固定/解固定在本方法内部
 	///   成对完成。托管侧等价的用法是索引器 <c>t[new[] { 2, 0, 2 }]</c>（返回 <see cref="JlTupleElements"/>
 	///   视图），无需走原生。</para>
-	///   <para><b>约束或前提</b>：下标基以原生侧为准 （具体边界行为以对应 HALCON 算子文档为准）（托管索引器是 0 基并会抛
-	///   <see cref="JlTupleAccessException"/>）；越界下标的原生行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：下标使用 0 基且必须为整数；输入元组为空时会抛异常。输出顺序与 index 顺序相同，可重复选择同一下标。</para>
 	///   <para><b>与相邻算子的取舍</b>：整段连续区间用 <see cref="TupleSelectRange(JlTuple, JlTuple)"/> 更省；
 	///   按名次取单个分位点用 <see cref="TupleSelectRank(JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
@@ -3484,7 +3479,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>DOUBLE 类型的逐元素浮点余数。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 188，tuple_fmod）。余数符号与被除数（本元组）一致；与整数取余 <see cref="TupleMod"/> 不同，本算子在浮点域进行、结果按 DOUBLE 装载。</para>
-	///   <para><b>约束或前提</b>：t2 为 0 时属于除零输入；本层不拦截，结果由原生元组算子返回。长度不等时的广播规则也由原生语义决定。</para>
+	///   <para><b>约束或前提</b>：两元组等长时逐位计算；一方长度为 1 时广播；只接受数值且除数不能为 0.0；任一输入为空返回空元组。</para>
 	///   <para><b>钉固定</b>：Store(proc,0) 经 InitPCT 钉住本元组、JlNativeApi.Store(proc,1,t2) 钉住 t2，CallProcedure 之后 UnpinTuple() 与 JlNativeApi.UnpinTuple(t2) 解除；调用方不参与钉/解固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -3515,7 +3510,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>逐元素整数余数。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 189，tuple_mod）。在整数域取余，与浮点 <see cref="TupleFmod"/> 不同。</para>
-	///   <para><b>约束或前提</b>：t2 含 0 会出错或产生未定义结果 （具体边界行为以对应 HALCON 算子文档为准）；负数的余数符号约定 （具体边界行为以对应 HALCON 算子文档为准）；结果按 INTEGER 装载。</para>
+	///   <para><b>约束或前提</b>：两元组等长时逐位计算；一方长度为 1 时广播；只接受整数且除数不能为 0；任一输入为空返回空元组。</para>
 	///   <para><b>钉固定</b>：Store(proc,0) 经 InitPCT 钉住本元组、JlNativeApi.Store(proc,1,t2) 钉住 t2，CallProcedure 之后 UnpinTuple() 与 JlNativeApi.UnpinTuple(t2) 解除；调用方不参与钉/解固定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
