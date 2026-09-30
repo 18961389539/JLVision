@@ -8444,7 +8444,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>释放/查询操作携带的内存元素标识在临时内存管理表里查无此记录；常量名 CNFMEM = could not find memory。常见指向是该元素早已被释放过（重复释放），或指针其实属于另一管理区。属 6004~6007 临时内存管理族。</para>
 	///   <para><b>归类</b>≥1000，<c>JlNativeApi.IsError</c> 判 true、<c>IsFailure</c> 判失败，经统一返回码检查会抛 <c>JlOperatorException</c>；文本可由 <c>JlNativeApi.GetErrorMessage(err)</c> 现查。</para>
 	///   <para><b>何时遇到</b>与前两码分工：6004 是"该区没分配过"、6005 是"指针为 NULL"，本码是"指针非空但表里没有它的记录"，最典型对应 double free 或跨池释放 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>处置</b>按"释放发生了两次"排查：每份分配只释放一次，释放后即视为失效不再复用。报本码时无法确认第一次释放是否已成功，先定位重复释放的源头，再决定是否重跑流程。</para>
+	///   <para><b>处置</b>按"释放发生了两次"排查：每份分配只释放一次，释放后即视为失效不再复用。报本码时本层未枚举第一次释放是否已成功，先定位重复释放的源头，再决定是否重跑流程。</para>
 	/// </remarks>
 	public const int Jl_ERR_CNFMEM = 6006;
 
@@ -12953,7 +12953,7 @@ public class JlErrorDef
 	/// <summary>此操作不接受该像素类型（取值 9007），原生文本为 <c>Wrong pixel type for this operation</c>。</summary>
 	/// <remarks>
 	///   <para><b>与 9001 的分工</b>两条原生文本高度相近（9001 说“图像的灰度值类型不对”，本码说“对该操作而言像素类型不对”），原生层两处检查的时机差异（进算子入口即拒 与 计算中途拒）本库无文档佐证 （具体语义以 HALCON 错误码说明和算子文档为准）；排查处置一致：查该算子接受的类型集，必要时转换。</para>
-	///   <para><b>常见诱因</b>把多通道彩色图或方向类特殊类型喂给只收单通道 byte/real 的算子；本仓库文档示例惯用 "byte" 与 "real"，合法类型全集由原生决定、未经核实 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>常见诱因</b>把多通道彩色图或方向类特殊类型喂给只收单通道 byte/real 的算子；本仓库文档示例惯用 "byte" 与 "real"，合法类型全集由目标 HALCON 版本定义，本层不改写、未经核实 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_WITFO = 9007;
 

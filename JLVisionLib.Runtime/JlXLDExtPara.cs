@@ -16,7 +16,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>索引器直接转调 <c>SelectObj(JlTuple)</c>，返回一个新容器而不是原地改写 <c>this</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号从 1 起算（HALCON 对象元组约定），传 0 并非第一个元素；越界与负序号（HALCON 里负数从尾部倒数）的托管侧行为未校验 （具体边界行为以对应 HALCON 算子文档为准）。形参是 JlTuple，故 <c>ext[1]</c> 走 int→JlTuple 隐式转换。</para>
+	///   <para>序号从 1 起算（HALCON 对象元组约定），传 0 并非第一个元素；越界与负序号（HALCON 里负数从尾部倒数）的托管侧行为未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。形参是 JlTuple，故 <c>ext[1]</c> 走 int→JlTuple 隐式转换。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按位置取元素用本索引器或 <c>SelectObj</c>；按几何形状特征筛选用 <c>SelectShapeXld</c>；按某点是否落在轮廓上筛选用 <c>SelectXldPoint</c>。</para>
 	///   <para><b>用法</b></para>
@@ -254,7 +254,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 568：<c>this</c> 进 iconic 槽 1，控制参数 index(0)、numObj(1) 均以 <c>StoreI</c> 按 INTEGER 写入，输出 <c>InitOCT</c> 槽 1 后 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基；<c>index + numObj - 1</c> 越出实际元素数时的截断/报错行为未在托管侧校验 （具体边界行为以对应 HALCON 算子文档为准）。<c>numObj</c> 传 -1 是"取到结尾"的哨兵值，不是删除一个元素。</para>
+	///   <para>序号 1 基；<c>index + numObj - 1</c> 越出实际元素数时的截断/报错行为未在托管侧校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。<c>numObj</c> 传 -1 是"取到结尾"的哨兵值，不是删除一个元素。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>复制连续一段用本方法；按任意序号集合取用素用 <c>SelectObj</c>；要一份完全独立的深拷贝用 <c>Clone</c>。</para>
 	///   <para><b>用法</b></para>
@@ -327,7 +327,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 572：<c>this</c> 进 iconic 槽 1，<c>index</c> 作为控制参数 0 用 <c>Store</c> 钉固定元组写入，调用后 <c>UnpinTuple</c>，输出 <c>InitOCT</c> 槽 1 后 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基，负数是否表示从尾部倒数 （具体边界行为以对应 HALCON 算子文档为准）。与 <c>SelectObj(int)</c> 同 id 但走元组钉固定路径；结果顺序严格跟随 <c>index</c> 的给出顺序。</para>
+	///   <para>序号 1 基，负数是否表示从尾部倒数 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。与 <c>SelectObj(int)</c> 同 id 但走元组钉固定路径；结果顺序严格跟随 <c>index</c> 的给出顺序。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按任意序号集合取用素用本重载；只取连续一段用 <c>CopyObj</c>；按几何特征筛用 <c>SelectShapeXld</c>。要命中本重载须传 <c>JlTuple</c>，写 <c>SelectObj(1)</c> 这类整型字面量会走 <c>int</c> 重载。</para>
 	///   <para><b>用法</b></para>
@@ -364,7 +364,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>与 <c>SelectObj(JlTuple)</c> 同为原生 id 572：<c>this</c> 进 iconic 槽 1，<c>index</c> 用 <c>StoreI</c> 按 INTEGER 直写控制参数 0，免去钉固定/解钉开销，输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基，一次只取一个元素；越界行为未校验 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>序号 1 基，一次只取一个元素；越界行为未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>取一个元素用本重载；取多个任意序号用 <c>SelectObj(JlTuple)</c>；取连续一段用 <c>CopyObj</c>。</para>
 	///   <para><b>用法</b></para>
@@ -400,7 +400,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 573：<c>this</c> 进 iconic 槽 1、<c>objects2</c> 进槽 2，<c>epsilon</c> 作控制参数 0 用 <c>Store</c> 钉固定，调用后 <c>UnpinTuple</c>，输出以 <c>InitOCT</c>/<c>LoadI</c> 按 INTEGER 取回。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>epsilon=0.0 要求坐标逐位精确相等；平行线对含行、列等坐标分量，容差按像素距离解释。给多值 epsilon 时的逐元素配对行为未校验 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>epsilon=0.0 要求坐标逐位精确相等；平行线对含行、列等坐标分量，容差按像素距离解释。给多值 epsilon 时的逐元素配对行为未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>需要自定义容差判等用本方法；无需容差、直接判全等用 <c>TestEqualObj</c>；求集合差用 <c>ObjDiff</c>。</para>
 	///   <para><b>用法</b></para>
@@ -519,7 +519,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1107。注意槽序与 C# 形参序不一致：<c>image</c> 占 iconic 输入 1、<c>this</c> 占 iconic 输入 2；控制参数序为 gridSpacing(0)、rotation(1)、row(2)、column(3)、mapType(4)。两个 iconic 输出经 <c>InitOCT</c> 声明：槽 1 以 <c>JlImage.LoadNew</c> 取回作返回值，槽 2 以 <c>LoadNew</c> 取回赋给 <c>meshes</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para><c>row</c>/<c>column</c> 需等长成对且与网格几何自洽；本重载 rotation 是数值弧度（对应 string 重载可传 "auto"）。多通道图是否可用未校验 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><c>row</c>/<c>column</c> 需等长成对且与网格几何自洽；本重载 rotation 是数值弧度（对应 string 重载可传 "auto"）。多通道图是否可用未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>本重载传数值 rotation 精确控制网格转角；想让程序自动选旋转用 <c>GenGridRectificationMap(..., string rotation, ...)</c> 重载。</para>
 	///   <para><b>用法</b></para>
@@ -574,7 +574,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1107，槽序与形参序不一致：<c>image</c> 占 iconic 输入 1、<c>this</c> 占 iconic 输入 2；控制参数 gridSpacing(0 StoreI)、rotation(1 StoreS)、row(2)、column(3)、mapType(4 StoreS)。输出 <c>InitOCT</c> 槽 1 作返回值（<c>JlImage.LoadNew</c>），槽 2 赋给 <c>meshes</c>。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>本重载 rotation 走字符串（StoreS，无需 UnpinTuple）；<c>"auto"</c> 由原生侧决定网格旋转。给数值弧度请改用 JlTuple rotation 重载。</para>
+	///   <para>本重载 rotation 走字符串（StoreS，无需 UnpinTuple）；<c>"auto"</c> 由目标 HALCON 版本定义，本层不改写网格旋转。给数值弧度请改用 JlTuple rotation 重载。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>想让程序自动选旋转用本重载；需精确指定旋转角用 <c>GenGridRectificationMap(..., JlTuple rotation, ...)</c>。</para>
 	///   <para><b>用法</b></para>
@@ -769,7 +769,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1597：<c>this</c> 进 iconic 槽 1，features(0)、min(2)、max(3) 用 <c>Store</c> 钉固定、operation(1) 用 <c>StoreS</c>，调用后对各元组 <c>UnpinTuple</c>，输出 <c>LoadNew</c> 取回新句柄。元组重载可一次给多个特征并配多组上下限。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para><c>features</c>、<c>min</c>、<c>max</c> 需按特征一一对应；min/max 是闭区间还是开区间未明确 （具体边界行为以对应 HALCON 算子文档为准）。可用 <c>"min"</c>/<c>"max"</c> 字符串占位表示该侧不设限。</para>
+	///   <para><c>features</c>、<c>min</c>、<c>max</c> 需按特征一一对应；min/max 是闭区间还是开区间未明确 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。可用 <c>"min"</c>/<c>"max"</c> 字符串占位表示该侧不设限。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按形状特征筛用本方法；只要单特征单区间可写更简洁的 <c>double</c> 重载；按经过某点筛用 <c>SelectXldPoint</c>。</para>
 	///   <para><b>用法</b></para>
@@ -855,7 +855,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 1608：<c>this</c> 进 iconic 槽 1，<c>type</c> 控制参数 0 用 <c>StoreS</c>，输出 <c>InitOCT</c>/<c>LoadNew</c> 得到新句柄。本方法会改写平行线对的形状（凸包、包络矩形等），不再是原始线对。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>对 <c>xld_ext_para</c> 这类带成对语义的对象，变换可能丢失平行线对的"配对"结构而仅保留轮廓几何；<c>"convex"</c> 之外的 type 取值与本类型是否完全兼容未实测 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>对 <c>xld_ext_para</c> 这类带成对语义的对象，变换可能丢失平行线对的"配对"结构而仅保留轮廓几何；<c>"convex"</c> 之外的 type 取值与本类型是否完全兼容未实测 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>需要整体形状近似用本方法；只要"延长接合"用 <c>MaxParallelsXld</c>；按特征筛选用 <c>SelectShapeXld</c>。</para>
 	///   <para><b>用法</b></para>
@@ -891,7 +891,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2003：<c>this</c> 进 iconic 槽 1、<c>objectsInsert</c> 进槽 2，<c>index</c> 用 <c>StoreI</c> 写控制参数 0；输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>插入位置 1 基，<c>index</c> 超出当前元素数时按 HALCON 规则处理，具体越界行为未校验 （具体边界行为以对应 HALCON 算子文档为准）。与 <c>ConcatObj</c> 不同，本方法把元素放到中间而非尾部。</para>
+	///   <para>插入位置 1 基，<c>index</c> 超出当前元素数时按 HALCON 规则处理，具体越界行为未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。与 <c>ConcatObj</c> 不同，本方法把元素放到中间而非尾部。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>插到指定位置用本方法；只往末尾追加用 <c>ConcatObj</c>；就替换指定位元素用 <c>ReplaceObj</c>。</para>
 	///   <para><b>用法</b></para>
@@ -929,7 +929,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2005：<c>this</c> 进 iconic 槽 1，<c>index</c> 作控制参数 0 用 <c>Store</c> 钉固定、调用后 <c>UnpinTuple</c>，输出 <c>LoadNew</c> 取回新句柄。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基；越界或重复序号的行为未校验 （具体边界行为以对应 HALCON 算子文档为准）。返回的剩余元素保持原相对顺序。</para>
+	///   <para>序号 1 基；越界或重复序号的行为未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。返回的剩余元素保持原相对顺序。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>按序号删元素用本方法；反过来保留指定序号用 <c>SelectObj</c>；只删单个元素可用 <c>int</c> 重载。</para>
 	///   <para><b>用法</b></para>
@@ -1002,7 +1002,7 @@ public class JlXLDExtPara : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 2006：<c>this</c> 进 iconic 槽 1、<c>objectsReplace</c> 进槽 2，<c>index</c> 作控制参数 0 用 <c>Store</c> 钉固定、调用后 <c>UnpinTuple</c>，输出 <c>LoadNew</c> 取回新句柄。注意 C# 形参序是 (objectsReplace, index)，而原生侧 objectsReplace 占 iconic 2、index 占控制 0。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>序号 1 基；<c>index</c> 个数与 <c>objectsReplace</c> 元素数如何配对未校验 （具体边界行为以对应 HALCON 算子文档为准）。替换不改变元组长度。</para>
+	///   <para>序号 1 基；<c>index</c> 个数与 <c>objectsReplace</c> 元素数如何配对未校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。替换不改变元组长度。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>就地覆盖指定位置用本方法；在该位置挤入新元素（增长元组）用 <c>InsertObj</c>；只删不补用 <c>RemoveObj</c>。</para>
 	///   <para><b>用法</b></para>

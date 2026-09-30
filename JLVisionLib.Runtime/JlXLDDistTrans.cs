@@ -25,7 +25,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   dt.ReadDistanceTransformXld(@"C:\vision\ref_disttrans.dat");
 	///   dt.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>空壳同样注册了终结器，即使从未装入句柄也应 Dispose；从未装入句柄的壳再 Dispose 是否绝对安全 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>空壳同样注册了终结器，即使从未装入句柄也应 Dispose；从未装入句柄的壳再 Dispose 是否绝对安全 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlXLDDistTrans()
@@ -50,7 +50,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   using JlXLDDistTrans wrapper = new JlXLDDistTrans(src.Handle);
 	///   </code>
 	///   <para><b>资源与坑</b>两壳各自 Dispose 各自那份引用；对 src 换柄（Read/Create 先 Dispose 再 Load）不影响 wrapper 继续持有旧柄；
-	///   对句柄内容的原地改写（如 SetDistanceTransformXldParam）wrapper 是否同步可见 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   对句柄内容的原地改写（如 SetDistanceTransformXldParam）wrapper 是否同步可见 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlXLDDistTrans(IntPtr handle)
@@ -76,7 +76,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   using JlXLDDistTrans alias = new JlXLDDistTrans(src);
 	///   </code>
 	///   <para><b>资源与坑</b>这是"第二个名字指向同一原生资源"级别的浅别名：壳独立、各还各的引用，一侧 Dispose 不影响另一侧继续使用；
-	///   底层共享程度对原地改写是否可见 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   底层共享程度对原地改写是否可见 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlXLDDistTrans(JlHandle handle)
@@ -153,11 +153,11 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   之后对同一参考形状反复量距离用 <see cref="ApplyDistanceTransformXld(JlXLDCont)"/>，构建成本一次付清。点坐标约定 row=y（向下）、column=x（向右），单位像素。</para>
 	///   <para><b>约束或前提</b><paramref name="contour"/> 可含多条轮廓，它们合起来构成参考点集；空轮廓构建失败抛 <c>JlOperatorException</c>。
 	///   <paramref name="mode"/> 取 <c>point_to_point</c> 时查询点到的是<b>最近参考点</b>（对参考点采样密度敏感）；取 <c>point_to_segment</c> 时到的是相邻参考点连线段
-	///   （更平滑、推荐用于采样稀疏的轮廓）。超过 <paramref name="maxDistance"/> 的距离数值是否可靠 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   （更平滑、推荐用于采样稀疏的轮廓）。超过 <paramref name="maxDistance"/> 的距离数值是否可靠 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻成员的取舍</b>只想一次性算两条轮廓的逐点距离，用 <c>JlXLDCont.DistanceContoursXld</c> 或直接 <c>DistanceCcMin</c> 拿标量最小值，不必建本对象；
 	///   要的是<b>区域</b>（像素域）距离变换而不是轮廓域时，本算子族不适用。</para>
 	///   <para><b>参数取向</b>本重载把 <paramref name="maxDistance"/> 按 JlTuple 传：调用期间被 <c>Store</c> 钉固、结束后 <c>UnpinTuple</c> 解除（见 <see cref="JlXLDDistTrans(JlXLDCont, string, double)"/> 的免钉固直写版）；
-	///   元组形式允许携带多个值，是否按参考轮廓逐条一一对应生效 （具体边界行为以对应 HALCON 算子文档为准）。输出为 <c>InitOCT</c> 装载的新句柄，无返回值、由构造器给出。</para>
+	///   元组形式允许携带多个值，是否按参考轮廓逐条一一对应生效 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。输出为 <c>InitOCT</c> 装载的新句柄，无返回值、由构造器给出。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlXLDCont refContour = new JlXLDCont(new double[] { 10.0, 10.0, 50.0 }, new double[] { 10.0, 50.0, 50.0 });
@@ -333,7 +333,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	/// </summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 <c>clear_xld_disttrans</c>（算子 id 1290）：显式释放本对象持有的变换句柄（<c>Store</c> 送进本句柄后调用，无输出），调用后对象变空壳。</para>
-	///   <para><b>约束或前提</b>对已经是空句柄的对象再调一次，行为 （具体边界行为以对应 HALCON 算子文档为准）；清空后调用 <see cref="ApplyDistanceTransformXld(JlXLDCont)"/> 等任何成员都会在原生层失败抛
+	///   <para><b>约束或前提</b>对已经是空句柄的对象再调一次，行为 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；清空后调用 <see cref="ApplyDistanceTransformXld(JlXLDCont)"/> 等任何成员都会在原生层失败抛
 	///   <c>JlOperatorException</c>，想复用请走 <see cref="CreateDistanceTransformXld(JlXLDCont, string, double)"/> 重建。</para>
 	///   <para><b>与相邻成员的取舍</b>它是 <c>Dispose()</c> 的"算子视角"版本：两者都释放原生句柄，但本方法多走一次完整的 HDevelop 调用；
 	///   普通释放直接 <c>using</c> 或 Dispose 即可，只有需要在原生侧留算子轨迹时才用它。</para>
@@ -344,7 +344,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   JlXLDDistTrans dt = new JlXLDDistTrans(refContour, "point_to_point", 20.0);
 	///   dt.ClearDistanceTransformXld();
 	///   </code>
-	///   <para><b>资源与坑</b>Clear 之后对象离开作用域时基类还会再 Dispose 一次；重复释放是否安全 （具体边界行为以对应 HALCON 算子文档为准），稳妥做法是二选一而不是叠加。</para>
+	///   <para><b>资源与坑</b>Clear 之后对象离开作用域时基类还会再 Dispose 一次；重复释放是否安全 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），稳妥做法是二选一而不是叠加。</para>
 	/// </remarks>
 	public void ClearDistanceTransformXld()
 	{
@@ -364,7 +364,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b>对应原生 <c>apply_xld_disttrans</c>（算子 id 1291）：把 <paramref name="contour"/> 的每个点对本对象内存的参考轮廓逐一量最近距离（像素）；
 	///   距离模式与上限取本对象当前的 mode / max_distance（构建后可用 <see cref="SetDistanceTransformXldParam(string, string)"/> 改）。</para>
 	///   <para><b>约束或前提</b>本对象须持有效句柄。距离是挂在轮廓上的<b>逐点属性</b>，不改动点坐标——数值要用
-	///   <c>JlXLDCont.GetContourAttribXld</c> 读点属性（属性名 "distance" （具体边界行为以对应 HALCON 算子文档为准）），用 <c>GetContourXld</c> 只能拿到坐标。</para>
+	///   <c>JlXLDCont.GetContourAttribXld</c> 读点属性（属性名 "distance" （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）），用 <c>GetContourXld</c> 只能拿到坐标。</para>
 	///   <para><b>与相邻算子的取舍</b>只要两条轮廓间一个总体标量距离用 <c>JlXLDCont.DistanceCcMin</c>；不想预建对象、一次性算两轮廓逐点距离用
 	///   <c>JlXLDCont.DistanceContoursXld</c>；本算子族的卖点是"参考形状固定、被测轮廓来一批算一批"——构建费一次，Apply 多次，单帧多轮廓时比每次现算省。</para>
 	///   <para><b>参数取向</b>返回值是带距离属性的<b>新轮廓副本</b>（原生侧输出与新句柄经 <c>InitOCT</c>/<c>LoadNew</c> 装载）；入参 contour 对象本身不被改动，
@@ -379,7 +379,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   double firstPointDist = dist[0].D;
 	///   </code>
 	///   <para><b>资源与坑</b>返回值是新句柄、必须释放；<c>GC.KeepAlive</c> 保住 this 与入参到原生调用结束，入参轮廓调用后即可 Dispose。
-	///   落在参考轮廓上的点距离为 0；超出 max_distance 的点数值是否可靠 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   落在参考轮廓上的点距离为 0；超出 max_distance 的点数值是否可靠 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	public JlXLDCont ApplyDistanceTransformXld(JlXLDCont contour)
 	{
@@ -478,7 +478,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   byte[] data = dt.SerializeDistanceTransformXld();
 	///   File.WriteAllBytes(@"C:\vision\dt.snapshot", data);
 	///   </code>
-	///   <para><b>资源与坑</b>字节大小随参考轮廓点数线性增长，别把上百 MB 的快照塞进消息队列 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>字节大小随参考轮廓点数线性增长，别把上百 MB 的快照塞进消息队列 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	public byte[] SerializeDistanceTransformXld()
 	{
@@ -500,7 +500,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b>对应原生 <c>write_xld_disttrans</c>（算子 id 1295）：把本变换（参考轮廓 + 全部参数）写成 Vision 格式文件，
 	///   之后由 <see cref="ReadDistanceTransformXld(string)"/> 或 <see cref="JlXLDDistTrans(string)"/> 构造器还原——读写严格成对。</para>
 	///   <para><b>约束或前提</b>本对象须持有效句柄；目标目录须存在且可写；路径非法或磁盘满在原生层抛 <c>JlOperatorException</c>。
-	///   对已存在文件是覆盖还是报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   对已存在文件是覆盖还是报错 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>参数取向</b>void、无输出；本对象只被读取（<c>Store</c> 进 0 号参数位），调用后句柄照旧。</para>
 	///   <para><b>与相邻成员的取舍</b>把字节流交给自己的存储层用 <see cref="SerializeDistanceTransformXld()"/>/<see cref="Serialize(Stream)"/>；
 	///   把"参考形状模板"作为资产落盘复用才用本方法。</para>
@@ -564,7 +564,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b>与 <see cref="SetDistanceTransformXldParam(JlTuple, JlTuple)"/> 同一原生算子 <c>set_xld_disttrans_param</c>（id 1296）的单项字符串版：
 	///   名字与值都以 <c>StoreS</c> 直写控制参数，无钉固/解钉开销；支持的参数名与取值域见元组重载说明。</para>
 	///   <para><b>约束或前提</b>一次只能改一项；改 mode 立即影响后续 <see cref="ApplyDistanceTransformXld(JlXLDCont)"/> 的距离定义，
-	///   已产出的结果轮廓不受影响。数值参数（max_distance）以字符串形式送出，由原生层转换 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   已产出的结果轮廓不受影响。数值参数（max_distance）以字符串形式送出，由原生层转换 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>参数取向</b>void、原地生效、无输出。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -598,7 +598,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   <para><b>约束或前提</b>本对象须持有效句柄；查询不存在的参数名在原生层报错。返回元组的元素类型随参数而变：
 	///   mode 是字符串（用 <c>.S</c> 读）、max_distance 是数值（用 <c>.D</c> 读）。</para>
 	///   <para><b>参数取向</b>入参名字元组被 <c>Store</c> 钉固、调用后 <c>UnpinTuple</c>；返回经 <c>JlTuple.LoadNew</c> 的<b>新元组</b>。
-	///   多个名字时返回值在结果元组里如何排列 （具体边界行为以对应 HALCON 算子文档为准），单项请优先用 <see cref="GetDistanceTransformXldParam(string)"/>。</para>
+	///   多个名字时返回值在结果元组里如何排列 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），单项请优先用 <see cref="GetDistanceTransformXldParam(string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlXLDCont refContour = new JlXLDCont(new double[] { 10.0, 90.0 }, new double[] { 10.0, 90.0 });
@@ -693,7 +693,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b>对应原生 <c>gen_xld_disttrans</c>（算子 id 1299）的<b>原地重建</b>版：与构造器同一算子，但方法体先 <c>Dispose()</c> 本实例旧句柄，再以 <paramref name="contour"/> 为参考轮廓、<paramref name="mode"/>/<paramref name="maxDistance"/> 为控制参数重新构建，把新句柄 <c>Load</c> 回本实例。坐标约定 row=y（向下）、column=x（向右），单位像素。</para>
 	///   <para><b>约束或前提</b><paramref name="contour"/> 可含多条轮廓，合起来构成参考点集；空轮廓在原生层失败抛 <c>JlOperatorException</c>，而此时旧句柄已被 Dispose——本实例变成空壳。想"要么换成新参考、要么保持原样"请另造临时对象。</para>
 	///   <para><b>与相邻成员的取舍</b>首次建立用构造器；要保住当前变量引用、只在帧间换参考形状时用本方法省一次对象分配。与 <see cref="CreateDistanceTransformXld(JlXLDCont, string, double)"/> 的差别只在 maxDistance 走元组（钉固）还是直写单值。</para>
-	///   <para><b>参数取向</b>本重载 <c>Store</c> 钉固 <paramref name="maxDistance"/>、调用后 <c>UnpinTuple</c>；元组形式可携带多值，是否按参考轮廓逐条对应生效 （具体边界行为以对应 HALCON 算子文档为准）。void、原地改写、无返回值。</para>
+	///   <para><b>参数取向</b>本重载 <c>Store</c> 钉固 <paramref name="maxDistance"/>、调用后 <c>UnpinTuple</c>；元组形式可携带多值，是否按参考轮廓逐条对应生效 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。void、原地改写、无返回值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlXLDCont refContour = new JlXLDCont(new double[] { 10.0, 90.0 }, new double[] { 10.0, 90.0 });

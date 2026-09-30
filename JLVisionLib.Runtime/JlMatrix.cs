@@ -1393,7 +1393,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各元素取 power 给出的指数次幂），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 841，与 PowScalarElementMatrix(double) 完全同一算子；唯一差别是 power 走 JlNativeApi.Store 把元组钉在原生输入 1 上、调用后 UnpinTuple 解除固定（double 重载用 StoreD 直写，无钉固定开销）。输出 InitOCT(0)+LoadNew(0) 返回新句柄。</para>
-	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层按位置对应、广播还是只用第一条，托管层看不出来——需要严格的"逐元素不同指数"请改用 PowElementMatrix（指数必须是矩阵）。</para>
+	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；传多条值时原生层按位置对应、广播还是只用第一条，本层不展开该规则；请按目标 HALCON 版本的算子文档确认——需要严格的"逐元素不同指数"请改用 PowElementMatrix（指数必须是矩阵）。</para>
 	///   <para><b>与相邻算子的取舍</b>指数是编译期常数时直接传 double 字面量命中标量重载，省一次钉固定；只有指数本来就是别的算子输出的 JlTuple 时才用本重载，避免先取首值再转 double。矩阵幂用 PowMatrix（id 837），别把逐元素幂当矩阵自乘。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1582,7 +1582,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各均值按 meanType 方向排布），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 847。输入原生参数序 0=this（Store 句柄）、1=meanType（StoreS 字符串直传，托管层不校验取值）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>meanType 支持的取值集合与各值下输出的行列形状托管层看不出来，拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
+	///   <para><b>约束或前提</b>meanType 支持的取值集合与各值下输出的行列形状本层不展开该规则；请按目标 HALCON 版本的算子文档确认，拿到结果先 GetSizeMatrix 再取数。与 SumMatrix 一样是"归约成矩阵"，不是把均值广播回原尺寸。</para>
 	///   <para><b>与相邻算子的取舍</b>它做的是统计归约，不是图像均值滤波——要给矩阵做平滑/卷积没有本算子，别被模板旧文案"图像滤波与预处理"误导；只要总和用 SumMatrix（id 848），要一个标量指标用 NormMatrix（id 846）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1611,7 +1611,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <returns>新 JlMatrix 句柄（各求和结果按 sumType 方向排布），用毕须释放。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 848。输入原生参数序 0=this（Store 句柄）、1=sumType（StoreS 字符串直传原生，托管层不校验取值）；输出 InitOCT(0)+LoadNew(0) 返回新句柄，this 不变。</para>
-	///   <para><b>约束或前提</b>"columns" 时输出是 1 行多列还是多行 1 列、以及是否支持"rows"/"all"之类取值，托管层看不出来，取回后先 GetSizeMatrix 确认形状再按下标读。sumType 拼错由原生层报错。</para>
+	///   <para><b>约束或前提</b>"columns" 时输出是 1 行多列还是多行 1 列、以及是否支持"rows"/"all"之类取值，本层不展开该规则；请按目标 HALCON 版本的算子文档确认，取回后先 GetSizeMatrix 确认形状再按下标读。sumType 拼错由原生层报错。</para>
 	///   <para><b>与相邻算子的取舍</b>只要一个总和使用 SumMatrix 后读 [0,0]（或对应位置），别用 NormMatrix——范数不是元素和；要平均值用 MeanMatrix（id 847）；要逐列最大/最小用 MaxMatrix/MinMatrix（id 834/835）。结果仍按 double 元素存放，无整型求和的溢出问题。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1762,7 +1762,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	/// <param name="factor">缩放系数（元组形式）。默认值 2.0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 853，与 ScaleMatrixMod(double) 同一算子；差别仅在 factor 走 JlNativeApi.Store 钉住元组、调用后 UnpinTuple 解除固定（double 重载用 StoreD 直写、无钉固定开销）。方法体无 InitOCT/Load，结果原地写回 this，维度不变。</para>
-	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；多条值是逐元素对应、广播还是只取第一条，托管层看不出来——要严格的逐元素不同倍率请用 MultElementMatrixMod（id 851，倍率须是等维度矩阵句柄）。原值即时消失。</para>
+	///   <para><b>约束或前提</b>传单元素元组与标量重载等价；多条值是逐元素对应、广播还是只取第一条，本层不展开该规则；请按目标 HALCON 版本的算子文档确认——要严格的逐元素不同倍率请用 MultElementMatrixMod（id 851，倍率须是等维度矩阵句柄）。原值即时消失。</para>
 	///   <para><b>与相邻算子的取舍</b>系数是编译期常数时直接传 double 命中标量重载，省一次钉固定；系数本来就是别的算子输出的 JlTuple 时用本重载，避免先取首值转 double；要保留原矩阵用 ScaleMatrix 族（id 854）。</para>
 	///   <para><b>参数取向</b>void 返回；this 是唯一被改写者，factor 只读。</para>
 	///   <para><b>用法</b></para>
