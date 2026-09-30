@@ -937,7 +937,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.WriteShapeModel("label.shm");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>对已 Dispose 的句柄调用属未定义行为 （具体边界行为以对应 HALCON 算子文档为准）；同名文件是否覆盖、目录不存在时报错 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para>对已 Dispose 或空句柄调用会在原生调用后由 PostCall 抛出算子异常；同名文件覆盖和目录不存在时的处理由原生层决定，失败时同样由 PostCall 抛出异常。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>ReadShapeModel、CreateShapeModel</para>
 	/// </remarks>
@@ -960,7 +960,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>托管侧 Dispose() 也会经 ClearHandle 释放句柄，因此一般不需要调用本方法。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>本方法不会把 C# 对象的 mHandle 置空：之后再 Dispose 会对同一原生句柄二次释放，是否被原生层保护 （具体边界行为以对应 HALCON 算子文档为准）；调用后继续使用本对象也是未定义行为。</para>
+	///   <para>本方法不会把 C# 对象的 mHandle 置空；调用后该字段仍保存已释放的句柄值，不能再使用本对象，也不要再调用 Dispose。只有在调用后立即丢弃该包装对象时才使用本方法。</para>
 	///   <para><b>示例</b></para>
 	///   <code>
 	///   JlShapeModel model = new JlShapeModel("part.shm");

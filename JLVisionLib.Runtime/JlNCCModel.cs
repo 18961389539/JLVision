@@ -798,7 +798,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	///   }
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>调用即丢弃旧模型；若旧句柄还被其它 JlNCCModel(handle) 包装共享，行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。本重载 Store+UnpinTuple 钉传两个 JlTuple。</para>
+	///   <para><b>资源与坑</b>调用先释放当前包装持有的旧句柄引用，再把新模型装入当前包装；其他 JlNCCModel(handle) 包装各自持有的引用不受影响。新模型只属于当前包装。本重载 Store+UnpinTuple 钉传两个 JlTuple。</para>
 	///   <para><b>相关算子</b>FindNccModel、ClearNccModel</para>
 	/// </remarks>
 	public void CreateNccModel(JlImage template, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, string metric)

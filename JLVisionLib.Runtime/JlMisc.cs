@@ -476,7 +476,7 @@ public class JlMisc
 	/// <param name="colPoint">所求点的 column 坐标（DOUBLE 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按角度元组逐点算出椭圆周上的坐标，对应原生算子 id 1278；两个输出均按 DOUBLE 装载，输入 angle 元组钉住传入。</para>
-	///   <para><b>资源与坑</b>坐标系以 row 为第一轴；半径与角度的组合发生退化（radius 为 0）时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。单点计算可用下面的 double 重载，无钉固定开销。</para>
+	///   <para><b>资源与坑</b>坐标系以 row 为第一轴；radius 为 0 时输入退化；本层不校验，调用结果交给原生层处理。单点计算可用下面的 double 重载，无钉固定开销。</para>
 	/// </remarks>
 	public static void GetPointsEllipse(JlTuple angle, double row, double column, double phi, double radius1, double radius2, out JlTuple rowPoint, out JlTuple colPoint)
 	{
@@ -507,7 +507,7 @@ public class JlMisc
 	/// <param name="colPoint">所求点的 column 坐标。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>求单个椭圆周上指定角度处的坐标，对应原生算子 id 1278（与本类元组版 <see cref="GetPointsEllipse(JlTuple,double,double,double,double,double,out JlTuple,out JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。</para>
-	///   <para><b>资源与坑</b>半径或角度退化时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>半径或角度取退化值时，本层不校验，调用结果交给原生层处理。</para>
 	/// </remarks>
 	public static void GetPointsEllipse(double angle, double row, double column, double phi, double radius1, double radius2, out double rowPoint, out double colPoint)
 	{
@@ -540,7 +540,7 @@ public class JlMisc
 	/// <param name="isParallel">平行标志（INTEGER 装载，非 0 表示平行）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>求两直线（各由两点确定）的交点，对应原生算子 id 1279。交点 row/column 按 DOUBLE 装载，isParallel 按 INTEGER 装载（非 0 = 平行），三者在多组配对输入下逐条给出。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，经代码检查确认本库内部没有任何调用者；坐标为图像坐标系（row 向下、column 向右），单位像素。平行时 row/column 的取值不可信，必须先查 isParallel 再用交点。直线自身退化（两点重合）时结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，经代码检查确认本库内部没有任何调用者；坐标为图像坐标系（row 向下、column 向右），单位像素。平行时 row/column 的取值不可信，必须先查 isParallel 再用交点。直线两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与相邻算子的取舍</b>两直线夹角用 <see cref="AngleLl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/>；交点落在哪条线的"线段范围内"本方法不判断——它按无限长直线求交。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
