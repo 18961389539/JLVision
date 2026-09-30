@@ -696,7 +696,7 @@ public class JlMisc
 	/// <returns>夹角元组（DOUBLE 装载，弧度制）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>返回两条直线（各由两点确定）之间的夹角，单位弧度，对应原生算子 id 1310；输出按 DOUBLE 装载，支持逐点配对的多元组输入。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。夹角是否区分方向（有向角/无向角）、取值区间无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）；平行与垂直时各自返回什么值也应以实测为准。任一方向量退化（两点重合）结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。夹角是否区分方向（有向角/无向角）、取值区间无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）；平行或垂直时的返回值由原生算子定义，使用前应按 HALCON 文档确认。任一方向量退化（两点重合）结果未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要"线对水平轴的倾角"用 <see cref="AngleLx(JlTuple,JlTuple,JlTuple,JlTuple)"/>；要判平行优先 <see cref="IntersectionLl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple,out JlTuple)"/> 的 isParallel（INTEGER，语义明确），别拿角度比较浮点。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1171,7 +1171,7 @@ public class JlMisc
 	/// <returns>滤波器核宽度（约 size × size 像素）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>查询指定平滑滤波器对应的核宽度，并可选地拿到 gauss 滤波器的 1D 半幅系数，对应原生算子 id 1358；核宽度走返回值（int），coeffs 走 out 且按 INTEGER 装载。</para>
-	///   <para><b>资源与坑</b>不同 <c>filter</c> 所支持的取值与 <c>alpha</c> 合法区间无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）；仅 gauss 才给出系数，其余滤波器 coeffs 行为以实测为准。</para>
+	///   <para><b>资源与坑</b>不同 <c>filter</c> 所支持的取值与 <c>alpha</c> 合法区间无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准）；仅 gauss 才给出系数；其余滤波器是否返回系数由原生算子定义，应按 HALCON 文档确认。</para>
 	/// </remarks>
 	public static int InfoSmooth(string filter, double alpha, out JlTuple coeffs)
 	{
@@ -1968,7 +1968,7 @@ public class JlMisc
 	/// <param name="order">分割顺序：线段为 0、圆弧段为 1（INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>按一组平滑/曲率/权重参数把轮廓点链用圆弧与直线段逐段逼近并输出各部分几何，对应原生算子 id 1661。输出除 arcAngle 按 DOUBLE 装载外，其余均按 INTEGER 装载（坐标被取整）。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的轮廓逼近组，本库内部没有任何调用者；row/column 须等长。诸阈值/宽度/权重的合法取值范围与相互约束无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准），超出合理区间时行为以实测为准。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的轮廓逼近组，本库内部没有任何调用者；row/column 须等长。诸阈值/宽度/权重的合法取值范围与相互约束无法由代码判定 （具体边界行为以对应 HALCON 算子文档为准），本层不校验参数范围，超出合法范围时由原生层处理。</para>
 	///   <para><b>资源与坑</b>各部分输出通过不同出参返回，编号下标之间并不一定对齐到同一条边，使用时需结合 order 判读 （具体边界行为以对应 HALCON 算子文档为准）；不需要精细调参时用更简单的 <see cref="ApproxChainSimple"/>。</para>
 	/// </remarks>
 	public static void ApproxChain(JlTuple row, JlTuple column, double minWidthCoord, double maxWidthCoord, double threshStart, double threshEnd, double threshStep, double minWidthSmooth, double maxWidthSmooth, int minWidthCurve, int maxWidthCurve, double weight1, double weight2, double weight3, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)

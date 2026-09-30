@@ -6352,7 +6352,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   raw.Dispose();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入不被修改。</para>
-	///   <para><b>待确认</b>开运算后目标面积的漂移量、以及 radius ≤ 0 的行为（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 时由原生层处理。开运算后的面积变化取决于输入区域与结构元，不保证固定数值。</para>
 	/// </remarks>
 	public JlRegion OpeningCircle(JlTuple radius)
 	{
@@ -6589,7 +6589,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   copper.Dispose();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入的 <c>this</c> 不被修改，两者都需自行 Dispose。</para>
-	///   <para><b>待确认</b>radius ≤ 0 的行为、以及多半径元组与多输入区域的展开规则（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组与多输入区域的展开规则由原生层处理。</para>
 	/// </remarks>
 	public JlRegion ErosionCircle(JlTuple radius)
 	{
@@ -6875,7 +6875,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   int nAfter = recount.CountObj();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入不被修改；链式中间结果需逐个 Dispose。</para>
-	///   <para><b>待确认</b>radius ≤ 0 的行为与多半径元组的展开规则（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组的展开规则由原生层处理。</para>
 	/// </remarks>
 	public JlRegion DilationCircle(JlTuple radius)
 	{

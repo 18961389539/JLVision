@@ -4177,7 +4177,7 @@ public class JlErrorDef
 
 	/// <summary>resolution 取值档（按常量名 WV_ 理解）：大小不在允许范围；注意内嵌英文文本误写成了 "Wrong type"。</summary>
 	/// <remarks>
-	///   <para><b>含义</b>本码内嵌原文与 3722 一字不差：<c>Wrong type of resolution parameter</c>，而常量名按族内规律是 WV_ = wrong value——文本与命名冲突，同段只有 3725(<c>Jl_ERR_BI_WV_POLARITY</c>) 犯同样的毛病。按命名规律把本码理解为 resolution 的取值档，原生实报行为以实测为准 （具体语义以 HALCON 错误码说明和算子文档为准）；用文本搜消息时别只按一档搜。</para>
+	///   <para><b>含义</b>本码内嵌原文与 3722 一字不差：<c>Wrong type of resolution parameter</c>，而常量名按族内规律是 WV_ = wrong value——文本与命名冲突，同段只有 3725(<c>Jl_ERR_BI_WV_POLARITY</c>) 犯同样的毛病。按命名规律把本码理解为 resolution 的取值档；具体触发行为以 HALCON 错误码说明和算子文档为准；用文本搜消息时别只按一档搜。</para>
 	///   <para><b>参数取向</b>resolution 的大小直接换结果密度与耗时：调细则点云密、边缘细节好但更慢且噪声点更多，调粗反之 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
