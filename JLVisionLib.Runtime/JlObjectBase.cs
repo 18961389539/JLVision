@@ -97,7 +97,7 @@ public class JlObjectBase : IDisposable
 	/// </summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>实现是 <c>IntPtr result = JlNativeApi.CopyObject(key); GC.KeepAlive(this); return result;</c>——只加引用，不新建 C# 包装，故返回后原生对象有两个独立持有者。</para>
-	///   <para><b>约束或前提</b>返回的 key 由调用方负责释放，而本 .NET 接口没有释放裸 key 的入口（该方法自身的英文说明亦承认这点）；本方法不检查 key 是否为 UNDEF；key 为 UNDEF 时仍把 0 传给原生 <c>CopyObject</c>，结果由原生运行时返回。</para>
+	///   <para><b>约束或前提</b>返回的 key 由调用方负责释放，而本 .NET 接口没有释放裸 key 的入口（该方法自身的英文说明亦承认这点）；本方法不检查 key 是否为 UNDEF；key 为 UNDEF 时仍把 0 传给原生 <c>CopyObject</c>，结果由HALCON 运行时返回。</para>
 	///   <para><b>与相邻成员的取舍</b>只是想在托管侧多一个独立可 Dispose 的容器，用拷贝构造（如 <c>JlImage(img)</c>）或 <c>Clone()</c>；要跨语言/跨进程交接才用本方法。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -190,7 +190,7 @@ public class JlObjectBase : IDisposable
 	/// </summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>落到私有 <c>Dispose(bool)</c>：条件成立才进一次原生 <c>ClearObject</c>；<c>disposing</c> 为真时 <c>GC.SuppressFinalize</c> 并置内部标记。终结器 <c>~JlObjectBase()</c> 走同一段代码并吞掉所有异常，所以漏掉的释放最终仍会回收 key。</para>
-	///   <para><b>约束或前提</b>与句柄基类不同，这里的释放条件是纯托管的 <c>key != UNDEF</c>：本方法不检查 key 在原生侧是否仍有效；若 key 已被外部清除，仍会把该值传给 <c>ClearObject</c>，调用结果由原生运行时决定。</para>
+	///   <para><b>约束或前提</b>与句柄基类不同，这里的释放条件是纯托管的 <c>key != UNDEF</c>：本方法不检查 key 在原生侧是否仍有效；若 key 已被外部清除，仍会把该值传给 <c>ClearObject</c>，调用结果由目标 HALCON 运行时决定。</para>
 	///   <para><b>与相邻成员的取舍</b>想保住原生对象、只多拿一个裸引用，用 <c>CopyKey()</c>；想把内容交给另一个实例托管而不释放，用 <c>TransferOwnership(source)</c>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

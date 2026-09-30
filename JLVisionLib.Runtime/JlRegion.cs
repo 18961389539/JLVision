@@ -265,7 +265,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   JlRegion r = new JlRegion(30.0, 20.0, 100.0, 200.0);
 	///   r.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>坐标越界或行列反序由原生层处理（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>资源与坑</b>坐标越界或行列反序由目标 HALCON 版本处理（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	public JlRegion(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
@@ -1086,7 +1086,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>新 <see cref="JlXLDCont"/> 句柄（<c>LoadNew</c>），用毕需 <c>Dispose</c>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 <c>gen_contour_region_xld</c>（id 70），把区域边界按 <c>mode</c> 指定的方式转成轮廓。</para>
-	///   <para><b>约束或前提</b><c>mode</c> 为字符串（如 "border" 沿边界、"filled" 填充边界等），非托管层校验，非法规格由原生报错（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b><c>mode</c> 为字符串（如 "border" 沿边界、"filled" 填充边界等），非托管层校验，非法规格由原生报错（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>想把轮廓转回填充区域用 <c>GenRegionContourXld("filled")</c>；要骨架转轮廓用 <c>GenContoursSkeletonXld</c>。</para>
 	///   <para><b>参数取向</b>mode 走 <c>StoreS</c>；输出走 <c>InitOCT</c>+<c>JlXLDCont.LoadNew</c>，是新句柄而非原地改写。</para>
 	///   <para><b>用法</b></para>
@@ -1617,7 +1617,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   pts.Dispose();
 	///   part.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>metric 可选字面量清单托管层无法枚举（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；输入不被改写。</para>
+	///   <para><b>资源与坑</b>metric 可选字面量清单本层未提供枚举（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；输入不被改写。</para>
 	/// </remarks>
 	public JlImage ClosestPointTransform(out JlImage closestPoints, string metric, string foreground, string closestPointMode, int width, int height)
 	{
@@ -1653,7 +1653,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <para><b>与 <c>ClosestPointTransform</c> 的取舍</b>后者（原生 id 474）在同一距离图上额外给出
 	///   最近点坐标图；只要距离用本算子（id 475），省一个输出。</para>
 	///   <para><b>画幅</b><c>width</c>/<c>height</c> 是独立入参，库不会从区域自动推尺寸；
-	///   metric 除默认值外的可选字面量清单在托管层无法枚举（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   metric 除默认值外的可选字面量清单在本层未提供枚举（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1723,7 +1723,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   形式 <c>Store</c> 传入、调用后 <c>UnpinTuple</c>；<c>interpolation</c> 经 <c>StoreS</c> 透传字符串。</para>
 	///   <para><b>与相邻算子的取舍</b>仿射保持平行性与面积比，投影允许近大远小；相机斜拍平面的
 	///   校正用本算子，机械平移旋转用 <c>AffineTransRegion</c>（id 478）。区域是像素集合，投影后
-	///   边缘按栅格重采样，测量建议先变换 XLD 轮廓再转区域（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   边缘按栅格重采样，测量建议先变换 XLD 轮廓再转区域（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>约束</b>落在消失线附近的区域会被拉伸到无穷，结果异常；矩阵需与坐标系一致
 	///   （row=y 向下、column=x 向右）。</para>
 	///   <para><b>用法</b></para>
@@ -1805,7 +1805,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>镜像反射后的区域。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>关于一条轴镜像区域（原生 id 479）：<c>mode='row'</c> 为水平轴、
-	///   <c>'column'</c> 为垂直轴（具体取值以对应 HALCON 算子文档为准）；轴的位置在坐标 <c>widthHeight/2</c> 处——
+	///   <c>'column'</c> 为垂直轴（具体取值见目标 HALCON 版本的算子文档）；轴的位置在坐标 <c>widthHeight/2</c> 处——
 	///   该参数是"轴坐标的两倍"，不是图像宽高，想让轴过画幅中线才传 2×行高（或 2×列宽）。</para>
 	///   <para><b>与相邻算子的取舍</b>点对称（等价于旋转 180°）用 <c>TransposeRegion</c>（id 718）；
 	///   任意轴反射用 <c>JlHomMat2D</c> 的反射矩阵走 <c>AffineTransRegion</c>。</para>
@@ -2145,7 +2145,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>让区域生长填充间隙或对重叠区划界（原生 id 487）：每次迭代把区域
 	///   外扩一圈，<c>forbiddenArea</c> 内不生长，两块生长前沿相遇处按先到归属划界。
 	///   本重载 <c>iterations</c> 以元组 <c>Store</c> 固定、调用后 <c>UnpinTuple</c>，
-	///   可传逐对象的圈数；传 "maximal" 直到长满（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   可传逐对象的圈数；传 "maximal" 直到长满（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b><c>ExpandGray</c>（id 499）在生长时还比较灰度，跨区域灰度
 	///   漂移的场景必须用它；纯几何填缝用本算子。<c>mode</c> 默认 "image" 受画幅限制，
 	///   其余取值（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
@@ -2441,7 +2441,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   blobs.Dispose();
 	///   mask.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>输出对象数遵循上游的对象计数广播规则，托管层无法确定（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；
+	///   <para><b>资源与坑</b>输出对象数遵循上游的对象计数广播规则，本层未提供确定（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；
 	///   <c>sub</c> 侧先取并的细节以英文原文为准。</para>
 	/// </remarks>
 	public JlRegion Difference(JlRegion sub)
@@ -2648,7 +2648,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <c>threshold</c> 就不越过——让区域在同类灰度内填缝、遇异类灰度停止。</para>
 	///   <para><b>前提</b><c>image</c> 与区域必须出自同一幅图或同一坐标系（区域由该图 Threshold
 	///   得来即是），尺寸不匹配时对应不上灰度；<c>image</c> 与 <c>forbiddenArea</c> 都以 iconic
-	///   <c>Store</c> 传入并 <c>GC.KeepAlive</c> 保活。彩色图按通道比较（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <c>Store</c> 传入并 <c>GC.KeepAlive</c> 保活。彩色图按通道比较（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>边界灰度漂移大时改 <c>ExpandGrayRef</c>（id 500）以固定参考值
 	///   比较；与灰度无关的纯几何填缝用 <c>ExpandRegion</c>。</para>
 	///   <para><b>重载选择</b>标量版见 <see cref="ExpandGray(JlImage,JlRegion,string,string,int)"/>：
@@ -2745,7 +2745,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   候选像素与固定参考值 <c>refGray</c> 比较、差值超 <c>threshold</c> 停止，而不是与区域
 	///   自身边界比较。区域边界灰度本身不稳（生长初期边界质量差）时用本算子钉住目标灰度。</para>
 	///   <para><b>前提</b><c>image</c> 与区域同一坐标系；<c>refGray</c>/<c>threshold</c> 在本重载以元组
-	///   <c>Store</c> 固定、调用后逐个 <c>UnpinTuple</c>，彩色图需逐通道给参考值（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <c>Store</c> 固定、调用后逐个 <c>UnpinTuple</c>，彩色图需逐通道给参考值（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>背景均匀、只要"长到别再长"用 <c>ExpandRegion</c>（id 487）；
 	///   目标与背景都无固定灰度、只有边界连续时才用 <c>ExpandGray</c>。</para>
 	///   <para><b>重载选择</b>标量版见 <see cref="ExpandGrayRef(JlImage,JlRegion,string,string,int,int)"/>：
@@ -3044,7 +3044,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <c>image</c> 不被改写，可继续另作他用。</para>
 	///   <para><b>约束</b>灰度值按输入图像的通道数配对：单通道给一个值，多通道需逐通道给值
 	///   （本重载以元组 <c>Store</c>+<c>UnpinTuple</c> 传多值）；不匹配的行为（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。
-	///   <c>type="fill"</c> 整体填充，"margin" 只画边界（具体取值以对应 HALCON 算子文档为准）。
+	///   <c>type="fill"</c> 整体填充，"margin" 只画边界（具体取值见目标 HALCON 版本的算子文档）。
 	///   输出像素类型跟随输入图像，浮点图上写不进超出精度的值。</para>
 	///   <para><b>与相邻算子的取舍</b>要在原图上就地涂改、不想多一张图时用 <c>OverpaintRegion</c>
 	///   （id 562）；要把整张区域转成独立二值图用 <c>RegionToBin</c>（id 471）。</para>
@@ -3123,7 +3123,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   被改写的是传入图像自己</strong>，原像素在覆盖处不可恢复。</para>
 	///   <para><b>与相邻算子的取舍</b>还要留原图用 <c>PaintRegion</c>（id 561，出新图）；
 	///   在采集图上连续叠加多个掩膜标注用本算子省内存。灰度值与通道数配对、
-	///   <c>type</c> 取 "fill"/边界（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   <c>type</c> 取 "fill"/边界（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>重载选择</b>标量版见 <see cref="OverpaintRegion(JlImage,double,string)"/>：同一 id 562，
 	///   <c>StoreD</c> 直写、无 <c>UnpinTuple</c>。</para>
 	///   <para><b>用法</b></para>
@@ -4096,7 +4096,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <param name="endAngle">扇形终止角（弧度）。Default: 3.14159</param>
 	/// <remarks>
 	///   <para><b>约束</b>本接口只有一个 <c>radius</c>（"Radius of circle"），生成的是实心扇形；
-	///   想要圆环扇区需自建两扇再 <c>Difference</c>（具体取值以对应 HALCON 算子文档为准）。
+	///   想要圆环扇区需自建两扇再 <c>Difference</c>（具体取值见目标 HALCON 版本的算子文档）。
 	///   0° 对应哪个方向、角度正负（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b>整圆用 <c>GenCircle</c>（id 596）；椭圆楔形用
 	///   <c>GenEllipseSector</c>（id 593）。<c>endAngle - startAngle</c> 超过 2π 时的行为（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
@@ -4371,7 +4371,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   [<c>widthMin</c>,<c>widthMax</c>]×[<c>heightMin</c>,<c>heightMax</c>] 内取、转角在
 	///   [<c>phiMin</c>,<c>phiMax</c>]（弧度）内取，中心散布在 <c>width</c>×<c>height</c> 内。
 	///   本重载六个区间参数以元组 <c>Store</c> 固定、调用后逐个 <c>UnpinTuple</c>，
-	///   可给逐对象不同的区间（具体取值以对应 HALCON 算子文档为准）。原地生成（<c>Dispose</c>+<c>Load</c>）。</para>
+	///   可给逐对象不同的区间（具体取值见目标 HALCON 版本的算子文档）。原地生成（<c>Dispose</c>+<c>Load</c>）。</para>
 	///   <para><b>与相邻算子的取舍</b>要一团不规则连通体用 <c>GenRandomRegion</c>（id 589）；
 	///   本算子产出的是几何可辨的圆/矩/椭元组，适合造筛选、排序、计数的测试数据。</para>
 	///   <para><b>坑</b>无种子参数，两次运行数据不同；区域可能相互重叠，测"CountObj 应等于
@@ -4681,7 +4681,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>对区域轮廓做多边形逼近（原生 id 617）：<c>rows</c>/<c>columns</c>
 	///   以 INTEGER 元组装载，给出基点的先行后列坐标；本重载 <c>tolerance</c> 以元组 <c>Store</c>
-	///   固定后 <c>UnpinTuple</c>，可逐对象给不同容差（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   固定后 <c>UnpinTuple</c>，可逐对象给不同容差（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>要逐像素轮廓序列用 <c>GetRegionContour</c>（id 619）、
 	///   要链码用 <c>GetRegionChain</c>（id 621）；本算子给"少而准"的角点，
 	///   容差即"多边形与真实边缘的最大偏离"，调大顶点变少。</para>
@@ -4912,7 +4912,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   不是凸区域本身。</para>
 	///   <para><b>与相邻算子的取舍</b>要能继续做布尔运算的实心凸区域用
 	///   <c>ShapeTrans("convex")</c>（id 498）；只要凸包顶点坐标（多边形拟合、CAD 回转）用本算子。
-	///   两者一次调用都拿全（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   两者一次调用都拿全（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>坑</b>凹口多的轮廓凸包顶点少、噪声轮廓的凸包会被单个噪声点撑大——
 	///   先 <c>RemoveNoiseRegion</c>（id 497）再取凸包；多对象时各凸包的连接方式（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>用法</b></para>
@@ -5019,7 +5019,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>剪掉骨架上长度小于 <c>length</c> 的毛刺分支（原生 id 714，
 	///   <c>StoreI</c> 直写），主干保留。</para>
 	///   <para><b>前提</b>它是对细化结果的后处理：输入应是 <c>Skeleton</c>（id 476）或
-	///   Thinning 族的 1 像素宽产物，直接对实心区域用不是它的职责（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   Thinning 族的 1 像素宽产物，直接对实心区域用不是它的职责（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b><c>RemoveNoiseRegion</c>（id 497）删孤点、<c>RankRegion</c>
 	///   （id 490）按邻域计数，都不认识"分支"这个概念；笔画交叉处生出的短毛刺只有本算子能剪。
 	///   <c>length</c> 越大剪得越狠，超过真实笔画长度的参数会把目标剪没。</para>
@@ -5279,7 +5279,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   （原生 id 720，<c>golayElement</c> 默认 "h"、<c>rotation</c> 默认 0，<c>StoreS</c>+<c>StoreI</c> 直写）。</para>
 	///   <para><b>与相邻算子的取舍</b>与 <c>ThinningSeq</c>（id 719）的分界是并行/顺序：并行版
 	///   每轮对称处理、不偏向先扫到的位置，但一轮只能削一薄层，要"一次削到底"应循环调用
-	///   本算子直到稳定（具体取值以对应 HALCON 算子文档为准）；顺序版单元素连打多次，端点保留性质不同。
+	///   本算子直到稳定（具体取值见目标 HALCON 版本的算子文档）；顺序版单元素连打多次，端点保留性质不同。
 	///   并非所有元素都有全部旋转角，非法组合的行为（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>前提</b>细化保拓扑不保尺寸，结果面积、矩、圆度全部重算；"h" 类元素单次有效，
 	///   反复调用会持续腐蚀成点。</para>
@@ -5534,7 +5534,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <c>rotation</c> 选元素旋转角。</para>
 	///   <para><b>与相邻算子的取舍</b>序列版 <c>HitOrMissSeq</c>（id 725）按序处理、
 	///   本算子无迭代概念；完全自定义两掩膜用 <c>HitOrMiss</c>（id 727，本文件后文）。
-	///   找四种角就选 "b" 系元素配 4 个旋转角跑 4 次（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   找四种角就选 "b" 系元素配 4 个旋转角跑 4 次（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>坑</b>输出是点集区域，坐标语义同参考点位置；非法元素/旋转组合（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5731,7 +5731,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   保持连通性与端点/分叉结构；输入不变，逐区域返回新句柄元组。</para>
 	///   <para><b>与相邻算子的取舍</b><c>Skeleton</c>（id 476）走的是距离变换式骨架、
 	///   <c>MorphSkiz</c>（id 729）是 Golay 顺序细化，三者对毛刺与斜线段的处理各不相同，
-	///   笔画类目标建议都试一遍再定（具体取值以对应 HALCON 算子文档为准）。骨架上再跑 <c>Pruning</c> 去毛刺。</para>
+	///   笔画类目标建议都试一遍再定（具体取值见目标 HALCON 版本的算子文档）。骨架上再跑 <c>Pruning</c> 去毛刺。</para>
 	///   <para><b>参数取向</b>无参数。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5872,7 +5872,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   (<c>row</c>, <c>column</c>)，再做 Minkowski 差；迭代 <c>iterations</c> 次。返回新句柄，
 	///   输入不变。</para>
 	///   <para><b>前提</b>参考点是相对结构元自身坐标的像素索引（row 向下、column 向右）；
-	///   和 <c>Erosion2</c> 的区别在运算定义——这里走 Minkowski 差的平移族语义（具体取值以对应 HALCON 算子文档为准）。</para>
+	///   和 <c>Erosion2</c> 的区别在运算定义——这里走 Minkowski 差的平移族语义（具体取值见目标 HALCON 版本的算子文档）。</para>
 	///   <para><b>与相邻算子的取舍</b>结构元参考点本来就在 (0,0) 时用 <c>MinkowskiSub1</c>（id 735）
 	///   更省事；非对称模板要从"尖端"蚀起时才需要本方法调参考点。</para>
 	///   <para><b>参数取向</b><c>row</c>/<c>column</c>/<c>iterations</c> 全走 <c>StoreI</c> 整数直写。</para>
@@ -6352,7 +6352,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   raw.Dispose();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入不被修改。</para>
-	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 时由原生层处理。开运算后的面积变化取决于输入区域与结构元，不保证固定数值。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 时由目标 HALCON 版本处理。开运算后的面积变化取决于输入区域与结构元，不保证固定数值。</para>
 	/// </remarks>
 	public JlRegion OpeningCircle(JlTuple radius)
 	{
@@ -6589,7 +6589,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   copper.Dispose();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入的 <c>this</c> 不被修改，两者都需自行 Dispose。</para>
-	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组与多输入区域的展开规则由原生层处理。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组与多输入区域的展开规则由目标 HALCON 版本处理。</para>
 	/// </remarks>
 	public JlRegion ErosionCircle(JlTuple radius)
 	{
@@ -6875,7 +6875,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   int nAfter = recount.CountObj();
 	///   </code>
 	///   <para><b>句柄</b>返回新句柄，输入不被修改；链式中间结果需逐个 Dispose。</para>
-	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组的展开规则由原生层处理。</para>
+	///   <para><b>边界条件</b>本层不校验 radius；radius ≤ 0 以及多半径元组的展开规则由目标 HALCON 版本处理。</para>
 	/// </remarks>
 	public JlRegion DilationCircle(JlTuple radius)
 	{
@@ -9830,7 +9830,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>各区域的凸度（<c>double</c> 元组）。</returns>
 	/// <remarks>
 	///   <para><b>它量什么</b>只看外形"缺不缺肉"，与面积、朝向、位置无关：同样大小的齿轮和圆盘能靠它分开。
-	///   确切定义（是否为区域面积与凸包面积之比）本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），但它是归一后的比值量，
+	///   确切定义（是否为区域面积与凸包面积之比）本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），但它是归一后的比值量，
 	///   不随区域整体缩放而变化。</para>
 	///   <para><b>约束或前提</b>它是"区域 vs 自身凸包"的量，因此 <c>FillUp</c> 补掉内孔几乎不动它，
 	///   而一次 <c>ErosionCircle</c> 把边缘啃出缺口就会明显压低——腐蚀后必须重算，
@@ -9871,7 +9871,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <para><b>它量什么</b>沿区域边界逐像素累加得到的长度，量的是"锯齿路径"而非理想几何周长：
 	///   一个边长 100 像素的正方形只落在其理论周长约 400 的量级上（逐像素计法的偏差（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）），斜边还会被 staircase 化拉长，
 	///   因此别拿它当精确几何量用。</para>
-	///   <para><b>约束或前提</b>边界按哪种邻域走（4 邻域步进还是 8 邻域含对角）直接改变数值，本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；
+	///   <para><b>约束或前提</b>边界按哪种邻域走（4 邻域步进还是 8 邻域含对角）直接改变数值，本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；
 	///   内孔的边界是否一并计入同样决定结果（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）——带孔件判前要先确认口径。
 	///   <c>Connection</c> 后逐域给值；单个像素或空洞区域给出什么（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b>要"周长与面积的组合判据"直接用 <c>Compactness</c>（id 1647）或
@@ -9986,7 +9986,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>各区域的矩形度（<c>double</c> 元组）。</returns>
 	/// <remarks>
 	///   <para><b>它量什么</b>只问"像不像矩形"，不问大小也不问摆放角度：一个斜放的长方形与正放的
-	///   长方形给出同量级的值。确切分母（最小外接斜矩形面积或其它归一量）本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   长方形给出同量级的值。确切分母（最小外接斜矩形面积或其它归一量）本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>约束或前提</b>它由外形整体决定，缺一角、边缘呈锯齿都会把值拉低；
 	///   <c>Connection</c> 后逐域对齐，顺序变了值就换主。形态学改变外形后必须重算——
 	///   一次 <c>DilationCircle</c> 能把 L 形的内拐角填成台阶，矩形度反而上升，
@@ -10024,7 +10024,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>它量什么</b>周长与面积的组合归一量，因此对区域整体放大/缩小不敏感：
 	///   大圆和小圆给同一个值，这是它比 <c>Contlength</c> 更好用于跨尺寸比较的原因。
-	///   圆是该量的极值点，形状越碎越偏离；具体公式与"越大越碎还是越小越碎"的方向本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   圆是该量的极值点，形状越碎越偏离；具体公式与"越大越碎还是越小越碎"的方向本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>约束或前提</b>它对边界毛刺极敏感（周长进分子），一个像素宽的毛刺就能显著抬动数值；
 	///   <c>OpeningCircle</c>/<c>ClosingCircle</c> 去掉毛刺后取值会明显变化，
 	///   所以阈值必须在与标定同一预处理阶段上取。逐区域输出，顺序错位即张冠李戴。</para>
@@ -10062,11 +10062,11 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>各区域的圆度（<c>double</c> 元组）。</returns>
 	/// <remarks>
 	///   <para><b>它量什么</b>只回答"像不像一个圆"：与面积、位置无关，因此同一个圆放大后取值不变。
-	///   确切公式（是否由质心到边界距离的极差导出）本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），但可以把"细长"与"破碎"
+	///   确切公式（是否由质心到边界距离的极差导出）本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），但可以把"细长"与"破碎"
 	///   都理解为把它往下拉的两类偏离。</para>
 	///   <para><b>约束或前提</b>逐区域输出，序号错位即误判；形态学改变外形后必须重算，
 	///   尤其 <c>ClosingCircle</c> 会把花瓣状轮廓抹圆、让本量虚高，别拿它前后的数当同一指标用。
-	///   内孔是否参与计算（只看外边界还是内外都看）本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   内孔是否参与计算（只看外边界还是内外都看）本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b>要区分"扁"与"糙"：扁用 <c>Eccentricity</c>（长短轴比），
 	///   糙用 <c>Compactness</c> 或 <c>Roundness</c>（id 1652，走轮廓距离统计）。
 	///   本量对这两类偏离都往下走，单独用它做圆/椭圆二分类会撞车。要真正拟合圆心得半径用
@@ -10215,7 +10215,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <returns>前景游程长度分布（INTEGER 元组）。</returns>
 	/// <remarks>
 	///   <para><b>它量什么</b>把区域按行拆成一条条连续前景段（游程），统计其长度分布。
-	///   元组里"下标即长度、值即出现次数"还是"逐条长度列表"，本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）——
+	///   元组里"下标即长度、值即出现次数"还是"逐条长度列表"，本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）——
 	///   拿去做占空比或条纹判据前先打印一次核对结构。</para>
 	///   <para><b>约束或前提</b>背景分布必须有明确的行范围才谈得上（行的起止、列的边界取自何处（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）），
 	///   因此同一区域在不同画幅下的背景分布不可比；前景分布只由区域自身决定。
@@ -10624,7 +10624,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   列出的灰度量（均值、偏差一类，可用名字清单本层未枚举（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告））。
 	///   所有值都按 DOUBLE 装载，连"像素计数"类特征也是浮点，取整需自己转。</para>
 	///   <para><b>约束或前提</b>返回元组是"区域 × 特征"的展开，主次顺序（先遍历区域还是先遍历特征）
-	///   本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），多特征时务必先用单特征调用核对一次排布，否则按下标取值会静默拿错列。
+	///   本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），多特征时务必先用单特征调用核对一次排布，否则按下标取值会静默拿错列。
 	///   灰度值依赖相机曝光，跨批次比较要先做亮度归一。</para>
 	///   <para><b>与相邻算子的取舍</b>只要"够亮就留下"用 <c>SelectGray</c>（id 1669），它直接回一个新区域句柄；
 	///   只要均值与偏差这两个固定量用 <c>Intensity(JlImage, out JlTuple)</c>，语义更明确。
@@ -10785,7 +10785,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   darkCaps.Dispose();
 	///   </code>
 	///   <para><b>资源与坑</b>返回值与 <c>Connection</c> 的结果都是新句柄，都要释放。坑：<c>min &gt; max</c>
-	///   时的行为（报错还是返回空）本层未注明（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），写反区间容易悄悄筛空。</para>
+	///   时的行为（报错还是返回空）本层未提供该细则（本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），写反区间容易悄悄筛空。</para>
 	/// </remarks>
 	public JlRegion SelectGray(JlImage image, string features, string operation, double min, double max)
 	{
@@ -11412,7 +11412,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	/// <param name="mean">拟合平面常数项=区域内平均灰度。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1680：对区域灰度做最小二乘平面
-	///   g ≈ mean + alpha·(Δrow) + beta·(Δcol) 拟合（具体取值以对应 HALCON 算子文档为准），
+	///   g ≈ mean + alpha·(Δrow) + beta·(Δcol) 拟合（具体取值见目标 HALCON 版本的算子文档），
 	///   并给出两个一阶混合矩。斜率符号与图像 y 轴向下的约定耦合，换算物理倾角前先定号。</para>
 	///   <para><b>约束或前提</b>无返回值，一切结果走 out；每个 <c>LoadD</c> 只读第一值，
 	///   多区域元组请改用元组重载，否则其余区域的平面参数被静默丢弃。</para>
@@ -11874,7 +11874,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///
 	///   JlImage img = new JlImage("byte", 128, 128);
 	///   JlRegion all = img.Threshold(128.0, 255.0).Connection();
-	///   using JlRegion rest = all.RemoveObj(new JlTuple(0, 2));   // 删掉第 0、2 位（具体取值以对应 HALCON 算子文档为准）
+	///   using JlRegion rest = all.RemoveObj(new JlTuple(0, 2));   // 删掉第 0、2 位（具体取值见目标 HALCON 版本的算子文档）
 	///   all.Dispose();
 	///   </code>
 	///   <para><b>资源与坑</b>删完后原元组 <c>all</c> 仍是独立句柄，记得各自 Dispose；

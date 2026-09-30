@@ -6409,7 +6409,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <summary>两元组逐元素相加。</summary>
 	/// <remarks>
 	///   <para>等价于 <c>t1.TupleAdd(t2)</c>，按"对等元组逐元素加、单元素广播到全元组"的规则做算术加。</para>
-	///   <para><b>资源与坑</b>：两元组长度不等时的对齐行为由底层原生算子决定（内部 <c>ResultSize.EQUAL</c>），
+	///   <para><b>资源与坑</b>：两元组长度不等时的对齐行为由底层目标 HALCON 算子定义（内部 <c>ResultSize.EQUAL</c>），
 	///   若对等逐元语义，请先确保两元组等长或一方为单元素广播。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
@@ -7883,7 +7883,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>逐元素相加得到的新元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：等价于 <c>this + s2</c>，按"对等下标逐元素加、单元素广播到全元组"的规则做算术加；内部优先走 <c>ProcessNative2To1</c>（<c>ResultSize.EQUAL</c>），不可用时回退到 <c>TupleAddOp</c>。</para>
-	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层原生算子决定，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
+	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层目标 HALCON 算子定义，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   JlTuple a = new JlTuple(1, 2);
@@ -7906,7 +7906,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>逐元素相减得到的新元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：等价于 <c>this - d2</c>，按"对等下标逐元素减、单元素广播到全元组"的规则做算术减；内部优先走 <c>ProcessNative2To1</c>（<c>ResultSize.EQUAL</c>），不可用时回退到 <c>TupleSubOp</c>。</para>
-	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层原生算子决定，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
+	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层目标 HALCON 算子定义，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   JlTuple a = new JlTuple(5, 9);
@@ -7929,7 +7929,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>逐元素相乘得到的新元组。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：等价于 <c>this * p2</c>，按"对等下标逐元素乘、单元素广播到全元组"的规则做算术乘；内部优先走 <c>ProcessNative2To1</c>（<c>ResultSize.EQUAL</c>），不可用时回退到 <c>TupleMultOp</c>。</para>
-	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层原生算子决定，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
+	///   <para><b>资源与坑</b>：返回新建的独立元组，不改动当前元组；两元组长度不等时的对齐行为由底层目标 HALCON 算子定义，若需对等逐元语义请先保证等长或一方为单元素广播。</para>
 	///   <para><b>调用示例</b></para>
 	///   <code>
 	///   JlTuple a = new JlTuple(2, 3);

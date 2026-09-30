@@ -929,7 +929,7 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	/// <returns>通过条件筛选的元素组成的新容器。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 1597，与标量重载同一算子；本方法把 <c>features</c>/<c>min</c>/<c>max</c> 三个元组 <c>Store</c> 钉固、调用后逐个 <c>UnpinTuple</c>，换来多特征一次做完的能力。</para>
-	///   <para><b>约束或前提</b>三个元组的长度要按特征数对齐（<c>min</c>/<c>max</c> 与 <c>features</c> 逐位配对）；混合数值与 'min'/'max' 字符串的"锯齿元组"是否被原生接受 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；特征名对本容器元素的有效性由原生判定，托管侧不校验。</para>
+	///   <para><b>约束或前提</b>三个元组的长度要按特征数对齐（<c>min</c>/<c>max</c> 与 <c>features</c> 逐位配对）；混合数值与 'min'/'max' 字符串的"锯齿元组"是否被原生接受 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；特征名对本容器元素的有效性由目标 HALCON 运行时判定，托管侧不校验。</para>
 	///   <para><b>与相邻算子的取舍</b>单特征单区间用 <see cref="SelectShapeXld(string,string,double,double)"/> 省三次钉固；'min'/'max' 这种"只设一边"的写法只有本重载能表达（标量版 <c>double</c> 装不下字符串）；几何之外的灰度判断走 <c>ModParallelsXld</c>。</para>
 	///   <para><b>参数取向</b>返回新句柄需 <c>Dispose()</c>；三个入参元组在方法返回前不得释放。</para>
 	///   <para><b>用法</b></para>

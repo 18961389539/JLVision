@@ -10,7 +10,7 @@ namespace JLVisionLib;
 public class JlObject : JlObjectBase, ISerializable, ICloneable
 {
 	/// <summary>按 HALCON 序号取出对象元组中的一个（或多个）元素，等价于 <see cref="SelectObj(JlTuple)"/>。</summary>
-	/// <param name="index">要取出的对象序号，1-based（1 指向元组首个对象）。可传入 int、int[] 或 JlTuple（int 经隐式转换得到单元素元组）。越界序号由原生层报错。</param>
+	/// <param name="index">要取出的对象序号，1-based（1 指向元组首个对象）。可传入 int、int[] 或 JlTuple（int 经隐式转换得到单元素元组）。越界序号由 PostCall 按 HALCON 错误码报告。</param>
 	/// <returns>由被选中对象组成的新 JlObject 句柄，与原对象独立，需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 select_obj（id 572）。把元组里位于 <paramref name="index"/> 处的对象抽出来，返回一个新的对象句柄。</para>
@@ -324,7 +324,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>INTEGER 类型的 JlTuple 新元组（每个元素是一个句柄的整型编码），需自行 <see cref="JlTuple.Dispose()"/>；本对象句柄不受影响。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 obj_to_integer（id 567）。本对象存入原生参数 1，index/number 分别以 <c>StoreI</c> 直写参数 0/1；输出经 <c>JlTuple.LoadNew</c> 按 INTEGER 类型装载——即替身是整数而非指针，后续再交给 <see cref="IntegerToObj(JlTuple)"/> 或 <see cref="IntegerToObj(IntPtr)"/> 还原。</para>
-	///   <para><b>约束或前提</b>本对象必须已初始化；index 越界或为 0 由原生层报错。返回的整数只是句柄的编码快照，不增加引用计数——原对象被释放后替身即失效。</para>
+	///   <para><b>约束或前提</b>本对象必须已初始化；index 越界或为 0 由 PostCall 按 HALCON 错误码报告。返回的整数只是句柄的编码快照，不增加引用计数——原对象被释放后替身即失效。</para>
 	///   <para><b>与相邻算子的取舍</b>想把对象存进只接受整数的接口（回调、外部库参数）用本方法；要把对象写文件用 <see cref="WriteObject(string)"/>，要在内存传引用直接传 JlObject 即可。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -359,7 +359,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>复制得到的新 JlObject 句柄（底层数据共享、引用计数独立），需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 copy_obj（id 568）。本对象存入原生参数 1，index/numObj 以 <c>StoreI</c> 直写参数 0/1；输出经 InitOCT + <c>LoadNew</c> 装载为新句柄——属"返回新句柄"，原元组不被修改。</para>
-	///   <para><b>约束或前提</b>这是引用计数式复制：副本与原件共享底层对象，不是像素级深拷贝。index 越界或为 0 由原生层报错；本对象未初始化时报错。</para>
+	///   <para><b>约束或前提</b>这是引用计数式复制：副本与原件共享底层对象，不是像素级深拷贝。index 越界或为 0 由 PostCall 按 HALCON 错误码报告；本对象未初始化时报错。</para>
 	///   <para><b>与相邻算子的取舍</b>要真正独立的副本用 <see cref="Clone"/>（序列化往返）；只按序号挑选子集用 <see cref="SelectObj(int)"/>（选出的元素同样是共享引用）；整体浅拷贝一份再改写才显式 CopyObj。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -393,7 +393,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>拼接后的新 JlObject 句柄（新元组），需自行 <see cref="JlObjectBase.Dispose()"/>；两路输入本身不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 concat_obj（id 569）。本对象存入原生参数 1、第二路存入参数 2；输出经 InitOCT + <c>LoadNew</c> 装载为新句柄。结果长度 = 两路 <see cref="CountObj()"/> 之和。</para>
-	///   <para><b>约束或前提</b>两路都必须已初始化且同族（图像/区域/XLD 混拼由原生层报错）。拼接只建立引用，元素对象本身与输入共享引用计数。</para>
+	///   <para><b>约束或前提</b>两路都必须已初始化且同族（图像/区域/XLD 混拼由 PostCall 按 HALCON 错误码报告）。拼接只建立引用，元素对象本身与输入共享引用计数。</para>
 	///   <para><b>与相邻算子的取舍</b>往元组中部插元素用 <see cref="InsertObj"/>（保持编号段语义）；合并后想去掉重复元素用 <see cref="ObjDiff"/>；只需追加到尾部时 ConcatObj 最直观、单次原生往返。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -426,7 +426,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>选中对象组成的新 JlObject 句柄（元素与原件共享引用计数），需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 select_obj（id 572），与索引器 <c>this[JlTuple]</c> 同一入口。索引以固定元组 <c>Store</c> 进原生参数 0，调用后 <c>UnpinTuple</c> 解除固定；本对象存入参数 1；输出 InitOCT + <c>LoadNew</c> 装载新句柄。索引按 1-based 解释；重复索引会在结果中重复对应对象，输出顺序与 index 元素顺序一致。</para>
-	///   <para><b>约束或前提</b>序号必须落在 1..<see cref="CountObj()"/>，0 或越界由原生层报错。选的是"元组内位置"，与内容无关：上游 <c>Connection()</c> 等输出的顺序不稳定时按位置取会静默错取。</para>
+	///   <para><b>约束或前提</b>序号必须落在 1..<see cref="CountObj()"/>，0 或越界由 PostCall 按 HALCON 错误码报告。选的是"元组内位置"，与内容无关：上游 <c>Connection()</c> 等输出的顺序不稳定时按位置取会静默错取。</para>
 	///   <para><b>与相邻算子的取舍</b>只取一个位置用 <see cref="SelectObj(int)"/>（StoreI 直写，无钉固定元组开销）；索引来自上游算子输出（如排序序号）时用本重载，一次调用取回全部。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -464,7 +464,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>被选中对象组成的新 JlObject 句柄（元素与原件共享引用计数），需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 select_obj（id 572），与 <see cref="SelectObj(JlTuple)"/> 和索引器同一入口。本标量重载用 <c>StoreI</c> 把 int 直写原生参数 0，不钉固定元组、无 <c>UnpinTuple</c> 开销；本对象存入参数 1，输出 <c>LoadNew</c> 装载新句柄。</para>
-	///   <para><b>约束或前提</b>index 必须落在 1..<see cref="CountObj()"/>；0 或越界由原生层报错。传字面量时本重载优先于 JlTuple 重载（隐式转换是候选劣后），语义上等价于 <c>this[index]</c>。</para>
+	///   <para><b>约束或前提</b>index 必须落在 1..<see cref="CountObj()"/>；0 或越界由 PostCall 按 HALCON 错误码报告。传字面量时本重载优先于 JlTuple 重载（隐式转换是候选劣后），语义上等价于 <c>this[index]</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>一次取多个下标用 <see cref="SelectObj(JlTuple)"/>（索引可来自上游排序输出）；要拿到能独立改写的副本用 <see cref="CopyObj"/>；本重载适合"取第 k 个连通域"这类单点访问。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -498,7 +498,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>1 = 全部一致，0 = 存在不一致（经 <c>LoadI</c> 按 INTEGER 装载的单个整数，不是元组）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 compare_obj（id 573），与 <see cref="CompareObj(JlObject,double)"/> 同一个 id；差异仅在 epsilon 的写入方式：本重载钉固定元组（适合容差本身是算子输出），标量重载 StoreD 直写。</para>
-	///   <para><b>约束或前提</b>两路元组按位置逐对比较；比较基于几何/灰度数据的近似相等，与句柄身份无关（内容相同但独立生成的两个对象判为相等，区别于 <see cref="ObjDiff"/> 的身份语义）。未初始化句柄由原生层报错。</para>
+	///   <para><b>约束或前提</b>两路元组按位置逐对比较；比较基于几何/灰度数据的近似相等，与句柄身份无关（内容相同但独立生成的两个对象判为相等，区别于 <see cref="ObjDiff"/> 的身份语义）。未初始化句柄由 PostCall 按 HALCON 错误码报告。</para>
 	///   <para><b>与相邻算子的取舍</b>严格判等（同一对象）用 <see cref="TestEqualObj"/>；需要数值容差（浮点坐标、灰度噪声）用本方法；单个容差值写起来更顺手的场合用 <see cref="CompareObj(JlObject,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -598,7 +598,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>元组内对象个数（<c>LoadI</c> 按 INTEGER 装载的 int 标量）；空元组返回 0。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 count_obj（id 577）。只读操作：本对象存入原生参数 1，输出单个整数，不产生新句柄、不改变本对象。</para>
-	///   <para><b>约束或前提</b>本库所有"元组"语义（<see cref="ConcatObj"/>、<see cref="InsertObj"/>、<see cref="SelectObj(int)"/> 等）都以 1-based 序号定位，序号合法上限就是本方法的返回值；句柄为 UNDEF 未初始化时调用由原生层报错。</para>
+	///   <para><b>约束或前提</b>本库所有"元组"语义（<see cref="ConcatObj"/>、<see cref="InsertObj"/>、<see cref="SelectObj(int)"/> 等）都以 1-based 序号定位，序号合法上限就是本方法的返回值；句柄为 UNDEF 未初始化时调用由 PostCall 按 HALCON 错误码报告。</para>
 	///   <para><b>与相邻算子的取舍</b>想按内容判"是否同一个对象"用 <see cref="TestEqualObj"/>；想枚举每个对象逐个处理时，配合 <see cref="SelectObj(int)"/> 循环 1..CountObj() 即可，无需其它算子。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -630,7 +630,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>所请求信息的 JlTuple 新元组（多通道时逐通道各占一值），需自行 <see cref="JlTuple.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 get_channel_info（id 578），与 <see cref="GetChannelInfo(string,int)"/> 同 id。request 用 <c>StoreS</c> 写入参数 0，channel 写入参数 1；输出经 <c>JlTuple.LoadNew</c> 装载，保留原生返回的全部值。</para>
-	///   <para><b>约束或前提</b>本对象必须已初始化；对区域/XLD 传非 0 的 channel 由原生层报错（它们没有多通道）。request 使用 HALCON 支持的信息项名称；常用值为 "creator"。区域和 XLD 只有单通道，channel 必须为 0。</para>
+	///   <para><b>约束或前提</b>本对象必须已初始化；对区域/XLD 传非 0 的 channel 由 PostCall 按 HALCON 错误码报告（它们没有多通道）。request 使用 HALCON 支持的信息项名称；常用值为 "creator"。区域和 XLD 只有单通道，channel 必须为 0。</para>
 	///   <para><b>与相邻算子的取舍</b>只要一个分量的单个字符串时用 <see cref="GetChannelInfo(string,int)"/>（StoreI + LoadS，直读标量）；需要一次拿全多通道信息（如拼接图各通道的创建者）用本重载，标量重载的 <c>LoadS</c> 只读第一个值、多余结果会被静默丢弃。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -692,7 +692,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>含类名的 JlTuple 字符串元组（<c>JlTuple.LoadNew</c> 装载），需自行 <see cref="JlTuple.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 get_obj_class（id 579）。只读：本对象存入原生参数 1，输出按字符串元组装载；返回的是原生层的对象类名，不是 C# 运行时类型。</para>
-	///   <para><b>约束或前提</b>本对象必须已初始化，UNDEF 句柄由原生层报错。经 <see cref="Deserialize(Stream)"/> 还原的对象其 C# 静态类型恒为 JlObject，判真实类别要靠本方法的类名而非 <c>is/as</c>。</para>
+	///   <para><b>约束或前提</b>本对象必须已初始化，UNDEF 句柄由 PostCall 按 HALCON 错误码报告。经 <see cref="Deserialize(Stream)"/> 还原的对象其 C# 静态类型恒为 JlObject，判真实类别要靠本方法的类名而非 <c>is/as</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>查通道级信息用 <see cref="GetChannelInfo(string,int)"/>；本方法只回答"这是什么类的对象"，用于分支派发或反序列化后的类型确认。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -748,7 +748,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <param name="fileName">对象文件路径（<see cref="WriteObject(string)"/> 写出的同族格式）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 read_obj（id 1566）。文件名经 <c>StoreS</c> 写入原生参数 0；方法体先 <see cref="JlObjectBase.Dispose()"/> 再 <c>Load</c> 进 this（输出参数 1）——是"原地改写"而非返回新句柄，读到的可以是多对象元组。</para>
-	///   <para><b>约束或前提</b>这是一次替换：调用前 this 持有的对象被无条件丢弃，别把结果装进还想保留内容的实例。文件不存在或格式不符由原生层报错；一个文件含多个对象时整个元组进入 this，用 <see cref="CountObj()"/> 判断数量。</para>
+	///   <para><b>约束或前提</b>这是一次替换：调用前 this 持有的对象被无条件丢弃，别把结果装进还想保留内容的实例。文件不存在或格式不符由 PostCall 按 HALCON 错误码报告；一个文件含多个对象时整个元组进入 this，用 <see cref="CountObj()"/> 判断数量。</para>
 	///   <para><b>与相邻算子的取舍</b>想直接拿到新句柄（不动已有实例）就先 <c>new JlObject()</c> 再 ReadObject，或用 <see cref="Deserialize(Stream)"/>（流→新对象）；写回文件用 <see cref="WriteObject(string)"/>；内存字节还原用 <see cref="DeserializeObject(byte[])"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -775,7 +775,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <param name="fileName">目标文件路径；元组有 N 个对象时全部进入同一文件，读回（<see cref="ReadObject(string)"/>）后元组长度不变。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 write_obj（id 1567）。本对象存入原生参数 1，文件名 <c>StoreS</c> 写入参数 0；无输出参数——纯只读落盘，调用后对象照常可用。</para>
-	///   <para><b>约束或前提</b>本对象必须已初始化；目标目录需存在且可写，路径非法由原生层报错。文件为库专有格式（非 BMP/PNG 图像文件），跨格式保存图像不走本方法。</para>
+	///   <para><b>约束或前提</b>本对象必须已初始化；目标目录需存在且可写，路径非法由 PostCall 按 HALCON 错误码报告。文件为库专有格式（非 BMP/PNG 图像文件），跨格式保存图像不走本方法。</para>
 	///   <para><b>与相邻算子的取舍</b>要写进任意 <see cref="Stream"/>（内存、网络、自定义容器）用 <see cref="Serialize(Stream)"/>；只要裸字节用 <see cref="SerializeObject"/>；本方法适合"对象快照存盘、之后按同名文件读回"的工作流。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -803,7 +803,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <param name="serializedItemHandle">序列化字节块，必须来自同族 <see cref="SerializeObject"/>/<see cref="Serialize(Stream)"/> 输出，格式与版本需匹配。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 deserialize_obj（id 1568）。字节块先包成 <c>JlSerializationBuffer</c> 存入原生参数 0；方法体先 <see cref="JlObjectBase.Dispose()"/> 再 <c>Load</c> 进 this（输出参数 1）——原地改写，不返回新句柄。</para>
-	///   <para><b>约束或前提</b>这是一次替换：调用前 this 的内容被丢弃；序列块若含多对象元组，还原后整体进入 this。<paramref name="serializedItemHandle"/> 为 null 或格式损坏由原生层报错，此时旧句柄已释放。</para>
+	///   <para><b>约束或前提</b>这是一次替换：调用前 this 的内容被丢弃；序列块若含多对象元组，还原后整体进入 this。<paramref name="serializedItemHandle"/> 为 null 或格式损坏由 PostCall 按 HALCON 错误码报告，此时旧句柄已释放。</para>
 	///   <para><b>与相邻算子的取舍</b>不想动已有实例、要新句柄时用 <see cref="Deserialize(Stream)"/>（返回 JlObject）或 <see cref="Clone"/>；从文件还原用 <see cref="ReadObject(string)"/>（同样原地改写）；本方法专用于"裸字节数组→指定实例"。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -834,7 +834,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>序列化后的字节数组（纯托管数据，不涉及句柄释放）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 serialize_obj（id 1569）。本对象存入原生参数 1，输出按字节缓冲装载（<c>JlSerializationBuffer.LoadBytes</c>）。这是一次只读操作：不消费、不改变本对象句柄，调用后对象照常可用。</para>
-	///   <para><b>约束或前提</b>对象必须已初始化（UNDEF 句柄调用由原生层报错）；空对象元组可以序列化，读回后仍为空元组。多对象元组会被完整序列化，还原后元组长度不变。</para>
+	///   <para><b>约束或前提</b>对象必须已初始化（UNDEF 句柄调用由 PostCall 按 HALCON 错误码报告）；空对象元组可以序列化，读回后仍为空元组。多对象元组会被完整序列化，还原后元组长度不变。</para>
 	///   <para><b>与相邻算子的取舍</b>要落到任意 <see cref="Stream"/>（网络、自定义容器）用 <see cref="Serialize(Stream)"/>（内部就是本方法加一次写流）；落盘成独立文件用 <see cref="WriteObject(string)"/>；<see cref="Clone"/> 则是序列化+反序列化的深拷贝组合。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -865,7 +865,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>插入后的新对象元组（新句柄），需自行 <see cref="JlObjectBase.Dispose()"/>；原元组不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 insert_obj（id 2003）。原生参数序：索引在 0、输入元组在 1、插入元组在 2；索引经 <c>StoreI</c> 直写。输出 InitOCT 装载新句柄。</para>
-	///   <para><b>约束或前提</b>索引 0 或大于 N+1 由原生层报错。对本元组为空元组（<see cref="CountObj()"/> 为 0）的情形，只能插到位置 1。</para>
+	///   <para><b>约束或前提</b>索引 0 或大于 N+1 由 PostCall 按 HALCON 错误码报告。对本元组为空元组（<see cref="CountObj()"/> 为 0）的情形，只能插到位置 1。</para>
 	///   <para><b>与相邻算子的取舍</b>只在尾部追加用 <see cref="ConcatObj"/> 更直观；要覆盖已有位置用 <see cref="ReplaceObj(JlObject,int)"/>；本算子的价值是把新对象插进元组中部、维持既有序列语义（比如把补测结果插回原编号段）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -940,7 +940,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>剩余对象组成的新元组（新句柄），保持原有相对顺序；需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 remove_obj（id 2005）。本对象存入原生参数 1，索引经 <c>StoreI</c> 写入参数 0，输出用 InitOCT 装载为新句柄——原元组不被修改。</para>
-	///   <para><b>约束或前提</b>索引 0 或超过 <see cref="CountObj()"/> 属非法请求，由原生层报错。删除后其余元素位置整体前移：连续删多个位置时用 <see cref="RemoveObj(JlTuple)"/> 一次完成，避免按"原始序号"逐个删时因元组缩短而错位。</para>
+	///   <para><b>约束或前提</b>索引 0 或超过 <see cref="CountObj()"/> 属非法请求，由 PostCall 按 HALCON 错误码报告。删除后其余元素位置整体前移：连续删多个位置时用 <see cref="RemoveObj(JlTuple)"/> 一次完成，避免按"原始序号"逐个删时因元组缩短而错位。</para>
 	///   <para><b>与相邻算子的取舍</b>只删一个位置用本重载（无钉固定元组开销）；删多个位置或位置来自上游算子输出时用 JlTuple 重载；按内容剔除用 <see cref="ObjDiff"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -974,7 +974,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>替换后的新对象元组（新句柄），需自行 <see cref="JlObjectBase.Dispose()"/>；原元组不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 replace_obj（id 2006）。原生参数序：索引在 0、输入元组在 1、替换元组在 2（与 C# 形参序相反）。索引以固定元组方式 <c>Store</c>，调用完成后 <c>UnpinTuple</c> 解除固定。</para>
-	///   <para><b>约束或前提</b>所有索引位置必须存在于原元组内（1-based，0 或越界由原生层报错）。多位置替换时 <paramref name="index"/> 的元素数应与 <paramref name="objectsReplace"/> 的对象数一致；替换元组只有 1 个对象时会广播到所有 index；多个对象时应与 index 等长，且索引从 1 开始。</para>
+	///   <para><b>约束或前提</b>所有索引位置必须存在于原元组内（1-based，0 或越界由 PostCall 按 HALCON 错误码报告）。多位置替换时 <paramref name="index"/> 的元素数应与 <paramref name="objectsReplace"/> 的对象数一致；替换元组只有 1 个对象时会广播到所有 index；多个对象时应与 index 等长，且索引从 1 开始。</para>
 	///   <para><b>与相邻算子的取舍</b>只替换固定一个位置时用 <see cref="ReplaceObj(JlObject,int)"/>（StoreI 直写、无钉元组开销）；常见用法是 <c>Connection</c> 之后按上游序号替换掉误检的那一块——注意按位置替换依赖上游输出顺序稳定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1013,7 +1013,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>替换后的新对象元组（新句柄）；原元组本身不变，结果需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 replace_obj（id 2006）。本对象存入原生参数 1，<paramref name="objectsReplace"/> 存入参数 2，索引写入参数 0；输出经 InitOCT 装载为新句柄，属"返回新句柄"而非原地改写。</para>
-	///   <para><b>约束或前提</b>从 index 开始的连续替换范围必须完全落在原元组长度内，越界由原生层报错；两方都必须已初始化。本标量重载用 <c>StoreI</c> 直写 int，无钉固定元组的开销。</para>
+	///   <para><b>约束或前提</b>从 index 开始的连续替换范围必须完全落在原元组长度内，越界由 PostCall 按 HALCON 错误码报告；两方都必须已初始化。本标量重载用 <c>StoreI</c> 直写 int，无钉固定元组的开销。</para>
 	///   <para><b>与相邻算子的取舍</b>要在多个离散位置各放一个对象时用 <see cref="ReplaceObj(JlObject,JlTuple)"/>（元组索引走 Store + 调用后 UnpinTuple）；只做插入不做覆盖用 <see cref="InsertObj"/>；只删不换用 <see cref="RemoveObj(int)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

@@ -63,7 +63,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>拷贝语义落在基类 <c>JlObjectBase(IntPtr, bool)</c>：仅当 copy=true 且 key 不是 UNDEF、不是 UNDEF2（IntPtr(1)，会被规整为 UNDEF）时才执行 <c>JlNativeApi.CopyObject(key)</c>，即新对象与传入句柄共享底层轮廓数据、各持一份引用计数。构造后 <c>AssertObjectClass()</c> 发原生 get_obj_class（id 579）查询类别，类名既不以 "xld_cont" 开头又不是 "any" 时抛 <c>JlException</c>；key 为 UNDEF 时整条断言短路，不产生任何原生调用。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>带 <c>[EditorBrowsable(EditorBrowsableState.Never)]</c> 的内部/互操作入口，供句柄跨边界传递使用；日常建模改用 <see cref="JlXLDCont(JlTuple, JlTuple)"/> 或各 <c>Gen*ContourXld</c> 族。传入已释放或无效指针时行为由原生层决定 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>带 <c>[EditorBrowsable(EditorBrowsableState.Never)]</c> 的内部/互操作入口，供句柄跨边界传递使用；日常建模改用 <see cref="JlXLDCont(JlTuple, JlTuple)"/> 或各 <c>Gen*ContourXld</c> 族。传入已释放或无效指针时行为由目标 HALCON 版本定义 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻构造器的取舍</b></para>
 	///   <para>引用计数拷贝不是深拷贝：任何一侧被原地生成族改写，另一侧可见；要彻底解耦用 <see cref="Clone()"/>，从 C# 对象拷贝用 <see cref="JlXLDCont(JlObject)"/>，接管裸句柄（不增引用）用 <c>JlXLDCont(IntPtr, bool)</c> 传 copy=false。</para>
 	///   <para><b>用法</b></para>
@@ -177,7 +177,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>原生 id 70：<c>Store(regions)</c> + <c>StoreS(mode)</c> + <c>InitOCT(1)</c> + <c>Load</c>，结果装进正在构造的本实例；区域对象不被改动。一个区域若含多个连通域则输出多条轮廓。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>边界轮廓走的是边界像素的<b>中心</b>，不是像素几何外沿，所以由它再 <c>GenRegionContourXld("filled")</c> 填回来的区域与原区域在半像素意义下不完全重合；用 <c>AreaCenter</c> 比对面积时会看到系统性偏差。mode 字符串不在托管侧校验，非法规格由原生层报错 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>边界轮廓走的是边界像素的<b>中心</b>，不是像素几何外沿，所以由它再 <c>GenRegionContourXld("filled")</c> 填回来的区域与原区域在半像素意义下不完全重合；用 <c>AreaCenter</c> 比对面积时会看到系统性偏差。mode 字符串不在托管侧校验，非法规格由 PostCall 按 HALCON 错误码报告 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>想要"点数固定、角点精确"的几何轮廓，用 <c>GenRectangle2ContourXld</c>/<c>GenCircleContourXld</c> 直接按参数生成；想从灰度图拿亚像素边，用 <c>JlImage.EdgesSubPix</c>。本构造器只适合"已经把区域当作对象"的流程。</para>
 	///   <para><b>用例</b></para>
@@ -559,7 +559,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   int n = u.CountObj();
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>返回轮廓需 <c>Dispose()</c>；结果轮廓的起点与绕行方向由原生层决定，与两个输入的下标顺序都不对应，因此不能按下标追溯"这条边来自哪个输入" （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para>返回轮廓需 <c>Dispose()</c>；结果轮廓的起点与绕行方向由目标 HALCON 版本定义，与两个输入的下标顺序都不对应，因此不能按下标追溯"这条边来自哪个输入" （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	/// </remarks>
 	public JlXLDCont Union2ClosedContoursXld(JlXLDCont contours2)
 	{
@@ -1482,7 +1482,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b>（本重载为主，<c>string/double</c> 标量版本见其后）</para>
 	///   <para>原生 id 27：本实例 <c>Store(proc,1)</c> 只读；<c>attribute</c>/<c>min</c>/<c>max</c> 走 <c>Store</c>+调用后 <c>UnpinTuple</c>（允许多值），<c>operation</c> 走 <c>StoreS</c>；结果 <c>LoadNew</c> 返回新句柄，条数与输入无对应关系。它是<b>点级</b>操作：读取每条轮廓上已存的局部属性序列，把属性值落在 [min,max] 内的连续点段切出来成为新轮廓。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>属性必须先由计算算子写到轮廓上（如 <c>DistanceContoursXld(contour2, mode)</c> 写出 "distance"）；没写过该属性的轮廓在此无值可筛；本层不检查属性是否存在，结果由原生层处理。默认 "distance" 配 150.0~99999.0 的示例区间只在大图上成立，实际须按自己设的参考轮廓换算。</para>
+	///   <para>属性必须先由计算算子写到轮廓上（如 <c>DistanceContoursXld(contour2, mode)</c> 写出 "distance"）；没写过该属性的轮廓在此无值可筛；本层不检查属性是否存在，结果由目标 HALCON 版本处理。默认 "distance" 配 150.0~99999.0 的示例区间只在大图上成立，实际须按自己设的参考轮廓换算。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>与 <c>SelectContoursXld</c> 的本质区别：后者按<b>整条轮廓</b>的统计特征取舍、不改变轮廓本身；本算子会把一条轮廓<b>切碎</b>，只留下合格片段（切完点数、条数全变）。要"整条留下/整条扔掉"用 Select，要"只要高差超标的局部段"才用本算子。</para>
 	///   <para><b>用法</b></para>

@@ -3419,7 +3419,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>触发时机</b>读取 SVM 分类器文件时，文件记录的分类器数据版本与当前原生核支持的版本不符。与 3384 的分界：3384 是结构根本读不出（格式不合法），本码是结构可识别但版本被拒。</para>
 	///   <para><b>关联码</b>同族分工为 3384 分类器格式、3381 样本文件格式、3382(<c>Jl_ERR_SVM_WRTRAINVERS</c>) 样本文件版本——样本与分类器两类载体各有一对"格式/版本"码；MLP 侧的对应码是 3358(<c>Jl_ERR_MLP_WRCLASSVERS</c>)。</para>
-	///   <para><b>托管层现状</b>本库无 SVM 分类器算子包装与分类器类型，训练端与部署端须用同版本运行时；版本兼容矩阵由原生核决定，具体从哪个版本起不再可读 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>托管层现状</b>本库无 SVM 分类器算子包装与分类器类型，训练端与部署端须用同版本运行时；版本兼容矩阵由 HALCON 运行时决定，具体从哪个版本起不再可读 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>处理建议</b>让读写两端用同一版本的本库；旧分类器在新版本下只能重新训练导出，不要指望就地转换。≥1000 属真错误，统一检查会抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SVM_WRCLASSVERS = 3385;
@@ -4888,7 +4888,7 @@ public class JlErrorDef
 	/// <summary>给进来的是对象元组，而该入口只接受单个对象。</summary>
 	/// <remarks>
 	///   <para><b>触发场景</b>上游 <c>Connection()</c>、<c>Threshold()</c> + 轮廓生成一类算子回了多元素元组，直接当单输入传下去；或写了只处理"一个对象"的循环外调用。C# 侧形参类型同为 <c>JlObject</c> 系，编译期无提示。</para>
-	///   <para><b>语义要点</b>这是"类别错"（多对一），不是"ID 无效"。反向错是 <c>Jl_ERR_DBTIO</c>(4055)：元组位上给了单个对象。两个码都发生在托管层无法静态区分、由原生按对象库里的实际条目类型判定的场合。</para>
+	///   <para><b>语义要点</b>这是"类别错"（多对一），不是"ID 无效"。反向错是 <c>Jl_ERR_DBTIO</c>(4055)：元组位上给了单个对象。两个码都发生在本层未提供静态区分、由原生按对象库里的实际条目类型判定的场合。</para>
 	///   <para><b>处置</b>明确二选一：要逐个处理就 <c>CountObj()</c> 拿数量后按 1 基索引 <c>SelectObj(int)</c> 取单个（注意上游顺序不稳定时会静默错取）；要整体处理就换接受元组的算子重载（<c>JlTuple</c>/多对象版本）。</para>
 	///   <para><b>同族对照</b>4050~4064 属对象数据库段：元组本身的失效见 4053/4054，索引问题见 4063/4064。</para>
 	/// </remarks>
@@ -5052,7 +5052,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>触发场景</b>OpenCL 路径下申请设备内存失败：输入图像过大、一次性送入的元组/区域数量过多、或多算子并发把显存占满时，分配调用返回本码。</para>
 	///   <para><b>语义要点</b>指设备侧显存耗尽，不是主机内存不足；重试同一作业不会好转，需缩小输入、降低并发或释放上一批未在用的设备对象。与 Jl_ERR_INVALID_SHAPE(4105) 区别：本码是容量问题，后者是参数形状非法。</para>
-	///   <para><b>同族对照</b>同属 4100~4105 OpenCL 段；无可用设备见 Jl_ERR_NO_COMPUTE_DEVICES(4102)，参数无设备实现见 Jl_ERR_NO_DEVICE_IMPL(4103)，通用 OpenCL 错误见 Jl_ERR_OPENCL_ERROR(4101)。（具体语义以 HALCON 错误码说明和算子文档为准） 本库未在托管层显式回收设备缓冲，触发点由原生算子决定。</para>
+	///   <para><b>同族对照</b>同属 4100~4105 OpenCL 段；无可用设备见 Jl_ERR_NO_COMPUTE_DEVICES(4102)，参数无设备实现见 Jl_ERR_NO_DEVICE_IMPL(4103)，通用 OpenCL 错误见 Jl_ERR_OPENCL_ERROR(4101)。（具体语义以 HALCON 错误码说明和算子文档为准） 本库未在托管层显式回收设备缓冲，触发点由目标 HALCON 算子定义。</para>
 	/// </remarks>
 	public const int Jl_ERR_OUT_OF_DEVICE_MEM = 4104;
 
@@ -11520,7 +11520,7 @@ public class JlErrorDef
 
 	/// <summary>有效测量点太少，无法拟合该 metrology 几何对象。</summary>
 	/// <remarks>
-	///   <para><b>含义</b>错误码 8573。ApplyMetrologyModel 拟合阶段，某对象的卡尺提取到的边缘点数量或分布不足以解出几何参数（直线、圆、椭圆、矩形各有最低点数要求，由原生侧掌握 （具体语义以 HALCON 错误码说明和算子文档为准））；点数够但全部挤在一小段弧/短边上同样会退化失败。</para>
+	///   <para><b>含义</b>错误码 8573。ApplyMetrologyModel 拟合阶段，某对象的卡尺提取到的边缘点数量或分布不足以解出几何参数（直线、圆、椭圆、矩形各有最低点数要求，由目标 HALCON 版本定义 （具体语义以 HALCON 错误码说明和算子文档为准））；点数够但全部挤在一小段弧/短边上同样会退化失败。</para>
 	///   <para><b>常见诱因与处理</b>measureThreshold 设得过高、卡尺没跨过真实边缘、图像对比度不足或工件缺失；先降阈值、加密/加长卡尺，再用 GetMetrologyObjectMeasures 检查实际提取到的轮廓点分布。</para>
 	/// </remarks>
 	public const int Jl_ERR_METROLOGY_FIT_NOT_ENOUGH_MEASURES = 8573;
@@ -11876,7 +11876,7 @@ public class JlErrorDef
 
 	/// <summary>超分辨率放大解码过程被中止。</summary>
 	/// <remarks>
-	///   <para><b>含义</b>错误码 8730。对过小/过糊的码做 zoomed（超分辨率）解码时算法中途放弃——迭代或时限等内部约束未满足即止，不产出放大结果。中止判据由原生侧掌握 （具体语义以 HALCON 错误码说明和算子文档为准）</para>
+	///   <para><b>含义</b>错误码 8730。对过小/过糊的码做 zoomed（超分辨率）解码时算法中途放弃——迭代或时限等内部约束未满足即止，不产出放大结果。中止判据由目标 HALCON 版本定义 （具体语义以 HALCON 错误码说明和算子文档为准）</para>
 	///   <para><b>处理</b>与其指望放大救场，不如提高原始分辨率、缩短工作距或收窄候选区让超分任务变轻。</para>
 	/// </remarks>
 	public const int Jl_ERR_BC_ZOOMED_ABORTED = 8730;

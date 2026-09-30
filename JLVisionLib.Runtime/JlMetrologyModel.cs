@@ -1429,7 +1429,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamName">泛型参数的名称。默认值："num_measures"</param>
 	/// <returns>泛型参数的值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>读回 metrology object 的通用参数当前值（原生 id 788），只读。英文说明给出的默认名 "num_measures"（每条对象布置的测量区域数）；可取量还包括 num_instances、measure_length_1/2、measure_sigma、measure_threshold、max_deviation 等；完整名称集合由原生算子定义。index 与名都为 JlTuple 时批量交叉查询，返回平铺序 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
+	///   <para><b>功能说明</b>读回 metrology object 的通用参数当前值（原生 id 788），只读。英文说明给出的默认名 "num_measures"（每条对象布置的测量区域数）；可取量还包括 num_instances、measure_length_1/2、measure_sigma、measure_threshold、max_deviation 等；完整名称集合由目标 HALCON 算子定义。index 与名都为 JlTuple 时批量交叉查询，返回平铺序 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。</para>
 	///   <para><b>与相邻算子的取舍</b>模型级参数（image_size 等）走 GetMetrologyModelParam（id 771）；模糊一族走 GetMetrologyObjectFuzzyParam（id 787）；测量结果数值走 GetMetrologyObjectResult（id 781）。写回用 SetMetrologyObjectParam（id 790）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>

@@ -633,7 +633,7 @@ public class JlXLDModPara : JlXLD, ISerializable, ICloneable
 	/// <returns>含映射数据的新 JlImage 句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：与 JlTuple rotation 重载同一 id/槽位；唯一区别是 rotation 经 StoreS 直写 STRING，"auto" 这类关键字只能走本重载或再包一层字符串元组。</para>
-	///   <para><b>约束或前提</b>："auto" 时原生如何定网格朝向 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；row/column 与 gridSpacing 的组合合法性由原生校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），托管侧不做任何前置检查。</para>
+	///   <para><b>约束或前提</b>："auto" 时原生如何定网格朝向 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；row/column 与 gridSpacing 的组合合法性由目标 HALCON 运行时校验 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告），托管侧不做任何前置检查。</para>
 	///   <para><b>与相邻算子的取舍</b>：要显式给角度数值用 JlTuple 重载传弧度 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）；本重载适合"自动定朝向"的标准校正流程。</para>
 	///   <para><b>用法</b></para>
 	///   <code>

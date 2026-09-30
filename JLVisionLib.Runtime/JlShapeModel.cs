@@ -937,7 +937,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	///   model.WriteShapeModel("label.shm");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>对已 Dispose 或空句柄调用会在原生调用后由 PostCall 抛出算子异常；同名文件覆盖和目录不存在时的处理由原生层决定，失败时同样由 PostCall 抛出异常。</para>
+	///   <para>对已 Dispose 或空句柄调用会在原生调用后由 PostCall 抛出算子异常；同名文件覆盖和目录不存在时的处理由目标 HALCON 版本定义，失败时同样由 PostCall 抛出异常。</para>
 	///   <para><b>相关算子</b></para>
 	///   <para>ReadShapeModel、CreateShapeModel</para>
 	/// </remarks>

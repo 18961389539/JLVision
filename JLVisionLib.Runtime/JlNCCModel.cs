@@ -643,7 +643,7 @@ public class JlNCCModel : JlHandle, ISerializable, ICloneable
 	/// <param name="score">各实例相关得分。Score of the found instances of the model.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>在图像中按归一化互相关搜 NCC 模板（原生 id 945）。四个 out 元组等长，长度 = 实际找到的实例数（可能为 0，找不到时是空元组而非报错 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）），且都按 DOUBLE 装载。</para>
-	///   <para><b>参数取向</b>numMatches/minScore/maxOverlap 相互作用：先按 minScore 过滤，再按得分降序 （排序以 HALCON 算子文档为准） 取前 numMatches 个（numMatches=0 时全取），重叠超过 maxOverlap 的候选被抑制——numMatches=0 + 高 minScore + 小 maxOverlap 会得到多而干净的实例；maxOverlap 放大则允许堆叠找同一物体。本签名无 greediness 参数，重叠淘汰策略由原生默认决定 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。angleStart/angleExtent 是每帧搜索窗，比训练范围窄可提速。</para>
+	///   <para><b>参数取向</b>numMatches/minScore/maxOverlap 相互作用：先按 minScore 过滤，再按得分降序 （排序以 HALCON 算子文档为准） 取前 numMatches 个（numMatches=0 时全取），重叠超过 maxOverlap 的候选被抑制——numMatches=0 + 高 minScore + 小 maxOverlap 会得到多而干净的实例；maxOverlap 放大则允许堆叠找同一物体。本签名无 greediness 参数，重叠淘汰策略由目标 HALCON 默认定义 （本层仅透传该参数；非法值由 PostCall 按 HALCON 错误码报告）。angleStart/angleExtent 是每帧搜索窗，比训练范围窄可提速。</para>
 	///   <para><b>与相邻算子的取舍</b>多模型一次搜用 FindNccModels；光照不稳定的现场 NCC 得分会整体下移，minScore 固定阈值会漏检——换形状模板或补光照。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
