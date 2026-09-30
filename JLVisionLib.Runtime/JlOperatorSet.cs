@@ -9050,7 +9050,9 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>以现有图像为模板取常数底图（尺寸/类型继承自 image），不是从坐标参数建图。原生 id 563。</para>
 	///   <para><b>与实例重载的取舍</b>常规用 <see cref="JlImage.GenImageProto(double)"/> 直接拿 JlImage；静态版留给裸句柄或多值 grayval 的场合。</para>
 	///   <para><b>参数取向</b>image 在 iconic 参数 1；grayval 在控制参数 0（钉固定、调用后解钉）；输出经 <c>LoadNew</c> 装载。</para>
-	///   <para><b>资源与坑</b>多通道输入输出几路、grayval 如何按通道展开 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；输入图像不被修改、由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>约束</b><c>image</c> 必须是单通道图；输出与输入保持相同尺寸和像素类型，grayval 只决定有效像素的常数值。
+	///   元组版的多个 grayval 按 HALCON 的 tuple-level 规则生成输出对象。对 direction 图，超出合法方向范围的结果像素标记为 255。
+	///   输入图像不被修改、由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void GenImageProto(JlObject image, out JlObject imageCleared, JlTuple grayval)
 	{
@@ -17177,7 +17179,9 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>对应原生算子 id 1067：与 ComposeN 的区别在于输入形态——本算子收"一个图标数组"，通道数在运行时由数组长度决定；要固定 2~7 路且各写一个句柄时用 Compose2..7。通道顺序即数组元素顺序。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage 上的同名方法见 <see cref="JlImage.ChannelsToImage()"/>，它把调用对象自身当输入数组、直接返回 JlImage；本静态版两端都是裸 JlObject，托管侧不校验输入确为单通道图数组，判型交由目标 HALCON 运行时处置。</para>
 	///   <para><b>参数取向</b>输入图标进槽 1（Store），输出以 InitOCT(1) 登记、经 JlObject.LoadNew 装载为新句柄。</para>
-	///   <para><b>资源与坑</b>multiChannelImage 是新句柄须 Dispose；images 由 GC.KeepAlive 保住、原生调用结束前不得释放；输入若混入非单通道图，各输入通道数不一致时的堆叠结果 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>存储语义</b>输出定义域是输入定义域的交集。相同尺寸的输入通道通常由输出引用，不重新复制像素；输入尺寸不同时，
+	///   HALCON 会为不具备最大宽高的通道分配所需存储。输入必须是单通道图数组，混入多通道对象会由原生算子拒绝。
+	///   <c>multiChannelImage</c> 是新句柄须 Dispose；<c>images</c> 由 <c>GC.KeepAlive</c> 保住，原生调用结束前不得释放。</para>
 	/// </remarks>
 	public static void ChannelsToImage(JlObject images, out JlObject multiChannelImage)
 	{
@@ -17197,7 +17201,8 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>对应原生算子 id 1068：是 ChannelsToImage 的正向拆分，输出"一个句柄里装着 N 张单通道图"，通道数运行时决定；确定只有 2~7 路且想各拿一个 out 句柄时用 Decompose2..7。通道 1 起始计数。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage 上的同名方法见 <see cref="JlImage.ImageToChannels()"/>，把自身当输入、返回 JlImage 数组；本静态版两端裸 JlObject，不做类型校验。</para>
 	///   <para><b>参数取向</b>输入图标进槽 1（Store），输出以 InitOCT(1) 登记、经 JlObject.LoadNew 装载为新的数组句柄。</para>
-	///   <para><b>资源与坑</b>images 是含句柄元素的新对象、用毕须释放整个数组句柄；multiChannelImage 由 GC.KeepAlive 保住，原生调用结束前不得 Dispose。</para>
+	///   <para><b>存储语义</b>输出数组中的每个单通道图引用输入多通道图的对应通道，HALCON 不复制像素数据；要独立修改通道，先调用 <c>CopyImage</c>。
+	///   <c>images</c> 是含句柄元素的新对象、用毕须释放整个数组句柄；<c>multiChannelImage</c> 由 <c>GC.KeepAlive</c> 保住，原生调用结束前不得 Dispose。</para>
 	/// </remarks>
 	public static void ImageToChannels(JlObject multiChannelImage, out JlObject images)
 	{
@@ -17350,10 +17355,12 @@ public class JlOperatorSet
 	/// <param name="image3">第 3 路输入图像。</param>
 	/// <param name="multiChannelImage">输出：合成的新多通道图句柄。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1073：固定三路各传句柄，通道顺序=声明序（例如把三张灰度图堆成 RGB 式三通道）。通道数可变走 ChannelsToImage。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1073：固定三路单通道图各传句柄，通道顺序=声明序（例如把三张灰度图堆成 RGB 式三通道）。
+	///   输出定义域是三路输入定义域的交集，通道数可变走 ChannelsToImage。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage.Compose3 只收 2 个实参（见 <see cref="JlImage.Compose3(JlImage, JlImage)"/>），调用对象自身是第 1 路并直接返回；本静态版三路全平摊、结果走 out。</para>
 	///   <para><b>参数取向</b>三路图标按声明序进槽 1..3（Store），输出以 InitOCT(1) 登记、经 JlObject.LoadNew 装载为新句柄。</para>
-	///   <para><b>资源与坑</b>multiChannelImage 是新句柄须 Dispose；三路输入各由 GC.KeepAlive 保住。</para>
+	///   <para><b>存储语义</b>输出通道引用三个输入图像，HALCON 不为多通道容器复制像素；要独立副本，请先对输入调用 <c>CopyImage</c>。
+	///   <c>multiChannelImage</c> 是新句柄须 Dispose；三路输入各由 <c>GC.KeepAlive</c> 保住。</para>
 	/// </remarks>
 	public static void Compose3(JlObject image1, JlObject image2, JlObject image3, out JlObject multiChannelImage)
 	{
@@ -17631,7 +17638,8 @@ public class JlOperatorSet
 	/// <param name="image">输出：按 channel 选出的通道组成的新图句柄。</param>
 	/// <param name="channel">要访问的通道索引（1 起始）。Default: 1</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1083：通道序号从 1 起，传单值取一路；给多元素元组可按序挑多路甚至重排（如 {3,2,1} 反通道序）。这是"从已有图挑某几路"，与把整图拆成数组的 ImageToChannels 互补。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1083：通道序号从 1 起，传单值取一路；给多元素元组可按序挑多路甚至重排（如 {3,2,1} 反通道序），
+	///   返回仍按原生 tuple-level 规则组织的单通道输出，不会因此组成新的多通道图。这是"从已有图挑某几路"，与把整图拆成数组的 ImageToChannels 互补。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage 上的标量版见 <see cref="JlImage.AccessChannel(int)"/>（另有 <c>AccessChannel(JlTuple)</c> 重载），把自身当输入、返回新 JlImage；本静态版两端裸 JlObject，channel 走 Store 钉固。</para>
 	///   <para><b>参数取向</b>输入图标进槽 1、channel 进控制槽 0（Store，调用后 UnpinTuple）；输出以 InitOCT(1) 登记、经 JlObject.LoadNew 装载为新句柄。</para>
 	///   <para><b>用法</b></para>
@@ -17643,7 +17651,8 @@ public class JlOperatorSet
 	///   ch1.Dispose();
 	///   twoChannel.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>image 是新句柄须 Dispose；multiChannelImage 由 GC.KeepAlive 保住；索引越界是否直接报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>HALCON 的 <c>access_channel</c> 不复制像素数据；要独立修改结果，先调用 <c>CopyImage</c>。
+	///   <c>image</c> 是新句柄须 Dispose；<c>multiChannelImage</c> 由 <c>GC.KeepAlive</c> 保住；通道索引必须在 1 到通道数范围内。</para>
 	/// </remarks>
 	public static void AccessChannel(JlObject multiChannelImage, out JlObject image, JlTuple channel)
 	{

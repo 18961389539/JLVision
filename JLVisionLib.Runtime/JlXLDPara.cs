@@ -759,7 +759,7 @@ public class JlXLDPara : JlXLD, ISerializable, ICloneable
 	///   using JlImage map = meshes.GenGridRectificationMap(img, out JlXLDPara usedMeshes, 20, "auto", gridRows, gridCols, "bilinear");
 	///   usedMeshes.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>传字面量 <c>"auto"</c> 时编译器优先命中本 string 重载（标准引用转换优于隐式转 JlTuple），要按弧度数值给旋转角请显式构造 <c>JlTuple</c> 走元组重载；<c>row</c>/<c>column</c> 仍被钉固。</para>
+	///   <para><b>资源与坑</b>传字面量 <c>"auto"</c> 时编译器优先命中本 string 重载（标准引用转换优于隐式转 JlTuple）；要按数值角度给旋转角请显式构造 <c>JlTuple</c> 走元组重载，数值只能是 0、90、180 或 270 度；<c>row</c>/<c>column</c> 仍被钉固。</para>
 	/// </remarks>
 	public JlImage GenGridRectificationMap(JlImage image, out JlXLDPara meshes, int gridSpacing, string rotation, JlTuple row, JlTuple column, string mapType)
 	{

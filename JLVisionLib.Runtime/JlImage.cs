@@ -3258,8 +3258,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   本算子的价值在于条带是"沿一个方向延伸"的结构（例如按行把织物/条码状目标切开），
 	///   在 <paramref name="expandType"/> 为梯度判据时，若种子线两侧对比度很低会一路扩到图像边界，
 	///   表现为"只得到一个覆盖全图的区域"（具体取值见目标 HALCON 版本的算子文档）。</para>
-	///   <para><b>参数取向</b>元组版可给 <paramref name="threshold"/> 多个值（多判据/分段取值的语义本层无法判断；具体规则见目标 HALCON 版本的对应 HALCON 算子文档），
-	///   代价是每次固定与 <c>UnpinTuple</c>；单值请用 <see cref="ExpandLine(int,string,string,double)"/>。</para>
+	///   <para><b>参数取向</b>元组版可给 <paramref name="threshold"/> 多个值；HALCON 按 tuple-level 处理并为相应组合生成区域对象，
+	///   不是把多个阈值合并成一个判据。代价是每次固定与 <c>UnpinTuple</c>；单值请用 <see cref="ExpandLine(int,string,string,double)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -4342,7 +4342,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage proto = new JlImage("byte", 64, 48);
 	///   using JlImage flat = proto.GenImageProto(128.0);       // 与原型同尺寸同域的全 128 图
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需 Dispose；本图只当原型用、内容不变。输出像素类型按 grayval 由目标 HALCON 版本定义，本层不改写（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。
+	///   <para><b>资源与坑</b>返回新句柄需 Dispose；本图只当原型用、内容不变。输出保持原型图的尺寸、像素类型和定义域，
+	///   只把有效像素设为 grayval；对 direction 图，超出合法方向值的结果像素按 HALCON 规则标记为 255。
 	///   末尾 <c>GC.KeepAlive(this)</c>。</para>
 	/// </remarks>
 	public JlImage GenImageProto(double grayval)
@@ -7931,13 +7932,13 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	}
 
 
-	/// <summary>把本图像对象栈里的多幅单通道图合成一幅多通道图：栈序即通道序。</summary>
+	/// <summary>把本图像对象栈里的单通道图合成一幅多通道图：栈序即通道序。</summary>
 	/// <returns>多通道图像新句柄；原栈不变。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1067：无控制参数，仅 <c>this</c> 一路图标输入。栈内每幅图成为一个通道、
-	///   通道顺序 = 栈内序号（可先用 <see cref="SelectObj(JlTuple)"/> 重排再合成），结果尺寸 = 单幅尺寸。</para>
-	///   <para><b>约束或前提</b>栈内各图必须同尺寸，否则原生侧报错（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；各图应为单通道，多通道输入叠加后的
-	///   通道序本层无法判断（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   通道顺序 = 栈内序号（可先用 <see cref="SelectObj(JlTuple)"/> 重排再合成）。输出定义域是各输入定义域的交集。</para>
+	///   <para><b>存储语义</b>输入图尺寸相同时，输出通道引用原图像数据，不会为多通道容器重新复制像素；尺寸不同时，
+	///   HALCON 会为不具备最大宽高的通道分配所需存储。要得到完全独立的像素副本，请先对各通道调用 <c>CopyImage()</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>固定 2~7 路、写死实参更直观时用 <see cref="Compose3(JlImage,JlImage)"/> 族；
 	///   栈长不固定（如 <see cref="ImageToChannels()"/> 拆完改完再合回）时本方法是唯一入口。</para>
 	///   <para><b>用法</b></para>
@@ -7969,6 +7970,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 1068，是 <see cref="ChannelsToImage()"/> 的逆操作：只返回<b>一个</b>栈句柄，
 	///   逐通道取帧要再走 <see cref="SelectObj(int)"/>（1 起始）。灰度算子（阈值、滤波、直方图）不接受多通道输入（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），
 	///   彩色图做这类处理前常先走本方法拆开。</para>
+	///   <para><b>存储语义</b>每个输出对象都是单通道图，但 HALCON 不会复制像素；输出图引用输入多通道图的对应通道。
+	///   若要独立修改通道内容，先对选出的对象调用 <c>CopyImage()</c>。</para>
 	///   <para><b>与相邻算子的取舍</b>通道数已知且 ≤7 时用 <c>DecomposeN</c> 一次拆全并直接逐路拿句柄，省掉再 SelectObj；
 	///   只要一路通道用 <see cref="AccessChannel(int)"/> 更省。通道数不定（运行时才知）时才用本方法。</para>
 	///   <para><b>用法</b></para>
@@ -8189,11 +8192,12 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>TileChannels</c>：把通道<b>平铺成一张大图</b>便于比较，产物仍是单通道图；
 	///   <see cref="AccessChannel(int)"/>（1083）：反向取通道。</para>
 	///   <para><b>功能说明</b>本算子 id 1073，只声明一路图标输出（<c>InitOCT(proc,1)</c>），
-	///   结果必定是<b>一幅</b>三通道图，通道顺序严格为 <c>this → image2 → image3</c>。
+	///   结果是一幅三通道图，通道顺序严格为 <c>this → image2 → image3</c>。
 	///   所谓 "RGB" 只是这个顺序的命名约定，本层不会校正你把 G 放在哪一位。</para>
-	///   <para><b>约束</b>三幅输入需同宽高；类型是否必须一致本层未校验（具体取值见目标 HALCON 版本的算子文档）。
-	///   输入本身已是多通道图时的展开方式本层无法判断（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），稳妥做法是先 <c>AccessChannel</c> 取单通道。
+	///   <para><b>约束</b>三个输入都必须是单通道图；输出定义域是三个输入定义域的交集。多通道输入不属于本算子的输入类型，
+	///   应先用 <c>AccessChannel</c> 或 <c>ImageToChannels()</c> 取出单通道。输入类型兼容性由原生算子检查（具体规则见目标 HALCON 版本的算子文档）。
 	///   合成出的多通道图不能直接进灰度算子（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），先转灰度或取通道。</para>
+	///   <para><b>存储语义</b>HALCON 不为三通道容器复制像素；输出通道引用三个输入图像。要得到独立像素副本，请对输入先调用 <c>CopyImage()</c>。</para>
 	///   <para><b>与 <c>Compose2</c> 的取舍</b>只有两个特征通道（灰度 + 梯度幅值、可见光 + 红外）就用
 	///   <see cref="Compose2(JlImage)"/>；不要为凑三通道复制一幅无意义图——<see cref="CountChannels()"/> 的结果会被下游按通道数分支的代码读到并误解。</para>
 	///   <para><b>用法</b></para>
@@ -8589,10 +8593,10 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1083。通道索引是<b>控制参数</b>（<c>Store(proc, 0, channel)</c>），
 	///   不是图标对象；从 <b>1</b> 开始计数，写 0 不会在这里被拦下（具体取值见目标 HALCON 版本的算子文档）。</para>
-	///   <para><b>多索引</b>元组可一次给多个索引，本层仍只声明一路图标输出（<c>InitOCT(proc,1)</c>），
-	///   因此结果应是<b>一幅按给定顺序重排的</b>多通道图（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；要拆成逐通道单图请用 <c>DecomposeN</c>
-	///   或反复 <c>AccessChannel(1)</c>/<see cref="AppendChannel(JlImage)"/> 组合。这与
-	///   <see cref="Compose3(JlImage,JlImage)"/> 互为逆操作。</para>
+	///   <para><b>多索引</b>元组可一次给多个索引，但 <c>access_channel</c> 的输出类型仍是单通道图；
+	///   元组处理后的对象数量和顺序由 HALCON 的 tuple-level 规则决定，本层不把它重新包装成多通道图。
+	///   只取一个通道时优先用 <see cref="AccessChannel(int)"/>；要按固定通道数拆成多个返回值请用 <c>DecomposeN</c>。
+	///   这与 <see cref="Compose3(JlImage,JlImage)"/> 在通道语义上互为逆操作。</para>
 	///   <para><b>为什么常要用它</b>阈值、滤波、直方图这类灰度算子不接受多通道输入（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），
 	///   彩色图做分割前先 <c>AccessChannel(1)</c> 取一个通道；要按加权亮度合成，则用
 	///   <c>ChannelsToImage()</c> 拆成三幅单通道图后再调 <c>Rgb3ToGray(imageGreen, imageBlue)</c>。</para>
@@ -8607,8 +8611,8 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage red = rgb.AccessChannel(new JlTuple(1));      // 第 1 通道
 	///   using JlImage swapped = rgb.AccessChannel(new JlTuple(3.0, 2.0, 1.0));
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄；取出的通道是否与原图共享像素内存本层无法判断（具体规则见目标 HALCON 版本的对应 HALCON 算子文档），
-	///   要改写像素先 <c>CopyImage()</c>。</para>
+	///   <para><b>资源与坑</b>返回新句柄；结果是单通道图，输入定义域会被沿用，通道索引从 1 到通道数计数。
+	///   HALCON 的 <c>access_channel</c> 不复制像素数据；要改写像素先 <c>CopyImage()</c>。</para>
 	/// </remarks>
 	public JlImage AccessChannel(JlTuple channel)
 	{
@@ -9847,7 +9851,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   要按窗内第 k 小取值（比中值更极端）→ <see cref="RankImage(JlRegion,int,string)"/>/<see cref="RankRect(int,int,int)"/>；
 	///   要各向同性平滑、不在乎边缘位置 → <see cref="GaussImage(int)"/>。中值滤波在<b>密集高对比纹理</b>上会把纹理"择一"，
 	///   纹理方向信息丢失，此时不要用中值预处理再做方向量测。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 接受元组，多值语义本层无法判断（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；
+	///   <para><b>参数取向</b><paramref name="margin"/> 接受 HALCON 的数值或字符串元组；多值按 tuple-level 处理并对应生成图像结果。
 	///   单值请用 <see cref="MedianImage(string,int,string)"/>（字符串直传，无固定/解固定）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -11702,7 +11706,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <remarks>
 	///   <para><b>功能说明</b>等价于在本图上"现场训练 + 现场变换"：内部就是 <see cref="GenPrincipalCompTrans(out JlTuple,out JlTuple,out JlTuple,out JlTuple)"/>
 	///   接 <see cref="LinearTransColor(JlTuple)"/> 的一次性版本。实现按 <c>JlTupleType.DOUBLE</c> 装载 infoPerComp（槽 0），
-	///   图像走 iconc 槽 1。第一通道承载最大方差方向——把第一通道单独 <c>AccessChannel(0)</c> 出来常是最强判别特征。</para>
+	///   图像走 iconc 槽 1。第一通道承载最大方差方向——把第一通道单独 <c>AccessChannel(1)</c> 出来常是最强判别特征。</para>
 	///   <para><b>与相邻算子的取舍</b>矩阵需要复用到其他图、或只取前 k 个成分时，改用"训练/应用"分离的两步写法
 	///   （GenPrincipalCompTrans + LinearTransColor），本算子不留矩阵、无法复用；只想换某个固定色空间也别说 PCA。</para>
 	///   <para><b>约束</b>输入需为多通道图像；输出仍是图像句柄，若直接 <c>Threshold</c> 主成分图，
@@ -11715,7 +11719,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///
 	///   using JlImage rgb = new JlImage("sample_rgb.tif");
 	///   using JlImage pca = rgb.PrincipalComp(out JlTuple info);
-	///   using JlImage strongest = pca.AccessChannel(0);        // 第一主成分当单通道判别图
+	///   using JlImage strongest = pca.AccessChannel(1);        // 第一主成分当单通道判别图
 	///   using JlRegion blob = strongest.Threshold(200.0, 255.0);
 	///   info.Dispose();
 	///   </code>
@@ -11845,7 +11849,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   using JlImage closed = img.GrayClosingShape(new JlTuple(11.0), new JlTuple(11.0), "octagon");
 	///   using JlRegion dark = closed.Threshold(0.0, 60.0);
 	///   </code>
-	///   <para><b>参数取向</b>元组版可一次传多组尺寸（多值如何与输出对应本层无法判断；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；
+	///   <para><b>参数取向</b>元组版可一次传多组尺寸；三个控制元组由 HALCON 按 tuple-level 规则配对处理，输出为相应的图像对象数组。
 	///   单组尺寸请用 <see cref="GrayClosingShape(double,double,string)"/>。
 	///   重载绑定要注意：写 <c>GrayClosingShape(11, 11, "octagon")</c> 或 <c>(11.0, 11.0, ...)</c> 都会选到 double 版——
 	///   本库有 <c>int/double/string → JlTuple</c> 的隐式转换，但用户定义转换在重载解析里排在标准隐式转换之后；
