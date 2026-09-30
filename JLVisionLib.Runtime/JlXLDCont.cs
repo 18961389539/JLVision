@@ -1482,7 +1482,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	///   <para><b>功能说明</b>（本重载为主，<c>string/double</c> 标量版本见其后）</para>
 	///   <para>原生 id 27：本实例 <c>Store(proc,1)</c> 只读；<c>attribute</c>/<c>min</c>/<c>max</c> 走 <c>Store</c>+调用后 <c>UnpinTuple</c>（允许多值），<c>operation</c> 走 <c>StoreS</c>；结果 <c>LoadNew</c> 返回新句柄，条数与输入无对应关系。它是<b>点级</b>操作：读取每条轮廓上已存的局部属性序列，把属性值落在 [min,max] 内的连续点段切出来成为新轮廓。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>属性必须先由计算算子写到轮廓上（如 <c>DistanceContoursXld(contour2, mode)</c> 写出 "distance"）；没写过该属性的轮廓在此无值可筛，结果为空或行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。默认 "distance" 配 150.0~99999.0 的示例区间只在大图上成立，实际须按自己设的参考轮廓换算。</para>
+	///   <para>属性必须先由计算算子写到轮廓上（如 <c>DistanceContoursXld(contour2, mode)</c> 写出 "distance"）；没写过该属性的轮廓在此无值可筛；本层不检查属性是否存在，结果由原生层处理。默认 "distance" 配 150.0~99999.0 的示例区间只在大图上成立，实际须按自己设的参考轮廓换算。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>与 <c>SelectContoursXld</c> 的本质区别：后者按<b>整条轮廓</b>的统计特征取舍、不改变轮廓本身；本算子会把一条轮廓<b>切碎</b>，只留下合格片段（切完点数、条数全变）。要"整条留下/整条扔掉"用 Select，要"只要高差超标的局部段"才用本算子。</para>
 	///   <para><b>用法</b></para>

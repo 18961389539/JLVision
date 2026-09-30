@@ -1038,7 +1038,7 @@ public class JlMisc
 	/// <returns>垂距元组（DOUBLE 装载，像素）。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>点到无限长直线的垂直距离（像素），对应原生算子 id 1314；返回按 DOUBLE 装载。老模板的英文 returns 误写作 "Distance between the points"，实为点到线距离。</para>
-	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。直线由两点外延定义，垂足不在线段内也照算；直线两点重合时行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>属 JlMisc 杂项门面的 2D 点线几何组，本库内部没有任何调用者。直线由两点外延定义，垂足不在线段内也照算；直线两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	///   <para><b>与相邻算子的取舍</b>目标是"线段"时用 <see cref="DistancePs(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple)"/>，否则会把"点到线段延长线"的距离当成目标值——这是本组最常见的用错；只需点点距离用 <see cref="DistancePp(JlTuple,JlTuple,JlTuple,JlTuple)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -1084,7 +1084,7 @@ public class JlMisc
 	/// <returns>垂距（像素）标量。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>点到无限长直线的垂直距离（像素），对应原生算子 id 1314（与本类元组版 <see cref="DistancePl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/> 同一算子）；本重载全部以标量直写（StoreD），无钉固定元组开销。老模板的英文 returns 误写作 "Distance between the points"，实为点到线距离。</para>
-	///   <para><b>资源与坑</b>直线由两点外延定义，垂足不在线段内也照算；它量的是到"直线"而非"线段"的距离，目标是线段时请用 DistancePs；两点重合时行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>直线由两点外延定义，垂足不在线段内也照算；它量的是到"直线"而非"线段"的距离，目标是线段时请用 DistancePs；两点重合时输入退化；本层不校验，调用结果交给原生层处理。</para>
 	/// </remarks>
 	public static double DistancePl(double row, double column, double row1, double column1, double row2, double column2)
 	{

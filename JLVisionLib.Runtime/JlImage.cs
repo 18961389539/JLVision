@@ -774,7 +774,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与 WienerFilter 的取舍</b>本重载自带噪声估计，只要给噪声区；<see cref="WienerFilter(JlImage,JlImage)"/>
 	///   要你自己先算一幅平滑图当噪声来源。已知噪声区在哪时用它更方便。</para>
 	///   <para><b>约束</b><paramref name="psf"/> 尺寸、<paramref name="maskWidth"/>/<paramref name="maskHeight"/> 的合法范围
-	///   本层不校验（具体边界行为以对应 HALCON 算子文档为准）；PSF 与图像不匹配时结果无意义但不报错。多通道图的处理方式未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   本层不校验 PSF 尺寸和掩码参数；参数不匹配时交给原生层处理，PSF 与图像不匹配可能得到无意义结果。多通道图的处理方式由原生算子定义。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JLVisionLib;
@@ -1578,7 +1578,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>参数</b><paramref name="reconstructionMethod"/> 字符串直传（<c>StoreS</c>），本层不校验取值，
 	///   默认 "poisson"；其它合法方法名及其对边界/精度矩阵的影响由原生决定（具体边界行为以对应 HALCON 算子文档为准）。
 	///   <paramref name="genParamName"/>/<paramref name="genParamValue"/> 是名值成对的通用参数（走 <c>Store</c> 固定），
-	///   不用时传<b>两个空元组</b>，名值个数不等时的行为未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   不用时传<b>两个空元组</b>；genParamName 与 genParamValue 应等长，本层不检查，长度不等时交给原生层处理。</para>
 	///   <para><b>与 Sfs* 族的取舍</b>手里是<b>梯度图</b>用本方法积分高度；手里是明暗灰度图则直接走 <c>SfsPentland</c>
 	///   等灰度重建族，不经过本方法。</para>
 	///   <para><b>用法</b></para>
@@ -2303,7 +2303,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   本算子按 <paramref name="method"/> 选判据并回报阈值。要看阈值、要在多判据之间比较时用它。</para>
 	///   <para><b>约束</b><paramref name="method"/> 与 <paramref name="lightDark"/> 都是字符串（<c>StoreS</c>），
 	///   本层不校验取值，写错只能等原生端在 <c>PostCall</c> 抛 <c>JlOperatorException</c>；
-	///   <paramref name="lightDark"/> 的两个取值给出互补的两块区域，边界像素归哪一侧未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。
+	///   <paramref name="lightDark"/> 的两个取值给出互补的两块区域，边界像素的归属由原生算子定义。
 	///   <paramref name="usedThreshold"/> 的元素个数由判据决定（多类判据可能不止一个）（具体边界行为以对应 HALCON 算子文档为准），
 	///   用 <c>Length</c> 判断后再按下标取值。多通道输入的通道数不检查（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
@@ -2651,7 +2651,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <c>new JlTuple("min")</c>），由原生端按图像类型取实际极值（具体取值以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>区间边界</b>给出的是下界与上界，属闭区间还是左闭右开，托管层只把两个值 <c>Store</c> 给原生，未做任何裁剪或校验（具体边界行为以对应 HALCON 算子文档为准）。
 	///   两个元组按下标两两配对，长度不等或长度为奇数时本层不检查，行为由原生端决定（具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>通道数</b>本层不检查通道数（<c>CountChannels()</c> 需自行调用）。多通道图如何取舍通道未在本层体现（具体边界行为以对应 HALCON 算子文档为准），
+	///   <para><b>通道数</b>本层不检查通道数（<c>CountChannels()</c> 需自行调用）。多通道图的通道选择由原生算子定义；需要固定通道时先调用 <c>AccessChannel()</c>，
 	///   常规做法是先 <c>AccessChannel(1)</c>（取单个通道，索引从 1 起）或 <c>ChannelsToImage()</c> 拆成通道数组后
 	///   用 <c>Rgb3ToGray(imageGreen, imageBlue)</c> 加权合成，再分割。</para>
 	///   <para><b>与相邻算子的取舍</b>光照不均用 <c>DynThreshold</c>；对比度弱的边缘用 <c>HysteresisThreshold</c>；
@@ -4983,7 +4983,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="clearProc">图像销毁时的内存释放过程指针，0 表示不回调。Default: 0</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 607。专为"外部图像行不对齐/位打包"场景设计：verticalPitch 以<b>字节</b>计、horizontalBitPitch 以<b>位</b>计，两值允许与紧凑布局不同（如 4:2:2 或带 padding 的 stride）；方法体先 Dispose 再 Load，属<b>原地改写</b>。</para>
-	///   <para><b>约束或前提</b>horizontalBitPitch 小于 bitsPerPixel 表示位打包格式，逐像素按位距离寻址；参数组合不合法（如位距为 0）时行为未定义（具体边界行为以对应 HALCON 算子文档为准）。像素类型面向 8 位字节图（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>horizontalBitPitch 小于 bitsPerPixel 表示位打包格式，逐像素按位距离寻址；参数组合不合法（如位距为 0）时本层不校验，交给原生层处理。像素类型面向 8 位字节图（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只有连续紧凑的整幅缓冲时用更简单的 <see cref="GenImage1"/>；需要在原缓冲可释放后仍安全使用图像，务必 doCopy="true"，代价是一次内存复制。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -7221,7 +7221,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage.SetShapeModelParam(model, new string[] { "num_levels" }, new int[] { 4 });
 	///   tmpl.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>模型句柄在原生调用结束前不得释放（GC.KeepAlive(modelID) 佐证）；name 与 value 长度不等时的行为未定义（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>模型句柄在原生调用结束前不得释放（GC.KeepAlive(modelID) 佐证）；name 与 value 应等长；本层不检查，长度不等时交给原生层处理。</para>
 	/// </remarks>
 	public static void SetShapeModelParam(JlShapeModel modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -7754,7 +7754,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage.SetNccModelParam(model, new string[] { "min_contrast" }, new int[] { 15 });
 	///   tmpl.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>name/value 长度不等时行为未定义（具体边界行为以对应 HALCON 算子文档为准）；模型句柄在原生调用结束前不得释放。</para>
+	///   <para><b>资源与坑</b>name/value 应等长；本层不检查，长度不等时交给原生层处理；模型句柄在原生调用结束前不得释放。</para>
 	/// </remarks>
 	public static void SetNccModelParam(JlNCCModel modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -8562,7 +8562,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>原生算子 id 1082：<c>this</c> 存图标槽 1、<paramref name="image"/> 存槽 2，结果 <c>LoadNew</c> 槽 1。
 	///   通道顺序 = 本图原有通道 → image 的通道，适合"在已合成图上再挂一路附加数据"（灰度图补法向/置信度通道）。</para>
 	///   <para><b>约束或前提</b>两图须同尺寸（具体取值以对应 HALCON 算子文档为准）；image 为多通道时一次全部接上（具体边界行为以对应 HALCON 算子文档为准）；
-	///   类型不一致时结果类型与本图类型的落值关系未在本层体现（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   类型不一致时结果类型与像素转换由原生算子定义，本层不做转换或兼容性检查。</para>
 	///   <para><b>与相邻算子的取舍</b>从零开始拼 2~7 路等通道图用 <see cref="Compose3(JlImage,JlImage)"/> 族更直观；
 	///   本方法是"已有图 + 增量通道"。拆回单路用 <see cref="AccessChannel(int)"/>，两者互逆。</para>
 	///   <para><b>用法</b></para>
@@ -10002,7 +10002,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b>矩形窗且不在乎边界 → <see cref="RankRect(int,int,int)"/>（更快、参数更少）；
 	///   只要均值 → <see cref="MeanImageShape(JlRegion)"/>；要去椒盐且掩膜是圆/方 → <see cref="MedianImage(string,int,string)"/>。
 	///   掩膜像素数很少（如 5 个）时 rank 滤波等于最小值滤波，会把亮结构整体抹掉，不要拿它做"温和去噪"。</para>
-	///   <para><b>参数取向</b><paramref name="margin"/> 元组版多值语义未在本层体现（具体边界行为以对应 HALCON 算子文档为准），单值请用
+	///   <para><b>参数取向</b><paramref name="margin"/> 元组版的多值配对语义由原生算子定义，本层不展开或校验，单值请用
 	///   <see cref="RankImage(JlRegion,int,string)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -10083,7 +10083,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlTuple margin = "mirrored";
 	///   JlImage f = img.DualRank("circle", 1, 10, margin);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄需释放；modePercent 越出 0..100 的行为未定义（具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>返回新句柄需释放；modePercent 应在 0..100；本层不校验，越界时交给原生层处理。</para>
 	/// </remarks>
 	public JlImage DualRank(string maskType, int radius, int modePercent, JlTuple margin)
 	{
@@ -12586,7 +12586,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   <para><b>功能说明</b>输入应为 <c>RealToComplex</c> 或 FFT 输出的复数图。实现里 <c>InitOCT(1)</c> 与
 	///   <c>InitOCT(2)</c> 各申请一路 iconc 输出：LoadNew(slot 1) 得实部、LoadNew(slot 2) 得虚部。
 	///   这是原生参数序之外唯一的关键事实——两路输出都是<b>新句柄</b>。</para>
-	///   <para><b>约束或前提</b>输入必须是复数图像（"complex" 类型）；否则原生侧行为未定义（具体取值以对应 HALCON 算子文档为准）。
+	///   <para><b>约束或前提</b>输入必须是复数图像（"complex" 类型）；本层不检查图像类型，其他类型交给原生层处理。
 	///   输出尺寸与输入一致，类型为实数（通常 "real"）。</para>
 	///   <para><b>与相邻算子的取舍</b>想把两路实数合成复数请走 <see cref="RealToComplex(JlImage)"/>；
 	///   若只需要"幅值/相位"表达，本库未直接暴露这类拆合算子。</para>

@@ -10194,7 +10194,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 607。专为外部图像行不对齐/位打包场景：verticalPitch 以字节计、horizontalBitPitch 以位计，两值允许与紧凑布局不同。</para>
 	///   <para><b>与实例重载的取舍</b>JlImage 实例版原地改写 this；本静态门面返回新句柄。只有连续紧凑整幅缓冲时用更简单的 <see cref="JlImage.GenImage1"/>。</para>
 	///   <para><b>参数取向</b>out 1 新句柄；九参数先固定、调用后解固定，doCopy 为字符串透传。</para>
-	///   <para><b>资源与坑</b>新句柄须释放；需在原缓冲可释放后仍安全用图务必 doCopy 传 true（代价一次复制），否则解除固定后即为悬挂读；位距为 0 等非法组合行为未定义 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>新句柄须释放；需在原缓冲可释放后仍安全用图务必 doCopy 传 true（代价一次复制），否则解除固定后即为悬挂读；位距为 0 等非法组合由原生层处理，本层不做参数校验。</para>
 	/// </remarks>
 	public static void GenImage1Rect(out JlObject image, JlTuple pixelPointer, JlTuple width, JlTuple height, JlTuple verticalPitch, JlTuple horizontalBitPitch, JlTuple bitsPerPixel, JlTuple doCopy, JlTuple clearProc)
 	{
@@ -19687,7 +19687,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>对应原生算子 id 1314：直线按两点外延定义，垂足落在两点之外也照量——这是与 DistancePs 的本质区别，也是本组最常见的误用。英文 returns "Distance between the points" 系老模板笔误，实为点到线垂距 [已在 JlMisc 侧核实同口径]。距离为像素值、无符号（不分线两侧）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与实例重载的取舍</b>本库无包装类；JlMisc 有返回式重载 <see cref="JlMisc.DistancePl(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple)"/>（元组）与 <see cref="JlMisc.DistancePl(double,double,double,double,double,double)"/>（标量，StoreD 直写无钉固开销）；单点场景优先 JlMisc 标量版，传 int 字面量到 JlMisc 双重载会 CS0121 歧义，数值须 double 字面量。要垂足坐标改走 JlMisc.ProjectionPl。</para>
 	///   <para><b>参数取向</b>六个输入按声明序占原生槽 0..5（Store 钉固、调用后 UnpinTuple）；distance 以 InitOCT(0) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
-	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；直线两点重合时行为未定义 （具体边界行为以对应 HALCON 算子文档为准）；目标是线段请改用 <see cref="DistancePs(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple)"/>。</para>
+	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；直线两点重合时输入退化；本层不校验，调用结果交给原生层处理；目标是线段请改用 <see cref="DistancePs(JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple)"/>。</para>
 	/// </remarks>
 	public static void DistancePl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distance)
 	{
