@@ -34,7 +34,7 @@ public class JlNativeApi
 	/// <summary>底层错误回调委托：原生层上报错误描述字符串。</summary>
 	public delegate void JlLowLevelErrorCallback(string err);
 
-	/// <summary>清理回调委托：原生层回传指针 ptr，用于释放与之关联的非托管资源。（具体边界行为以对应 HALCON 算子文档为准）</summary>
+	/// <summary>原生资源清理回调的签名：原生层传入待清理资源的指针，由回调实现按该资源的分配方式释放。</summary>
 	public delegate void JlClearProcCallBack(IntPtr ptr);
 
 
@@ -145,7 +145,8 @@ public class JlNativeApi
 		return false;
 	}
 
-	/// <summary>原生 HLIDoLicenseError：向视觉核心设置许可证(license)错误的处理状态。（具体边界行为以对应 HALCON 算子文档为准）</summary>
+	/// <summary>原生 HLIDoLicenseError 绑定：把 <paramref name="state"/> 传给视觉核心的许可证错误处理函数。</summary>
+	/// <param name="state">传给原生层的许可证错误处理状态。</param>
 	[DllImport("JLVisionCore", CallingConvention = CallingConvention.Cdecl, EntryPoint = "HLIDoLicenseError")]
 	public static extern void DoLicenseError([MarshalAs(UnmanagedType.Bool)] bool state);
 

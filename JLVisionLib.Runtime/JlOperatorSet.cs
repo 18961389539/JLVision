@@ -469,7 +469,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>线扫拼轮廓的循环体算子：把当前帧与上帧遗留轮廓在相接边处首尾对接，maxImagesCont 限制一条轮廓累计跨帧数，超出即不再延长。</para>
 	///   <para><b>与实例重载的取舍</b>实例版（见 <see cref="JlXLDCont.MergeContLineScanXld(JlXLDCont, out JlXLDCont, int, double, string, int)"/>）用"返回值加 out"分发两路输出；本静态版两个输出都是 out，顺序固定 currMergedConts 在前。原生槽：图标 1/2，控制 0..3。</para>
-	///   <para><b>参数取向</b>InitOCT 登记槽 1、2 两个图标输出，都经 JlObject.LoadNew 新建；prevMergedConts 首轮无旧数据时应传入空图标对象句柄 （具体边界行为以对应 HALCON 算子文档为准；空对象可否直接 Store]。</para>
+	///   <para><b>参数取向</b>InitOCT 登记槽 1、2 两个图标输出，都经 JlObject.LoadNew 新建；prevMergedConts 首轮无旧数据时应传入空图标对象句柄 （具体边界行为以对应 HALCON 算子文档为准；空对象可否直接 Store）。</para>
 	///   <para><b>资源与坑</b>两个 out 都要 Dispose，漏接 prevMergedConts 等于丢句柄引用；每帧输入的旧句柄在返回前受 GC.KeepAlive 保护；跨帧拼接依赖 imageHeight 与实际帧高一致，配错会把轮廓接断 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public static void MergeContLineScanXld(JlObject currConts, JlObject prevConts, out JlObject currMergedConts, out JlObject prevMergedConts, JlTuple imageHeight, JlTuple margin, JlTuple mergeBorder, JlTuple maxImagesCont)
@@ -542,7 +542,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>与多边形读入同族的轮廓版：fileName 钉到控制槽 0，InitOCT(1) 登记图标输出，读回的是自由轮廓而非多边形。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDCont.ReadContourXldArcInfo(string)"/> 是 void 签名，结果只能原地写回本对象（且入口先清旧内容）；本静态版产出全新句柄，不会破坏已有对象，两者资源语义不同。</para>
 	///   <para><b>参数取向</b>单个 out 经 JlObject.LoadNew 新建；无图标输入、无 KeepAlive。</para>
-	///   <para><b>资源与坑</b>contours 须 Dispose；文件缺失等错误以原生算子异常抛出 （具体边界行为以对应 HALCON 算子文档为准；异常类型细节]。</para>
+	///   <para><b>资源与坑</b>contours 须 Dispose；文件缺失等错误以原生算子异常抛出 （具体边界行为以对应 HALCON 算子文档为准；异常类型细节）。</para>
 	/// </remarks>
 	public static void ReadContourXldArcInfo(out JlObject contours, JlTuple fileName)
 	{
@@ -787,7 +787,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>先平滑、再迭代把轮廓拆为直线段与圆/椭圆弧直到每段偏差不超阈值；每段输出仍是采样点列而非参数化基元，要圆心半径须再对单条结果 FitCircleContourXld。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDCont.SegmentContoursXld(string, int, double, double)"/> 强类型返回；本静态版裸句柄进出，图标在槽 1、四个控制参数在槽 0..3，语义与槽序一致。</para>
 	///   <para><b>参数取向</b>单个 out 经 JlObject.LoadNew 新建。</para>
-	///   <para><b>资源与坑</b>contoursSplit 须 Dispose；输出条数一般多于输入且与输入无对应，per-contour 缓存作废；阈值过小碎片爆炸、过大吃掉圆角 （具体边界行为以对应 HALCON 算子文档为准；mode 与两阈值冲突时的取舍]；输入由 GC.KeepAlive 保命。</para>
+	///   <para><b>资源与坑</b>contoursSplit 须 Dispose；输出条数一般多于输入且与输入无对应，per-contour 缓存作废；阈值过小碎片爆炸、过大吃掉圆角 （具体边界行为以对应 HALCON 算子文档为准；mode 与两阈值冲突时的取舍）；输入由 GC.KeepAlive 保命。</para>
 	/// </remarks>
 	public static void SegmentContoursXld(JlObject contours, out JlObject contoursSplit, JlTuple mode, JlTuple smoothCont, JlTuple maxLineDist1, JlTuple maxLineDist2)
 	{
@@ -1224,7 +1224,7 @@ public class JlOperatorSet
 	/// <param name="maxPolygons">输出：最大延伸平行线组成的新句柄。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>道路管线的中间步骤：将同属一条多边形、彼此共线的相邻线对拼接尽量长；输入须是 ModParallelsXld 产出的 ext 平行线对，喂错来源对象语义不成立。</para>
-	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDExtPara.MaxParallelsXld()"/> 的返回类型已从平行线对退化为普通折线多边形 JlXLDPoly；本静态版 out 是裸 JlObject，类型的退化要你自己记住，否则误把结果喂回只收平行线的算子 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错]。</para>
+	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDExtPara.MaxParallelsXld()"/> 的返回类型已从平行线对退化为普通折线多边形 JlXLDPoly；本静态版 out 是裸 JlObject，类型的退化要你自己记住，否则误把结果喂回只收平行线的算子 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错）。</para>
 	///   <para><b>参数取向</b>图标在槽 1、无控制参数；单个 out 经 JlObject.LoadNew 新建。</para>
 	///   <para><b>资源与坑</b>maxPolygons 须 Dispose；输入由 GC.KeepAlive 保命到调用结束。</para>
 	/// </remarks>
@@ -1288,9 +1288,9 @@ public class JlOperatorSet
 	/// <param name="standardMax">输出：灰度标准差最大值（DOUBLE 元组）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>纯读取的探底算子：先量一遍数据范围，再把 ModParallelsXld 的灰度与标准差阈值定在合理位置；不产生任何新图标对象。</para>
-	///   <para><b>与实例重载的取舍</b>实例标量版 <see cref="JlXLDPara.InfoParallelsXld(JlImage, out double, out double, out int, out int, out double, out double)"/> 每条输出只取第一个值且失败时以 -1 填充后在收尾抛异常；本静态版六路 out 全量装载、类型明确（quality 两路 DOUBLE、灰度两路 INTEGER、标准差两路 DOUBLE），"看见 -1"的坑不存在，但逐线对返回时第一条的含义仍是单值 （具体边界行为以对应 HALCON 算子文档为准；原生返回单值还是逐对象元组]。</para>
+	///   <para><b>与实例重载的取舍</b>实例标量版 <see cref="JlXLDPara.InfoParallelsXld(JlImage, out double, out double, out int, out int, out double, out double)"/> 每条输出只取第一个值且失败时以 -1 填充后在收尾抛异常；本静态版六路 out 全量装载、类型明确（quality 两路 DOUBLE、灰度两路 INTEGER、标准差两路 DOUBLE），"看见 -1"的坑不存在，但逐线对返回时第一条的含义仍是单值 （具体边界行为以对应 HALCON 算子文档为准；原生返回单值还是逐对象元组）。</para>
 	///   <para><b>参数取向</b>图标槽 1/2、无控制参数；六个 out 按 InitOCT(0..5) 依次 LoadNew。</para>
-	///   <para><b>资源与坑</b>六个元组中灰度两路是 INTEGER 型，取值时注意整数化截断；空容器输入会走失败路径 （具体边界行为以对应 HALCON 算子文档为准；具体异常]；两输入由 GC.KeepAlive 保命。</para>
+	///   <para><b>资源与坑</b>六个元组中灰度两路是 INTEGER 型，取值时注意整数化截断；空容器输入会走失败路径 （具体边界行为以对应 HALCON 算子文档为准；具体异常）；两输入由 GC.KeepAlive 保命。</para>
 	/// </remarks>
 	public static void InfoParallelsXld(JlObject parallels, JlObject image, out JlTuple qualityMin, out JlTuple qualityMax, out JlTuple grayMin, out JlTuple grayMax, out JlTuple standardMin, out JlTuple standardMax)
 	{
@@ -1397,7 +1397,7 @@ public class JlOperatorSet
 	/// <param name="length">输出：各线段长度（像素）。</param>
 	/// <param name="phi">输出：各线段法向矢量角，弧度制。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>线状两顶点多边形的压扁读取：六个元组等长、第 i 个分量对应第 i 条线段；面向多顶点或闭合多边形时"起终点"取法 （具体边界行为以对应 HALCON 算子文档为准）。phi 是法向角、与方向角差二分之 pi （具体边界行为以对应 HALCON 算子文档为准；符号约定]。</para>
+	///   <para><b>功能说明</b>线状两顶点多边形的压扁读取：六个元组等长、第 i 个分量对应第 i 条线段；面向多顶点或闭合多边形时"起终点"取法 （具体边界行为以对应 HALCON 算子文档为准）。phi 是法向角、与方向角差二分之 pi （具体边界行为以对应 HALCON 算子文档为准；符号约定）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDPoly.GetLinesXld(out JlTuple, out JlTuple, out JlTuple, out JlTuple, out JlTuple, out JlTuple)"/> 签名逐字相同，差异只在容器强类型；要完整顶点序列改用 GetPolygonXld。</para>
 	///   <para><b>参数取向</b>图标在原生槽 1、无控制参数；InitOCT(0..5) 登记六个输出全部经 JlTuple.LoadNew(DOUBLE) 新建，无截断。</para>
 	///   <para><b>资源与坑</b>六个元组为纯数值；零长度线段给出的数值 （具体边界行为以对应 HALCON 算子文档为准）；输入由 GC.KeepAlive 保命。</para>
@@ -1430,7 +1430,7 @@ public class JlOperatorSet
 	/// <param name="length">输出：每个多边形的长度（像素）。</param>
 	/// <param name="phi">输出：每个多边形的法向矢量角（弧度）。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>两级数据混在一个调用里：row/col 是逐顶点串联序列，length/phi 是逐多边形标量，二者长度通常不等，顶点归属哪个多边形要自行按顶点数切分——本算子不返回分组边界 （具体边界行为以对应 HALCON 算子文档为准；闭合多边形首末点是否重复计入]。把 row[1] 当"第二个多边形"是最常见误用，它是第二个顶点。</para>
+	///   <para><b>功能说明</b>两级数据混在一个调用里：row/col 是逐顶点串联序列，length/phi 是逐多边形标量，二者长度通常不等，顶点归属哪个多边形要自行按顶点数切分——本算子不返回分组边界 （具体边界行为以对应 HALCON 算子文档为准；闭合多边形首末点是否重复计入）。把 row[1] 当"第二个多边形"是最常见误用，它是第二个顶点。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDPoly.GetPolygonXld(out JlTuple, out JlTuple, out JlTuple, out JlTuple)"/> 签名一致、容器强类型；只要直线段参数用 GetLinesXld。</para>
 	///   <para><b>参数取向</b>图标在槽 1、无控制参数；InitOCT(0..3) 四路输出均经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>四个元组为纯数值；顶点保持原始顺序，托管层不做顺逆时针规范化；输入由 GC.KeepAlive 保命。</para>
@@ -1513,7 +1513,7 @@ public class JlOperatorSet
 	/// <param name="homMat2D">齐次投影变换矩阵（以 JlTuple 形态传入）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>点在齐次坐标下乘矩阵再除以末分量，直线仍映为直线，但平行性与长度比例不再保持；矩阵奇异或点贴近消隐线时会产生爆点坐标 （具体边界行为以对应 HALCON 算子文档为准）。仅在确有透视倾斜需求时用武，纯旋转平移缩放走仿射版即可。</para>
-	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDCont.ProjectiveTransContourXld(JlHomMat2D)"/> 以类型挡住非矩阵输入；本静态版形参是 JlTuple，JlHomMat2D 可经基类到 JlTuple 的隐式转换直接传入 （具体边界行为以对应 HALCON 算子文档为准；该转换对 JlData 的覆盖]，也可手写 9 元素数组——矩阵元素个数与主序排列托管层一概不校验。</para>
+	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLDCont.ProjectiveTransContourXld(JlHomMat2D)"/> 以类型挡住非矩阵输入；本静态版形参是 JlTuple，JlHomMat2D 可经基类到 JlTuple 的隐式转换直接传入 （具体边界行为以对应 HALCON 算子文档为准；该转换对 JlData 的覆盖），也可手写 9 元素数组——矩阵元素个数与主序排列托管层一概不校验。</para>
 	///   <para><b>参数取向</b>轮廓在图标槽 1、矩阵钉到控制槽 0 后调用、随后解钉；单个 out 经 JlObject.LoadNew 新建。</para>
 	///   <para><b>资源与坑</b>contoursProjTrans 须 Dispose；轮廓上的曲率等属性变换后是否保留 （具体边界行为以对应 HALCON 算子文档为准），对结果再拟合前建议重算；输入由 GC.KeepAlive 保命。</para>
 	/// </remarks>
@@ -1662,7 +1662,7 @@ public class JlOperatorSet
 	/// <param name="minDiff">极大值须高出剖面的最小灰度差。Default: 15</param>
 	/// <param name="distance">检查极大值所用剖面的最大宽度（像素）。Default: 4</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 53。轮廓走 <c>Store(1)</c>、灰度图走 <c>Store(2)</c>（同为对象输入），minPercent/minDiff/distance 走 <c>Store</c> 索引 0~2。传 70 表示要求轮廓上至少七成点处于剖面局部极大 （具体边界行为以对应 HALCON 算子文档为准；语义以原生为准]；轮廓与图像坐标不对齐时结果无意义。</para>
+	///   <para><b>功能说明</b>原生 id 53。轮廓走 <c>Store(1)</c>、灰度图走 <c>Store(2)</c>（同为对象输入），minPercent/minDiff/distance 走 <c>Store</c> 索引 0~2。传 70 表示要求轮廓上至少七成点处于剖面局部极大 （具体边界行为以对应 HALCON 算子文档为准；语义以原生为准）；轮廓与图像坐标不对齐时结果无意义。</para>
 	///   <para><b>与实例重载的取舍</b>实例重载统一比例阈值返回强类型句柄；本静态版把 image 也当裸句柄入参、结果以 out 给出。</para>
 	///   <para><b>参数取向</b>单个 out localMaxContours，走 <c>InitOCT(1)</c>+<c>LoadNew</c> 新句柄。</para>
 	///   <para><b>资源与坑</b>新句柄需 Dispose；contours 与 image 在原生调用结束前均不得释放（两路 <c>GC.KeepAlive</c>）。</para>
@@ -1699,7 +1699,7 @@ public class JlOperatorSet
 	/// <param name="filterSize">平滑滤波器的尺寸。Default: 1</param>
 	/// <param name="histoValues">直方图的输出值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 54。轮廓走 <c>Store(1)</c>，7 个几何/滤波参数走 <c>Store</c> 索引 0~6，均为整数装载（无亚像素参考线）。三路输出中 unionContours 走 OCT1、selectedContours 走 OCT2、histoValues 走 OCT0 且按 <c>INTEGER</c> 装载——计数是整型，不要按浮点频数理解。默认参考线起止同为 (0,0)，是退化直线：须先给真正起止坐标才有意义 （具体边界行为以对应 HALCON 算子文档为准；退化输入是报错还是全不选]。</para>
+	///   <para><b>功能说明</b>原生 id 54。轮廓走 <c>Store(1)</c>，7 个几何/滤波参数走 <c>Store</c> 索引 0~6，均为整数装载（无亚像素参考线）。三路输出中 unionContours 走 OCT1、selectedContours 走 OCT2、histoValues 走 OCT0 且按 <c>INTEGER</c> 装载——计数是整型，不要按浮点频数理解。默认参考线起止同为 (0,0)，是退化直线：须先给真正起止坐标才有意义 （具体边界行为以对应 HALCON 算子文档为准；退化输入是报错还是全不选）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版把合并轮廓作为返回值、selectedContours 与 histoValues 走 out；本静态版三路全走 out、句柄为裸 <c>JlObject</c>。</para>
 	///   <para><b>参数取向</b>3 个 out（两 JlObject + 一 JlTuple）：unionContours、selectedContours 走 <c>LoadNew</c> 新句柄，histoValues 走 <c>INTEGER LoadNew</c> 新元组。</para>
 	///   <para><b>资源与坑</b>三路都是新对象，漏一个泄一个；合并后条数减少、下标重排，按下标配对的旧缓存作废；contours 在调用结束前不得释放。</para>
@@ -1785,7 +1785,7 @@ public class JlOperatorSet
 	/// <param name="weightRegr">回归误差对总代价的影响（NOT USED）。Default: 0.0</param>
 	/// <param name="mode">描述轮廓属性处理方式。Default: "attr_keep"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 56。轮廓走 <c>Store(1)</c>，其余 13 个参数走 <c>Store</c> 索引 0~12，与控制参数序一致。文档标注 NOT USED 的 maxRegrError（索引 5）与 weightRegr（索引 11）传了也预期不影响结果 （具体边界行为以对应 HALCON 算子文档为准；是否被完全忽略]。</para>
+	///   <para><b>功能说明</b>原生 id 56。轮廓走 <c>Store(1)</c>，其余 13 个参数走 <c>Store</c> 索引 0~12，与控制参数序一致。文档标注 NOT USED 的 maxRegrError（索引 5）与 weightRegr（索引 11）传了也预期不影响结果 （具体边界行为以对应 HALCON 算子文档为准；是否被完全忽略）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版返回强类型句柄；本静态版裸句柄 out，参数极多，务必按序对齐。</para>
 	///   <para><b>参数取向</b>单个 out unionContours，走 <c>InitOCT(1)</c>+<c>LoadNew</c>。</para>
 	///   <para><b>资源与坑</b>句柄需 Dispose；contours 不得提前释放；合并改变条数与下标。</para>
@@ -1979,7 +1979,7 @@ public class JlOperatorSet
 	/// <param name="mode">离群点处理类型。Default: "no"</param>
 	/// <param name="iterations">离群点处理的迭代次数。Default: 1</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 61。轮廓走 <c>Store(1)</c>，控制参数走 <c>Store</c> 索引 0~1 为 mode（"no" 不处理离群点，其它值启用剔除 （具体边界行为以对应 HALCON 算子文档为准；取值集合]）与 iterations（剔除迭代次数）。输出是每条轮廓的拟合直线轮廓。</para>
+	///   <para><b>功能说明</b>原生 id 61。轮廓走 <c>Store(1)</c>，控制参数走 <c>Store</c> 索引 0~1 为 mode（"no" 不处理离群点，其它值启用剔除 （具体边界行为以对应 HALCON 算子文档为准；取值集合））与 iterations（剔除迭代次数）。输出是每条轮廓的拟合直线轮廓。</para>
 	///   <para><b>与实例重载的取舍</b>实例版强类型返回；本静态版裸句柄 out。</para>
 	///   <para><b>参数取向</b>单个 out regressContours，走 <c>InitOCT(1)</c>+<c>LoadNew</c>。</para>
 	///   <para><b>资源与坑</b>句柄需 Dispose；contours 不得提前释放。</para>
@@ -2185,7 +2185,7 @@ public class JlOperatorSet
 	/// <param name="contours">结果轮廓。</param>
 	/// <param name="mode">轮廓生成模式。Default: "border"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 70。区域走 <c>Store(1)</c>，mode 走 <c>Store</c> 索引 0（字符串，如 "border" 沿边界、"filled" 填充边界等 （具体边界行为以对应 HALCON 算子文档为准；mode 取值集合]）。输出走 <c>InitOCT(1)</c>+<c>LoadNew</c>，是新句柄而非原地改写。</para>
+	///   <para><b>功能说明</b>原生 id 70。区域走 <c>Store(1)</c>，mode 走 <c>Store</c> 索引 0（字符串，如 "border" 沿边界、"filled" 填充边界等 （具体边界行为以对应 HALCON 算子文档为准；mode 取值集合））。输出走 <c>InitOCT(1)</c>+<c>LoadNew</c>，是新句柄而非原地改写。</para>
 	///   <para><b>与实例重载的取舍</b><c>JlRegion.GenContourRegionXld</c> 返回强类型 <c>JlXLDCont</c>；本静态版吐裸 <c>JlObject</c> 句柄。</para>
 	///   <para><b>参数取向</b>单个 out contours，走 <c>LoadNew</c> 新句柄。</para>
 	///   <para><b>资源与坑</b>新句柄需 Dispose；regions 在原生调用结束前不得释放（<c>GC.KeepAlive</c>）。</para>
@@ -6851,7 +6851,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 416。对输入区域做字符级形状筛选（尺寸、笔画、连通性、碎片合并），输出仍是区域，不含识别出的文字内容，属区域算子而非 OCR 模型。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.SelectCharacters(string,string,JlTuple,JlTuple,string,string,string,string,string,string,int,string)"/>：实例版把各开关钉成 <c>string</c>、杂点上限钉成 <c>int</c>（内部 <c>StoreS</c>/<c>StoreI</c>）；本静态版十二个控制参数一律是 <see cref="JlTuple"/> 并走通用 <c>Store</c>，元素是字符串、整数还是实数由调用者构造的元组决定。要一次给多档尺寸时用本版本。</para>
 	///   <para><b>参数取向</b>控制槽 0 至 11 与 C# 形参顺序完全一致；<paramref name="charWidth"/> 与 <paramref name="charHeight"/> 是元组，可携带多档取值。</para>
-	///   <para><b>资源与坑</b>结果由 <c>LoadNew</c> 装入新句柄，用毕 <c>Dispose</c>；<c>GC.KeepAlive(region)</c> 要求原生调用结束前不释放输入；十二个实参错位不会编译报错但会静默改变语义；字符串枚举不经托管层校验，非法值由原生报错 （具体边界行为以对应 HALCON 算子文档为准）；<paramref name="stopAfter"/> 停在中间步时输出只是流水线半成品 （具体边界行为以对应 HALCON 算子文档为准；各步的输出口径]。</para>
+	///   <para><b>资源与坑</b>结果由 <c>LoadNew</c> 装入新句柄，用毕 <c>Dispose</c>；<c>GC.KeepAlive(region)</c> 要求原生调用结束前不释放输入；十二个实参错位不会编译报错但会静默改变语义；字符串枚举不经托管层校验，非法值由原生报错 （具体边界行为以对应 HALCON 算子文档为准）；<paramref name="stopAfter"/> 停在中间步时输出只是流水线半成品 （具体边界行为以对应 HALCON 算子文档为准；各步的输出口径）。</para>
 	/// </remarks>
 	public static void SelectCharacters(JlObject region, out JlObject regionCharacters, JlTuple dotPrint, JlTuple strokeWidth, JlTuple charWidth, JlTuple charHeight, JlTuple punctuation, JlTuple diacriticMarks, JlTuple partitionMethod, JlTuple partitionLines, JlTuple fragmentDistance, JlTuple connectFragments, JlTuple clutterSizeMax, JlTuple stopAfter)
 	{
@@ -7071,7 +7071,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 434。在 <paramref name="histoRegion"/> 内取直方图、按 <paramref name="sigma"/> 做高斯平滑，再用 <paramref name="percent"/> 定出字符与背景的分割点，输出暗侧区域。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.CharThreshold(JlRegion,double,JlTuple,out JlTuple)"/> 与 <see cref="JlImage.CharThreshold(JlRegion,double,double,out int)"/>：实例版把 <paramref name="sigma"/> 钉成 <c>double</c>；本静态版两个数值参数都是 <see cref="JlTuple"/>，且区域与阈值一次全部经 out 交出，便于同时拿裸句柄和原始阈值元组。</para>
 	///   <para><b>参数取向</b>两次 <c>InitOCT</c>：槽 1 是图标输出、槽 0 是控制输出；阈值用 <c>JlTuple.LoadNew</c> 显式按 <c>INTEGER</c> 装载，小数部分不保留——这与 <see cref="JlOperatorSet.BinaryThreshold(JlObject,out JlObject,JlTuple,JlTuple,out JlTuple)"/> 不指定类型、按原生类型原样装载的做法不同。</para>
-	///   <para><b>资源与坑</b>两个结果都必须写成 <c>out</c>；<paramref name="characters"/> 是新句柄需 <c>Dispose</c>，<paramref name="threshold"/> 是 <see cref="JlTuple"/> 不需释放；<paramref name="histoRegion"/> 只含背景或含干扰图形时阈值会整体偏掉 （具体边界行为以对应 HALCON 算子文档为准；直方图双峰不明显时报错还是给出可用值]；两路输入由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>两个结果都必须写成 <c>out</c>；<paramref name="characters"/> 是新句柄需 <c>Dispose</c>，<paramref name="threshold"/> 是 <see cref="JlTuple"/> 不需释放；<paramref name="histoRegion"/> 只含背景或含干扰图形时阈值会整体偏掉 （具体边界行为以对应 HALCON 算子文档为准；直方图双峰不明显时报错还是给出可用值）；两路输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void CharThreshold(JlObject image, JlObject histoRegion, out JlObject characters, JlTuple sigma, JlTuple percent, out JlTuple threshold)
 	{
@@ -7171,7 +7171,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 438。灰度达到 <paramref name="high"/> 的点为确定点，落在 <paramref name="low"/> 与 <paramref name="high"/> 之间的点只有在 <paramref name="maxLength"/> 步内能连到确定点时才被收下，因此能接住断续的边缘。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.HysteresisThreshold(int,int,int)"/>（整数版，两个阈值走 <c>StoreI</c>，带不了小数）与 <see cref="JlImage.HysteresisThreshold(JlTuple,JlTuple,int)"/>（元组版）；本静态版三个参数全部是 <see cref="JlTuple"/> 并走通用 <c>Store</c>，给 <c>float</c> 图传实数阈值时用它。</para>
 	///   <para><b>参数取向</b>控制槽 0、1、2 依次是 <paramref name="low"/>、<paramref name="high"/>、<paramref name="maxLength"/>，与 C# 形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>新句柄需 <c>Dispose</c>，输入由 <c>GC.KeepAlive</c> 保活；<paramref name="maxLength"/> 调大能接住断边但也更容易把噪声串成片；上下界写反时的行为托管层不校验 （具体边界行为以对应 HALCON 算子文档为准；报错还是给出空区域]。</para>
+	///   <para><b>资源与坑</b>新句柄需 <c>Dispose</c>，输入由 <c>GC.KeepAlive</c> 保活；<paramref name="maxLength"/> 调大能接住断边但也更容易把噪声串成片；上下界写反时的行为托管层不校验 （具体边界行为以对应 HALCON 算子文档为准；报错还是给出空区域）。</para>
 	/// </remarks>
 	public static void HysteresisThreshold(JlObject image, out JlObject regionHysteresis, JlTuple low, JlTuple high, JlTuple maxLength)
 	{
@@ -7200,7 +7200,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 439。由 <paramref name="method"/> 指定的判据自动定出一个阈值，再按 <paramref name="lightDark"/> 取亮侧或暗侧成区域。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.BinaryThreshold(string,string,out JlTuple)"/> 与 <see cref="JlImage.BinaryThreshold(string,string,out int)"/>：三者同 id、区域输出路径一致；差别在装载方式——实例的 <c>int</c> 版用 <c>LoadI</c> 读阈值，<c>float</c> 图上的非整数阈值会被截断；本静态版用不指定类型的 <c>JlTuple.LoadNew</c>，按原生类型原样取回，不丢小数。</para>
 	///   <para><b>参数取向</b>两次 <c>InitOCT</c>（槽 1 图标、槽 0 控制），因此本算子有两个 out，调用处必须都写 <c>out</c>；两个字符串参数走通用 <c>Store</c> 而非 <c>StoreS</c>。</para>
-	///   <para><b>资源与坑</b><paramref name="region"/> 是新句柄需 <c>Dispose</c>；<paramref name="usedThreshold"/> 是 <see cref="JlTuple"/>，实现 <c>IDisposable</c>；直方图接近单峰时判据给出的阈值可用性有限 （具体边界行为以对应 HALCON 算子文档为准；是否会直接报错]。</para>
+	///   <para><b>资源与坑</b><paramref name="region"/> 是新句柄需 <c>Dispose</c>；<paramref name="usedThreshold"/> 是 <see cref="JlTuple"/>，实现 <c>IDisposable</c>；直方图接近单峰时判据给出的阈值可用性有限 （具体边界行为以对应 HALCON 算子文档为准；是否会直接报错）。</para>
 	/// </remarks>
 	public static void BinaryThreshold(JlObject image, out JlObject region, JlTuple method, JlTuple lightDark, out JlTuple usedThreshold)
 	{
@@ -7229,7 +7229,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 440。<paramref name="method"/> 选局部判据（如按窗内标准差自适应），<paramref name="genParamName"/> 与 <paramref name="genParamValue"/> 是给该判据的可选具名参数表，默认为空即全部取原生默认值。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.LocalThreshold(string,string,JlTuple,JlTuple)"/>（元组版）与 <see cref="JlImage.LocalThreshold(string,string,string,int)"/>（只能给一对名值、且值只能是 <c>int</c>）；本静态版把两表按控制槽 2、3 原样交给原生，可携带任意个数与类型的元素。</para>
-	///   <para><b>参数取向</b>名表与值表是分开的两个元组，逐元素配对由原生侧完成；托管层不校验两者长度是否相等 （具体边界行为以对应 HALCON 算子文档为准；长度不等或名字非法时报错还是忽略]。</para>
+	///   <para><b>参数取向</b>名表与值表是分开的两个元组，逐元素配对由原生侧完成；托管层不校验两者长度是否相等 （具体边界行为以对应 HALCON 算子文档为准；长度不等或名字非法时报错还是忽略）。</para>
 	///   <para><b>资源与坑</b>形参传 <c>null</c> 不会抛异常，<c>Store</c> 会换成空元组，但因此漏填参数会静默走默认值；单路图标输出，新句柄需 <c>Dispose</c>；<c>GC.KeepAlive(image)</c> 保活输入。</para>
 	/// </remarks>
 	public static void LocalThreshold(JlObject image, out JlObject region, JlTuple method, JlTuple lightDark, JlTuple genParamName, JlTuple genParamValue)
@@ -7263,7 +7263,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 441。逐像素用窗内均值加 <paramref name="stdDevScale"/> 倍标准差作为局部阈值，并要求与均值的差不小于 <paramref name="absThreshold"/>，再按 <paramref name="lightDark"/> 取舍，适合光照不均的字符与缺陷图。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.VarThreshold(int,int,JlTuple,JlTuple,string)"/> 与 <see cref="JlImage.VarThreshold(int,int,double,double,string)"/>（后者的两个阈值参数用 <c>StoreD</c> 直写单值）；本静态版连 <paramref name="maskWidth"/>、<paramref name="maskHeight"/> 也是 <see cref="JlTuple"/>，五个参数一律通用 <c>Store</c>。</para>
 	///   <para><b>参数取向</b>控制槽 0 至 4 与 C# 形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>窗口越大越慢，且窗口与笔画宽度相当时会把目标本身吞进均值里而漏检 （具体边界行为以对应 HALCON 算子文档为准；具体漏检阈值与纹理周期关系]；<paramref name="lightDark"/> 非托管层校验，非法字面量由原生报错；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>窗口越大越慢，且窗口与笔画宽度相当时会把目标本身吞进均值里而漏检 （具体边界行为以对应 HALCON 算子文档为准；具体漏检阈值与纹理周期关系）；<paramref name="lightDark"/> 非托管层校验，非法字面量由原生报错；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void VarThreshold(JlObject image, out JlObject region, JlTuple maskWidth, JlTuple maskHeight, JlTuple stdDevScale, JlTuple absThreshold, JlTuple lightDark)
 	{
@@ -7296,7 +7296,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 442。把 <paramref name="thresholdImage"/> 当逐像素阈值面（常用 <c>GaussImage</c> 或 <c>MedianImage</c> 的低通结果得到），<paramref name="offset"/> 整体抬高或压低该面，<paramref name="lightDark"/> 决定比它亮、比它暗还是两者皆可。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.DynThreshold(JlImage,double,string)"/>（<c>StoreD</c> 直写单值偏移）与 <see cref="JlImage.DynThreshold(JlImage,JlTuple,string)"/>（元组版）；本静态版 <paramref name="offset"/> 走通用 <c>Store</c>，两幅图都是显式图标入参。</para>
 	///   <para><b>参数取向</b>图标输入槽 1、2 分别是原图与阈值图，控制槽 0、1 是偏移与模式；单路图标输出。</para>
-	///   <para><b>资源与坑</b>两幅图尺寸需一致，逐像素配对才成立 （具体边界行为以对应 HALCON 算子文档为准；不一致时报错还是按交集处理]；阈值图本身含噪声会导致边缘毛糙，宜先平滑；新句柄需 <c>Dispose</c>，两输入由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>两幅图尺寸需一致，逐像素配对才成立 （具体边界行为以对应 HALCON 算子文档为准；不一致时报错还是按交集处理）；阈值图本身含噪声会导致边缘毛糙，宜先平滑；新句柄需 <c>Dispose</c>，两输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void DynThreshold(JlObject origImage, JlObject thresholdImage, out JlObject regionDynThresh, JlTuple offset, JlTuple lightDark)
 	{
@@ -7347,7 +7347,7 @@ public class JlOperatorSet
 	/// <param name="threshold">等灰度线的灰度值。Default: 128</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 444。在相邻像素之间线性内插求等灰度位置，因此结果精度高于亚像素栅格化前的区域边界，用于对位与测量类场合。</para>
-	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.ThresholdSubPix(double)"/>：实例版用 <c>StoreD</c> 直写单个 <c>double</c>、只提一条等灰度线并返回 <c>JlXLDCont</c>；本静态版 <paramref name="threshold"/> 是 <see cref="JlTuple"/> 走通用 <c>Store</c>，可携带多个取值 （具体边界行为以对应 HALCON 算子文档为准；多元素是否逐条展开成多条轮廓]。</para>
+	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.ThresholdSubPix(double)"/>：实例版用 <c>StoreD</c> 直写单个 <c>double</c>、只提一条等灰度线并返回 <c>JlXLDCont</c>；本静态版 <paramref name="threshold"/> 是 <see cref="JlTuple"/> 走通用 <c>Store</c>，可携带多个取值 （具体边界行为以对应 HALCON 算子文档为准；多元素是否逐条展开成多条轮廓）。</para>
 	///   <para><b>参数取向</b>只有阈值一个控制参数（槽 0）；单路图标输出，由 <c>JlObject.LoadNew</c> 装入裸句柄。</para>
 	///   <para><b>资源与坑</b>返回的是 <see cref="JlObject"/>，需自行按轮廓对象处理并 <c>Dispose</c>；碎轮廓要靠长度筛选剔除；图像位深决定合理阈值区间；输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
@@ -7439,7 +7439,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 447。从每个种子点出发，把与已生长区域均值偏差不超 <paramref name="tolerance"/> 的像素并进来，小于 <paramref name="minSize"/> 的块被丢弃。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.RegiongrowingMean(int,int,double,int)"/>：该版种子坐标经 <c>StoreI</c> 按单个整数传入，只能给一颗种子且坐标取不了半像素；多种子请用元组版 <see cref="JlImage.RegiongrowingMean(JlTuple,JlTuple,double,int)"/> 或本门面版。</para>
 	///   <para><b>参数取向</b>四个控制参数依次占槽 0 至 3；单路图标输出。</para>
-	///   <para><b>资源与坑</b>种子数与输出区域数并非一一对应，相邻种子会长成同一块；两个坐标表长度不等时的配对处理 （具体边界行为以对应 HALCON 算子文档为准）；默认空列表意味着没有种子，此时输出内容 （具体边界行为以对应 HALCON 算子文档为准；报错还是整图生长]；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>种子数与输出区域数并非一一对应，相邻种子会长成同一块；两个坐标表长度不等时的配对处理 （具体边界行为以对应 HALCON 算子文档为准）；默认空列表意味着没有种子，此时输出内容 （具体边界行为以对应 HALCON 算子文档为准；报错还是整图生长）；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void RegiongrowingMean(JlObject image, out JlObject regions, JlTuple startRows, JlTuple startColumns, JlTuple tolerance, JlTuple minSize)
 	{
@@ -7547,7 +7547,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 453。以零为中心做双侧分割，三道抑制依次是面积门槛 <paramref name="minSize"/>、峰值门槛 <paramref name="minGray"/> 与符号门槛 <paramref name="threshold"/>，适合差值图上有正有负的缺陷检测。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.DualThreshold(int,double,double)"/>：实例版用 <c>StoreI</c> 与 <c>StoreD</c> 直写单值；本静态版三个参数均为 <see cref="JlTuple"/> 走通用 <c>Store</c>。</para>
 	///   <para><b>参数取向</b>控制槽 0、1、2 与形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>输入需是带符号或均值归零的图，普通 <c>byte</c> 图上整幅都是正侧 （具体边界行为以对应 HALCON 算子文档为准；是否直接报错]；<paramref name="regionCrossings"/> 内含正负两组区域，取用时按符号分开；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>输入需是带符号或均值归零的图，普通 <c>byte</c> 图上整幅都是正侧 （具体边界行为以对应 HALCON 算子文档为准；是否直接报错）；<paramref name="regionCrossings"/> 内含正负两组区域，取用时按符号分开；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void DualThreshold(JlObject image, out JlObject regionCrossings, JlTuple minSize, JlTuple minGray, JlTuple threshold)
 	{
@@ -7594,7 +7594,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 456。洼地是被更高灰度包围的连片低值区，比 <see cref="JlOperatorSet.LocalMin(JlObject,out JlObject)"/> 的单点判据更成片，适合作分水或目标种子。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.Lowlands()"/>：实例版直接返回 <c>JlRegion</c>；本静态版无参数、结果走 out，拿到的就是原生句柄本身。</para>
 	///   <para><b>参数取向</b>无控制参数，单路图标输出。</para>
-	///   <para><b>资源与坑</b>整幅单调渐变的图上洼地可能为空 （具体边界行为以对应 HALCON 算子文档为准；空结果是零块区域还是报错]；要洼地中心而非整片，用 <see cref="JlOperatorSet.LowlandsCenter(JlObject,out JlObject)"/>；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>整幅单调渐变的图上洼地可能为空 （具体边界行为以对应 HALCON 算子文档为准；空结果是零块区域还是报错）；要洼地中心而非整片，用 <see cref="JlOperatorSet.LowlandsCenter(JlObject,out JlObject)"/>；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void Lowlands(JlObject image, out JlObject lowlands)
 	{
@@ -7696,7 +7696,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 462。对直方图做高斯平滑后在谷处切分，得到多个灰度区间，每个区间一块区域。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.AutoThreshold(double)"/>（<c>StoreD</c> 直写单值，无元组固定开销）与 <see cref="JlImage.AutoThreshold(JlTuple)"/>；本静态版走通用 <c>Store</c>，结果由 out 交出的裸句柄承载。</para>
 	///   <para><b>参数取向</b>只有 <paramref name="sigma"/> 一个控制参数（槽 0）；单路图标输出，但该句柄内含多块区域。</para>
-	///   <para><b>资源与坑</b>输出块数由直方图形状决定、不固定，下游按下标取块时不稳；<paramref name="sigma"/> 越大区间越少 （具体边界行为以对应 HALCON 算子文档为准；是否可能一个区间都不给出]；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>输出块数由直方图形状决定、不固定，下游按下标取块时不稳；<paramref name="sigma"/> 越大区间越少 （具体边界行为以对应 HALCON 算子文档为准；是否可能一个区间都不给出）；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void AutoThreshold(JlObject image, out JlObject regions, JlTuple sigma)
 	{
@@ -7718,7 +7718,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 463。零参数版本：阈值由直方图自动决定，方向固定取暗侧，相当于一键二值化。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.BinThreshold()"/>：实例版直接返回 <c>JlRegion</c>；本静态版结果走 out。需要亮侧、需要多种判据或需要把实际阈值一并拿回时，改用 <see cref="JlOperatorSet.BinaryThreshold(JlObject,out JlObject,JlTuple,JlTuple,out JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>无任何控制参数，单路图标输出（<c>LoadNew</c>）。</para>
-	///   <para><b>资源与坑</b>直方图接近单峰时定出的阈值带很大偶然性 （具体边界行为以对应 HALCON 算子文档为准；是否报错]；本算子不回传阈值，事后无法复现用了哪个值；新句柄需 <c>Dispose</c>，输入由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>直方图接近单峰时定出的阈值带很大偶然性 （具体边界行为以对应 HALCON 算子文档为准；是否报错）；本算子不回传阈值，事后无法复现用了哪个值；新句柄需 <c>Dispose</c>，输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void BinThreshold(JlObject image, out JlObject region)
 	{
@@ -7741,7 +7741,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 464。等价于"阈值分割加一次小对象剔除"，但把两件事合进一次原生调用，省去中间句柄的分配与传递。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlImage.FastThreshold(double,double,int)"/>（<c>StoreD</c>/<c>StoreI</c> 直写单值）与 <see cref="JlImage.FastThreshold(JlTuple,JlTuple,int)"/>；本静态版三个参数都走通用 <c>Store</c> 的 <see cref="JlTuple"/>。</para>
 	///   <para><b>参数取向</b>控制槽 0、1、2 与形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>"快"具体牺牲了什么（是否跳过某些像素或改用粗化扫描）托管层未体现 （具体边界行为以对应 HALCON 算子文档为准；与 <see cref="JlOperatorSet.Threshold(JlObject,out JlObject,JlTuple,JlTuple)"/> 再筛面积的结果是否逐像素一致]；<paramref name="minSize"/> 直接丢弃小对象，需要保留细小时改用普通阈值；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>"快"具体牺牲了什么（是否跳过某些像素或改用粗化扫描）托管层未体现 （具体边界行为以对应 HALCON 算子文档为准；与 <see cref="JlOperatorSet.Threshold(JlObject,out JlObject,JlTuple,JlTuple)"/> 再筛面积的结果是否逐像素一致）；<paramref name="minSize"/> 直接丢弃小对象，需要保留细小时改用普通阈值；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void FastThreshold(JlObject image, out JlObject region, JlTuple minGray, JlTuple maxGray, JlTuple minSize)
 	{
@@ -7806,7 +7806,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 468。以 <paramref name="width"/> 乘 <paramref name="height"/> 的栅格去裁区域，常用于把成段文字或大目标拆成便于逐个处理的块。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.PartitionRectangle(double,double)"/>：实例版用 <c>StoreD</c> 直写两个 <c>double</c>；本静态版两参数走通用 <c>Store</c>，且没有默认值可依赖，两个尺寸都必须显式给出。</para>
 	///   <para><b>参数取向</b>控制槽 0、1 与形参序一致；单路图标输出。</para>
-	///   <para><b>资源与坑</b>格子尺寸与字符尺寸不匹配时会把单个字符切开；切缝上的像素如何归属 （具体边界行为以对应 HALCON 算子文档为准；丢弃还是就近并入]；切分不可逆，原句柄需另留；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>格子尺寸与字符尺寸不匹配时会把单个字符切开；切缝上的像素如何归属 （具体边界行为以对应 HALCON 算子文档为准；丢弃还是就近并入）；切分不可逆，原句柄需另留；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void PartitionRectangle(JlObject region, out JlObject partitioned, JlTuple width, JlTuple height)
 	{
@@ -7859,7 +7859,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 470。第 k 块区域被填成取值 k，形成标签图；与 <see cref="JlOperatorSet.LabelToRegion(JlObject,out JlObject)"/>（id 435）互为逆操作。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.RegionToLabel(string,int,int)"/>：实例版以 <c>StoreS</c> 与 <c>StoreI</c> 传入，类型名与尺寸都是强类型单值；本静态版三个参数都是 <see cref="JlTuple"/> 并走通用 <c>Store</c>。</para>
 	///   <para><b>参数取向</b>控制槽 0、1、2 与形参序一致；单路图标输出，装载的是图像句柄而非区域。</para>
-	///   <para><b>资源与坑</b>块数超过 <paramref name="type"/> 的取值量程时会溢出 （具体边界行为以对应 HALCON 算子文档为准；是否自动升型或报错]；区域超出 <paramref name="width"/> 与 <paramref name="height"/> 的部分如何处理 （具体边界行为以对应 HALCON 算子文档为准）；画幅不会从区域自动推导，必须自己给；新句柄需 <c>Dispose</c>。</para>
+	///   <para><b>资源与坑</b>块数超过 <paramref name="type"/> 的取值量程时会溢出 （具体边界行为以对应 HALCON 算子文档为准；是否自动升型或报错）；区域超出 <paramref name="width"/> 与 <paramref name="height"/> 的部分如何处理 （具体边界行为以对应 HALCON 算子文档为准）；画幅不会从区域自动推导，必须自己给；新句柄需 <c>Dispose</c>。</para>
 	/// </remarks>
 	public static void RegionToLabel(JlObject region, out JlObject imageLabel, JlTuple type, JlTuple width, JlTuple height)
 	{
@@ -8154,7 +8154,7 @@ public class JlOperatorSet
 	/// <param name="column">平移向量的列分量。Default: 30</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 481。整块区域按向量搬移，形状与面积不变，是最便宜的位姿微调手段。</para>
-	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.MoveRegion(int,int)"/>：实例版两分量走 <c>StoreI</c>，只能整数；本静态版两分量是 <see cref="JlTuple"/> 并走通用 <c>Store</c>，可以自行放入实数 （具体边界行为以对应 HALCON 算子文档为准；原生是否按截断处理小数]。半像素或带旋转的搬移请用 <see cref="JlOperatorSet.AffineTransRegion(JlObject,out JlObject,JlTuple,JlTuple)"/>。</para>
+	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.MoveRegion(int,int)"/>：实例版两分量走 <c>StoreI</c>，只能整数；本静态版两分量是 <see cref="JlTuple"/> 并走通用 <c>Store</c>，可以自行放入实数 （具体边界行为以对应 HALCON 算子文档为准；原生是否按截断处理小数）。半像素或带旋转的搬移请用 <see cref="JlOperatorSet.AffineTransRegion(JlObject,out JlObject,JlTuple,JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>控制槽 0、1 与形参序一致；单路图标输出。</para>
 	///   <para><b>资源与坑</b>两个分量元组若各含多元素，与多块区域如何逐元素配对 （具体边界行为以对应 HALCON 算子文档为准）；本算子不改形状，因此旧特征除位置外仍可复用；新句柄需 <c>Dispose</c>，输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
@@ -8181,7 +8181,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生算子 id 482。统计每个骨架像素的邻居数：一邻为端点、三邻及以上为交叉点，用于把骨架转成可建模的图结构。</para>
 	///   <para><b>与实例重载的取舍</b>见 <see cref="JlRegion.JunctionsSkeleton(out JlRegion)"/>：实例版把端点当返回值、交叉点放 out；本静态版两路都是 <c>out</c>，顺序即原生槽 1、2，两路都必须写 <c>out</c>。</para>
 	///   <para><b>参数取向</b>无控制参数，两次 <c>InitOCT</c> 声明两路图标输出。</para>
-	///   <para><b>资源与坑</b>输入必须是 <see cref="JlOperatorSet.Skeleton(JlObject,out JlObject)"/> 那样一像素宽的骨架，否则判据失真 （具体边界行为以对应 HALCON 算子文档为准；非骨架输入是否直接报错]；两路句柄互不隶属，都要 <c>Dispose</c>；输入由 <c>GC.KeepAlive</c> 保活。</para>
+	///   <para><b>资源与坑</b>输入必须是 <see cref="JlOperatorSet.Skeleton(JlObject,out JlObject)"/> 那样一像素宽的骨架，否则判据失真 （具体边界行为以对应 HALCON 算子文档为准；非骨架输入是否直接报错）；两路句柄互不隶属，都要 <c>Dispose</c>；输入由 <c>GC.KeepAlive</c> 保活。</para>
 	/// </remarks>
 	public static void JunctionsSkeleton(JlObject region, out JlObject endPoints, out JlObject juncPoints)
 	{
@@ -11316,7 +11316,7 @@ public class JlOperatorSet
 	///   <para><b>功能说明</b>原生 id 729。以元素 'l' 迭代 <c>iterations1</c> 次、再以 'e' 迭代 <c>iterations2</c> 次做细化，得到近似骨架。默认 100/1 表示第一轮基本跑到收敛、第二轮补一刀。</para>
 	///   <para><b>与实例重载的取舍</b>静态版裸句柄进出；日常用 <see cref="JlRegion"/> 实例方法。要手管句柄/避免类型封装时用本版。</para>
 	///   <para><b>参数取向</b>1 路对象输出（<c>LoadNew</c> 新句柄）。元素类型固定（'l'/'e'），<c>iterations1</c>/<c>iterations2</c> 是控制槽 0/1。</para>
-	///   <para><b>资源与坑</b><c>region</c> 被 KeepAlive 保活；<c>regionSkiz</c> 需释放。迭代次数过大耗时线性上升 （具体边界行为以对应 HALCON 算子文档为准；是否按实际收敛提前停]。</para>
+	///   <para><b>资源与坑</b><c>region</c> 被 KeepAlive 保活；<c>regionSkiz</c> 需释放。迭代次数过大耗时线性上升 （具体边界行为以对应 HALCON 算子文档为准；是否按实际收敛提前停）。</para>
 	/// </remarks>
 	public static void MorphSkiz(JlObject region, out JlObject regionSkiz, JlTuple iterations1, JlTuple iterations2)
 	{
@@ -11981,7 +11981,7 @@ public class JlOperatorSet
 	/// <param name="height">结构矩形高度。Default: 11</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 755。把目标只沿一个方向延长的最省事写法：height 小 width 大可将指示线朝标签拉长，一维编码条沿行补齐。默认 11×11 与 ErosionRectangle1 一致，而开/闭矩形版是 10×10，两种默认值都合法、勿互相纠正；偶数宽高偏移半像素。</para>
-	///   <para><b>与实例重载的取舍</b>静态版把 width/height 作为 JlTuple 控制参数（可多值）；日常用 JlRegion 实例方法。超过十几像素的大外扩优先 DilationCircle/DilationSeq （具体边界行为以对应 HALCON 算子文档为准；矩形膨胀对大尺寸比圆盘慢]。</para>
+	///   <para><b>与实例重载的取舍</b>静态版把 width/height 作为 JlTuple 控制参数（可多值）；日常用 JlRegion 实例方法。超过十几像素的大外扩优先 DilationCircle/DilationSeq （具体边界行为以对应 HALCON 算子文档为准；矩形膨胀对大尺寸比圆盘慢）。</para>
 	///   <para><b>参数取向</b>1 路对象输出（LoadNew 新句柄）。region 占 iconic 槽 1；width/height 占控制槽 0/1。</para>
 	///   <para><b>资源与坑</b>region 被 KeepAlive 保活、不被修改；regionDilation 是新句柄需释放。</para>
 	/// </remarks>
@@ -12086,7 +12086,7 @@ public class JlOperatorSet
 	/// <param name="SE">灰度结构元（图像句柄）。</param>
 	/// <param name="imageBotHat">底帽图像。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 759。底帽 = 灰度闭运算 − 原图，保留比周围低、宽度小于 SE 的暗结构（划痕、凹坑、压印缺口），背景被压平到接近 0，阈值下限通常取几而非 128 （具体边界行为以对应 HALCON 算子文档为准；byte 输出是否含偏置]。与 GrayTophat(760) 成对（那用开运算提亮峰）。</para>
+	///   <para><b>功能说明</b>原生 id 759。底帽 = 灰度闭运算 − 原图，保留比周围低、宽度小于 SE 的暗结构（划痕、凹坑、压印缺口），背景被压平到接近 0，阈值下限通常取几而非 128 （具体边界行为以对应 HALCON 算子文档为准；byte 输出是否含偏置）。与 GrayTophat(760) 成对（那用开运算提亮峰）。</para>
 	///   <para><b>与实例重载的取舍</b>静态版以裸 JlObject 收 image/SE、out 出结果图像句柄；SE 是带灰度的图像而非区域。日常用 JlImage.GrayBothat 实例方法（见 <see cref="JlImage"/>）。别用"反相后顶帽"代替黑帽。</para>
 	///   <para><b>参数取向</b>1 路对象输出（LoadNew 新句柄，是图像）。image/SE 各占 iconic 槽 1/2，无控制参数。</para>
 	///   <para><b>资源与坑</b>SE 只读、被 KeepAlive 保活、调用前不可释放；imageBotHat 是新句柄需释放。</para>
@@ -12179,7 +12179,7 @@ public class JlOperatorSet
 	/// <param name="imageDilation">灰度膨胀结果。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生 id 763。SE 带灰度：结果是把邻域灰度按 SE 偏移后取最大，亮结构变大、暗结构被吃掉，整幅图灰度只升不降。</para>
-	///   <para><b>与实例重载的取舍</b>静态版以裸 JlObject 收放、out 出图像句柄；日常用 JlImage.GrayDilation 实例方法（见 <see cref="JlImage"/>）。只想让亮区变宽用 GrayDilationRect 免造 SE；要做上包络/闭运算直接用 GrayClosing 而非手拼两步。严格可加的量（高度/灰度测量）应先 ConvertImageType 到 float （具体边界行为以对应 HALCON 算子文档为准；byte 近 255 截断还是回绕]。</para>
+	///   <para><b>与实例重载的取舍</b>静态版以裸 JlObject 收放、out 出图像句柄；日常用 JlImage.GrayDilation 实例方法（见 <see cref="JlImage"/>）。只想让亮区变宽用 GrayDilationRect 免造 SE；要做上包络/闭运算直接用 GrayClosing 而非手拼两步。严格可加的量（高度/灰度测量）应先 ConvertImageType 到 float （具体边界行为以对应 HALCON 算子文档为准；byte 近 255 截断还是回绕）。</para>
 	///   <para><b>参数取向</b>1 路对象输出（LoadNew 新句柄）。image/SE 各占 iconic 槽 1/2，无控制参数。</para>
 	///   <para><b>资源与坑</b>SE 只读、被 KeepAlive 保活、调用前不可释放；边缘取值方式本层不体现 （具体边界行为以对应 HALCON 算子文档为准）；imageDilation 是新句柄需释放。</para>
 	/// </remarks>
@@ -12304,7 +12304,7 @@ public class JlOperatorSet
 	/// <param name="column">对齐的列坐标。Default: 0</param>
 	/// <param name="angle">对齐的旋转角。Default: 0</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生 id 769。用 (row,column,angle) 对计量模型做刚体对齐，把已添加的所有测量对象搬到目标位姿后再求值。角度单位本层未标注 （具体边界行为以对应 HALCON 算子文档为准；弧度或度]。</para>
+	///   <para><b>功能说明</b>原生 id 769。用 (row,column,angle) 对计量模型做刚体对齐，把已添加的所有测量对象搬到目标位姿后再求值。角度单位本层未标注 （具体边界行为以对应 HALCON 算子文档为准；弧度或度）。</para>
 	///   <para><b>与实例重载的取舍</b>静态版把句柄当 JlTuple 控制参数传入并原地改动它；JlMetrologyModel 实例方法直接对 this 操作、更不易误传句柄（见 <see cref="JlMetrologyModel"/>）。</para>
 	///   <para><b>参数取向</b>无 out：实现体不调用 InitOCT/Load，metrologyHandle/row/column/angle 全占控制槽 0/1/2/3、直接 CallProcedure 后 UnpinTuple。改动落在句柄所指的模型上。</para>
 	///   <para><b>资源与坑</b>无新句柄产出、无需在此释放；但须在 apply 之前调用，对齐后原有测量区域随之移动。传错句柄元组会污染外部模型 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -15125,7 +15125,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 SerializeShapeModel（算子 id 876），与 ReadShapeModel/WriteShapeModel 相对：后者落盘、本算子把模型打包成内存序列化项。out 用无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>与实例重载的取舍</b>类型化实例重载 <see cref="JlShapeModel.SerializeShapeModel()"/> 以返回值形式给出 byte[] 缓冲；本静态版经 out 的裸 JlTuple 返回序列化项句柄。</para>
-	///   <para><b>资源与坑</b>serializedItemHandle 是需自管的原生资源，用完应释放 （具体边界行为以对应 HALCON 算子文档为准；其确切释放算子]。</para>
+	///   <para><b>资源与坑</b>serializedItemHandle 是需自管的原生资源，用完应释放 （具体边界行为以对应 HALCON 算子文档为准；其确切释放算子）。</para>
 	/// </remarks>
 	public static void SerializeShapeModel(JlTuple modelID, out JlTuple serializedItemHandle)
 	{
@@ -15559,7 +15559,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 FindAnisoShapeModel（算子 id 887）：单模型匹配，六路结果按原生槽 0..5 装载（行/列/角度/行列缩放/得分皆 DOUBLE），不含 model 下标。方法体里 image、modelID 各按图标存槽，十二个控制参数按声明序 Store，以方法体为准。</para>
 	///   <para><b>与实例重载的取舍</b>JlShapeModel 上有同名实例重载 `FindAnisoShapeModel(JlImage, ...)`（本静态版对应的类型化版本把多个控制参数钉成 double/int/string 标量，模型走 this）；本静态版控制参数全为 JlTuple、模型以裸句柄传入，需批量或多值时用静态版。</para>
-	///   <para><b>资源与坑</b>六路输出为纯数值元组、无需 Dispose；image 与 modelID 由 GC.KeepAlive 保活；行列缩放分别沿 row/column 方向、角度为弧度 （具体边界行为以对应 HALCON 算子文档为准；本静态版对 image/modelID 的槽位序是否与其注释完全一致，以方法体 Store 为准]。</para>
+	///   <para><b>资源与坑</b>六路输出为纯数值元组、无需 Dispose；image 与 modelID 由 GC.KeepAlive 保活；行列缩放分别沿 row/column 方向、角度为弧度 （具体边界行为以对应 HALCON 算子文档为准；本静态版对 image/modelID 的槽位序是否与其注释完全一致，以方法体 Store 为准）。</para>
 	/// </remarks>
 	public static void FindAnisoShapeModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score)
 	{
@@ -15629,7 +15629,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 FindScaledShapeModel（算子 id 888）：单模型等比缩放匹配，五路结果按原生槽 0..4 全量装载（行/列/角度/缩放/得分皆 DOUBLE）。角度弧度，scale 为统一等比系数。</para>
 	///   <para><b>与实例重载的取舍</b>JlShapeModel 上有同名实例重载 `FindScaledShapeModel(JlImage, ...)`，其控制参数钉成 double/int/string 标量、模型走 this；本静态版控制参数全为 JlTuple、模型以裸句柄传入。</para>
-	///   <para><b>资源与坑</b>五路输出为纯数值元组、无需 Dispose；image 与 modelID 由 GC.KeepAlive 保活、原生调用结束前不得释放；numMatches=0 表示取全部匹配 （具体边界行为以对应 HALCON 算子文档为准；默认 1 时的排序稳定性]。</para>
+	///   <para><b>资源与坑</b>五路输出为纯数值元组、无需 Dispose；image 与 modelID 由 GC.KeepAlive 保活、原生调用结束前不得释放；numMatches=0 表示取全部匹配 （具体边界行为以对应 HALCON 算子文档为准；默认 1 时的排序稳定性）。</para>
 	/// </remarks>
 	public static void FindScaledShapeModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleMin, JlTuple scaleMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score)
 	{
@@ -15941,7 +15941,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 CreateAnisoShapeModel（算子 id 895）：从模板图自动抽轮廓再训练，行列缩放各自可调（scaleR/scaleC 两组区间与步长），contrast 用于把目标从背景里分出来。角度弧度；"auto" 项交原生定值。out 经无类型 JlTuple.LoadNew 装载为新建模型句柄。</para>
 	///   <para><b>与实例重载的取舍</b>JlShapeModel 上有同名实例重载 `CreateAnisoShapeModel(JlImage, ...)`，template 强类型、数值参数钉成 double/int、结果写回 this；本静态版控制参数全为 JlTuple、经 out 产出全新句柄。已有现成轮廓时改用 CreateAnisoShapeModelXld 更省一次边缘提取。</para>
-	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据]。</para>
+	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据）。</para>
 	/// </remarks>
 	public static void CreateAnisoShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleRStep, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple scaleCStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
@@ -15999,7 +15999,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 CreateScaledShapeModel（算子 id 896）：从模板图训练，单一等比缩放区间。角度弧度；contrast 用于分割目标；"auto" 项交原生定值。out 经无类型 JlTuple.LoadNew 装载为新建模型句柄。</para>
 	///   <para><b>与实例重载的取舍</b>JlShapeModel 上有同名实例重载 `CreateScaledShapeModel(JlImage, ...)`，template 强类型、数值参数钉成 double/int、结果写回 this；本静态版控制参数全为 JlTuple、经 out 产出全新句柄。行列需独立缩放时改用 CreateAnisoShapeModel。</para>
-	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据]。</para>
+	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据）。</para>
 	/// </remarks>
 	public static void CreateScaledShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleMin, JlTuple scaleMax, JlTuple scaleStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
@@ -16048,7 +16048,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 CreateShapeModel（算子 id 897）：从模板图训练、不缩放，仅角度可调。角度弧度；contrast 用于分割目标；"auto" 项交原生定值。out 经无类型 JlTuple.LoadNew 装载为新建模型句柄。这是图像训练三兄弟里的不缩放特例。</para>
 	///   <para><b>与实例重载的取舍</b>JlShapeModel 上有同名实例重载 `CreateShapeModel(JlImage, ...)`，template 强类型、数值参数钉成 double/int、结果写回 this；本静态版控制参数全为 JlTuple、经 out 产出全新句柄。</para>
-	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据]。</para>
+	///   <para><b>资源与坑</b>template 由 GC.KeepAlive 保活、modelID 用毕需释放；对比度/域设置不当会抽出错误轮廓 （具体边界行为以对应 HALCON 算子文档为准；具体判据）。</para>
 	/// </remarks>
 	public static void CreateShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
@@ -16183,7 +16183,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生 SerializeNccModel（算子 id 938）：把模型打包成内存序列化项（与 ReadNccModel/WriteNccModel 的落盘方式相对）。out 经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>与实例重载的取舍</b>类型化实例重载 <see cref="JlNCCModel.SerializeNccModel()"/> 以返回值给出 byte[]；本静态版经 out 的裸 JlTuple 返回序列化项句柄。</para>
-	///   <para><b>资源与坑</b>serializedItemHandle 是需自管的原生资源、用完应释放 （具体边界行为以对应 HALCON 算子文档为准；其确切释放算子]。</para>
+	///   <para><b>资源与坑</b>serializedItemHandle 是需自管的原生资源、用完应释放 （具体边界行为以对应 HALCON 算子文档为准；其确切释放算子）。</para>
 	/// </remarks>
 	public static void SerializeNccModel(JlTuple modelID, out JlTuple serializedItemHandle)
 	{
@@ -16404,7 +16404,7 @@ public class JlOperatorSet
 	/// <param name="genParamName">要设置的参数名序列。</param>
 	/// <param name="genParamValue">与 genParamName 一一配对的参数值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 946：三个入参依次占控制槽 0..2（Store 钉固后逐个 UnpinTuple），无 InitOCT、无 out，方法体内也不含 GC.KeepAlive（modelID 以 JlTuple 句柄传入而非图标对象）——只把指定参数写回模型内部状态。可改的参数名与取值域由原生决定，典型如 min_contrast、min_score 之类 （具体边界行为以对应 HALCON 算子文档为准；完整清单]。</para>
+	///   <para><b>功能说明</b>原生算子 id 946：三个入参依次占控制槽 0..2（Store 钉固后逐个 UnpinTuple），无 InitOCT、无 out，方法体内也不含 GC.KeepAlive（modelID 以 JlTuple 句柄传入而非图标对象）——只把指定参数写回模型内部状态。可改的参数名与取值域由原生决定，典型如 min_contrast、min_score 之类 （具体边界行为以对应 HALCON 算子文档为准；完整清单）。</para>
 	///   <para><b>与实例重载的取舍</b>JlNCCModel 实例版 <see cref="JlNCCModel.SetNccModelParam(JlTuple, JlTuple)"/> 以 this 为模型、只收名/值两元组；本门面把模型句柄也显式作为第一个裸 JlTuple 传入，便于手上只有句柄时直调。JlImage 上另有同名静态便捷版。</para>
 	///   <para><b>参数取向</b>全为入参、无 out/ref；被改的是 modelID 所指模型的状态，不产生新句柄。</para>
 	///   <para><b>资源与坑</b>modelID 生命周期不变；genParamName 与 genParamValue 长度不匹配、或名字不被支持时的报错形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -19389,7 +19389,7 @@ public class JlOperatorSet
 	/// <param name="distanceMin">线段与区域之间的最小距离。</param>
 	/// <param name="distanceMax">线段与区域之间的最大距离。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1306：区域按内部+边界的像素集合看待，段按两端点界定；distanceMin 度量"段到区域"的最近距离（段与区域相交时为 0），distanceMax 取段上采样点到区域最远像素的距离 （具体边界行为以对应 HALCON 算子文档为准；像素/坐标约定]。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1306：区域按内部+边界的像素集合看待，段按两端点界定；distanceMin 度量"段到区域"的最近距离（段与区域相交时为 0），distanceMax 取段上采样点到区域最远像素的距离 （具体边界行为以对应 HALCON 算子文档为准；像素/坐标约定）。</para>
 	///   <para><b>与实例重载的取舍</b>类型化包装 <see cref="JlRegion.DistanceSr(JlTuple, JlTuple, JlTuple, JlTuple, out JlTuple, out JlTuple)"/> 输入是本 JlRegion 对象；本静态版接收裸 JlObject，适合跨边界句柄。要"直线到区域"改走 DistanceLr，"点到区域"改走 DistancePr。</para>
 	///   <para><b>参数取向</b>图标输入在原生槽 1，四个坐标控制参数按声明序占槽 0..3（Store 钉固、调用后 UnpinTuple）；两个 out 以 InitOCT(0/1) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；region 由 GC.KeepAlive 保住，原生调用结束前不得 Dispose；空区域时的返回形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -19746,7 +19746,7 @@ public class JlOperatorSet
 	/// <param name="composedFunction">组合后的函数。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1316：把 function1 的输出 y 当作 function2 的输入 x 逐点串联；复合时 function1 的 y 值超出 function2 定义域的那部分按 border 策略外推（默认 "constant"，补值细节 （具体边界行为以对应 HALCON 算子文档为准））。谁套谁（f2∘f1 还是 f1∘f2）从签名与代码看不出 （具体边界行为以对应 HALCON 算子文档为准），两段定义域/值域不重叠时结果差异极大，务必先实测方向。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；两个输入都不被改写、产物为新函数。只想整体缩放用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/>，别用常值函数走复合绕路。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；两个输入都不被改写、产物为新函数。只想整体缩放用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/>，别用常值函数走复合绕路。</para>
 	///   <para><b>参数取向</b>三个输入按声明序占原生槽 0..2（Store 钉固、调用后 UnpinTuple）；composedFunction 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；复合结果的控制点是否重采样/去重 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19770,7 +19770,7 @@ public class JlOperatorSet
 	/// <param name="inverseFunction">Inverse of the input function.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1317：这里的"inverse"是坐标互换（把曲线转 90° 用），不是数值取倒数、也不是 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/> 的变号。对非单调函数 y 值有重复时，反函数的分支选择策略代码未体现 （具体边界行为以对应 HALCON 算子文档为准），这类曲线建议先裁单调段再求逆。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；输入不被改写、产物为新函数；互逆后再求 <see cref="ComposeFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 是否回到原曲线 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；输入不被改写、产物为新函数；互逆后再求 <see cref="ComposeFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 是否回到原曲线 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；inverseFunction 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；水平线段（互换后成垂直线，非函数形态）时的处理 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19791,7 +19791,7 @@ public class JlOperatorSet
 	/// <param name="derivative">Derivative of the input function</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1318：在离散控制点上数值求导（非解析导数），斜率的物理量纲 = y 单位 / x 单位——x 若是像素列距，得到的就是"每像素灰度变化"。mode 默认 "first"，是否支持 "second" 等高阶、导数曲线的控制点数与 x 对齐方式（差分通常少一个点）代码未体现 （具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；输入不被改写、产物为新函数，可安全保留原曲线。含噪剖面直接微分会把噪声放大成主导信号——先 <see cref="SmoothFunct1dGauss(JlTuple,JlTuple,out JlTuple)"/> 平滑再求导，或用 <see cref="DerivateFunct1d"/> 结果过零判拐点而非极值。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；输入不被改写、产物为新函数，可安全保留原曲线。含噪剖面直接微分会把噪声放大成主导信号——先 <see cref="SmoothFunct1dGauss(JlTuple,JlTuple,out JlTuple)"/> 平滑再求导，或用 <see cref="DerivateFunct1d"/> 结果过零判拐点而非极值。</para>
 	///   <para><b>参数取向</b>function 与 mode 走 Store 钉固、调用后 UnpinTuple；derivative 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；仅 1 个控制点的退化函数求导结果 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19815,8 +19815,8 @@ public class JlOperatorSet
 	/// <param name="min">输入函数的最小值点</param>
 	/// <param name="max">输入函数的最大值点</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>对应原生算子 id 1319：min/max 两路输出按 DOUBLE 装载，给出极值点的位置（x 值）而非极值本身——要极值幅度再走 <see cref="GetYValueFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 回读 （具体边界行为以对应 HALCON 算子文档为准；输出为 x 还是 (x,y) 打包]。mode 只约定平台（连续等值段）处理，默认 "strict_min_max"；interpolation 默认 "true" 时极值位置经插值细化、可为非整数，"false" 是否只能落在控制点 x 上 （具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；只要全局上下界用 <see cref="YRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>（一对值），本算子给的是全部局部峰谷，找多峰位置才用它。</para>
+	///   <para><b>功能说明</b>对应原生算子 id 1319：min/max 两路输出按 DOUBLE 装载，给出极值点的位置（x 值）而非极值本身——要极值幅度再走 <see cref="GetYValueFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 回读 （具体边界行为以对应 HALCON 算子文档为准；输出为 x 还是 (x,y) 打包）。mode 只约定平台（连续等值段）处理，默认 "strict_min_max"；interpolation 默认 "true" 时极值位置经插值细化、可为非整数，"false" 是否只能落在控制点 x 上 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；只要全局上下界用 <see cref="YRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>（一对值），本算子给的是全部局部峰谷，找多峰位置才用它。</para>
 	///   <para><b>参数取向</b>三个输入按声明序占原生槽 0..2（Store 钉固、调用后 UnpinTuple）；min/max 以 InitOCT(0/1) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；极值点个数不定，两路长度各自独立；单调函数或空函数时返回空元组还是抛错 （具体边界行为以对应 HALCON 算子文档为准）。噪声曲线先 <see cref="SmoothFunct1dGauss(JlTuple,JlTuple,out JlTuple)"/> 再检峰，否则噪声峰全被报出。</para>
 	/// </remarks>
@@ -19845,7 +19845,7 @@ public class JlOperatorSet
 	/// <param name="functionScaled">变换后的函数。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1321：逐控制点做仿射缩放平移，x 不变、输入不被改写，常用于把剖面灰度归一到目标量程。mult 的 Default 是 2.0 而非 1.0：想保持幅度必须显式传 1.0，漏传会整体翻倍。mult/add 是否支持逐点不同的多元组 （具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；只要变号用 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/> 更直白；涉及 x 方向的变换走 TransformFunct1d（参数含独立变换向量，语义与本算子不同）。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；只要变号用 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/> 更直白；涉及 x 方向的变换走 TransformFunct1d（参数含独立变换向量，语义与本算子不同）。</para>
 	///   <para><b>参数取向</b>三个输入按声明序占原生槽 0..2（Store 钉固、调用后 UnpinTuple）；functionScaled 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；mult = 0 时退化为常值函数，原生是否拒绝 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19869,7 +19869,7 @@ public class JlOperatorSet
 	/// <param name="functionInverted">y 值取负后的函数。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1322：仅 y 变号，x 与控制点个数不变，输入不被改写。典型用途是把"谷"翻成"峰"后复用同一套求峰逻辑。注意它不是求倒数也不是反函数——那是 <see cref="InvertFunct1d(JlTuple,out JlTuple)"/>（x/y 互换）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；等价写法也可用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 传 mult = -1 实现，本算子免两个参数更直白；要折叠符号走 AbsFunct1d。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；等价写法也可用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/> 传 mult = -1 实现，本算子免两个参数更直白；要折叠符号走 AbsFunct1d。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；functionInverted 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载。</para>
 	///   <para><b>资源与坑</b>产物为函数元组、无需额外释放；空函数时的返回形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19889,7 +19889,7 @@ public class JlOperatorSet
 	/// <param name="functionAbsolute">y 值取绝对值后的函数。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1323：仅变换 y 值（y' = |y|），x 坐标与控制点个数不变；输入函数不被改写，产物是装在新 JlTuple 里的函数对象。取绝对值会把负峰折成正峰、符号信息不可逆——需区分正负峰时保留原函数另行处理。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；要整体翻转符号而不折叠幅度用 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/>，要按任意系数线性变换用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/>。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；要整体翻转符号而不折叠幅度用 <see cref="NegateFunct1d(JlTuple,out JlTuple)"/>，要按任意系数线性变换用 <see cref="ScaleYFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/>。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；functionAbsolute 以 InitOCT(0) 登记、经无类型 JlTuple.LoadNew 装载（类型由原生决定）。</para>
 	///   <para><b>资源与坑</b>产物为函数元组，JlTuple 实现了 IDisposable 但纯数值/句柄以外元素无须特别处理；输入为空函数时的返回形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19911,7 +19911,7 @@ public class JlOperatorSet
 	/// <param name="y">Y value at the given x value.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1324：x 是连续坐标（非控制点下标），函数在给定 x 处取值，输出按 DOUBLE 装载；x 落在定义域外时按 border 策略外推，默认 "constant"——constant 具体补什么值、还有哪些合法策略名，代码未给出 （具体边界行为以对应 HALCON 算子文档为准）。插值方式（线性/三次）（具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；要取第 i 个控制点的原始坐标用 <see cref="GetPairFunct1d(JlTuple,JlTuple,out JlTuple,out JlTuple)"/>（不插值、不经 border），两者混用是常见错误：拿本算子按下标传整数 x 会得到插值后而非原始的控制点值。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；要取第 i 个控制点的原始坐标用 <see cref="GetPairFunct1d(JlTuple,JlTuple,out JlTuple,out JlTuple)"/>（不插值、不经 border），两者混用是常见错误：拿本算子按下标传整数 x 会得到插值后而非原始的控制点值。</para>
 	///   <para><b>参数取向</b>三个输入按声明序占原生槽 0..2（Store 钉固、调用后 UnpinTuple）；y 以 InitOCT(0) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；x 传多元组时逐条求值，输出长度与 x 一致 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19937,7 +19937,7 @@ public class JlOperatorSet
 	/// <param name="y">Y value at the given control points.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1325：直接取第 index 个控制点的原始 (x, y) 对，不做插值——要按连续 x 求曲线上任意位置的 y 用 <see cref="GetYValueFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple)"/>。index 从 0 还是 1 起算、越界是抛错还是截断，代码看不出 （具体边界行为以对应 HALCON 算子文档为准），配合 <see cref="NumPointsFunct1d(JlTuple,out JlTuple)"/> 取边界值先验证。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；逐点循环取坐标开销是每次一钉一解，导出整条曲线改用 Funct1dToPairs 一次拿两列。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；逐点循环取坐标开销是每次一钉一解，导出整条曲线改用 Funct1dToPairs 一次拿两列。</para>
 	///   <para><b>参数取向</b>function 与 index 走 Store 钉固、调用后 UnpinTuple；x/y 以 InitOCT(0/1) 登记、经 JlTuple.LoadNew(DOUBLE) 新建，声明顺序即槽序。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；index 传多元组时是否逐条配对返回 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19961,7 +19961,7 @@ public class JlOperatorSet
 	/// <param name="length">Number of control points.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1326：返回函数所含控制点的数目。输出按 INTEGER 通道装载（LoadNew 显式给 JlTupleType.INTEGER），是本读侧族里唯一不走 DOUBLE 的算子，可直接当计数用，无浮点化误差。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实）；本算子常与 <see cref="GetPairFunct1d(JlTuple,JlTuple,out JlTuple,out JlTuple)"/> 配套：先用它拿点数，再按合法下标逐点取坐标；要一次性导出全部坐标用 Funct1dToPairs，省去逐点循环的钉固定开销。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认）；本算子常与 <see cref="GetPairFunct1d(JlTuple,JlTuple,out JlTuple,out JlTuple)"/> 配套：先用它拿点数，再按合法下标逐点取坐标；要一次性导出全部坐标用 Funct1dToPairs，省去逐点循环的钉固定开销。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；length 以 InitOCT(0) 登记、经 JlTuple.LoadNew(INTEGER) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；点数与控制点实际长度是否恒等（函数经 Compose/Derivate 变形后）（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -19982,7 +19982,7 @@ public class JlOperatorSet
 	/// <param name="YMax">Largest y value.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1327：对函数控制点的 y 序列取 min/max，用来判曲线的纵向范围（如灰度剖面的峰值跨度），不改写输入函数对象。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（Grep 核实），只能走本静态门面；要 x 方向边界用 <see cref="XRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>，要逐点坐标用 Funct1dToPairs；做峰谷检测（要位置而不是幅度）改用 <see cref="LocalMinMaxFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple)"/>，本算子只给幅度上下界。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数无类型化包装类（代码检查确认），只能走本静态门面；要 x 方向边界用 <see cref="XRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>，要逐点坐标用 Funct1dToPairs；做峰谷检测（要位置而不是幅度）改用 <see cref="LocalMinMaxFunct1d(JlTuple,JlTuple,JlTuple,out JlTuple,out JlTuple)"/>，本算子只给幅度上下界。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；YMin/YMax 以 InitOCT(0/1) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；插值曲线的极值是否会超出控制点给出的上下界 （具体边界行为以对应 HALCON 算子文档为准）；空函数时的返回形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -20005,7 +20005,7 @@ public class JlOperatorSet
 	/// <param name="XMax">Largest x value.</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>对应原生算子 id 1328：对函数控制点的 x 序列取 min/max，不改写输入函数对象。x 的物理含义随函数来源而变（图像剖面时是像素列坐标），其他来源的单位约定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>与实例重载的取舍</b>本库对一维函数没有类型化包装类（Grep 核实），Funct1d 族只能经本静态门面传入装在 JlTuple 里的不透明函数对象；只要 y 方向边界用 <see cref="YRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>，要完整控制点序列用 Funct1dToPairs 一次取回两列坐标，别拿本算子配单点读做循环。</para>
+	///   <para><b>与实例重载的取舍</b>本库对一维函数没有类型化包装类（代码检查确认），Funct1d 族只能经本静态门面传入装在 JlTuple 里的不透明函数对象；只要 y 方向边界用 <see cref="YRangeFunct1d(JlTuple,out JlTuple,out JlTuple)"/>，要完整控制点序列用 Funct1dToPairs 一次取回两列坐标，别拿本算子配单点读做循环。</para>
 	///   <para><b>参数取向</b>function 走 Store 钉固、调用后 UnpinTuple；XMin/XMax 以 InitOCT(0/1) 登记、经 JlTuple.LoadNew(DOUBLE) 新建。</para>
 	///   <para><b>资源与坑</b>输出为纯数值元组、无需释放；若原生按插值曲线定义定义域，其边界是否等于控制点首末 x （具体边界行为以对应 HALCON 算子文档为准）；空函数时的返回形态 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -25102,7 +25102,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>元组内多个值逐条写出（是否每条一行 （具体边界行为以对应 HALCON 算子文档为准））；与 FreadString/FreadChar 构成文本写/读对。</para>
 	///   <para><b>参数取向</b>fileHandle、stringVal 按声明序占控制槽 0/1，皆钉固元组、调用后 UnpinTuple；无输出。</para>
-	///   <para><b>资源与坑</b>本族无实例包装重载（全库 Grep 未见对应方法），且库内未检索到 Fopen/Fclose 一类文件打开算子——fileHandle 的获取途径 （具体边界行为以对应 HALCON 算子文档为准）；缓冲未刷盘前崩溃会丢尾部内容，显式刷盘可配 FnewLine。</para>
+	///   <para><b>资源与坑</b>本族无实例包装重载（代码库中未找到对应方法），且库内未检索到 Fopen/Fclose 一类文件打开算子——fileHandle 的获取途径 （具体边界行为以对应 HALCON 算子文档为准）；缓冲未刷盘前崩溃会丢尾部内容，显式刷盘可配 FnewLine。</para>
 	/// </remarks>
 	public static void FwriteString(JlTuple fileHandle, JlTuple stringVal)
 	{
@@ -25536,7 +25536,7 @@ public class JlOperatorSet
 	/// <param name="XLD">Contours or polygons to be examined.</param>
 	/// <param name="compactness">Compactness of the input contours or polygons.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>转原生算子 id 1600：由围成面积与边界长度导出的形状因子，圆取得下界、形状越细长/多孔读数越大 （具体边界行为以对应 HALCON 算子文档为准；精确公式、定义域及开放轮廓行为]。</para>
+	///   <para><b>功能说明</b>转原生算子 id 1600：由围成面积与边界长度导出的形状因子，圆取得下界、形状越细长/多孔读数越大 （具体边界行为以对应 HALCON 算子文档为准；精确公式、定义域及开放轮廓行为）。</para>
 	///   <para><b>与相邻算子的取舍</b>CircularityXld（1603）方向相反（越大越圆）、ConvexityXld（1602）专量凹陷、EccentricityXld（1599）专量长短轴比，四者口径不同，阈值互不可换。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLD.CompactnessXld()"/> 同 id、直接返回 JlTuple；本静态版走 out、输入收裸句柄。</para>
 	///   <para><b>资源与坑</b>纯数值输出可不处理；XLD 由 GC.KeepAlive 保命，调用返回前不得释放。</para>
@@ -25791,7 +25791,7 @@ public class JlOperatorSet
 	/// <param name="q">所求矩 M[P,Q]@f$M_{p,q}$ 的第二下标。Default: 1</param>
 	/// <param name="m">计算得到的矩。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>转原生算子 id 1610：围成面积意义下求指定阶 M[p,q]，mode 控制是否归一；area/centerRow/centerCol 也是入参——归一模式下用它们做参考量，传此前 AreaCenterXld 的结果可省去原生侧重算 （具体边界行为以对应 HALCON 算子文档为准；三者的精确用法]。</para>
+	///   <para><b>功能说明</b>转原生算子 id 1610：围成面积意义下求指定阶 M[p,q]，mode 控制是否归一；area/centerRow/centerCol 也是入参——归一模式下用它们做参考量，传此前 AreaCenterXld 的结果可省去原生侧重算 （具体边界行为以对应 HALCON 算子文档为准；三者的精确用法）。</para>
 	///   <para><b>与相邻算子的取舍</b>固定要二阶三件套用 MomentsXld（省参数）；点云视角用 MomentsAnyPointsXld。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlXLD.MomentsAnyXld(string, JlTuple, JlTuple, JlTuple, JlTuple, JlTuple, JlTuple)"/> 同 id、矩作返回值；其标量重载只取首条轮廓值，多轮廓静默丢弃。本静态版输入收裸句柄。</para>
 	///   <para><b>参数取向</b>七个控制参数整体 Store、调用后逐个 UnpinTuple；p/q 多元素时可否一次算多个阶 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -26032,7 +26032,7 @@ public class JlOperatorSet
 	/// <param name="row2">右下角顶点的行号。</param>
 	/// <param name="column2">右下角顶点的列坐标。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>转原生算子 id 1618：(row1,column1) 为左上、(row2,column2) 为右下，四路按 INTEGER 装载——与轮廓版 SmallestRectangle1Xld（DOUBLE 亚像素）不同，区域版落在整像素行列表上。宽高= row2-row1+1 / column2-column1+1 （具体边界行为以对应 HALCON 算子文档为准；闭区间计法]。</para>
+	///   <para><b>功能说明</b>转原生算子 id 1618：(row1,column1) 为左上、(row2,column2) 为右下，四路按 INTEGER 装载——与轮廓版 SmallestRectangle1Xld（DOUBLE 亚像素）不同，区域版落在整像素行列表上。宽高= row2-row1+1 / column2-column1+1 （具体边界行为以对应 HALCON 算子文档为准；闭区间计法）。</para>
 	///   <para><b>与相邻算子的取舍</b>形状带倾角时本算子给出的框明显偏大，此时用 SmallestRectangle2；要外接圆用 SmallestCircle。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlRegion.SmallestRectangle1(out JlTuple, out JlTuple, out JlTuple, out JlTuple)"/> 形状一致（另有 out int 标量版只取首区域，多区域其余值静默丢弃）；本静态版输入收裸句柄。</para>
 	///   <para><b>资源与坑</b>纯数值输出可不处理；regions 由 GC.KeepAlive 保命，调用返回前不得释放。</para>
@@ -26060,7 +26060,7 @@ public class JlOperatorSet
 	/// <param name="column">中心的列坐标。</param>
 	/// <param name="radius">Radius of the surrounding circle.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>转原生算子 id 1619：求覆盖区域全部像素的最小圆，三路输出按 DOUBLE 装载——圆心可以落在像素之间，radius 自圆心到最远像素点 （具体边界行为以对应 HALCON 算子文档为准；是否含该点本身]。</para>
+	///   <para><b>功能说明</b>转原生算子 id 1619：求覆盖区域全部像素的最小圆，三路输出按 DOUBLE 装载——圆心可以落在像素之间，radius 自圆心到最远像素点 （具体边界行为以对应 HALCON 算子文档为准；是否含该点本身）。</para>
 	///   <para><b>与相邻算子的取舍</b>要紧凑的正方向包围盒用 SmallestRectangle1，要任意朝向用 SmallestRectangle2；只有轮廓集时用同名 Xld 版（SmallestCircleXld）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlRegion.SmallestCircle(out JlTuple, out JlTuple, out JlTuple)"/> 形状一致（另有 out double 标量版只取首区域，多区域会静默丢弃其余值）；本静态版输入收裸句柄。</para>
 	///   <para><b>资源与坑</b>纯数值输出可不处理；regions 由 GC.KeepAlive 保命，调用返回前不得释放。</para>
@@ -26204,7 +26204,7 @@ public class JlOperatorSet
 	/// <param name="regionIndex1">Indices of the found regions from Regions1.</param>
 	/// <param name="regionIndex2">Indices of the found regions from Regions2.</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>转原生算子 id 1624：对 Regions1 中每个区域，在 Regions2 中寻找像素距离在容差内的区域；regionIndex1/regionIndex2 逐元素成对，第 k 对表示两侧哪两个区域相邻。距离按像素点集的最小间距度量 （具体边界行为以对应 HALCON 算子文档为准；同一区域配到多个邻居时是否输出多对]。</para>
+	///   <para><b>功能说明</b>转原生算子 id 1624：对 Regions1 中每个区域，在 Regions2 中寻找像素距离在容差内的区域；regionIndex1/regionIndex2 逐元素成对，第 k 对表示两侧哪两个区域相邻。距离按像素点集的最小间距度量 （具体边界行为以对应 HALCON 算子文档为准；同一区域配到多个邻居时是否输出多对）。</para>
 	///   <para><b>约束或前提</b>序号指输入集合内的排列位置，配对结果的正确性完全依赖两侧区域的输入顺序；上游 Connection 等算子顺序不稳定时会静默错配。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlRegion.FindNeighbors(JlRegion, int, out JlTuple)"/> 把 regionIndex1 作返回值、regionIndex2 走 out，maxDistance 为 int 标量；本静态版两路序号全 out、maxDistance 放开为 JlTuple，两侧同 id 同槽序（图标 1/2，控制在槽 0）。</para>
 	///   <para><b>资源与坑</b>输出为 INTEGER 数值元组，可不处理；两个输入区域集由 GC.KeepAlive 保命，原生调用返回前不得释放。</para>
@@ -28054,10 +28054,10 @@ public class JlOperatorSet
 	/// <param name="pose">输出：解得的 3D 位姿。</param>
 	/// <param name="quality">输出：按 qualityType 选定的质量值。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1797。八路入参按声明序钉到控制槽 0..7（托管侧顺序与形参序一致），InitOCT(0/1) 登记两路输出、皆用不指定类型的 LoadNew 装载。worldZ 全零的共面点对可解，但深度方向条件变差，点对数不足或近共线时解不稳定 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错]。</para>
-	///   <para><b>何时用静态版</b>本库 Jl* 包装类无同名实例重载（已 Grep 核实），本静态入口是唯一入口；cameraParam 是裸参数元组（相机参数对象类型已删除）。</para>
-	///   <para><b>参数取向</b>八入二出；quality 随 qualityType 变义（error 类为残差量），不是逐点误差列表 （具体边界行为以对应 HALCON 算子文档为准；各取值的确切含义]。</para>
-	///   <para><b>资源与坑</b>两路输出为纯数值/字符串元组、Dispose 为空操作；无图标句柄入参、不涉及 KeepAlive，点对解算不要求成对等长之外的配对 （具体边界行为以对应 HALCON 算子文档为准；长度不等时的截断规则]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1797。八路入参按声明序钉到控制槽 0..7（托管侧顺序与形参序一致），InitOCT(0/1) 登记两路输出、皆用不指定类型的 LoadNew 装载。worldZ 全零的共面点对可解，但深度方向条件变差，点对数不足或近共线时解不稳定 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错）。</para>
+	///   <para><b>何时用静态版</b>本库 Jl* 包装类无同名实例重载（已由代码检查确认），本静态入口是唯一入口；cameraParam 是裸参数元组（相机参数对象类型已删除）。</para>
+	///   <para><b>参数取向</b>八入二出；quality 随 qualityType 变义（error 类为残差量），不是逐点误差列表 （具体边界行为以对应 HALCON 算子文档为准；各取值的确切含义）。</para>
+	///   <para><b>资源与坑</b>两路输出为纯数值/字符串元组、Dispose 为空操作；无图标句柄入参、不涉及 KeepAlive，点对解算不要求成对等长之外的配对 （具体边界行为以对应 HALCON 算子文档为准；长度不等时的截断规则）。</para>
 	/// </remarks>
 	public static void VectorToPose(JlTuple worldX, JlTuple worldY, JlTuple worldZ, JlTuple imageRow, JlTuple imageColumn, JlTuple cameraParam, JlTuple method, JlTuple qualityType, out JlTuple pose, out JlTuple quality)
 	{
@@ -28092,7 +28092,7 @@ public class JlOperatorSet
 	/// <param name="method">位姿求解方式。Default: "decomposition"</param>
 	/// <param name="pose">输出：2D 物平面的 3D 位姿元组。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1798。homography/cameraMatrix/method 按声明序钉到控制槽 0..2，InitOCT(0) 登记单路输出、用不指定类型的 LoadNew 装载；只给单应与 K 时平移分量的长度单位跟随单应所用世界单位，K 与单应非同一标定则角度与距离一起错 （具体边界行为以对应 HALCON 算子文档为准；单位约定]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1798。homography/cameraMatrix/method 按声明序钉到控制槽 0..2，InitOCT(0) 登记单路输出、用不指定类型的 LoadNew 装载；只给单应与 K 时平移分量的长度单位跟随单应所用世界单位，K 与单应非同一标定则角度与距离一起错 （具体边界行为以对应 HALCON 算子文档为准；单位约定）。</para>
 	///   <para><b>与类型化重载的取舍</b>类型化入口 <see cref="JlImage.ProjHomMat2dToPose(JlHomMat2D,JlHomMat2D,string)"/> 收强类型矩阵、直接返回 JlPose；本静态版三路入与 out 皆为裸 JlTuple，适合位姿尚未包装、要与元组流水线级联的场合。分解类解法存在镜像歧义（两个几何可行位姿），此处只回一路，给哪一个 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>参数取向</b>三入一出，out 在最右。</para>
 	///   <para><b>资源与坑</b>输出为纯数值/字符串元组、Dispose 为空操作；两路句柄入参钉固后调用结束即解钉；拿位姿结果继续叠 2D 变换是误用，2D 对齐留在 JlHomMat2D 族。</para>
@@ -28166,7 +28166,7 @@ public class JlOperatorSet
 	/// <param name="pose2">第二个解的 3D 位姿。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 1804。contour 进图标槽 1、不被改写；cameraParam/radius/outputType 钉到控制槽 0..2，调用后逐个 UnpinTuple；pose1/pose2 用不指定类型的 LoadNew 装载。圆的椭圆投影在几何上通常对应两个空间位姿，故双解一并给出，由调用方按物理先验取舍。</para>
-	///   <para><b>何时用静态版</b>本库 Jl* 包装类无同名实例重载（已 Grep 核实），本静态入口是唯一入口；contour 为裸句柄、托管侧不校验图标类型，radius 量纲给错位姿平移分量随之错。</para>
+	///   <para><b>何时用静态版</b>本库 Jl* 包装类无同名实例重载（已由代码检查确认），本静态入口是唯一入口；contour 为裸句柄、托管侧不校验图标类型，radius 量纲给错位姿平移分量随之错。</para>
 	///   <para><b>参数取向</b>三入二出；outputType 非 "pose" 时两路输出的含义改变 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>两路输出皆为纯数值/字符串元组、Dispose 为空操作；contour 由 GC.KeepAlive 保命，原生调用结束前不得释放；pose1/pose2 与解的优选次序 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
@@ -28332,7 +28332,7 @@ public class JlOperatorSet
 	/// <param name="DZ">z 方向的原点平移量（米）。Default: 0</param>
 	/// <param name="poseNewOrigin">输出：平移原点后的新 3D 位姿。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1812。把位姿原点按 DX/DY/DZ 平移（单位米），旋转部分保持不变；四入参钉到控制槽 0..3，输出用不指定类型的 JlTuple.LoadNew 装载。平移作用于哪个坐标系由位姿自身的表示类型决定 （具体边界行为以对应 HALCON 算子文档为准；是否受 viewOfTransform 影响]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1812。把位姿原点按 DX/DY/DZ 平移（单位米），旋转部分保持不变；四入参钉到控制槽 0..3，输出用不指定类型的 JlTuple.LoadNew 装载。平移作用于哪个坐标系由位姿自身的表示类型决定 （具体边界行为以对应 HALCON 算子文档为准；是否受 viewOfTransform 影响）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlPose.SetOriginPose(double, double, double)"/> 以 this 为原位姿、返回新 JlPose；本静态版入出都是 JlTuple，可级联而不必先包装。</para>
 	///   <para><b>参数取向</b>四入一出；DX/DY/DZ 默认 0 表示不平移，全给 0 时等价复制位姿表示。</para>
 	///   <para><b>资源与坑</b>输出为纯数值/字符串元组、Dispose 为空操作。</para>
@@ -28434,7 +28434,7 @@ public class JlOperatorSet
 	/// <param name="viewOfTransform">变换是作用于点还是坐标系的视角。Default: "point"</param>
 	/// <param name="pose">输出：新建的 3D 位姿元组。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1816。九个入参按声明序钉到控制槽 0..8、调用后逐个 UnpinTuple，pose 用不指定类型的 JlTuple.LoadNew 装载（承载的是位姿本身而非句柄）。rot 三量的单位（度/弧度）取决于 orderOfRotation 取值，gba/abg 等欧拉序按度、rodriguez 按无量纲轴角 （具体边界行为以对应 HALCON 算子文档为准；各序的确切单位]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1816。九个入参按声明序钉到控制槽 0..8、调用后逐个 UnpinTuple，pose 用不指定类型的 JlTuple.LoadNew 装载（承载的是位姿本身而非句柄）。rot 三量的单位（度/弧度）取决于 orderOfRotation 取值，gba/abg 等欧拉序按度、rodriguez 按无量纲轴角 （具体边界行为以对应 HALCON 算子文档为准；各序的确切单位）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlPose.CreatePose(double, double, double, double, double, double, string, string, string)"/> 原地写 this；本静态版产出全新元组、不依赖已有 JlPose，适合一次造多个候选位姿。</para>
 	///   <para><b>参数取向</b>九入一出，全部 JlTuple：数值经隐式转换、字符串给字面量即可；out 在最右。</para>
 	///   <para><b>资源与坑</b>输出为纯数值/字符串元组，Dispose 为空操作；三个表示字符串拼错时是否回退默认 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -28531,7 +28531,7 @@ public class JlOperatorSet
 	/// <param name="row">输出：投影点行坐标（像素，可为亚像素值）。</param>
 	/// <param name="column">输出：投影点列坐标（像素）。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1827。纯前向投影：x/y/z/cameraParam 按声明序钉到控制槽 0..3，两路输出 InitOCT(0/1) 后经 JlTuple.LoadNew(DOUBLE) 装载；相机系约定 X 向右、Y 向下、Z 沿光轴向前，Z 非正（点在相机背后）的点结果无意义 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1827。纯前向投影：x/y/z/cameraParam 按声明序钉到控制槽 0..3，两路输出 InitOCT(0/1) 后经 JlTuple.LoadNew(DOUBLE) 装载；相机系约定 X 向右、Y 向下、Z 沿光轴向前，Z 非正（点在相机背后）的点结果无意义 （具体边界行为以对应 HALCON 算子文档为准；原生是否报错）。</para>
 	///   <para><b>与 GetLineOfSight 的对偶</b>本算子由 3D 求 2D 像素；反方向（给像素求射线）走 GetLineOfSight。二者一个丢深度、一个丢射线方向，不能互相替代。</para>
 	///   <para><b>何时用静态版</b>投影族在本库以 JlTuple 进 JlTuple 出，Jl* 类型化实例重载未提供同名方法；cameraParam 是裸参数元组而非已删除的相机参数对象类型。</para>
 	///   <para><b>参数取向</b>三输入点坐标加一参数元组共四路入、两路 out，全部 DOUBLE 装载、逐元素等长对应。</para>
@@ -28922,7 +28922,7 @@ public class JlOperatorSet
 	/// <param name="rowBytes">输出每行字节数；"match" 表示按宽度自动对齐。Default: "match"</param>
 	/// <param name="alpha">三通道输入时补写的透明通道值。Default: 255</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1969。只做通道内存排列的换序/补齐，不做色彩空间换算；alpha 仅在三通道输入需要补第四通道时生效，其余输入通道数下该参数被忽略 （具体边界行为以对应 HALCON 算子文档为准；具体忽略还是报错]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1969。只做通道内存排列的换序/补齐，不做色彩空间换算；alpha 仅在三通道输入需要补第四通道时生效，其余输入通道数下该参数被忽略 （具体边界行为以对应 HALCON 算子文档为准；具体忽略还是报错）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlImage.InterleaveChannels(string, JlTuple, int)"/> 与 <see cref="JlImage.InterleaveChannels(string, string, int)"/>：pixelFormat/alpha 已强类型化，rowBytes 有元组与字符串两路；本静态版三个控制参数全为 JlTuple，输入输出都是裸句柄。</para>
 	///   <para><b>参数取向</b>iconic 输入在槽 1；控制槽 0..2 与 C# 形参序一致；输出经 InitOCT(1)+LoadNew 新建。</para>
 	///   <para><b>资源与坑</b>interleavedImage 须 Dispose；输入由 GC.KeepAlive 保活；pixelFormat 的合法取值集合 （具体边界行为以对应 HALCON 算子文档为准）。</para>
@@ -29020,7 +29020,7 @@ public class JlOperatorSet
 	/// <param name="row2">Contour2 上最近点行坐标。</param>
 	/// <param name="column2">Contour2 上最近点列坐标。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 1996。除距离外同时给出两切点，可直接接量测或画箭头；默认模式把点间距离放宽为点到线段距离做快速近似，对折线化轮廓可能略低估真实点距 （具体边界行为以对应 HALCON 算子文档为准；与逐点对模式的误差]。</para>
+	///   <para><b>功能说明</b>原生算子 id 1996。除距离外同时给出两切点，可直接接量测或画箭头；默认模式把点间距离放宽为点到线段距离做快速近似，对折线化轮廓可能略低估真实点距 （具体边界行为以对应 HALCON 算子文档为准；与逐点对模式的误差）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版见 <see cref="JlXLDCont.DistanceCcMinPoints(JlXLDCont, JlTuple, out JlTuple, out JlTuple, out JlTuple, out JlTuple)"/>（距离作返回值）与标量版 <see cref="JlXLDCont.DistanceCcMinPoints(JlXLDCont, string, out double, out double, out double, out double)"/>：容器强类型；标量版每路只取第一值，多轮廓场景请走本静态版或元组版。</para>
 	///   <para><b>参数取向</b>iconic 输入占槽 1、2；唯一控制参数 mode 在槽 0；五路输出按声明序 DOUBLE 装载。输入轮廓为多条时两两配对规则 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>资源与坑</b>两条轮廓均由 GC.KeepAlive 保活，原生调用结束前不得释放；纯数值元组无需 Dispose。</para>
@@ -29110,7 +29110,7 @@ public class JlOperatorSet
 	/// <param name="objectsExtended">输出：插入后的新对象元组句柄。</param>
 	/// <param name="index">插入位置的索引。</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>原生算子 id 2003。新建的是容器层，成员对象仍与输入共用句柄引用，只 Dispose 结果不会拆散原容器 （具体边界行为以对应 HALCON 算子文档为准；引用计数的确切行为]。</para>
+	///   <para><b>功能说明</b>原生算子 id 2003。新建的是容器层，成员对象仍与输入共用句柄引用，只 Dispose 结果不会拆散原容器 （具体边界行为以对应 HALCON 算子文档为准；引用计数的确切行为）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlObject.InsertObj(JlObject, int)"/> 把 index 钉成 int 并把新容器作返回值，JlRegion/JlImage/JlXLD* 各容器类另有同名强类型版；本静态版 out 走裸句柄、index 可传多值（多个插入点时逐元素处理，规则 （具体边界行为以对应 HALCON 算子文档为准））。</para>
 	///   <para><b>参数取向</b>原生槽序与 C# 形参序错位：两路 iconic 在槽 1、2，index 却占控制槽 0；输出容器在槽 1。</para>
 	///   <para><b>资源与坑</b>objectsExtended 须 Dispose；index 基（0 基/1 基）与越界行为 （具体边界行为以对应 HALCON 算子文档为准）；两路输入由 GC.KeepAlive 保活到调用结束。</para>
@@ -29382,7 +29382,7 @@ public class JlOperatorSet
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 2055。读出 SetShapeModelClutter（id 2057）写入的配置；未设置过干扰时各路返回什么 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与实例重载的取舍</b>实例版 <see cref="JlShapeModel.GetShapeModelClutter(JlTuple, out JlTuple, out JlHomMat2D, out int)"/> 与字符串键版 <see cref="JlShapeModel.GetShapeModelClutter(string, out string, out JlHomMat2D, out int)"/> 把矩阵直接给成 JlHomMat2D、区域作 JlRegion 返回值；本静态版矩阵退化为 DOUBLE 元组、genParamValue 不判型，四路全 out 且 clutterRegion 排在形参表首位。</para>
-	///   <para><b>参数取向</b>控制槽 0/1 为 modelID、genParamName；输出侧图标在槽 1、控制元组在槽 0..2（genParamValue、homMat2D、clutterContrast），与 C# 形参序错位；clutterContrast 按 INTEGER 装载，小数被舍 （具体边界行为以对应 HALCON 算子文档为准；原生是否本就整数]。</para>
+	///   <para><b>参数取向</b>控制槽 0/1 为 modelID、genParamName；输出侧图标在槽 1、控制元组在槽 0..2（genParamValue、homMat2D、clutterContrast），与 C# 形参序错位；clutterContrast 按 INTEGER 装载，小数被舍 （具体边界行为以对应 HALCON 算子文档为准；原生是否本就整数）。</para>
 	///   <para><b>资源与坑</b>clutterRegion 是新句柄须 Dispose；modelID 元组调用后解钉，模型本体只读不动。</para>
 	/// </remarks>
 	public static void GetShapeModelClutter(out JlObject clutterRegion, JlTuple modelID, JlTuple genParamName, out JlTuple genParamValue, out JlTuple homMat2D, out JlTuple clutterContrast)
@@ -29445,7 +29445,7 @@ public class JlOperatorSet
 	/// <param name="isEOF">读到文件尾的标志（0/1，INTEGER 装载）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>原生算子 id 2059。顺序读：每次调用从上次位置继续，读完自动推进文件位置。</para>
-	///   <para><b>何时用静态版</b>本算子静态独有、无实例双胞胎；且本文件未导出任何打开/关闭二进制文件的配套算子，fileHandle 只能取自原生侧已打开的文件 （具体边界行为以对应 HALCON 算子文档为准；托管层是否有取句柄途径]，与 socket 族同样属"句柄外来"的入口。</para>
+	///   <para><b>何时用静态版</b>本算子静态独有、无实例双胞胎；且本文件未导出任何打开/关闭二进制文件的配套算子，fileHandle 只能取自原生侧已打开的文件 （具体边界行为以对应 HALCON 算子文档为准；托管层是否有取句柄途径），与 socket 族同样属"句柄外来"的入口。</para>
 	///   <para><b>参数取向</b>两个入参按声明序占控制槽 0..1；两路输出 INTEGER 装载；调用后统一 UnpinTuple。</para>
 	///   <para><b>资源与坑</b>读到的字节是数值元组、无需 Dispose，但句柄本身的生命周期不归本门面管；请求字节数超过剩余长度时的截断/报错行为 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>

@@ -36,7 +36,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	/// <param name="handle">原生侧当前有效的 measure 句柄值（多来自其他语言接口或非托管层传递）；IntPtr.Zero 视同 UNDEF 得空壳。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 的 Handle setter：SetHandleInternal 先清本壳旧值再 HLICopyHandle 取引用；随后 AssertSemType 调原生 GetHandleSemType 比对 "measure"，只校验语义类型、不看卡尺内容。</para>
-	///   <para><b>约束或前提</b>引用计数级浅拷贝：一侧原地改写（如 ReadMeasure/DeserializeMeasure 重装载）后另一侧经同一原生对象看到新内容 [共享程度以 HALCON 算子文档为准]；要真正独立请走 Clone()（经序列化往返新建对象）。</para>
+	///   <para><b>约束或前提</b>引用计数级浅拷贝：一侧原地改写（如 ReadMeasure/DeserializeMeasure 重装载）后，另一侧通过同一原生对象看到新内容；要真正独立请走 Clone()（经序列化往返新建对象）。</para>
 	///   <para><b>与相邻构造器的取舍</b>手里是活的 JlHandle 包装对象就写 JlMeasure(JlHandle) 版；要跨进程/跨语言搬内容用序列化通道，别传裸值。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -59,7 +59,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	/// <param name="handle">源句柄包装对象，语义类型须为 measure；传 null 归一为空壳。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 拷贝路径后 AssertSemType("measure")；校验发生在包装之后——类型不符时原生引用已多持一份，此时 C# 壳尚未交付、无人替它 Dispose，这份引用是否泄漏与如何回收 （具体边界行为以对应 HALCON 算子文档为准）。</para>
-	///   <para><b>约束或前提</b>拷贝粒度是"第二个名字指向同一原生资源"：一侧原地改写内容另一侧同步可见 [共享程度以 HALCON 算子文档为准]；要彻底独立用 Clone()。</para>
+	///   <para><b>约束或前提</b>拷贝粒度是"第二个名字指向同一原生资源"：一侧原地改写内容，另一侧同步可见；要彻底独立用 Clone()。</para>
 	///   <para><b>与相邻构造器的取舍</b>裸 IntPtr 用上一重载；只在本地多持一个容器用本版，几乎零开销；跨进程传内容走 Serialize/Deserialize 字节通道。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -313,7 +313,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   ISerializable 反序列化专用构造（供格式化器回调，带 EditorBrowsable(Never)）：先落基类 UNDEF 空壳，再从 info 取出 GetObjectData 以 SerializeMeasure（id 799）写入的键 "data" 的 byte[]，走与 DeserializeMeasure（id 800）相同的通道——先 Dispose 后 Load，把新建的原生卡尺句柄原地装进本实例；"data" 条目缺失或类型不符在 GetValue 处抛，数据非法时段句柄已释放、本对象成空壳 [失败后状态以 HALCON 算子文档为准]。
+	///   ISerializable 反序列化专用构造（供格式化器回调，带 EditorBrowsable(Never)）：先落基类 UNDEF 空壳，再从 info 取出 GetObjectData 以 SerializeMeasure（id 799）写入的键 "data" 的 byte[]，走与 DeserializeMeasure（id 800）相同的通道——先 Dispose 后 Load，把新建的原生卡尺句柄原地装进本实例；"data" 条目缺失或类型不符在 GetValue 处抛，数据非法时段句柄已释放、本对象成空壳 （失败后状态以 HALCON 算子文档为准）。
 	/// </summary>
 	/// <param name="info">格式化器回填的序列化数据，本构造只读取其中键 "data"（byte[]，Vision 二进制 serialized_item 格式）。</param>
 	/// <param name="context">序列化流上下文，本构造不读取。</param>
@@ -457,7 +457,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>从 SerializeMeasure 得到的字节数组还原卡尺（原生 id 800）。方法体先 Dispose() 释放本对象旧句柄，再把新句柄装入本对象——原地替换，不是返回新对象。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>传入数据必须来自同库的 SerializeMeasure / WriteMeasure，格式校验失败时本对象旧句柄已被释放 [失败后句柄状态以 HALCON 算子文档为准]。</para>
+	///   <para>传入数据必须来自同库的 SerializeMeasure / WriteMeasure，格式校验失败时本对象旧句柄已被释放 （失败后句柄状态以 HALCON 算子文档为准）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -524,7 +524,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   caliper.ReadMeasure("caliper.mdt");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>文件不存在时本对象旧句柄已被释放，对象成为空壳 [失败后状态以 HALCON 算子文档为准]。</para>
+	///   <para>文件不存在时本对象旧句柄已被释放，对象成为空壳 （失败后状态以 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void ReadMeasure(string fileName)
 	{
@@ -554,7 +554,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>MeasurePos 找的是灰度导数峰值（真实边缘，幅值可判强弱）；本算子找的是等值线交点，会被曲线非单调段或阈值落在平台区干扰，一般只在需要"灰度等于某值的轮廓点"（如干涉条纹、渐变带定位）时使用。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>threshold 是灰度绝对值（默认 128），不是边缘幅值——与 MeasurePos 的 threshold 含义不同。select 取 "all" / "first" / "last"，"first"/"last" 只留一个交点，输出元组长度为 1 [行为以 HALCON 算子文档为准]。</para>
+	///   <para>threshold 是灰度绝对值（默认 128），不是边缘幅值——与 MeasurePos 的 threshold 含义不同。select 取 "all" / "first" / "last"，"first"/"last" 只留一个交点，输出元组长度为 1 （行为以 HALCON 算子文档为准）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -594,7 +594,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>删除原生卡尺对象并释放其内存（原生 id 804，对应底层 close_measure；本库的"清空测量对象"入口就是它和 Dispose，没有独立的 ClearMeasure）。</para>
 	///   <para><b>资源与坑</b></para>
-	///   <para>方法体只调原生删除，不清空托管侧句柄字段：调用后该 JlMeasure 变量仍指向已删除的对象，再次使用行为未定义；其后若再触发 Dispose，是否二次释放原生句柄 （具体边界行为以对应 HALCON 算子文档为准）。常规释放直接用 Dispose() 或 using，CloseMeasure 仅在需要立即归还原生内存且不再触碰该对象时使用。</para>
+	///   <para>方法体只调原生删除，不清空托管侧句柄字段；调用后该 <see cref="JlMeasure"/> 变量仍保存旧句柄值，不能再用于测量或作为其他对象的输入。因为 <c>Dispose()</c> 仍会看到这个非零字段，常规生命周期应使用 <c>Dispose()</c> 或 <c>using</c>；只有在调用后立即丢弃该包装对象时才使用 <c>CloseMeasure()</c>。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -621,7 +621,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>只需要边缘坐标时直接用 MeasurePos / MeasurePairs；要自行分析灰度曲线（找拐点、算对比度、判断有无边缘）时先取本算子的曲线。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>返回元组按扫描方向排列（矩形为长轴方向、弧为径向由内向外 [方向序以 HALCON 算子文档为准]），采样间隔由建模时的插值方式与尺寸决定。</para>
+	///   <para>返回元组按扫描方向排列（矩形为长轴方向、弧为径向由内向外 （方向序以 HALCON 算子文档为准）），采样间隔由建模时的插值方式与尺寸决定。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -632,7 +632,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   }
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>图像尺寸须与建模 width/height 一致；返回的 JlTuple 由调用方 Dispose [元组是否需手动释放以 HALCON 算子文档为准]。</para>
+	///   <para>图像尺寸须与建模 width/height 一致；返回的 JlTuple 由调用方 Dispose （元组是否需手动释放以 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple MeasureProjection(JlImage image)
 	{
@@ -704,7 +704,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>比 FuzzyMeasurePairs 多了 pairing 约束与 pair 中心输出、少了 interDistance；比 MeasurePairs 多了 fuzzy 过滤。测线宽/胶宽且杂边多时选本算子。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>transition 决定以哪个极性作第一边（对扫描方向的灰度上升/下降，"all" 不限 [具体极性定义以 HALCON 算子文档为准]）；pairing 除默认 "no_restriction" 外可选值 （具体边界行为以对应 HALCON 算子文档为准）；numPairs 与 10 个输出元组的长度对应——每个元组都是"每对一项"。</para>
+	///   <para>transition 决定以哪个极性作第一边（对扫描方向的灰度上升/下降，"all" 不限 （具体极性定义以 HALCON 算子文档为准））；pairing 除默认 "no_restriction" 外可选值 （具体边界行为以对应 HALCON 算子文档为准）；numPairs 与 10 个输出元组的长度对应——每个元组都是"每对一项"。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -913,7 +913,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>在卡尺内提取边缘并配对（原生 id 812）：先按 MeasurePos 的方式找边，再按 transition 规定的极性把边缘两两配成对。输出两条边缘的亚像素坐标与带符号幅值、对内间距 intraDistance（= 宽度/厚度，像素）、相邻对间距 interDistance。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>只要单条边用 MeasurePos；本库无 add_measure_pair/成对边界建模算子 [Grep 确认 JlMeasure 无 AddMeasurePair]，卡尺级成对定位就是本算子；需要模糊过滤选 FuzzyMeasurePairs。</para>
+	///   <para>只要单条边用 MeasurePos；本库未提供 add_measure_pair 这类独立的成对边界建模算子；卡尺级成对定位使用本算子，需要模糊过滤时使用 FuzzyMeasurePairs。</para>
 	///   <para><b>参数取向</b></para>
 	///   <para>threshold 是最小边缘幅值而非灰度值；transition 以扫描方向的灰度变化定义（"positive"/"negative" 何者对应暗→亮 （具体边界行为以对应 HALCON 算子文档为准）），"all" 允许两种起始极性；select 取 "all"/"first"/"last" 控制返回的对数——"first"/"last" 时全部输出元组长度为 1。8 个输出元组等长 = 对数。</para>
 	///   <para><b>可编译用例</b></para>
@@ -982,7 +982,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>要宽度/厚度用 MeasurePairs（成对）；伪边缘多时先 ResetFuzzyMeasure 再走 FuzzyMeasurePos；只看灰度曲线用 MeasureProjection。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>threshold 是最小边缘幅值（灰度跳变强度），不是灰度阈值——对比度低就调小它而不是调 MeasureThresh 那套。transition 按扫描方向的极性选边："all" 两种都要，"positive"/"negative" 各取一种（暗→亮的对应关系以现场标定为准 （具体边界行为以对应 HALCON 算子文档为准））；select 取 "all"/"first"/"last"。本库未暴露 set_measure_param（无 SetMeasureParam，Grep 确认），因此 num_measures 上限与 measure_selection 无法另行配置；输出元组 rowEdge/columnEdge/amplitude/distance 四者等长，长度 = 过滤后边缘数，"first"/"last" 时恒为 1。</para>
+	///   <para>threshold 是最小边缘幅值（灰度跳变强度），不是灰度阈值——对比度低就调小它而不是调 MeasureThresh 那套。transition 按扫描方向的极性选边："all" 两种都要，"positive"/"negative" 各取一种；暗→亮对应哪一个名称取决于扫描方向和图像灰度定义，使用前应按样例图像验证。select 取 "all"/"first"/"last"。本库未暴露 set_measure_param（没有 SetMeasureParam），因此 num_measures 上限与 measure_selection 无法另行配置；输出元组 rowEdge/columnEdge/amplitude/distance 四者等长，长度 = 过滤后边缘数，"first"/"last" 时恒为 1。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -1030,7 +1030,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>跟随定位结果每帧搬卡尺：本算子最省，不需要重新给全部建模参数；要改角度或尺寸就得 GenMeasureRectangle2 / GenMeasureArc 重建。多个位姿共享同一套参数：Clone 出多份后各自 Translate。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>row/column 是图像坐标（新参考点），不是偏移量 [绝对性由原生语义决定，若需相对平移以实测为准]。double 重载与本重载同 id：本重载 Store+UnpinTuple 透传 JlTuple，double 重载走 StoreD。</para>
+	///   <para>row/column 按原生算子解释为图像中的新参考点坐标，不是相对偏移量；若要相对平移，调用方应先用旧坐标计算新坐标。double 重载与本重载同 id：本重载 Store+UnpinTuple 透传 JlTuple，double 重载走 StoreD。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -1285,7 +1285,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>本类无 SetMeasureParam：查询到的 num_measures / measure_threshold / measure_selection 之类只能读不能改，需要改就重建卡尺。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>JlTuple 重载可按名数组批量取多个参数，返回值顺序与传入名对应 [批量语义以 HALCON 算子文档为准]；单名用 string 重载（同 id，StoreS 传参）。</para>
+	///   <para>JlTuple 重载可按名数组批量取多个参数，返回值顺序与传入名对应 （批量语义以 HALCON 算子文档为准）；单名用 string 重载（同 id，StoreS 传参）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMeasure caliper = new JlMeasure(256.0, 128.0, 0.0, 60.0, 20.0, 512, 512, "nearest_neighbor");
@@ -1293,7 +1293,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	///   JlTuple values = caliper.GetMeasureParam(names);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>对空句柄对象（默认构造的 UNDEF 壳）调用会出错 [错误形态以 HALCON 算子文档为准]。</para>
+	///   <para>对空句柄对象（默认构造的 UNDEF 壳）调用会出错 （错误形态以 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlTuple GetMeasureParam(JlTuple genParamName)
 	{

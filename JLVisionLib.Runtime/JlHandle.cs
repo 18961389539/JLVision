@@ -10,7 +10,7 @@ namespace JLVisionLib;
 ///   <para><b>这个句柄代表什么</b>：JlHandle 包装原生侧的通用句柄对象（语义类型多样，如 serialized_item 或各算子内部句柄），与 JlImage/JlRegion 走图标对象 key 的 JlObjectBase 是两套通道。本类的私有 AssertSemType() 是空实现——托管层不校验句柄装的是哪种语义类型，需要判定类型时用 TupleSemType() 自查。</para>
 ///   <para><b>由谁创建</b>：算子封装内部经 LoadNew 装载输出、静态 Deserialize(Stream) 反序列化、Clone 深拷贝、各拷贝类构造器，以及本程序集的派生类（如 JlSerializationBuffer）。本类没有"从内容凭空造一个新句柄"的公开入口。</para>
 ///   <para><b>何时释放</b>：继承 JlHandleBase : IDisposable，Dispose（或终结器）清掉本实例持有的那一份原生引用；句柄值为 JlHandleBase.UNDEF（IntPtr.Zero）即未初始化。释放或清空后再参与算子调用，原生报错由 PostCall 统一抛 JlOperatorException。</para>
-///   <para><b>拷贝/移动语义</b>：构造器与 Handle 属性赋值都走原生 CopyHandle 引用计数拷贝——C# 壳各自独立、须各自 Dispose，但底层是否指向同一份内容 （具体边界行为以对应 HALCON 算子文档为准）；本类无移动语义，要内容互不相干的独立副本用 Clone()（序列化往返新建对象）。</para>
+///   <para><b>拷贝/移动语义</b>：构造器与 Handle 属性赋值都走原生 CopyHandle 引用计数拷贝；C# 壳各自独立、须各自 Dispose，但两者引用同一个原生句柄内容。本类无移动语义，要内容互不相干的独立副本用 Clone()（序列化往返新建对象）。</para>
 /// </remarks>
 [Serializable]
 public class JlHandle : JlHandleBase, ISerializable, ICloneable
@@ -18,7 +18,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	/// <summary>造一个句柄为 UNDEF 的空容器：作 DeserializeHandle/LoadNew 装载前的接收位，不发任何原生调用。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>转调 base(JlHandleBase.UNDEF)，句柄值即 IntPtr.Zero，纯托管建壳；本类没有 JlHandle(bool) 之类重载。</para>
-	///   <para><b>约束或前提</b>空句柄不能当算子输入——SerializeHandle/TupleSemType 等会 Store(UNDEF) 进原生，由 PostCall 抛 JlOperatorException [原生错误码以 HALCON 算子文档为准]。它的正当用途是做装载接收位：基类 Load 只接受 UNDEF 实例，抛 "Undisposed handle instance when loading output parameter" 正是没先腾空就装载的下场。</para>
+	///   <para><b>约束或前提</b>空句柄不能当算子输入——SerializeHandle/TupleSemType 等会 Store(UNDEF) 进原生，由 PostCall 抛 JlOperatorException。它的正当用途是做装载接收位：基类 Load 只接受 UNDEF 实例，抛 "Undisposed handle instance when loading output parameter" 正是没先腾空就装载的下场。</para>
 	///   <para><b>与相邻构造器的取舍</b>已有活句柄要第二个容器用 JlHandle(JlHandle) 拷贝构造；要内容互不相干的副本用 Clone()；本构造只适合"先造空壳、再 DeserializeHandle 填入"两步用法（Clone 内部就是这个套路）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -63,7 +63,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	/// <param name="handle">源句柄。传 null 不抛空引用：基类内部走 IntPtr 隐式转换（null 归一为 UNDEF），结果是空壳。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>base(handle) 进 JlHandleBase 的拷贝路径，先清本实例旧值再 HLICopyHandle 另取引用。与 JlHandle(IntPtr) 的区别只在入参类型；本类 AssertSemType() 为空实现，不校验源句柄的语义类型。</para>
-	///   <para><b>拷贝语义</b>这是"第二个名字指向同一原生资源"级别的浅拷贝：两个壳释放互不干扰（各还各的引用），但一侧内容被原地改写（如 DeserializeHandle）时另一侧看到什么 [底层共享程度以 HALCON 算子文档为准]。要彻底独立请走 Clone()——它经序列化往返真正新建对象。</para>
+	///   <para><b>拷贝语义</b>这是"第二个名字指向同一原生资源"级别的浅拷贝：两个壳释放互不干扰（各还各的引用），一侧原地改写（如 DeserializeHandle）时，另一侧通过同一原生句柄看到改写后的内容。要彻底独立请走 Clone()——它经序列化往返真正新建对象。</para>
 	///   <para><b>与相邻构造器的取舍</b>跨进程/跨语言传内容用 Serialize+Deserialize(Stream)；只在本地多持一个容器用本构造，几乎零开销。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -189,7 +189,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	/// <returns>新 JlHandle，为原句柄内容的独立副本；需 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>通过 SerializeHandle() 把 this 序列化到内存字节，再 new JlHandle() + DeserializeHandle 反序列化回来，得到与源句柄互不影响的副本。</para>
-	///   <para><b>与相邻成员的取舍</b>Clone 走完整序列化，开销更大但得到真正独立副本；只需浅引用时用拷贝构造函数 JlHandle(JlHandle)。底层原生对象是否共享引用计数不在本方法语义内 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻成员的取舍</b>Clone 走完整序列化，开销更大但按序列化格式重建独立的顶层原生对象；只需共享同一原生内容时用拷贝构造函数 <c>JlHandle(JlHandle)</c>。若句柄内容本身包含嵌套引用，嵌套对象的复制关系由原生序列化格式决定。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	/// using (Stream fs = File.OpenRead("item.bin"))
@@ -226,7 +226,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	///     h.Dispose();
 	/// }
 	/// </code>
-	///   <para><b>资源与坑</b>GC.KeepAlive(this) 保证原生调用结束前句柄不被终结；清空后 IsInitialized() 的实际取值取决于底层实现 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b><c>GC.KeepAlive(this)</c> 保证原生调用结束前句柄不被终结；本方法不修改托管字段 <c>mHandle</c>，但原生清空可能改变该值对应的句柄有效性。<c>IsInitialized()</c> 只查询原生句柄是否有效，不表示句柄内容是否非空。</para>
 	/// </remarks>
 	public void ClearHandle()
 	{
@@ -368,7 +368,7 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	/// <summary>
 	///   取 this 所指句柄的语义类型名（原生 id 2021，按字符串装载并只读第一个值），用来判断这个通用 JlHandle 实际承载的是哪一类对象。
 	/// </summary>
-	/// <returns>语义类型字符串，如代码中可见的 "serialized_item"；其余取值随对象类别而定 （具体边界行为以对应 HALCON 算子文档为准）。</returns>
+	/// <returns>语义类型字符串，如代码中可见的 "serialized_item"；其余名称由原生句柄类型定义。本库不把名称集合封装成枚举，调用方应按所需类型比较字符串。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>PreCall(2021)：Store(this,0) + InitOCT(0)，调用后 LoadS 取回字符串输出（只读第一个值）。可用于判断一个通用 JlHandle 实际承载的对象族；方法名带 Tuple，作用于此句柄。</para>
 	///   <para><b>用法</b></para>

@@ -194,7 +194,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   <see cref="JlTupleAccessException"/> "Index out of range"，合法则返回该位置的
 	///   <see cref="JlTupleElements"/> 视图；setter 展开为 <c>this[new int[1]{ index }] = value</c>。</para>
 	///   <para><b>约束或前提</b>负下标读写都抛越界；上界外写入会把 <c>Length</c> 扩到
-	///   <c>index+1</c>，中间新元素的填充口径 （具体边界行为以对应 HALCON 算子文档为准）。写入与当前类型不符的值会把元组升级为 MIXED。</para>
+	///   <c>index+1</c>，新槽使用当前存储类型的默认值。写入与当前类型不符的值会把元组升级为 MIXED。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple t = new int[] { 1, 2, 3 };
@@ -616,7 +616,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   纯托管字节流还原，零原生调用。</para>
 	///   <para><b>约束或前提</b>标 <c>EditorBrowsable(Never)</c>，是二进制格式化器的反射入口——正常代码
 	///   走 <see cref="Serialize(Stream)"/> 与静态 <see cref="Deserialize(Stream)"/> 配对，而不是手写
-	///   SerializationInfo。"data" 键缺失或字节非法时的具体异常口径 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   SerializationInfo。"data" 键缺失时由 <c>SerializationInfo.GetValue</c> 抛出序列化异常；字节非法时由托管反序列化校验抛 <see cref="JlException"/>。</para>
 	///   <para><b>与相邻用法的取舍</b>只要字节数组时 <c>SerializeTuple()/DeserializeTuple(byte[])</c>
 	///   这一对更直接；本构造器仅服务 <c>ISerializable</c> 协议。</para>
 	///   <para><b>用法</b></para>
@@ -667,7 +667,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   <para><b>功能说明</b>：读出 <see cref="Serialize(Stream)"/> 格式的字节并重建元组，内部走
 	///   <see cref="DeserializeTuple(byte[])"/>；元素类型（含 MIXED）按序列化时的原类型还原。</para>
 	///   <para><b>资源与坑</b>：若还原出的元组含句柄元素，用完应对其调用 <see cref="Dispose()"/>；
-	///   流位置不对或字节非本格式时抛序列化异常，不会返回半截数据 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   流位置不对或字节非本格式时，<see cref="JlSerializationBuffer.ReadFromStream(Stream)"/> 抛 <see cref="JlException"/>，不会返回半截数据。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple t = new int[] { 1, 2, 3 };
@@ -4370,7 +4370,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple one = new JlTuple(new JlHandle());
 	///   one.ClearHandle();
 	///   </code>
-	///   <para><b>资源与坑</b>：对纯数值/字符串元组调用时原生侧行为未在本仓库代码中体现 （具体边界行为以对应 HALCON 算子文档为准）；清空后若仍把句柄元素传给算子会得到无效句柄错误。</para>
+	///   <para><b>资源与坑</b>：仅对 HANDLE/MIXED 元组调用本方法。清空后元组中的句柄值仍保留，但对应句柄已无效；若后续仍将其传给需要有效对象的算子，原生调用会报错。</para>
 	/// </remarks>
 	public void ClearHandle()
 	{
@@ -4386,7 +4386,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>按 INTEGER 装载的单元素 0/1 元组；可隐式转成 int/bool 直接用。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 2016），看的是元组整体的存储类型，一次布尔判断，不逐元素。</para>
-	///   <para><b>约束或前提</b>：存的恰好是指针数值的 INTEGER/LONG 元组会判 0——它不是 HANDLE 存储；MIXED 元组即使每个元素都是句柄，整体类型也不是 HANDLE，同样判 0 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>：存的恰好是指针数值的 INTEGER/LONG 元组会判 0——它不是 HANDLE 存储；MIXED 元组即使每个元素都是句柄，整体类型也不是 HANDLE，同样判 0。</para>
 	///   <para><b>与相邻算子的取舍</b>：要逐元素判类型（如 MIXED 元组里哪几个是句柄）用 <see cref="TupleIsHandleElem"/>；要判断句柄是否仍然有效用 <see cref="TupleIsValidHandle"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -4493,7 +4493,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <returns>与输入等长的 INTEGER 1/0 元组，1=句柄有效。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>：调用原生算子（id 2020）。问的是"对象还活着吗"，与 <see cref="TupleIsHandle"/>（问存储类型）和 <see cref="TupleIsHandleElem"/> 不同：句柄被 Dispose 或 ClearHandle 之后类型仍是句柄，但有效性变 0。</para>
-	///   <para><b>约束或前提</b>：非句柄元素如何作答未在本仓库代码中体现 （具体边界行为以对应 HALCON 算子文档为准）；典型用途是在把句柄元组喂给算子前体检，或 ClearHandle 后确认已失效。</para>
+	///   <para><b>约束或前提</b>：本检查面向 HANDLE/MIXED 元组；对其他存储类型不要依赖逐元素结果。典型用途是在把句柄元组喂给算子前体检，或 ClearHandle 后确认句柄已失效。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlHandle h = new JlHandle();
@@ -5368,7 +5368,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   int n = group.Length;    // 2
 	///   group.Dispose();         // 释放组内两个克隆
 	///   </code>
-	///   <para><b>资源与坑</b>：元组释放的只是自己的副本；原句柄数组及其内容仍由创建方负责。传 null 数组与传空数组的差别未在构造里特判 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：元组释放的只是自己的副本；原句柄数组及其内容仍由创建方负责。传入 <c>null</c> 数组会在复制数组长度时抛 <see cref="NullReferenceException"/>；空数组则创建长度为 0 的 HANDLE 元组。数组中的 <c>null</c> 元素会变成 UNDEF 句柄。</para>
 	/// </remarks>
 	public JlTuple(params JlHandle[] h)
 	{
@@ -5383,7 +5383,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <summary>用混合值创建 MIXED 型元组。</summary>
 	/// <remarks>
 	///   <para><b>功能说明</b>：JlTupleMixed(o, copy: true)。可放整数、double、字符串与句柄的混排，各元素保留自己的类型；整条元组的 Type 是 MIXED。</para>
-	///   <para><b>与相邻算子的取舍</b>：类型齐整的数据请用对应单类型构造——MIXED 让 TupleIsHandle 之类的整体判断退化为 0，逐元素判断要换 Elem 族算子，代价明显。超出上述类型支持范围的 object 会被如何处置 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>与相邻算子的取舍</b>：类型齐整的数据请用对应单类型构造——MIXED 让 TupleIsHandle 之类的整体判断退化为 0，逐元素判断要换 Elem 族算子，代价明显。传入不支持的 object 类型会抛 <see cref="JlTupleAccessException"/>；支持的句柄元素会被复制后由元组负责释放。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   JlTuple rec = new JlTuple(7, "roi", 0.95);
@@ -5516,7 +5516,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	/// <summary>复制元组；HANDLE/MIXED 走序列化-反序列化字节流往返，其余直接构造副本。</summary>
 	/// <returns>与原元组内容一致的新 JlTuple。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>：分支在方法体里——Type 为 HANDLE 或 MIXED 时先 SerializeTuple 再 DeserializeTuple 绕一圈字节流；数值/字符串走 new JlTuple(this) 直接复制值。句柄经序列化往返后是否连对象内容真复制 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>：分支在方法体里——Type 为 HANDLE 或 MIXED 时先 SerializeTuple 再 DeserializeTuple 绕一圈字节流；数值/字符串走 <c>new JlTuple(this)</c> 直接复制值。序列化往返重建句柄型元素；嵌套对象的复制关系由原生序列化格式定义。</para>
 	///   <para><b>与相邻算子的取舍</b>：只是一次引用级复制用 new JlTuple(this) 更便宜；对句柄集合想要"改副本不动原件"才需要本方法的序列化深复制，代价是全量字节流往返。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -5547,7 +5547,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple group = new JlTuple(new JlHandle(), new JlHandle());
 	///   group.Dispose();             // 释放组内两个句柄副本
 	///   </code>
-	///   <para><b>资源与坑</b>：Dispose 后句柄型元组的元素值已失效，再喂算子报无效句柄；重复 Dispose 是否二次释放取决于实现层，避免对同一元组调用两次 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：Dispose 遍历并释放元组持有的句柄包装，但不把元组槽位清空；句柄包装自身 Dispose 幂等，不过释放后不要再访问或传递这些已失效的句柄元素。</para>
 	/// </remarks>
 	public void Dispose()
 	{
@@ -5563,7 +5563,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple t = new JlTuple(1, 2, 3);
 	///   t.TupleAbs();       // 钉与解固定都在算子内部完成，无需手动 UnpinTuple
 	///   </code>
-	///   <para><b>资源与坑</b>：在未钉固定的元组上调用是多余的解除动作，是否报错取决于原生层 （具体边界行为以对应 HALCON 算子文档为准）；它与 Dispose 无关，解固定不释放任何句柄。</para>
+	///   <para><b>资源与坑</b>：在未钉固定的元组上调用不会执行释放；实现仅在固定计数大于 0 时递减，减到 0 才释放固定句柄。它与 <see cref="Dispose()"/> 无关，不释放元组中的句柄元素。</para>
 	/// </remarks>
 	public void UnpinTuple()
 	{

@@ -16709,7 +16709,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>新建的 JlHomMat2D 矩阵对象；注意 JlHomMat2D 派生自 JlData、实现 IDisposable，使用后应调用 Dispose。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作为唯一输入，输出经 JlHomMat2D.LoadNew 新建。本质是对整场位移做一次仿射近似，逐像素的非刚性分量会被抹平。</para>
-	///   <para><b>约束或前提</b>输入必须是向量场图像（两通道位移场，如由 RealToVectorField(row 场, col 场, type) 合成的那种），普通灰度图没有意义[具体边界行为以对应 HALCON 算子文档为准]。type 用 relative 还是 absolute 构造会改变位移量纲解释，拟合结果随之不同。</para>
+	///   <para><b>约束或前提</b>输入必须是向量场图像（两通道位移场，如由 RealToVectorField(row 场, col 场, type) 合成的那种），普通灰度图没有意义（具体边界行为以对应 HALCON 算子文档为准）。type 用 relative 还是 absolute 构造会改变位移量纲解释，拟合结果随之不同。</para>
 	///   <para><b>与相邻算子的取舍</b>要保留逐像素形变去校正图像时用 UnwarpImageVectorField 直接展平，不必先压成仿射；只拆通道看位移用 VectorFieldToReal；只要一个全局刚性/仿射量（平移+旋转+缩放）才用本函数。本库 JlHomMat2D 上另有实例版 VectorFieldToHomMat2d(JlImage)，往已有矩阵对象里原地写入，二者按持有对象习惯选。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16770,7 +16770,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <returns>托管 byte[]（经 JlSerializationBuffer.LoadBytes 取出），不是原生句柄，无需释放；内容是图像的深拷贝。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>本图像经 Store 作为唯一输入，无输出句柄参数；字节流包含像素数据本身，序列化后修改/释放原图不影响这份副本。</para>
-	///   <para><b>约束或前提</b>对已 Dispose 或空句柄调用会走原生报错[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>约束或前提</b>对已 Dispose 或空句柄调用会走原生报错（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>只要压缩后的可视图或跨机器存档用 WriteImage 文件族；要在自己的队列/缓存/网络帧里原样搬运句柄对象（含 float 精度、多通道语义，不经编码有损）才用序列化。WriteImage 会丢精度或通道语义，序列化不会。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16802,7 +16802,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="fileName">输出文件名元组（字符串隐式转 JlTuple 合法）。相对路径的解析基准目录（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>与标量重载同一原生 id；区别在 fillColor/fileName 用 Store+调用后 UnpinTuple 钉固定元组直传，有额外钉固开销，换来的是多值能力。本图像是 Store 参数 1 的输入，无输出句柄。</para>
-	///   <para><b>约束或前提</b>若图像做过 CropDomain 有非全幅 domain，域外像素按 fillColor 落进文件——导出取证图前先想清楚 domain 是否要保留。float/direction 等高类型图像转 byte 格式会有量化/截断[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>约束或前提</b>若图像做过 CropDomain 有非全幅 domain，域外像素按 fillColor 落进文件——导出取证图前先想清楚 domain 是否要保留。float/direction 等高类型图像转 byte 格式会有量化/截断（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>单值场景用标量重载 WriteImage(string,int,string) 更省（StoreI/StoreS 直写、无钉固）；要把一张图写成多文件或给多通道分别指定背景色才用本重载。无损搬运句柄对象用 SerializeImage。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -16810,7 +16810,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage("printer_chip/printer_chip_01");
 	///   img.WriteImage("tiff", new int[] { 255, 0, 0 }, "out/chip.tiff");
 	///   </code>
-	///   <para><b>资源与坑</b>void 返回、不产生新句柄；JlTuple 实参由实现内部 UnpinTuple，调用方无需处理。写失败（目录不存在/权限）经 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>资源与坑</b>void 返回、不产生新句柄；JlTuple 实参由实现内部 UnpinTuple，调用方无需处理。写失败（目录不存在/权限）经 PostCall 抛库异常（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void WriteImage(string format, JlTuple fillColor, JlTuple fileName)
 	{
@@ -16921,7 +16921,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   img.ReadImage(new string[] { "printer_chip/printer_chip_01" });
 	///   using JlRegion dom = img.Threshold(0.0, 128.0);
 	///   </code>
-	///   <para><b>资源与坑</b>原地改写、无新句柄返回，但 Threshold 的输出是 JlRegion 新句柄须释放；示例中 dom 已 using 处理。读不存在的文件由 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>资源与坑</b>原地改写、无新句柄返回，但 Threshold 的输出是 JlRegion 新句柄须释放；示例中 dom 已 using 处理。读不存在的文件由 PostCall 抛库异常（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void ReadImage(JlTuple fileName)
 	{
@@ -16951,7 +16951,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   JlImage rot = img.RotateImage(90.0, "constant");
 	///   rot.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>原地改写、不返回句柄，但后续 RotateImage 一族返回新 JlImage 句柄须释放；读失败经 PostCall 抛库异常[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>资源与坑</b>原地改写、不返回句柄，但后续 RotateImage 一族返回新 JlImage 句柄须释放；读失败经 PostCall 抛库异常（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public void ReadImage(string fileName)
 	{
@@ -17018,7 +17018,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="width">输出图像列数。Default: 512</param>
 	/// <param name="height">输出图像行数。Default: 512</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>先在参考点 (row,column) 处取值为 zeta，向外按 z = α·dr² + β·dc² + γ·dr·dc + δ·dr + ε·dc 叠加（dr/dc 为到参考点的行/列偏移）[符号约定具体边界行为以对应 HALCON 算子文档为准]。实现先 Dispose() 本对象再 Load 原地装载，全部参数按 C# 形参序 0..10 直写原生。</para>
+	///   <para><b>功能说明</b>先在参考点 (row,column) 处取值为 zeta，向外按 z = α·dr² + β·dc² + γ·dr·dc + δ·dr + ε·dc 叠加（dr/dc 为到参考点的行/列偏移）（符号约定具体边界行为以对应 HALCON 算子文档为准）。实现先 Dispose() 本对象再 Load 原地装载，全部参数按 C# 形参序 0..10 直写原生。</para>
 	///   <para><b>约束或前提</b>纯合成图，不需要输入图像；type 与系数幅值要匹配，byte 图用大系数几乎必然饱和成片。</para>
 	///   <para><b>与相邻算子的取舍</b>线性光照梯度用一次多项式版 GenImageSurfaceFirstOrder，别为斜面硬上二阶；做背景建模/照度均衡时先用本函数拟合出曲面再走减法族；只要常数底图时 gen_image_const 级别的需求犯不上算多项式。</para>
 	///   <para><b>用法</b></para>
@@ -17926,7 +17926,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	///   mapImg.ReadImage("calib/coord_map");
 	///   using JlImage forBig = mapImg.ConvertMapType("coord_map_sub_pix", 1280);
 	///   </code>
-	///   <para><b>资源与坑</b>返回新句柄须释放；输入须是映射图像，普通灰度图喂进来得到的是几何意义上的乱码[具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <para><b>资源与坑</b>返回新句柄须释放；输入须是映射图像，普通灰度图喂进来得到的是几何意义上的乱码（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	/// </remarks>
 	public JlImage ConvertMapType(string newType, int imageWidth)
 	{
@@ -18222,7 +18222,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="alpha">三通道输入补给的 alpha 常量。Default: 255</param>
 	/// <returns>交错排布的新图像句柄，用毕 Dispose。</returns>
 	/// <remarks>
-	///   <para>排布语义、行对齐错位的坑见 <see cref="InterleaveChannels(string,JlTuple,int)"/>：同一原生 id 1969，本版本三个控制参数全直写，是常规路径；rowBytes 想给数值形式[具体边界行为以对应 HALCON 算子文档为准]时用元组重载。</para>
+	///   <para>排布语义、行对齐错位的坑见 <see cref="InterleaveChannels(string,JlTuple,int)"/>：同一原生 id 1969，本版本三个控制参数全直写，是常规路径；rowBytes 想给数值形式（具体边界行为以对应 HALCON 算子文档为准）时用元组重载。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
 	///   using JlImage img = new JlImage();
@@ -18438,7 +18438,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="index">被替换位置的序号元组，钉固写控制槽 0、调用后解钉；序号数与替换元素数不匹配时的行为（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <returns>替换后的新元组句柄，用毕 Dispose；未被替换的元素原样保留。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>"先删后插"的组合语义在本算子内一次完成，序号按<b>原元组</b>解释（不像 RemoveObj 那样逐步前移）[具体边界行为以对应 HALCON 算子文档为准]。本图像 iconc 1，输出 LoadNew。</para>
+	///   <para><b>功能说明</b>"先删后插"的组合语义在本算子内一次完成，序号按<b>原元组</b>解释（不像 RemoveObj 那样逐步前移）（具体边界行为以对应 HALCON 算子文档为准）。本图像 iconc 1，输出 LoadNew。</para>
 	///   <para><b>与相邻算子的取舍</b>只增不删用 InsertObj、只删不换用 RemoveObj，不要拿 ReplaceObj 配空参凑数；要整体重排顺序没有本族算子，只能逐件取出再拼接。原位置对象被顶替后由谁释放（具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
@@ -18623,7 +18623,7 @@ public class JlImage : JlObject, ISerializable, ICloneable
 	/// <param name="modelID">目标模型（iconc 0）。</param>
 	/// <param name="homMat2D">变换矩阵，钉固传控制槽 1。</param>
 	/// <param name="clutterContrast">最小干扰对比度（INTEGER）。Default: 128</param>
-	/// <param name="genParamName">单个参数名，StoreS 直写。模板占位值（如 "value"）无意义，用文档确认过的名字[具体边界行为以对应 HALCON 算子文档为准]。</param>
+	/// <param name="genParamName">单个参数名，StoreS 直写。模板占位值（如 "value"）无意义，用文档确认过的名字（具体边界行为以对应 HALCON 算子文档为准）。</param>
 	/// <param name="genParamValue">对应的数值参数，StoreD 按 DOUBLE 写——给不出字符串值的参数只能用元组重载传。</param>
 	/// <remarks>
 	///   <para>写模型内部状态的语义、回读核对要求见元组版 <see cref="SetShapeModelClutter(JlRegion,JlShapeModel,JlHomMat2D,int,JlTuple,JlTuple)"/>：同一原生 id 2057，本版本一次只设一个名值对、且值必须是数值。</para>

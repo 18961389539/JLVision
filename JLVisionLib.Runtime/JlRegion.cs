@@ -9527,7 +9527,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   不分配 <c>JlTuple</c>。</para>
 	///   <para><b>约束或前提</b>句柄里若有多个区域，只有第 1 个的三条值可用，其余静默丢弃；
 	///   需要逐域就用 <c>Eccentricity(out JlTuple, out JlTuple)</c>。取"第 1 个"依赖上游顺序，
-	///   <c>Connection</c> 之后未排序时第 1 个未必是目标域 [具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   <c>Connection</c> 之后未排序时第 1 个未必是目标域 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与相邻算子的取舍</b>单域快速判形用它，省掉元组开销；成批筛形走元组版配
 	///   <c>SelectShape</c>。</para>
 	///   <para><b>参数取向</b>返回 1 标量 + <c>out</c> 2 标量，出参序仍是各向异性、bulkiness、
@@ -9951,7 +9951,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   <para><b>它量什么</b>与元组版同一原生算子（id 1645），改为两次 <c>LoadI</c> 直取标量，
 	///   不建 <c>JlTuple</c>；出参序仍是连通块数在前、孔数在后。</para>
 	///   <para><b>约束或前提</b>多区域句柄时第 2 个及以后的计数被静默丢弃，"第 1 个"由上游顺序决定；
-	///   <c>Connection</c> 之后未排序时未必是你想要的那块 [具体边界行为以对应 HALCON 算子文档为准]。
+	///   <c>Connection</c> 之后未排序时未必是你想要的那块 （具体边界行为以对应 HALCON 算子文档为准）。
 	///   本重载适合"整图只有一个工件"或明确只关心首域。</para>
 	///   <para><b>与相邻算子的取舍</b>要逐域统计用 <c>ConnectAndHoles(out JlTuple)</c>；
 	///   只要一个综合指标用 <c>EulerNumber()</c>；数句柄里有几个区域元素用 <c>CountObj()</c>，
@@ -10145,7 +10145,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   面积不在 out 里而在返回值里。实现里 row 先于 column 装载，写反行列不会报错、
 	///   只会把坐标换轴。</para>
 	///   <para><b>类型不对称</b>面积是 INTEGER（像素计数），重心是 DOUBLE——像素中心约定下
-	///   重心可以落在两像素之间 [具体边界行为以对应 HALCON 算子文档为准]。</para>
+	///   重心可以落在两像素之间 （具体边界行为以对应 HALCON 算子文档为准）。</para>
 	///   <para><b>与 <c>AreaCenterGray</c> 的取舍</b>几何重心对像素一视同仁；
 	///   要灰度加权（亮斑定位）用 id 1683 的灰度版。</para>
 	///   <para><b>用法</b></para>
@@ -11672,7 +11672,7 @@ public class JlRegion : JlObject, ISerializable, ICloneable
 	///   灰度投影：把区域内像素灰度按行/列累加，返回水平投影，out 垂直投影。
 	/// </summary>
 	/// <param name="image">灰度来源图像，区域在其上取灰度值。</param>
-	/// <param name="mode">投影统计方式，字符串透传原生层；托管层未枚举取值 ["simple" 之外的可选值具体边界行为以对应 HALCON 算子文档为准]。Default: "simple"</param>
+	/// <param name="mode">投影统计方式，字符串透传原生层；托管层未枚举取值 （"simple" 之外的可选值具体边界行为以对应 HALCON 算子文档为准）。Default: "simple"</param>
 	/// <param name="vertProjection">输出的垂直投影（按列累加）DOUBLE 元组，新句柄。</param>
 	/// <returns>水平投影（按行）DOUBLE 元组，新句柄。</returns>
 	/// <remarks>

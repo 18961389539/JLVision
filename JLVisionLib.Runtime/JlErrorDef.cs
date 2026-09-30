@@ -4043,7 +4043,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Invalid disparity range for binocular_disparity_ms method</c>。视差是同一物理点在两张已校正图像间的列向偏移，该算法只在调用方给定的 [dmin,dmax] 闭区间内测视差；下限压过上限、空区间或超出方法可测界限（原生具体受理规则 （具体语义以 HALCON 错误码说明和算子文档为准））都在参数校验期撞本码，测量不会开始。</para>
 	///   <para><b>族内分界</b>3690-3702 是双目族：3690 管"范围参数本身不可用"，3700-3702 管"两台相机几何不支持校正"，3710-3725 是 BI_ 通用参数的类型/取值档。相邻编号未必同一参数，定位靠消息文本不靠码序。</para>
-	///   <para><b>处理建议</b>视差越大对应越近的物体，区间两端应对齐待测深度远近极限换算出的视差（由基线、焦距与标定换算 （详见 HALCON 错误码参考）），不要盲目放宽范围凑数。本库已删除双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>处理建议</b>视差越大对应越近的物体，区间两端应对齐待测深度远近极限换算出的视差（由基线、焦距与标定换算 （详见 HALCON 错误码参考）），不要盲目放宽范围凑数。本库已删除双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_INVLD_DISP_RANGE = 3690;
 
@@ -4059,7 +4059,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Fields of view of both cameras do not intersect each other</c>。双目的一切计算都发生在左右视场的重叠区上；光轴外张、安装装反或长焦窄视场装大基线，都会让两侧像素集合无交集，原生在预检阶段即报本码。</para>
 	///   <para><b>族内分界</b>与 3700 同属前置校验但病灶不同：3700 是核的位置不利，本码是重叠区为空；"相交但偏小"不归本码，通常会滑向 3702 的校正失败或匹配后无结果 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>处理建议</b>先用两张实拍图肉眼确认同一目标两侧都可见，再谈标定。本库已删除该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>处理建议</b>先用两张实拍图肉眼确认同一目标两侧都可见，再谈标定。本库已删除该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_EPI_FOV = 3701;
 
@@ -4075,7 +4075,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of target_thickness parameter</c>。3710-3725 段是双目视差测量的通用参数校验族，命名规律 WT_ = 槽位类型错、WV_ = 取值不合法；target_thickness 决定"测哪一层、层多厚"，本码管它的类型，取值档在 3716(<c>Jl_ERR_BI_WV_TARGET</c>)。</para>
 	///   <para><b>编号规律</b>本段不是"每参数类型/取值相邻成对"到底：3710-3713 连排四个参数的类型档，对应取值档散在 3714、3716-3719；3720 起才恢复成对。相邻码常非同一参数，定位以消息点名的参数名为准。</para>
-	///   <para><b>坑</b>托管层通用参数以元组承载、数值与字符串可隐式转换，"类型错"多源于名-值成对拼装错位而非有意传错类型。本库已删除双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>托管层通用参数以元组承载、数值与字符串可隐式转换，"类型错"多源于名-值成对拼装错位而非有意传错类型。本库已删除双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_TARGET = 3710;
 
@@ -4083,7 +4083,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of thickness_tolerance parameter</c>。与 3710 配对：target_thickness 定"测哪一层"，thickness_tolerance 定"允许偏离这层多远"，两者是同一次测量的组合项；本码只判类型，取值档在 3717(<c>Jl_ERR_BI_WV_THICKNESS</c>)。</para>
 	///   <para><b>参数取向</b>这是覆盖修正项：调小了会把候选匹配全部排除在外，调大了会把相邻薄层的东西一并测进结果——实际使用中取值档远比本类型档常见，撞到这里基本是参数包拼装错位。</para>
-	///   <para><b>坑</b>本库已删除双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_THICKNESS = 3711;
 
@@ -4099,7 +4099,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of sigma parameter</c>。sigma 是双目视差匹配前做高斯预平滑的标准差（像素单位），本码只判槽位类型；紧接着的 3714(<c>Jl_ERR_BI_WV_SIGMA</c>) 判取值——3713/3714 是本段"类型/取值紧邻成对"的例子之一。</para>
 	///   <para><b>坑</b>数值 0 与字符串 "0" 是两回事：前者归取值档（0 是否合法 （具体语义以 HALCON 错误码说明和算子文档为准）），后者归本类型档。托管层字面量可隐式转成元组，撞到这里说明名-值对拼装时这一位被字符串挤占。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_SIGMA = 3713;
 
@@ -4107,7 +4107,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of sigma parameter</c>。类型档是 3713；本码的常见触因是非正值或过大 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>参数取向</b>sigma 作用在匹配所用的尺度空间图像上而非输出形式：太小压不住纹理噪声，太大把邻近结构糊成一团、错配更多——视差结果本身差时它是首批嫌疑项之一，与 3710-3712 那组"测不测得到"的项性质不同。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_SIGMA = 3714;
 
@@ -4115,7 +4115,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of threshold parameter</c>。这里的 threshold 是按匹配质量（确信度）筛选候选视差点的门槛，与图像分割族的同名阈值不是一回事——它不切区域，决定"多确信才收进结果"。取值档在 3719(<c>Jl_ERR_BI_WV_THRESH</c>)。</para>
 	///   <para><b>编号坑</b>3714 还是 sigma 的取值档、3715 已是 threshold 的类型档，本段排布交错，参数归属以消息点名为准。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_THRESH = 3715;
 
@@ -4123,7 +4123,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of target_thickness parameter</c>。与 3710 同参数两档：过掉类型档才轮到本码，触发即大小被拒（负值/非正值/超上限 （详见 HALCON 错误码参考））。单位的量纲约定（毫米还是按视差折算）托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>参数取向</b>厚度项与 3711/3717 的 tolerance 项必须搭着调：厚度开大了把前景背景之外的层测进结果，开小了倾斜表面的深度展布覆盖不全；单独动一项常从本码滑进另一码。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_TARGET = 3716;
 
@@ -4131,7 +4131,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of thickness_tolerance parameter</c>。类型档 3711；本码判大小：负值、零值或超出与 target_thickness 配套的受理范围 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>参数取向</b>这一项是"层的松紧边"，其有效幅度依赖 3716 的厚度本身——两码常在一次调试中先后出现 （详见 HALCON 错误码参考）；先把两项对齐到同一量纲再单点微调。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_THICKNESS = 3717;
 
@@ -4139,7 +4139,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of position_tolerance parameter</c>。类型档 3712；本码判大小，零值是否可行、上限多少托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>参数取向</b>容差开小，标定残差稍大就会让本来该配上的点配不上；开大则错配进入结果——它与 3715/3719 的质量门槛是跷跷板两端：放宽位置侧常常要靠收紧质量侧找补，排查时两项一起动比单动少绕弯路 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_POSITION = 3718;
 
@@ -4147,7 +4147,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of threshold parameter</c>。类型档 3715；本码是数值落在受理区间之外 （详见 HALCON 错误码参考）。别按图像分割阈值的习惯猜它是 0-255 灰度域——它筛的是匹配置信度，量纲随匹配度量而定 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>参数取向</b>门槛抬高，错误视差点变少、有效点也变少；压低则相反。它与 3712/3718 位置容差的联合松紧是本族结果质量的主调节点，先定本码再动容差，一次只动一项。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_THRESH = 3719;
 
@@ -4155,7 +4155,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of refinement parameter</c>。refinement 选择"视差结果细化到什么程度"（亚像素细化档位），允许枚举集托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；本码判槽位类型，取值档紧邻在 3721(<c>Jl_ERR_BI_WV_REFINE</c>)。枚举项被当成数值递交、或参数包错位，是本码的典型触因。</para>
 	///   <para><b>档位差别</b>细化档位直接换算力与结果质量：不细化出整像素视差、细化越深越接近亚像素但耗时越多 （详见 HALCON 错误码参考），别用默认档位一概而论。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_REFINE = 3720;
 
@@ -4163,7 +4163,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of refinement parameter</c>。类型档 3720 已过、槽位类型正确，本码是串值不被识别——枚举串最典型的走样方式是大小写、下划线与拼写差异，允许值清单 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>分档价值</b>枚举型参数先撞类型档还是取值档，说明的是完全不同的病灶：类型档查参数包拼装，取值档查串本身；核对消息里的 type/value 用词再动手，能省一半猜测。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_REFINE = 3721;
 
@@ -4171,7 +4171,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of resolution parameter</c>。resolution 控制视差输出/搜索的分辨率或步长 （详见 HALCON 错误码参考），取值档紧邻在 3723。本码只判槽位类型，触发即参数包没拼对，测量未开始。</para>
 	///   <para><b>与 sigma 的分界</b>"分辨率"与 sigma 的"平滑尺度"都按像素计但管两件事：sigma 决定在哪个模糊尺度上匹配，resolution 决定结果/搜索的疏密；想要更多细节却去加大平滑 sigma，方向就调反了。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_RESOL = 3722;
 
@@ -4179,7 +4179,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>本码内嵌原文与 3722 一字不差：<c>Wrong type of resolution parameter</c>，而常量名按族内规律是 WV_ = wrong value——文本与命名冲突，同段只有 3725(<c>Jl_ERR_BI_WV_POLARITY</c>) 犯同样的毛病。按命名规律把本码理解为 resolution 的取值档，原生实报行为以实测为准 （具体语义以 HALCON 错误码说明和算子文档为准）；用文本搜消息时别只按一档搜。</para>
 	///   <para><b>参数取向</b>resolution 的大小直接换结果密度与耗时：调细则点云密、边缘细节好但更慢且噪声点更多，调粗反之 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_RESOL = 3723;
 
@@ -4187,7 +4187,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong type of polarity parameter</c>。polarity 决定按哪种亮度跃变方向的特征去做匹配（如只取暗到亮/只取亮到暗/两者都要 （详见 HALCON 错误码参考）），本码判类型，取值档在 3725(<c>Jl_ERR_BI_WV_POLARITY</c>)。</para>
 	///   <para><b>参数取向</b>这一项的作用是在重复纹理里掐掉一半极性的误配源：目标表面以单侧对比度为主时收窄方向可显著减少歧义；收错方向则整类特征消失、结果大面积空洞——它不是"越少越好"的过滤器。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WT_POLARITY = 3724;
 
@@ -4195,7 +4195,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>本码内嵌原文为 <c>Wrong type of polarity parameter</c>，与 3724 一字不差，而名字按族内规律 WV_ = 取值档——与 3723(<c>Jl_ERR_BI_WV_RESOL</c>) 同为本段的文本/命名冲突，两档理解以命名规律为准、原生实报行为 （具体语义以 HALCON 错误码说明和算子文档为准）。用英文文本反查消息来源时，同一句文本会命中两个码，别据此断定档位。</para>
 	///   <para><b>分档价值</b>枚举串参数撞类型档还是取值档是两种病灶：前者查参数包拼装错位，后者查串的拼写/大小写；核对消息用词再动手，修正动作完全不同。</para>
-	///   <para><b>条目</b>本库无双目视差族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无双目视差族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BI_WV_POLARITY = 3725;
 
@@ -4203,7 +4203,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>No sheet-of-light model available</c>。片光（结构光光平面）族的标定与重建以一个或多个模型为输入，列表为空——创建模型的步骤没跑、创建失败未察觉、或结果被提前释放——都在调用入口即报本码，解算完全未开始。</para>
 	///   <para><b>族内分界</b>3751-3764 段是片光族"状态与输入完备性"校验（模型有没有、图像对不对、各坐标分量缺不缺）；3765 起同族转入通用参数的 WT_/WV_/WN_ 校验段。两段的排查方向不同：本段补数据，后段核参数。</para>
-	///   <para><b>条目</b>该族的托管包装（标定数据、相机内参对象等）已在本库删除，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>该族的托管包装（标定数据、相机内参对象等）已在本库删除，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_EMPTY_MODEL_LIST = 3751;
 
@@ -4219,7 +4219,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong input image size (height)</c>。与 3752 同规律、方向相反：模型固定了剖面的行数，当前图像高度对不上即报本码。行向不符的常见来路是采集端按行裁剪/隔行模式改变，而非整幅分辨率切换。</para>
 	///   <para><b>族内分界</b>本码与 3752 只按方向分家；两向都错时报哪一个 （具体语义以 HALCON 错误码说明和算子文档为准）。它与 3754(<c>Jl_ERR_SOL_WPROF_REG</c>) 的分界要记牢：本码是"图不对"，3754 是"图对但剖面区域出了图"。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WNIH = 3753;
 
@@ -4235,7 +4235,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Calibration extend not set</c>。"calibration extend" 指该片光标定数据中随扩展功能一并写入的附加段 （详见 HALCON 错误码参考）；走过旧版本数据、反序列化残缺或只建了基础段时，后续标定/重建取不到扩展即报本码。</para>
 	///   <para><b>坑</b>这是"状态缺失"码，不是参数错：改参数无效，要补的是数据对象本身。与 3756-3762 的 UNDEF_ 族分界在本码指向扩展段、那些码指向视差图/内参/位姿等具体组成——报出来的缺口就是还差的那一块。</para>
-	///   <para><b>条目</b>本库已删除 <c>JlCalibData</c>、<c>JlCamPar</c> 等该族类型，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库已删除 <c>JlCalibData</c>、<c>JlCamPar</c> 等该族类型，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_CAL_NONE = 3755;
 
@@ -4243,7 +4243,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined disparity image</c>。在片光段里出现"视差图"字样值得留意——该词通常是双目族产物，这里判缺失，说明本族某条重建/校验路径把视差类图像当作必需输入而调用方没给 （详见 HALCON 错误码参考）；理解以消息文本为准，别按算子名猜输入。</para>
 	///   <para><b>族内排布</b>3756-3762 是 UNDEF_ 族，逐项盯标定数据的完备性：3756 视差图、3757 其定义域、3758 内参、3759 光平面位姿、3760 相机系位姿、3761 两系间变换、3762 运动位姿。它像进度指示器：补齐一项再跑，报的码往下一项挪。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_DISPARITY = 3756;
 
@@ -4251,7 +4251,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined domain for disparity image</c>。图像对象上"像素内容"与"定义域（参与计算的区域）"是两层数据：3756 判图本身缺失，本码判图在、域没设。域空不等于"整幅参与计算"，原生按数据不完备处理。</para>
 	///   <para><b>坑</b>常见来路是图经拷贝/转换后域没跟过来，或把已被释放/清空的区域赋给了图 （详见 HALCON 错误码参考）。恢复动作是显式设全域或补一块有效域，而不是换图。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_DISPDOMAIN = 3757;
 
@@ -4267,7 +4267,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined pose of the lightplane</c>。片光测量里，激光条纹与工件的交点之所以能变成 3D 点，是因为光平面的空间位姿已知（光平面坐标系 LPCS）；这一项未设置，剖面像素只能停在 2D。</para>
 	///   <para><b>三件套分界</b>3759 光平面侧、3760 相机侧（CCS）、3761 两系之间的变换——"缺一环报一码"，逐项补齐即把标定数据完备度当进度条读；与位姿串"格式不对"的 3771/3780 两码分属"没给"与"给了但错"。</para>
-	///   <para><b>条目</b>本库 <c>JlPose</c> 类型仍在，但该族片光标定包装已删除，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库 <c>JlPose</c> 类型仍在，但该族片光标定包装已删除，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_LPCS = 3759;
 
@@ -4275,7 +4275,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined pose of the camera coordinate system</c>。片光重建把剖面像素先映到相机坐标系（CCS）再转到工件/世界系；本项未设即第一步就没有落点。与 3759（光平面侧）、3761（CCS 到 LPCS 的变换）正好切分"缺 A / 缺 B / 缺 A 与 B 之间的联系"三种状态。</para>
 	///   <para><b>与位姿格式码分界</b>本码只判"整个没设"；位姿串给了但某分量类型不对是 3771(<c>Jl_ERR_SOL_WT_PAR_POSE</c>)、元素个数不对是 3780(<c>Jl_ERR_SOL_WN_POSE</c>)——先补上、再修格式，恢复动作不同。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_CCS = 3760;
 
@@ -4283,7 +4283,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined transformation from the camera to the lightplane coordinate system</c>。片光重建的映射链要在相机坐标系（CCS）与光平面坐标系（LPCS）之间换算 （详见 HALCON 错误码参考），系间变换是必备环节。3759/3760 各管一侧位姿缺失，本码是两侧齐了但联系没建——逐项补到本码还报，说明补的是位姿、漏的是变换。</para>
 	///   <para><b>处理建议</b>该变换在片光族里通常随标定流程整体写入而非手工单设 （详见 HALCON 错误码参考）；数据从旧文件恢复时最容易丢这一段。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_CCS_2_LPCS = 3761;
 
@@ -4291,7 +4291,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Undefined movement pose for xyz calibration</c>。片光族的 xyz（绝对三维）标定靠"相机或工件按已知位姿移动若干次"产生多余观测来解未知量；运动位姿缺失则该路径欠约束，直接拒算。撞本码说明已选定移动式标定分支——这区别于 3758-3761 那组静态组件缺失。</para>
 	///   <para><b>坑</b>运动位姿通常是一序列（每帧一次运动的相对位姿），漏其中任意一项是否即报本码、还是只报第一处缺口 （详见 HALCON 错误码参考）。补数据时整序列一起给，别逐帧试探。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_UNDEF_MOV_POSE = 3762;
 
@@ -4299,7 +4299,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong value of scale parameter</c>。片光段里 scale 挂在哪个调用、量纲为何（缩放因子/步长）托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；先按调用链确定参数包再调值，别按同名参数在别的族的经验套。</para>
 	///   <para><b>族内分界</b>本码是 3751-3764"状态与输入"段的最后一枚取值码；3765 起同族转入按参数命名的 WT_/WV_/WN_ 校验段，命名规律相同（WV_ = 取值错），管的参数不同。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WV_SCALE = 3763;
 
@@ -4307,7 +4307,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原文 <c>Wrong parameter name</c>。名-值成对递交的通用参数先过"名字匹配"这一关：串不被认识即报本码，参数自身的类型/取值档（各参数的 WT_/WV_）都还没轮到。大小写、下划线、拼写差异是主因。</para>
 	///   <para><b>排查价值</b>本码不指向"值错"，只宣告"这个名字对本调用不存在"；同一名字在别的算子下可能合法 （详见 HALCON 错误码参考），所以换调用点测试比改值有效。名字过关后才轮到 3765 起的逐参数校验段。</para>
-	///   <para><b>条目</b>本库无该族托管包装，全库 Grep 无本常量引用，本码为 3751-3764 段末枚，仅作原生错误表保留项。</para>
+	///   <para><b>条目</b>本库无该族托管包装，代码库中没有本常量引用，本码为 3751-3764 段末枚，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WV_PAR_NAME = 3764;
 
@@ -4315,7 +4315,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong type of parameter method</c>。本片光/结构光标定段的码按同一规律排布：WT_ = wrong type（槽位类型错，3765~3771、3773、3783）、WV_ = wrong value（取值不合法，3772、3774~3778）、WN_ = wrong number（元素个数错，3779/3780），同一参数最多撞其中之一。</para>
 	///   <para><b>语义要点</b>本码在参数包解包阶段触发，标定尚未开始；method 的合法档位清单托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准），类型过关后才轮到 <c>Jl_ERR_SOL_WV_METHOD</c>(3772) 判取值。</para>
-	///   <para><b>坑</b>托管层通用参数以元组承载且字面量可隐式转换，"类型错"多源于名-值成对拼装时错位，而不是有意传错类型；本库已删除该族标定包装（<c>JlCamPar</c>、<c>JlCalibData</c> 等类型已移除），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>托管层通用参数以元组承载且字面量可隐式转换，"类型错"多源于名-值成对拼装时错位，而不是有意传错类型；本库已删除该族标定包装（<c>JlCamPar</c>、<c>JlCalibData</c> 等类型已移除），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WT_METHOD = 3765;
 
@@ -4323,7 +4323,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong type of parameter ambiguity</c>。ambiguity 是"多个候选解按什么准则取舍"的策略项，本码只判类型；类型过了才轮到 <c>Jl_ERR_SOL_WV_AMBIGUITY</c>(3774) 判取值。</para>
 	///   <para><b>语义要点</b>与 3774 一起构成同一参数的两档，排查时先看消息里的 type/value 一词，能省掉一半猜测；它与 method（3765/3772）、score（3767/3775）同属一个参数包的并列槽位。</para>
-	///   <para><b>坑</b>本库已删除该族标定的托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项；允许的准则值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除该族标定的托管包装，代码库中没有本常量引用，仅作原生错误表保留项；允许的准则值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WT_AMBIGUITY = 3766;
 
@@ -4339,7 +4339,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong type of parameter calibration</c>。calibration 是决定标定走哪条路径的枚举项，本码只看类型：类型过关才轮到 3776（值不合法）与 3790（值合法但与其它参数不配）。</para>
 	///   <para><b>语义要点</b>三档互斥，报哪一档说明原生走到了哪一步校验，可直接当"进度指示"用。参数包由"名-值"成对拼装，类型错多半来自拼装时错位，而非有意写错类型。</para>
-	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WT_CALIBRATION = 3768;
 
@@ -4347,7 +4347,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong type of parameter number_profiles</c>。该参数是"取多少条剖面/轮廓"的计数项，原生要求整数槽位；给串或给浮点都归本码，取值超范围归 <c>Jl_ERR_SOL_WV_NUM_PROF</c>(3777)。</para>
 	///   <para><b>语义要点</b>整数与浮点在托管层可互相隐式转换、也能隐式转成元组，因此这类错通常不是写错类型，而是参数包组装顺序错位（把某路字符串挤进了这一位）；核对成对给出的"名-值"序列比核对单个值更有效。</para>
-	///   <para><b>坑</b>本库无该族标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库无该族标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WT_NUM_PROF = 3769;
 
@@ -4371,7 +4371,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong value of parameter method</c>。method 选的是"走哪种求解/提取策略"，值不在允许集即在参数包校验期被拒，压根没跑到几何解算。</para>
 	///   <para><b>语义要点</b>命名规律：WT_（3765）管类型、WV_（本码）管取值；档位清单与 3765 同源，托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。换 method 往往连带改变 number_profiles、score_type 的合法集，单改一项容易从本码滑到 <c>Jl_ERR_SOL_PAR_CALIB</c>(3790) 那类"组合不配" （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WV_METHOD = 3772;
 
@@ -4387,7 +4387,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong value of parameter ambiguity</c>。ambiguity 决定多个候选解如何取舍（例如按刚性/按评分等策略），值不合法即在参数包校验期被拒；类型错另有 <c>Jl_ERR_SOL_WT_AMBIGUITY</c>(3766)。</para>
 	///   <para><b>语义要点</b>它管"多解怎么挑"、<c>Jl_ERR_SOL_WV_SCORE_TYPE</c>(3775) 管"怎么打分"，两者常成对出现；把消歧关掉并不能绕过打分档的取值校验，反之亦然 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>坑</b>本库无该族标定包装（相关 3D/相机类型已删除），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库无该族标定包装（相关 3D/相机类型已删除），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WV_AMBIGUITY = 3774;
 
@@ -4411,7 +4411,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong value of parameter number_profiles</c>。命名规律 WV_ 指"值不合法"；该参数为整数槽位错是 <c>Jl_ERR_SOL_WT_NUM_PROF</c>(3769)，两者按消息文本分得很清。</para>
 	///   <para><b>语义要点</b>这类"数量"参数通常有上下限且与图像尺寸、算法档位相关 （具体语义以 HALCON 错误码说明和算子文档为准）；给 0、给负数、给到超过采样能力的大数都归本码，原生不区分。</para>
-	///   <para><b>坑</b>本库无该片光/结构光标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库无该片光/结构光标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WV_NUM_PROF = 3777;
 
@@ -4459,7 +4459,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong type of parameter calibration_object</c>。命名规律：WT_ = wrong type（槽位类型错），WV_ = wrong value（值不合法），WN_ = wrong number（元素个数错），三者是同一参数在不同校验阶段的不同码。</para>
 	///   <para><b>语义要点</b>本码发生在解参数包阶段，标定压根没开始，因此不会与 3784（无效标定物）、3785（未设标定物）同时出现；托管侧通用参数多以元组承载，且字面量可隐式转成元组——该给对象/数值处传了字符串，正是这类"类型错"的常见来源。</para>
-	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除该片光/结构光标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WT_CALIB_OBJECT = 3783;
 
@@ -4483,7 +4483,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Invalid file format for sheet-of-light model</c>。按文件头/结构判族属，对不上即本码：把别的模型族文件、纯文本、写入中断的残件当片光模型读都会落到这里。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_SOL_WR_FILE_VERS</c>(3787) 的分工是"格式 vs 版本"，处置方向相反（换文件 vs 换运行时）；结构光模型段的同族码是 3958/3957，两族文件互不通用 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>坑</b>托管层没有格式嗅探接口；本库已删除片光模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>托管层没有格式嗅探接口；本库已删除片光模型包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WR_FILE_FORMAT = 3786;
 
@@ -4507,7 +4507,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Parameter does not match the set 'calibration'</c>。本码是"参数组合"层校验：calibration 取值决定要不要 camera_parameter、pose、calibration_object 等配套项，配漏或配多都会撞这里，而参数本身的类型/取值合法（那两类是 3765~3778 的 WT_/WV_ 系列）。</para>
 	///   <para><b>语义要点</b>消息不带参数名，只点出"与 calibration 不配"——排查要先固定 calibration 取值，再逐项删/补；与 <c>Jl_ERR_SOL_WT_CALIBRATION</c>(3768)、<c>Jl_ERR_SOL_WV_CALIBRATION</c>(3776) 的区别正在于 calibration 自身是合法的。</para>
-	///   <para><b>坑</b>各 calibration 档位分别要求哪些配套参数，托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除该片光标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>各 calibration 档位分别要求哪些配套参数，托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除该片光标定包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_PAR_CALIB = 3790;
 
@@ -4515,7 +4515,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The gray values of the disparity image do not fit the height of the camera</c>。视差图以灰度编码视差，换算成高度要用相机几何；灰度整体落在该套标定给出的量程之外（视差零点偏移、图是别的标定条件下算出来的）即本码。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_SOL_UNDEF_DISPARITY</c>(3756，没给视差图)、<c>Jl_ERR_SOL_UNDEF_DISPDOMAIN</c>(3757，没给视差域) 分档：那两条是输入缺席，本码是输入在场但换算关系不自洽，属"配错一套标定"而非"忘了传"。</para>
-	///   <para><b>坑</b>视差—高度换算所用参数（基线、倾角、零视差对应高度）的布局托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除该片光/双目重建包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>视差—高度换算所用参数（基线、倾角、零视差对应高度）的布局托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除该片光/双目重建包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SOL_WGV_DISP = 3791;
 
@@ -4523,7 +4523,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong texture inspection model type</c>。原生按模型内部类型标签分派，标签不对直接拒；它不指出错成了哪种类型，也不区分"给了别的族"与"同族不同子类型"。</para>
 	///   <para><b>语义要点</b>3800~3809 一段里，本码是唯一的"类型错"，其余分属训练状态（3801/3802）、模型文件（3803/3804）、样本文件（3805~3808）、图像数量/尺寸（3807/3809），按消息文本分档即可。名字与 <c>Jl_ERR_SLM_WRONGMODEL</c>(3961) 只差族前缀，按码段判族。</para>
-	///   <para><b>坑</b>模型句柄在本库统一走 <c>JlObjectBase</c> 的 key 通道，编译期分不开族属；本库已删除纹理检测模型族，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>模型句柄在本库统一走 <c>JlObjectBase</c> 的 key 通道，编译期分不开族属；本库已删除纹理检测模型族，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_WRONGMODEL = 3800;
 
@@ -4531,7 +4531,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Texture Model is not trained</c>。"创建模型"与"训练模型"是两步，只创建不训练即本码；它不抱怨数据好坏，只说训练没发生。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_TI_NOTRAINDATA</c>(3802，没有训练数据) 的区别在"数据缺"还是"流程没走"：数据齐了仍会撞 3801；反过来 3802 不必等到训练那步就报。先按消息文本定档，再决定补数据还是补调用。</para>
-	///   <para><b>坑</b>训练状态在托管层没有只读属性可查（本库已删除纹理检测模型族，全库 Grep 无本常量引用），只能靠异常码判断 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>训练状态在托管层没有只读属性可查（本库已删除纹理检测模型族，代码库中没有本常量引用），只能靠异常码判断 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_NOTTRAINED = 3801;
 
@@ -4539,7 +4539,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Texture Model has no training data</c>。位于"未训练"（<c>Jl_ERR_TI_NOTTRAINED</c>，3801）之前一档：本码说连喂进去的数据都没有，3801 说数据有了但没跑训练。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_NOT_ENOUGH_IMAGES</c>(3809，模型内无图像) 措辞极近，差别在"训练数据"与"图像"两层是否同指 （具体语义以 HALCON 错误码说明和算子文档为准）；实操上两者都指向"先把样本图挂全"。</para>
-	///   <para><b>坑</b>本库已删除纹理检测模型族（无对应类型与训练/查找包装），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除纹理检测模型族（无对应类型与训练/查找包装），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_NOTRAINDATA = 3802;
 
@@ -4547,7 +4547,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Invalid file format for Texture inspection model</c>，而名字里的 NOTRAINFILE 容易被读成"没有训练文件"——本段并没有"模型文件不存在"这一码（"文件不存在"只在卡尔曼段由 <c>Jl_ERR_NOFILE</c>，3901 表达），按文本理解为准。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_TI_WRTRAINVERS</c>(3804) 是"格式 vs 版本"两档：本码说明文件压根不是可解析的模型；把形状模板/区域等别的族文件、半截写入的残件当模型读即撞这里。</para>
-	///   <para><b>坑</b>装载前无法在托管层嗅探格式；本库已删除纹理检测模型族，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>装载前无法在托管层嗅探格式；本库已删除纹理检测模型族，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_NOTRAINFILE = 3803;
 
@@ -4555,7 +4555,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The version of the Texture inspection model is not supported</c>。与 <c>Jl_ERR_TI_NOTRAINFILE</c>(3803，格式不合法) 分档：那条连族属都对不上，本码认得族属只拒版本。</para>
 	///   <para><b>处置</b>换不低于导出侧的运行时装载，或用受支持的旧版本重新导出模型；样本文件若同批导出，往往还要过 3806 这一关。</para>
-	///   <para><b>坑</b>本库已删除纹理检测模型族，全库 Grep 无本常量引用，仅作原生错误表保留项；受支持版本区间 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除纹理检测模型族，代码库中没有本常量引用，仅作原生错误表保留项；受支持版本区间 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_WRTRAINVERS = 3804;
 
@@ -4571,7 +4571,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The version of the training sample file is not supported</c>。与 <c>Jl_ERR_TI_WRSMPFORMAT</c>(3805) 的分工是"版本 vs 格式"：3805 说文件不是这一族，本码说族对版不对，典型是高版本导出、低版本装载。</para>
 	///   <para><b>处置</b>用不低于导出侧的运行时装载，或在导出侧重存为兼容版本；样本与模型成对时还要看 3804（模型版本），两条可能连撞。</para>
-	///   <para><b>坑</b>本库已删除纹理检测模型族，全库 Grep 无本常量引用，仅作原生错误表保留项；受支持版本区间 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除纹理检测模型族，代码库中没有本常量引用，仅作原生错误表保留项；受支持版本区间 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_WRSMPVERS = 3806;
 
@@ -4588,7 +4588,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The samples do not match the current texture model</c>。样本文件里带着生成它的模型侧特征，装载/续训时与传入的模型实例逐项比对，对不上即本码。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_TI_WRSMPFORMAT</c>(3805，样本文件格式错)、<c>Jl_ERR_TI_WRSMPVERS</c>(3806，样本文件版本老) 是三个不同层：本码文件读得通、版本认得，只是"不是这一份模型的样本"。多模型并流时最易串行。</para>
-	///   <para><b>坑</b>改过模型参数（窗口/尺度一类）后旧样本通常一并作废 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除纹理检测模型族（无对应类型与训练/查找包装），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>改过模型参数（窗口/尺度一类）后旧样本通常一并作废 （具体语义以 HALCON 错误码说明和算子文档为准）；本库已删除纹理检测模型族（无对应类型与训练/查找包装），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_TI_WRSMPTEXMODEL = 3808;
 
@@ -4596,7 +4596,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>No images within the texture model</c>，而常量名写作 NOT_ENOUGH_IMAGES——名字与文本口径不完全一致：判"数量不足"（本码的"零张"）与判"尺寸太小"（<c>Jl_ERR_TI_WRIMGSIZE</c>，3807）是两回事，别按名字猜。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_TI_NOTRAINDATA</c>(3802，模型没有训练数据)、<c>Jl_ERR_TI_NOTTRAINED</c>(3801，没跑训练) 构成三级：本码看模型内的图像集是否为空，3802 看训练数据是否登记，3801 看训练流程是否执行。</para>
-	///   <para><b>坑</b>本库已删除纹理检测模型（无对应模型类），全库 Grep 无本常量引用，仅作原生错误表保留项；"够不够"的数量门限 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除纹理检测模型（无对应模型类），代码库中没有本常量引用，仅作原生错误表保留项；"够不够"的数量门限 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_NOT_ENOUGH_IMAGES = 3809;
 
@@ -4604,7 +4604,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The light source positions are linearly dependent</c>。该族靠多组光源位置（或光平面位姿）构造约束，位置共线/重合会让约束矩阵秩不足；名字 SING 即 singular（奇异）的缩写。</para>
 	///   <para><b>语义要点</b>几何退化错，不是观测数量不足（那是 <c>Jl_ERR_FEWIM</c>，3851）：把同一方向的光位再拍几张也不解，必须让方向真正岔开。与卡尔曼段的 <c>Jl_ERR_SINGU</c>(3911) 同为奇异性，但那由协方差数值病态引起，处置方向完全不同。</para>
-	///   <para><b>坑</b>本库已删除光平面/结构光标定的托管包装，全库 Grep 无本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除光平面/结构光标定的托管包装，代码库中没有本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SING = 3850;
 
@@ -4612,7 +4612,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>No sufficient image indication</c>。与 <c>Jl_ERR_SING</c>(3850，光源位置线性相关)、<c>Jl_ERR_ZBR_NOS</c>(3852，求根退化) 同属光平面/结构光标定解算段：本码说的是"观测不够"，3850 说的是"观测虽多但方向退化"。</para>
 	///   <para><b>语义要点</b>多解/欠定错，不是文件错，也不是类型错（那两类见 3765~3791 的 WT_/WV_/WN_ 码）。典型补法是加姿态、让光条覆盖更多区域，而不是把同一张图重复喂进去。</para>
-	///   <para><b>坑</b>本库已删除该片光/光平面标定包装（无对应模型类与 <c>JlCalibData</c>/<c>JlCamPar</c>），全库 Grep 无本常量引用，仅作原生错误表保留项；判"够不够"的阈值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除该片光/光平面标定包装（无对应模型类与 <c>JlCalibData</c>/<c>JlCamPar</c>），代码库中没有本常量引用，仅作原生错误表保留项；判"够不够"的阈值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_FEWIM = 3851;
 
@@ -4728,7 +4728,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>structured light model is not in persistent mode</c>。SLM 是"投图案—采图—解码—重建"的多拍流程，要靠模型对象把中间态带到下一拍；不处持久模式时，这些内容不在调用间保留，后一拍再取即本码。</para>
 	///   <para><b>语义要点</b>与 3955（未准备解码）、3968（未按重建解码）不同层：那两码说"该步没做"，本码说"即便做了也没跨调用留住"——排查先看开关，再看步骤。</para>
-	///   <para><b>坑</b>本库已删除结构光/3D 包装（无 SLM 相关类），全库 Grep 无本常量引用，仅作原生错误表保留项；开关的托管层入口名与默认值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光/3D 包装（无 SLM 相关类），代码库中没有本常量引用，仅作原生错误表保留项；开关的托管层入口名与默认值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_NOT_PERSISTENT = 3950;
 
@@ -4744,7 +4744,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>the single_stripe_width is too large for the chosen pattern_width or pattern_height</c>。单条纹宽是解码分辨率的"尺子"，尺子占满图案幅面就编不出可区分的条纹；改小 single_stripe_width 或加大 pattern_width/pattern_height 才是解。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_SLM_MSW_TOO_LARGE</c>(3951) 是同一尺寸闸的两个入参（3951 卡 min、本码卡 single），原生先验幅面、再验两宽关系（3953/3954）的次序代码里判不出 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>坑</b>本库已删除结构光模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>坑</b>本库已删除结构光模型包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_SSW_TOO_LARGE = 3952;
 
@@ -4768,7 +4768,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The SLM is not prepared for decoding</c>。本码在解码链最前档："准备"都没做，谈不上"按某用途解码"；后续档依次是未解码（3960/3968）、未配垂直解码（3967）、模型里查不到对象（3956）。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_SLM_NOT_PERSISTENT</c>(3950) 区分：3950 是"内容没跨调用保住"（准备过，但状态没延续），本码是"这一步压根没做"，处置方向不同。</para>
-	///   <para><b>坑</b>本库已删除结构光/3D 包装，全库 Grep 无本常量引用，仅作原生错误表保留项；托管层看不到"准备"标志，只能按异常码回推 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光/3D 包装，代码库中没有本常量引用，仅作原生错误表保留项；托管层看不到"准备"标志，只能按异常码回推 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_NOT_PREP = 3955;
 
@@ -4784,7 +4784,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The version of the structured light model is not supported</c>。与 3958 相反，本码说明族属判定已通过、卡的是版本字段，典型是高版本导出的文件给低版本运行时读。</para>
 	///   <para><b>处置</b>换用不低于导出侧的运行时，或在导出侧以兼容版本重存；重跑建模流程也能绕过，但会丢掉文件里已标定的参数。</para>
-	///   <para><b>坑</b>本库已删除结构光模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项；受支持的版本区间托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光模型包装，代码库中没有本常量引用，仅作原生错误表保留项；受支持的版本区间托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_WRVERS = 3957;
 
@@ -4832,7 +4832,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Inconsistent projector size</c>。投影尺寸要同时参与图案幅面、条纹计数与像素—投影坐标映射，模型里几处各存一份；两处给的值不等即报本码，与 <c>Jl_ERR_SLM_WCAMSIZE</c>(3969，相机尺寸不一致）成对。</para>
 	///   <para><b>语义要点</b>一致性错，不是范围错：单个尺寸合法但彼此不等也算本码；尺寸与条纹宽度的比例关系另有 3951~3954 四个码管。</para>
-	///   <para><b>坑</b>本库已删除结构光/3D 包装，全库 Grep 无本常量引用，仅作原生错误表保留项；尺寸究竟在哪些接口上重复登记 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光/3D 包装，代码库中没有本常量引用，仅作原生错误表保留项；尺寸究竟在哪些接口上重复登记 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_WPATTSIZE = 3963;
 
@@ -4856,7 +4856,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The SLM does not contain a csm</c>。csm 即相机（标定）模型，同族 <c>Jl_ERR_SLM_WNUMCAMS</c>(3962) 里出现的是同一缩写。SLM 本身只承载图案与解码信息，需要内参/位姿参与换算时得另建一份 csm 交进来，没交就是本码。</para>
 	///   <para><b>语义要点</b>装配缺失，不是 csm 内容非法：模型类型不对见 3961、相机类型不受支持见 3964、路数不对见 3962；本码说的是"根本没有"。</para>
-	///   <para><b>坑</b>本库已删除 <c>JlCamPar</c>、标定数据等 3D/标定类型族，全库 Grep 无本常量引用，仅作原生错误表保留项；"设 csm"的入口名 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除 <c>JlCamPar</c>、标定数据等 3D/标定类型族，代码库中没有本常量引用，仅作原生错误表保留项；"设 csm"的入口名 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_NO_CSM = 3966;
 
@@ -4864,7 +4864,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>The SLM is not set for vertical decoding</c>。条纹解码沿取向分横/竖两路，取向在建模型或准备阶段就定下，取结果时走另一路即撞本码。</para>
 	///   <para><b>语义要点</b>与 3960/3968 同类（前置流程没走通），差别在维度：那是"用途"（偏折测量、重建）没解码，本码是"条纹取向"没配置。换图案序列或重建模型才管用，同参数重跑不会好转。</para>
-	///   <para><b>坑</b>本库已删除结构光/3D 包装，全库 Grep 无本常量引用，仅作原生错误表保留项；取向究竟由图案序列决定还是由模型设置项决定，托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光/3D 包装，代码库中没有本常量引用，仅作原生错误表保留项；取向究竟由图案序列决定还是由模型设置项决定，托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_NO_VERT = 3967;
 
@@ -4873,7 +4873,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>内嵌原生文本为 <c>The SLM is not decoded for reconstruction</c>。SLM（结构光模型）族是"投图案—采图—解码—重建"两拍式流程，解码那一拍按用途分支路：重建（物体坐标/高度）、偏折测量、垂直方向解码各用各的结果，本码专指"重建支路没解码"。</para>
 	///   <para><b>语义要点</b>流程状态错，不是参数值错。同族 <c>Jl_ERR_SLM_NOT_DECODED</c>(3960) 是偏折测量用途未解码、<c>Jl_ERR_SLM_NO_VERT</c>(3967) 是垂直方向解码未设置、<c>Jl_ERR_SLM_NOT_PREP</c>(3955) 是更早的"未准备"一档，四者指向前置流程各停在哪一步。</para>
 	///   <para><b>处置</b>按重建用途重跑解码，别复用只按偏折测量解码过的模型；换过图案序列、相机或投影尺寸之后解码结果作废，须重解码。persistent 开关只决定模型跨调用是否保留内容（见 <c>Jl_ERR_SLM_NOT_PERSISTENT</c>，3950），不代替解码。</para>
-	///   <para><b>坑</b>≥1000 一律被 <c>JlNativeApi.IsFailure</c> 判真并抛 <c>JlOperatorException</c>，托管层没有"解码状态"这种只读属性，只能从异常携带的错误码倒推。本库已删除结构光/3D 包装，全库 Grep 无本常量引用，仅作原生错误表保留项；解码步骤在托管层的对应接口名 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>≥1000 一律被 <c>JlNativeApi.IsFailure</c> 判真并抛 <c>JlOperatorException</c>，托管层没有"解码状态"这种只读属性，只能从异常携带的错误码倒推。本库已删除结构光/3D 包装，代码库中没有本常量引用，仅作原生错误表保留项；解码步骤在托管层的对应接口名 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_NOT_DEC_REC = 3968;
 
@@ -4881,7 +4881,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Inconsistent camera size</c>。与 <c>Jl_ERR_SLM_WNUMCAMS</c>(3962) 衔接：路数凑够两路之后，两路幅面还得一致才能做三角化；尺寸在模型中多处各存一份，任两处不等即报本码。投影器侧的对偶码是 <c>Jl_ERR_SLM_WPATTSIZE</c>(3963)。</para>
 	///   <para><b>语义要点</b>一致性错，不是范围错：单个尺寸本身合法但彼此不等也是本码；没挂标定模型报 3966、路数不为 2 报 3962，本码排在它们之后作第二道闸。</para>
-	///   <para><b>坑</b>本库已删除结构光/3D 包装，全库 Grep 无本常量引用，仅作原生错误表保留项；尺寸究竟在哪些接口上重复登记 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>坑</b>本库已删除结构光/3D 包装，代码库中没有本常量引用，仅作原生错误表保留项；尺寸究竟在哪些接口上重复登记 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_SLM_WCAMSIZE = 3969;
 
@@ -5068,7 +5068,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Invalid compute device</c>。4100~4106 OpenCL 段的末位：设备"有没有"由 4102 管、"某参数有无内核实现"由 4103 管、"分块形状"由 4105 管，本码专指"点名了某个设备，但该设备标识本身无效"——典型是设备枚举变动（拔卡、换平台）后仍持旧设备引用。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_NO_COMPUTE_DEVICES</c>(4102) 分档：4102 是一个都枚举不到，本码是有设备而给的那个不对；处置是重枚举平台再选设备，与增加设备无关。</para>
-	///   <para><b>子系统状态</b>托管层没有显式选设备的入口，全库 Grep 无本常量引用，仅作原生错误表保留项；设备标识的承载形式 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>子系统状态</b>托管层没有显式选设备的入口，代码库中没有本常量引用，仅作原生错误表保留项；设备标识的承载形式 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_INVALID_DEVICE = 4106;
 
@@ -5076,7 +5076,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>CUDA error occurred</c>。CUDA 上下文创建、内存拷贝、核函数启动等运行时层调用出错，且不属于 4203~4207 已细分情形时统一回落本码；信息量低，需结合原生日志定位。</para>
 	///   <para><b>语义要点</b>4200~4207 为 CUDA 段：4201/4202 分别下沉到 cuDNN/cuBLAS 库层，4204/4207 管可用性与驱动，4205/4206 管库版本与功能档；同措辞的 OpenCL 兜底见 <c>Jl_ERR_OPENCL_ERROR</c>(4101)，两族码不互通，先按号段认后端。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不走 CUDA，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不走 CUDA，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDA_ERROR = 4200;
 
@@ -5084,7 +5084,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>cuDNN error occurred</c>。卷积等深度学习核心算子在 CUDA 路径经 cuDNN 执行，其调用返回错误且不属于版本不配（4205）/功能不支持（4206）两档时归本码；常见诱因包括显存耗尽与描述符同一代设备档不符 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_CUDA_ERROR</c>(4200) 区分：4200 是 CUDA 运行时层，本码是 cuDNN 库层；深度网络执行期更常落在本码，排查从网络/张量配置入手而非驱动。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuDNN，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuDNN，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDNN_ERROR = 4201;
 
@@ -5092,7 +5092,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>cuBLAS error occurred</c>。cuBLAS 承担 CUDA 上的矩阵乘、分解等运算，全连接层计算、张量重排类操作经它执行；调用返回错误（含显存申请失败等库内原因）回落本码，具体错误类别不回传 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>CUDA 段三个库各配一个兜底码：核心运行时 <c>Jl_ERR_CUDA_ERROR</c>(4200)、深度网络库 cuDNN 4201、线性代数库 cuBLAS 本码——由码就能定位到哪一层库出的错，不必逐层复现。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuBLAS，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuBLAS，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUBLAS_ERROR = 4202;
 
@@ -5100,7 +5100,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Set batch_size not supported</c>。批大小可否显式设置取决于运行时档：有的 CUDA 配置只支持固定批尺寸，改设批大小即撞本码；哪些配置允许设置 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>参数能力错，不是值域错：与 <c>Jl_ERR_CUDNN_FEATURE_NOT_SUPPORTED</c>(4206) 同属"该配置不提供此功能"，处置是换受支持的运行时或接受默认批尺寸，而不是换个数值重试。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层没有批大小设点，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层没有批大小设点，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_BATCH_SIZE_NOT_SUPPORTED = 4203;
 
@@ -5108,7 +5108,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>CUDA implementations not available</c>。选择 CUDA 运行时但实现整体缺席时报本码，属"这条路径根本不存在"，不是"路径里某一步失败"。</para>
 	///   <para><b>语义要点</b>OpenCL 段的对等码是 <c>Jl_ERR_NO_OPENCL</c>(4100)（运行库缺失）；CUDA 侧的细档另见驱动过旧 4207、运行时兜底 4200——先判"整条路没有"还是"有路但走坏了"，再决定装环境还是查日志。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无运行时选择入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无运行时选择入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDA_NOT_AVAILABLE = 4204;
 
@@ -5116,7 +5116,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Unsupported version of cuDNN</c>。初始化 CUDA 深度学习路径时按版本区间校验所加载的 cuDNN，过新或过旧都归本码；接受的版本区间 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>加载期版本闸，与运行期能力错 <c>Jl_ERR_CUDNN_FEATURE_NOT_SUPPORTED</c>(4206)、库内运行错 <c>Jl_ERR_CUDNN_ERROR</c>(4201) 三档分明，分别指向"换库版本、换网络/算法配置、查库运行环境"。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不加载 cuDNN，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不加载 cuDNN，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDNN_UNSUPPORTED_VERSION = 4205;
 
@@ -5124,7 +5124,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Requested feature not supported by cuDNN</c>。cuDNN 各版本能力集不同，某网络层或算法模式在该版本没有对应实现即报本码；与版本"没通过加载校验"（<c>Jl_ERR_CUDNN_UNSUPPORTED_VERSION</c>，4205）不同，本码是运行期能力清单不覆盖。</para>
 	///   <para><b>语义要点</b>处置是升 cuDNN 或改网络/算法选择；重跑无效，换 GPU 型号一般也无效（除非实现档随卡不同）（具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuDNN 选算法，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经 cuDNN 选算法，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDNN_FEATURE_NOT_SUPPORTED = 4206;
 
@@ -5132,7 +5132,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>CUDA driver is out-of-date</c>。校验点在驱动层（不是运行库或工具库层），驱动低于要求时 CUDA 路径整体不可用；要求的最低版本号 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>与相邻两码分清：<c>Jl_ERR_CUDA_NOT_AVAILABLE</c>(4204) 是 CUDA 实现整体不可用（未编入/缺库），<c>Jl_ERR_CUDNN_UNSUPPORTED_VERSION</c>(4205) 是 cuDNN 库版本不配，本码专指显卡驱动版本——三条的处置分别是装实现、换库、升驱动。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从初始化 CUDA，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从初始化 CUDA，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CUDA_DRIVER_VERSION = 4207;
 
@@ -5140,7 +5140,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Training is unsupported with the selected runtime</c>。深度学习运行时分"仅推理"与"可训练"两档能力；本码指当前选定的运行时缺训练档，与硬件好坏、训练参数对错无关。</para>
 	///   <para><b>语义要点</b>换运行时（或换带训练能力的发行版）才有解，同配置重试不会好转。与 <c>Jl_ERR_CPU_INFERENCE_NOT_AVAILABLE</c>(4302) 同段不同维度：4302 管推理路径缺失，本码管训练路径缺失。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层没有训练入口可触发本码，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层没有训练入口可触发本码，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRAINING_UNSUPPORTED = 4301;
 
@@ -5148,7 +5148,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>CPU based inference is not supported on this platform</c>。属平台能力错：与 <c>Jl_ERR_CUDA_NOT_AVAILABLE</c>(4204) 同为"某后端整条路径不可用"，只是本码指 CPU 档；处置是换推理后端或换平台，而非调参数。</para>
 	///   <para><b>语义要点</b>发生在运行时选择期而非推理执行期：CPU 推理可用但库内出错会报 <c>Jl_ERR_DNNL_ERROR</c>(4303)，两码排查方向不同。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从选推理后端，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从选推理后端，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_CPU_INFERENCE_NOT_AVAILABLE = 4302;
 
@@ -5156,7 +5156,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Error occurred in DNNL library</c>。DNNL 即深度神经网络 CPU 计算库；本码是该库调用失败的兜底包装，不区分内存申请失败、内核不支持等具体原因 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>4301~4303 是 CPU 推理小段，三码按层次分档：4301 管"所选运行时不能训练"、<c>Jl_ERR_CPU_INFERENCE_NOT_AVAILABLE</c>(4302) 管"本平台没有 CPU 推理路径"、本码管"CPU 推理跑起来了但库里出错"——能力错与运行错别混查。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经该库，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层不经该库，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_DNNL_ERROR = 4303;
 
@@ -5164,7 +5164,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>AI Accelerator Interface error occurred</c>。HAI2 抽象层调用失败时先尝试归入具体档（如 <c>Jl_ERR_HAI2_INVALID_PARAM</c>，4321 参数非法），归不进的回落本码；光凭本码无法区分是驱动、设备还是接口版本问题。</para>
 	///   <para><b>语义要点</b>4320~4321 一族两档（兜底 + 参数），与 OpenCL 段（4100 缺库、4101 兜底）、CUDA 段（4204 不可用、4200 兜底）的分层写法一致；排查按"先看具体档、看不到再查环境"的顺序。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无入口可触达该加速接口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无入口可触达该加速接口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_HAI2_ERROR = 4320;
 
@@ -5172,7 +5172,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Invalid parameter for AI Accelerator Interface</c>。HAI2 是把各家 AI 加速设备收拢成统一入口的接口层称谓；本码指"参数校验没过"，与 <c>Jl_ERR_HAI2_ERROR</c>(4320) 的"接口自身出错"分档：一个查传参、一个查运行。是哪个参数、合法域为何 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>能力/传参错，重试同参必复现；CUDA 段对参数与能力错另立 4203/4206 等档，本段只有兜底 + 参数两档。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无入口触达该接口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无入口触达该接口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_HAI2_INVALID_PARAM = 4321;
 
@@ -5180,7 +5180,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>ACL error occurred</c>。ACL 一般指昇腾加速卡的计算语言库（Ascend Computing Language）；本码是该后端调用链的兜底包装，不携带具体失败原因，本库中该缩写的确切指向 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>4400 独占一段：与 CUDA 段（4200~4207）、CPU/DNNL 段（4301~4303）、HAI2 段（4320~4321）并列，各族后端码互不通用；同措辞的兜底码 CUDA 见 <c>Jl_ERR_CUDA_ERROR</c>(4200)，由码即可定位到出错后端。</para>
-	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从选择该后端，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库深度学习 <c>JlDl*</c> 包装已删除，托管层无从选择该后端，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_ACL_ERROR = 4400;
 
@@ -5188,7 +5188,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Internal visualization error</c>。可视化路径上未归入 4501（类型不符）、4502（条数超限）等具体档的失败统一回落本码，信息量低，需结合原生侧上下文排查。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_OPENCL_ERROR</c>(4101) 同属"段内兜底码"写法；显示段 5100~5124 各有具体职责，4500~4502 这一小段才承载"可视化"内部错，别把它当窗口错排查。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_VISUALIZATION = 4500;
 
@@ -5196,7 +5196,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Unexpected color type</c>。颜色可按名字串、单数值或 rgb 分量元组给出，入口只收其中某些形态，形态不对即报本码——是"类别错"不是"取值错"。</para>
 	///   <para><b>语义要点</b>取值域错另有 <c>Jl_ERR_WGV</c>(5108)/<c>Jl_ERR_WPV</c>(5109)，颜色名不认识另有 <c>Jl_ERR_UCOL</c>(5105)，本码专指给的形式就不对；4500~4502 小段中 4500 为兜底、4502 管条目数。</para>
-	///   <para><b>子系统状态</b>本库显示/可视化包装已删除，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/可视化包装已删除，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_COLOR_TYPE_UNEXP = 4501;
 
@@ -5204,7 +5204,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Number of color settings exceeded</c>。可视化层登记颜色映射时按条目数设闸（调色板/色表容量），传入条数超容量即报本码；上限数值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>4500~4502 是可视化小段：4500 兜底、<c>Jl_ERR_COLOR_TYPE_UNEXP</c>(4501) 管颜色形态不对、本码管条数超册；显示段 5112（颜色表 LUT 非法）查的是表内容合法性，与本码的"数数"粒度不同。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_NUM_COLOR_EXCEEDED = 4502;
 
@@ -5212,7 +5212,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong (logical) window number</c>。显示层以"逻辑窗口号"路由绘制/交互请求，编号从未开过或已被关闭都回本码；括号里的 logical 强调它是显示层自管的编号，不是操作系统窗口句柄。</para>
 	///   <para><b>语义要点</b>显示段 5100~5124 的入口码："一个窗口都没有"报 <c>Jl_ERR_NWO</c>(5106)，"有窗口但这个编号不对"报本码。图标对象的 key（<c>JlObjectBase</c> 通道）与窗口编号互不相干，别拿对象 key 当窗口号传。</para>
-	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c>、Disp*/Draw* 族，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c>、Disp*/Draw* 族，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WSCN = 5100;
 
@@ -5220,7 +5220,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Error while opening the window</c>。请求开窗时底层图形资源（设备上下文、画布句柄等）创建失败即回本码，是开窗族不细分原因的兜底故障码；具体失败诱因不回传 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>同族按失败原因分档：编号/坐标给错见 <c>Jl_ERR_WSCN</c>(5100)/<c>Jl_ERR_WWC</c>(5102)，窗口数到顶见 <c>Jl_ERR_NWA</c>(5103)，本码指环境层面的创建失败——改参数无用，需查图形子系统状态。</para>
-	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无开窗入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无开窗入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_DSCO = 5101;
 
@@ -5228,7 +5228,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong window coordinates</c>。开窗/移窗时按屏幕坐标校验行列位置，为负、越出桌面或被请求的区域不可放置即报本码。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_WDEXT</c>(5122，窗口扩展尺寸非法) 分档：本码偏"位置坐标"、5122 偏"宽高幅面"，一条只挪位、一条只改大小会分别撞上；编号给错是 <c>Jl_ERR_WSCN</c>(5100)，别拿坐标错去查编号。</para>
-	///   <para><b>子系统状态</b>本库已删除窗口族，托管层无设窗口坐标入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除窗口族，托管层无设窗口坐标入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WWC = 5102;
 
@@ -5236,7 +5236,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>It is not possible to open another window</c>。原生对同进程可存活的窗口数设有上限，到顶后再请求开窗即报本码；上限数值托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>资源配额错，与参数合法性无关：编号给错是 <c>Jl_ERR_WSCN</c>(5100)、开窗动作本身失败是 <c>Jl_ERR_DSCO</c>(5101)，本码专指"数量到顶"。处置是先关旧窗口或复用现有窗口，而不是改坐标/编号参数。</para>
-	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无开窗入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无开窗入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_NWA = 5103;
 
@@ -5244,7 +5244,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Device resp. operator not available</c>（resp. 为 respectively 的缩写）。文本把"设备"与"算子"并列：要么访问的设备类资源（显示、采集等通道）无实现，要么调用的算子未编进当前内核；仅凭错误码分不清是哪一支 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>能力缺失错，与参数取值、编号合法性无关：<c>Jl_ERR_NO_COMPUTE_DEVICES</c>(4102) 管计算设备枚举为空，本码管设备/算子在装载层面就没有；重试同一入口不会好转。</para>
-	///   <para><b>子系统状态</b>本库已删除显示族与 framegrabber 采集族，托管层触发面收窄，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除显示族与 framegrabber 采集族，托管层触发面收窄，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_DNA = 5104;
 
@@ -5252,7 +5252,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Unknown color</c>。按名着色入口在原生颜色表里查名，拼写不符或该实现未收录此名即报本码；以数值/元组形态给色则不经这张表，撞的是 <c>Jl_ERR_COLOR_TYPE_UNEXP</c>(4501)/<c>Jl_ERR_WGV</c>(5108) 一档 （具体触发条件以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_WCUR</c>(5111) 同型（字符串资源名查表失败）；显示段 5114 表示颜色码按用途另立一档。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设色入口，全库 Grep 无本常量引用，仅作原生错误表保留项；内建颜色名清单 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设色入口，代码库中没有本常量引用，仅作原生错误表保留项；内建颜色名清单 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_UCOL = 5105;
 
@@ -5260,7 +5260,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>No window has been opened for desired action</c>。绘制与交互类动作按"当前有无可用窗口"受理，窗口从未打开或该用途没有对应窗口时回本码。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_WSCN</c>(5100) 分档：5100 是"给了编号但编号不在表中"，本码是"根本没有窗口可谈编号"；开窗动作失败另见 <c>Jl_ERR_DSCO</c>(5101)，数量到顶见 <c>Jl_ERR_NWA</c>(5103)。处置都是先开窗，差别在撞码说明缺的是哪一环。</para>
-	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无从开窗口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 窗口族，托管层无从开窗口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_NWO = 5106;
 
@@ -5268,7 +5268,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong filling mode for regions</c>。原生以字符串状态项登记"区域画成实心还是只画轮廓"，取值不识别即报本码；合法取值清单托管层无文档 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>属显示段"绘制状态字符串项"一档：<c>Jl_ERR_UCOL</c>(5105)、<c>Jl_ERR_WCUR</c>(5111) 同为名字查表失败，本码专指填充取向这一项；数值项越界另见 5108~5110。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设填充模式入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设填充模式入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WFM = 5107;
 
@@ -5276,7 +5276,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong gray value (0..255)</c>。灰度绘制值按 byte 域校验，负值或大于 255 即报本码；这是显示段里少数把合法域直接写进错误文本的码。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_WPV</c>(5109) 相邻：本码是固定 0..255 的灰度档，5109 是随图像类型变域的像素档；给颜色名不识别则是 <c>Jl_ERR_UCOL</c>(5105)，三条按"定域数值/变域数值/字符串名"分开。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设灰度色入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设灰度色入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WGV = 5108;
 
@@ -5284,7 +5284,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong pixel value</c>。像素值按目标图像的类型定域（byte 图为 0~255，更宽类型域更大），给负数或超域值即报本码；合法域随图像类型变。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_WGV</c>(5108) 的分工：5108 是原生文本把域写死为 0..255 的灰度档，本码是随类型变域的通用像素档；两码各自挂在哪个入口 （具体语义以 HALCON 错误码说明和算子文档为准）。颜色名不识别则报 <c>Jl_ERR_UCOL</c>(5105)。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设像素色入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层无设像素色入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WPV = 5109;
 
@@ -5292,7 +5292,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong line width</c>。线宽是全局绘制状态项，给出 0、负值或超过允许上限即报本码；允许区间与上限数值 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>语义要点</b>属 5100~5124 显示段里"绘制状态参数"一档：同段 <c>Jl_ERR_WGV</c>(5108) 管灰度值、<c>Jl_ERR_WFM</c>(5107) 管填充模式，本码只管线宽这一维；它校验的是数值合法性，与颜色类字符串项无关。</para>
-	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层没有设线宽的入口，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>子系统状态</b>本库显示/绘制族已删除，托管层没有设线宽的入口，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	/// </remarks>
 	public const int Jl_ERR_WLW = 5110;
 
@@ -5300,7 +5300,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>内嵌原生文本为 <c>Wrong name of cursor</c>。光标按字符串名寻址（箭头、十字等样式），名称拼写不符或当前平台没有该光标都回本码，原生不区分"写错"与"不存在"。</para>
 	///   <para><b>语义要点</b>与 <c>Jl_ERR_UCOL</c>(5105) 同型：都是"字符串资源名在原生查表失败"，5105 查颜色名表、本码查光标名表；参数数值越界属别的码。</para>
-	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 与 Disp*/Draw* 显示族，托管层没有可设置光标的入口，全库 Grep 无本常量引用，仅作原生错误表保留项；合法光标名清单 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>子系统状态</b>本库已删除 <c>JlWindow</c> 与 Disp*/Draw* 显示族，托管层没有可设置光标的入口，代码库中没有本常量引用，仅作原生错误表保留项；合法光标名清单 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_WCUR = 5111;
 
@@ -13156,7 +13156,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Input matrix undefined"：句柄存在但内容从未被装载。本库最常见来源是 <c>JlMatrix</c> 的无参构造器——它只把内部句柄置成 UNDEF、不碰原生层（故被标 <c>EditorBrowsableState.Never</c>），在 <c>CreateMatrix</c>/<c>SetFullMatrix</c>/<c>ReadMatrix</c>/<c>DeserializeMatrix</c> 装载之前就参与运算即报本码；对已 <c>Dispose()</c> 的实例取其句柄再传同理 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>与相邻码区分</b>9208/9209 判"有矩阵但形状不合"，本码判"根本没有矩阵"；13xx 段那套共用值域检查只管标量参数，句柄类输入的空与未定义只走本码。</para>
 	///   <para><b>坑</b>矩阵算子的返回与 out 都是句柄，上一步真失败时它们可能停在 UNDEF 态；只要调用方没检查错误就往下喂，症状就会推迟到下一个算子身上报本码，看上去"坏"的是那条无辜的调用——链式矩阵运算必须逐步查错。</para>
-	///   <para><b>处置</b>用前确认已装载（<c>GetSizeMatrix</c> 一次调用即可同时拿行列数，句柄无效时它自己会先报错），或显式 <c>CreateMatrix</c> 后再写值；重试不改数据无效。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>用前确认已装载（<c>GetSizeMatrix</c> 一次调用即可同时拿行列数，句柄无效时它自己会先报错），或显式 <c>CreateMatrix</c> 后再写值；重试不改数据无效。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_UNDEF = 9207;
 
@@ -13165,7 +13165,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Input matrix with wrong dimension"：矩阵本身有内容，但形状与这一步运算的要求不吻合。本库三类前提最容易撞码：矩阵乘法 <c>MultMatrix</c>/<c>MultMatrixMod</c> 按 "AB" 要求 A 列数等于 B 行数；逐元素族 <c>AddMatrix</c>/<c>SubMatrix</c>/<c>MultElementMatrix</c>/<c>DivElementMatrix</c> 要求两矩阵行列全等；解方程 <c>SolveMatrix</c> 要求 A 的行数与右端 B 的行数一致 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>与相邻码区分</b>9209 只指"该方阵却给了非方阵"这一特例（行列数不等），本码是两矩阵之间或形状与算子前提之间对不上；A·B 能过而 A∘B 报错（或反之）就是两码的分界。</para>
 	///   <para><b>坑</b>逐元素运算看起来"数值都对"就以为没事，实际它比矩阵乘法更严格：行列必须逐一相等，一个 3×1 除 1×3 不会广播，直接撞本码 （详见 HALCON 错误码参考）。<c>*Mod</c> 系列会原地改维度（<c>TransposeMatrixMod</c>、<c>MultMatrixMod</c> 之后维度即变），复用同一句柄做下一步时手里的旧维度已成历史。</para>
-	///   <para><b>处置</b>运算前用一次 <c>GetSizeMatrix</c> 自校验（比读 <c>NumRows</c>+<c>NumColumns</c> 少一半原生调用，后两个属性各自都要问一次原生层）；形状靠 <c>TransposeMatrix</c>/<c>GetSubMatrix</c>/<c>RepeatMatrix</c> 改出来，改数值或调 epsilon 与本码无关。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>运算前用一次 <c>GetSizeMatrix</c> 自校验（比读 <c>NumRows</c>+<c>NumColumns</c> 少一半原生调用，后两个属性各自都要问一次原生层）；形状靠 <c>TransposeMatrix</c>/<c>GetSubMatrix</c>/<c>RepeatMatrix</c> 改出来，改数值或调 epsilon 与本码无关。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_WDIM = 9208;
 
@@ -13174,7 +13174,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Input matrix is not quadratic"：quadratic 即方阵。本库只有对"方阵才有数学定义"的算子会发本码——<c>DeterminantMatrix</c>（行列式）、<c>InvertMatrix</c>/<c>InvertMatrixMod</c>（求逆）、<c>PowMatrix</c>/<c>PowMatrixMod</c>（矩阵整体幂，非逐元素幂）、各 <c>Eigenvalues*</c> 与广义特征值路径 （详见 HALCON 错误码参考）。判定只看行列数是否相等，与元素值无关。</para>
 	///   <para><b>与相邻码区分</b>9208 是两矩阵形状对不上或一般性维度错，本码是单个矩阵自己不是方阵；<c>SvdMatrix</c> 对任意形状都成立，所以同一份数据它不报本码而求逆会报——这是判断"该换算法还是该改数据"的快捷线索。</para>
 	///   <para><b>坑</b>逐元素族（<c>AddMatrix</c>/<c>MultElementMatrix</c>/<c>SqrtMatrix</c>/<c>AbsMatrix</c> 等）根本不吃方阵约束，别拿"能过加减"当"能求逆"的依据；判断方阵必须 <c>NumRows</c> 与 <c>NumColumns</c> 都读，只读一个属性看不出方阵与否。瘦高/扁宽的观测矩阵（m 条方程 n 个未知数，m 不等于 n）是最常撞本码的形态。</para>
-	///   <para><b>处置</b>非方阵的求解需求改走 <c>SolveMatrix</c>（配 epsilon 走降秩/最小二乘方向 （详见 HALCON 错误码参考））或 <c>SvdMatrix</c>，而不是补零硬拼成方阵——补出来的行列会污染行列式与特征值。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>非方阵的求解需求改走 <c>SolveMatrix</c>（配 epsilon 走降秩/最小二乘方向 （详见 HALCON 错误码参考））或 <c>SvdMatrix</c>，而不是补零硬拼成方阵——补出来的行列会污染行列式与特征值。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NSQR = 9209;
 
@@ -13183,7 +13183,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix operation failed"：例程自己返回失败但不说是哪一步——分解/迭代不收敛之外的内部失败、缓冲分配失败等 （详见 HALCON 错误码参考）。文案笼统不等于问题轻微，它与 9200 同属"结果算不出来"。</para>
 	///   <para><b>与相邻码区分</b>矩阵族 9207–9219 把可归因的情形都占了坑：未定义 9207、维度 9208、非方阵 9209、非正定 9211、除零 9212、三角声明不符 9213/9214、负元素 9215、矩阵文件 9216–9218、复数结果 9219；归不进任何一条的才落到本码。所以本码的第一解读是"前提看起来都对了，但后端没算成"。</para>
 	///   <para><b>坑</b>别把它当参数错去翻算子选项：矩阵族里能靠改字符串解决的是 9211/9213/9214（声明与数据不符）。另一条真线索是 <c>*Mod</c> 系列原地覆盖——上一步 <c>InvertMatrixMod</c>/<c>MultMatrixMod</c> 已把 this 换成别的矩阵，本轮再算的就是脏输入，症状可能以本码出现 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>处置</b>先用 <c>JlNativeApi.GetErrorMessage</c> 取回原生文本定位是哪一步；再清洗输入（<c>GetFullMatrix</c> 拿全部元素查 NaN/Inf/量级跨度），必要时 <c>AbsMatrix</c>+<c>ScaleMatrix</c> 归一化量纲后重算，或换 <c>SvdMatrix</c> 这条对病态最稳的路验算。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>先用 <c>JlNativeApi.GetErrorMessage</c> 取回原生文本定位是哪一步；再清洗输入（<c>GetFullMatrix</c> 拿全部元素查 NaN/Inf/量级跨度），必要时 <c>AbsMatrix</c>+<c>ScaleMatrix</c> 归一化量纲后重算，或换 <c>SvdMatrix</c> 这条对病态最稳的路验算。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_FAIL = 9210;
 
@@ -13192,7 +13192,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix is not positive definite"：正定要求所有特征值为正。本库的入口是把类型字符串声明为正定那一档——<c>SolveMatrix</c> 的 matrixLHSType、<c>DeterminantMatrix</c>/<c>InvertMatrix</c>/<c>DecomposeMatrix</c> 的 matrixType 除 "general" 外还接受对称/三角等专用取值（专用取值会走 Cholesky 一类只吃正定矩阵的快速路径）（详见 HALCON 错误码参考）。声明了正定而矩阵含零或负特征值即报本码。</para>
 	///   <para><b>与相邻码区分</b>9205/9200 说"奇异/不可逆"（行列式趋于 0，半正定也落在这里），9213/9214 说"声明三角但数据不三角"，本码专指正定这个更强的前提。同一份矩阵把声明改回 "general" 往往就能算出来——这不是数据坏，是声明与数据不符；反过来它按正定声明算成功过，也不保证下次仍成立。</para>
 	///   <para><b>坑</b>最容易中招的是协方差/法方程/点集正规矩阵这类"数学上应当正定"的对象：观测方向共线或重复量测会让它退化成半正定（最小特征值约等于 0），差一个浮点尾数就从"能算"翻成"非正定"；用 <c>GeneralizedEigenvaluesSymmetricMatrix</c> 时要求 B 对称正定，B 不满足也在本码一带报错 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>处置</b>先判定意图：只要结果正确就把声明退回 "general"；确需正定则给对角加一个小正数（<c>SetDiagonalMatrix</c> 或对角 <c>AddMatrix</c> 一个 λI）做 Tikhonov 式正则 [本库无现成正则算子，属手写方向]，而不是加大 epsilon 蒙混。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>先判定意图：只要结果正确就把声明退回 "general"；确需正定则给对角加一个小正数（<c>SetDiagonalMatrix</c> 或对角 <c>AddMatrix</c> 一个 λI）做 Tikhonov 式正则 [本库无现成正则算子，属手写方向]，而不是加大 epsilon 蒙混。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NPD = 9211;
 
@@ -13201,7 +13201,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>本码特指<b>逐元素</b>除法：除数矩阵（<c>DivElementMatrix</c>/<c>DivElementMatrixMod</c> 的第二个入参，原生 id 850/849）里存在值为 0 的元素，被除数对应位置无法算出有限结果。托管侧不做任何预检，判 0 完全在原生层 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>与相邻算子的取舍</b>最容易混的是 <c>operator /</c>：它把右操作数当系数矩阵调 <c>SolveMatrix</c>（id 828），是解方程组而非逐元素相除，那条路上的奇异性报 9200/9205 而不是本码。掩模归一化必须用 <c>DivElementMatrix</c>；除以同一个常数则用 <c>ScaleMatrixMod(1.0/k)</c>，连本码的触发面都没有。</para>
 	///   <para><b>坑</b>0 常常不是"看起来是 0"而是被上游写成 0：<c>CreateMatrix</c>/<c>SetFullMatrix</c> 以 0 建阵后没赋全的位置、<c>MinMatrix</c>/<c>MaxMatrix</c> 归约或 <c>GetSubMatrix</c> 取块留下的占位零、以及用 <c>MultElementMatrix</c> 乘 0/1 掩模时被清零的无效位。浮点近零（1e-30）能躲过本码，却会在结果里炸出 1e30 量级，把下一次分解推到 9201/9210。</para>
-	///   <para><b>处置</b>归一化前先处理除数的零位：<c>GetFullMatrix</c> 取回托管侧按下限截断，或用 <c>MultElementMatrix</c> 与掩模相乘把无效位显式置成约定值；不要指望"错一两个位置无所谓"。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>归一化前先处理除数的零位：<c>GetFullMatrix</c> 取回托管侧按下限截断，或用 <c>MultElementMatrix</c> 与掩模相乘把无效位显式置成约定值；不要指望"错一两个位置无所谓"。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_DBZ = 9212;
 
@@ -13210,7 +13210,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix is not an upper triangular matrix"：调用方把矩阵按上三角类型声明交给原生层（<c>SolveMatrix</c> 的 matrixLHSType、<c>InvertMatrix</c>/<c>DeterminantMatrix</c>/<c>DecomposeMatrix</c> 的 matrixType 中的三角专用取值），于是后端跳过下半部分直接回代；实际该矩阵主对角线以下存在非零元素，声明不成立 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>与相邻码区分</b>9214 是同一判据的镜像（按下三角声明却含上三角残元），两码成对；9211 管"正定"这一更强前提。三码共性都是<b>声明与数据不符</b>，改数据或改声明都能解，只有 9208/9209 那种形状错必须改形状。</para>
 	///   <para><b>何时遇到</b>三角因子的正常出处是 <c>OrthogonalDecomposeMatrix</c> 的 out <c>matrixTriangularID</c>（QR 的 R）与 <c>DecomposeMatrix</c> 的三角输出，返回的正交部分与 out 的三角部分顺序勿混：把 Q 当 R 传给按三角声明的下一步就报本码。另一类是分解之后又做过 <c>AddMatrix</c>/<c>MultMatrix</c>/<c>TransposeMatrixMod</c>——转置会把上三角原地变成下三角，旧声明随之失效。</para>
-	///   <para><b>坑与处置</b>判定按"是否非零"而非"是否足够小"：上游浮点乘加留下的 1e-17 级尾数也算非零，照样触发本码 （详见 HALCON 错误码参考）。稳妥做法是把非三角声明退回 "general" 让后端走通用路径，或构造时只填上三角、把下半显式清零（<c>SetFullMatrix</c> 一次写全或 <c>SetSubMatrix</c> 覆写下半），不要指望调 epsilon 绕过。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>坑与处置</b>判定按"是否非零"而非"是否足够小"：上游浮点乘加留下的 1e-17 级尾数也算非零，照样触发本码 （详见 HALCON 错误码参考）。稳妥做法是把非三角声明退回 "general" 让后端走通用路径，或构造时只填上三角、把下半显式清零（<c>SetFullMatrix</c> 一次写全或 <c>SetSubMatrix</c> 覆写下半），不要指望调 epsilon 绕过。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NUT = 9213;
 
@@ -13219,7 +13219,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix is not a lower triangular matrix"：与 9213 完全镜像——调用方按"下三角"这一专用类型声明把矩阵交给原生层（<c>SolveMatrix</c> 的 matrixLHSType、<c>InvertMatrix</c>/<c>DeterminantMatrix</c>/<c>DecomposeMatrix</c> 的 matrixType 中的三角取值），后端只读主对角线以下，而矩阵在上半区还有非零元素，声明不成立 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>与相邻码区分</b>9213/9214 一起出现时几乎总是"因子拿错侧"：QR 的 R 是上三角（配 9213 那侧声明），LU/Cholesky 类分解的下三角因子才配本码这侧声明。哪个分解给出哪一侧、返回与 out 各装哪一侧，本库文档只标到"三角部分"这一层 （具体语义以 HALCON 错误码说明和算子文档为准），收码后先打印 <c>GetSubMatrix</c> 取出的上半块确认形状，比改声明试错快。</para>
 	///   <para><b>坑</b>分解后又做过 <c>AddMatrix</c>/<c>MultMatrix</c> 或 <c>TransposeMatrixMod</c> 的矩阵不再有任何三角性，沿用旧声明必撞本码；下三角声明撞上由 <c>TransposeMatrix</c> 得到的上三角，是最典型的一次转置错。判定按非零而非按量级，浮点尾数同样触发 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>处置</b>声明退回 "general" 走通用路径，或把上半区显式清零后重试；这与 9211（正定前提）一样属"改声明/改数据"而非"改精度参数"。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>声明退回 "general" 走通用路径，或把上半区显式清零后重试；这与 9211（正定前提）一样属"改声明/改数据"而非"改精度参数"。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NLT = 9214;
 
@@ -13228,7 +13228,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix element is negative"：某个语义上要求元素非负的矩阵运算拿到负值。本库最贴身的候选是逐元素开方 <c>SqrtMatrix</c>/<c>SqrtMatrixMod</c>（原生 id 843/842，作用于每个元素取 √x，不是矩阵平方根）以及逐元素取幂 <c>PowScalarElementMatrix</c>/<c>PowElementMatrix</c> 的负底组合 （详见 HALCON 错误码参考），托管层一律不预检。</para>
 	///   <para><b>与相邻码区分</b>9220 管的是"指数矩阵里的值非法"（第二个矩阵作指数），本码管被运算矩阵自己的元素符号；9219 管结果需要复数域。若确实要复数域，本库 <c>JlMatrix</c> 元素只有 double（索引器与 <c>SetValueMatrix</c> 都只收实数），只能改算法或把实部/虚部分成两个矩阵承载（特征值族就是这么设计的）。</para>
 	///   <para><b>坑</b>负值多半不是数据本身错，而是数值误差：方差/能量/协方差对角线这类"数学上必然非负"的量，经 <c>MultElementMatrix</c>、归约或上游拟合后常出现 -1e-15 级负尾数，正好把开方打回本码。另一条是 <c>*Mod</c> 原地覆盖链——上一步已经把 this 改写成别的矩阵，本步开方的其实不是你以为的那个非负矩阵。</para>
-	///   <para><b>处置</b>开方前先 <c>AbsMatrixMod</c>（或 <c>GetFullMatrix</c> 在托管侧把负值按 0 截断后再 <c>SetFullMatrix</c> 写回），确认取绝对值在物理上说得通再动手；<c>SqrtMatrixMod</c> 反复调用是连续开方而非幂等，改完别忘了原值只能靠事先 <c>CopyMatrix</c> 找回。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>开方前先 <c>AbsMatrixMod</c>（或 <c>GetFullMatrix</c> 在托管侧把负值按 0 截断后再 <c>SetFullMatrix</c> 写回），确认取绝对值在物理上说得通再动手；<c>SqrtMatrixMod</c> 反复调用是连续开方而非幂等，改完别忘了原值只能靠事先 <c>CopyMatrix</c> 找回。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NEG = 9215;
 
@@ -13237,7 +13237,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix file: Invalid character"：矩阵文件内容能读到，但字符层面解析过不去——分隔符、编码（BOM）、数字写法（多余逗号、括号、科学计数法拼写）不合矩阵文件的文本语法 （详见 HALCON 错误码参考）。入口是 <c>ReadMatrix(string)</c> 与 <c>JlMatrix(string fileName)</c> 构造器，两者同走原生 id 819。</para>
 	///   <para><b>与相邻码分工</b>矩阵文件三码按失败阶段递进：本码=字符级读不懂；9217=语法对但数值个数不够（矩阵不完整）；9218=整体格式就不是矩阵格式。文件根本不存在或不可读属系统层错误，不走这三码 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>坑</b><c>ReadMatrix</c> 的方法体是"先 <c>Dispose()</c> 释放旧句柄，再 StoreS 文件名、InitOCT+Load 原地装载"，所以读失败后本实例可能停在无效句柄状态：若调用方没接住异常就继续用它做运算，会撞回 9207（矩阵未定义），真正的原因却在更早的那次读取上。同一路径反复换文件读时务必逐次检查错误 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>处置</b>别用手写文本硬凑格式：优先用 <c>WriteMatrix</c>（id 820）的产物，或走 <c>SerializeMatrix</c>/<c>DeserializeMatrix</c>（id 818/817）的字节流；已在手工维护文本时，用文本编辑器核对首个数据行并保证纯 ASCII 数字与空白分隔。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>别用手写文本硬凑格式：优先用 <c>WriteMatrix</c>（id 820）的产物，或走 <c>SerializeMatrix</c>/<c>DeserializeMatrix</c>（id 818/817）的字节流；已在手工维护文本时，用文本编辑器核对首个数据行并保证纯 ASCII 数字与空白分隔。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_UNCHAR = 9216;
 
@@ -13246,7 +13246,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Matrix file: matrix incomplete"：文件头层面接受（不像 9216 撞字符、也不像 9218 撞格式），但按声明的形状继续读数值时到了文件尾还没读满——即矩阵被截断 （详见 HALCON 错误码参考）。入口同 id 819（<c>ReadMatrix</c> / <c>JlMatrix(string)</c>）。</para>
 	///   <para><b>何时遇到</b>三类典型：写文件的进程被中途杀死或磁盘满；文件经网络/网盘同步只落了半截；手工从表格复制粘贴漏行。图像族里 BMP 截断有各自的 55xx 码，两族互不相干，别拿图像族的处置经验套过来。</para>
 	///   <para><b>坑</b>最坏的反应是"少几个数就补 0 凑齐"：凑出来的矩阵维度与真实数据不一致，随后 <c>InvertMatrix</c>/<c>SvdMatrix</c> 都能"成功"，只是结果毫无意义——症状会推迟到匹配或标定结果异常时才被发现，比直接报错难查得多。<c>ReadMatrix</c> 内部先 <c>Dispose()</c> 再装载，本码抛出后句柄状态同样可疑（同 9216）。</para>
-	///   <para><b>处置</b>重新完整导出（同机同版本工具链写出），核对文件字节数与预期规模是否相称；若必须抢救部分数据，只能在托管侧自行取文件中完整的那几行，按实际行数 <c>CreateMatrix</c> 后用 <c>SetFullMatrix</c>/<c>SetValueMatrix</c> 重建，而不是往残文件里灌假值。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>重新完整导出（同机同版本工具链写出），核对文件字节数与预期规模是否相称；若必须抢救部分数据，只能在托管侧自行取文件中完整的那几行，按实际行数 <c>CreateMatrix</c> 后用 <c>SetFullMatrix</c>/<c>SetValueMatrix</c> 重建，而不是往残文件里灌假值。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_NOT_COMPLETE = 9217;
 
@@ -13255,7 +13255,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Invalid file format for matrix"：文件在"是不是矩阵文件"这一层就没通过——拿错了别的类型的文件、把二进制当文本读、或文件被改过头部。与 9216/9217 的分工：那两码是"认得出是矩阵文件但读不成"（字符级、数据量级），本码是"根本不认这个格式"。</para>
 	///   <para><b>何时遇到</b>最典型是把 <c>SerializeMatrix</c>（id 818）产出的 byte[] 自己写盘后再用 <c>ReadMatrix</c>（id 819）读回：文件落盘与序列化流是两套格式，本库文档明确不保证互相通用 （具体语义以 HALCON 错误码说明和算子文档为准）；其次是 <c>WriteMatrix</c> 的 fileFormat 字符串与读回时的解析档不匹配，或拼写不是原生支持的取值（文档可见的取值只有 "binary"）（详见 HALCON 错误码参考）。文件不存在或无权限属系统层错误，不走本码 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>坑</b>本码是"格式"错而不是"内容"错：换一台机器、换一个工具链版本后同一个文件可能从 9218 变成能读，也可能读出来了但数值解释方式不同（例如二进制字节序）而无人报错——跨版本/跨机复用矩阵文件前做一次 <c>GetSizeMatrix</c> 与抽样取值核对。</para>
-	///   <para><b>处置</b>先分清文件来源：用配套 <c>WriteMatrix</c> 重新导出，或统一改走 <c>DeserializeMatrix(byte[])</c> 读序列化缓冲；<c>ReadMatrix</c> 失败后本实例可能已是无效句柄（内部先 Dispose，同 9216），别接着用它。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>先分清文件来源：用配套 <c>WriteMatrix</c> 重新导出，或统一改走 <c>DeserializeMatrix(byte[])</c> 读序列化缓冲；<c>ReadMatrix</c> 失败后本实例可能已是无效句柄（内部先 Dispose，同 9216），别接着用它。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_READ = 9218;
 
@@ -13264,7 +13264,7 @@ public class JlErrorDef
 	///   <para><b>含义</b>原生文本 "Resulting matrix has complex values"：这一步的数学结果落在复数域，而 <c>JlMatrix</c> 的元素一律是 double（索引器、<c>SetValueMatrix</c>、<c>GetFullMatrix</c> 全为实数语义），没有虚部可放，于是直接拒绝而不是静默丢虚部。</para>
 	///   <para><b>与相邻算子的取舍</b>本库对复结果的正规出路是"拆成两个实矩阵"：<c>EigenvaluesGeneralMatrix</c>（id 826）与 <c>GeneralizedEigenvaluesGeneralMatrix</c>（id 824）各输出特征值实部、虚部与特征向量实部、虚部四个 out 句柄，成对读才表示完整复特征值，只取实部那一个就是丢信息。反过来对称版 <c>EigenvaluesSymmetricMatrix</c>（id 827）与 <c>GeneralizedEigenvaluesSymmetricMatrix</c>（id 825）只出一个实特征值矩阵——理论前提成立时结果必为实数，一旦矩阵其实不对称（或广义版里 B 不满足对称正定）就可能以本码收场 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>"看着对称"不等于对称：上游 <c>MultMatrix</c>、<c>AddMatrix</c> 出来的矩阵常带 1e-16 级反对称残差，按对称路径走正是本码与 9211 的高发点。别用 <c>GetSubMatrix</c> 半块自欺，真要按对称处理就先显式对称化 (A+Aᵀ)/2。</para>
-	///   <para><b>处置</b>换一般版（复结果合法），或改走 <c>SvdMatrix</c>——奇异值恒为实数，任何形状、任何条件都不需要复数域，是绕开本码最彻底的替代。一般版四个输出句柄任一漏 <c>Dispose</c> 都会泄漏原生矩阵内存。全库 Grep 除定义外无本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>换一般版（复结果合法），或改走 <c>SvdMatrix</c>——奇异值恒为实数，任何形状、任何条件都不需要复数域，是绕开本码最彻底的替代。一般版四个输出句柄任一漏 <c>Dispose</c> 都会泄漏原生矩阵内存。代码库中除定义外没有本常量引用；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_MAT_COMPLEX = 9219;
 
@@ -13296,7 +13296,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Internal Error: Wrong Node"：原生树/链式结构在查找或插入时遇到不该出现的节点（空挂、类型不符、断链 （详见 HALCON 错误码参考））。与 9231（红黑树整体不一致）同族，都是内核自校验失败。</para>
 	///   <para><b>坑</b>名字像图结构错，容易被拿去和 XLD 轮廓/区域拓扑联系——那些层不会回这个原生码；本码与图形数据无关。</para>
-	///   <para><b>处置</b>非用户可修错误：最小化复现并上报。全库 Grep 无本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>非用户可修错误：最小化复现并上报。代码库中没有本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_WNODE = 9230;
 
@@ -13304,7 +13304,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Inconsistent red black tree"：原生层内部用红黑树维护查找/比较结构，其不变量（节点着色、子树黑高）被破坏。用户无法直接触发也无法修复，属内核自校验失败的 Internal error。</para>
 	///   <para><b>与相邻码区分</b>9230（Wrong Node）是同族近亲：那是不期望的节点引用，本码是整棵树的平衡性质崩了；两者处置一致（复现上报），不必细分。</para>
-	///   <para><b>处置</b>记录触发时的算子与输入上报；重试或改参数无效。全库 Grep 无本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>记录触发时的算子与输入上报；重试或改参数无效。代码库中没有本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_CMP_INCONSISTENT = 9231;
 
@@ -13319,7 +13319,7 @@ public class JlErrorDef
 	/// <summary>三角化输入点数太少（取值 9260）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of points too small"：点数不足以启动三角化（至少 3 个不共线点，某些模式要求更多 （具体语义以 HALCON 错误码说明和算子文档为准））。平面网格化同义码 9280。</para>
-	///   <para><b>何时遇到</b>多为上游过滤把点集筛空，或单点/两点退化成"线段输入"直接喂进面算法 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无三角化包装，Grep 无引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>多为上游过滤把点集筛空，或单点/两点退化成"线段输入"直接喂进面算法 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无三角化包装，代码中没有引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>调用前点数预检（<c>JlTuple</c> 长度判一下）比捕获本码便宜。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_NPNT = 9260;
@@ -13328,7 +13328,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "First 3 points are collinear"：三角化用输入序的前三点建初始三角形，共线则构网起点都不存在。平面网格化同义码 9281。</para>
 	///   <para><b>坑</b>只检查前三个：调整点序把三个不共线点挪到最前即可通过本关；但点集整体近共线时，后续会以 9264（退化三角形）再报——本码通过不等于数据健康。</para>
-	///   <para><b>处置</b>重排点序是正解，别去放宽共线容差掩盖问题 （详见 HALCON 错误码参考）。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>重排点序是正解，别去放宽共线容差掩盖问题 （详见 HALCON 错误码参考）。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_COLL = 9261;
 
@@ -13336,7 +13336,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Identical points in triangulation"：两点坐标完全相同，产生零长度边，Delaunay 一类的构网在其上不确定。平面网格化同义码 9282。</para>
 	///   <para><b>坑</b>"相同"按精确相等判：近乎重合但不同的点放过本关后，会以退化三角形（9264）的形式回来找你；去重容差要在预处理里一次定好。</para>
-	///   <para><b>处置</b>进三角化前按容差合并重复点。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>进三角化前按容差合并重复点。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_IDPNT = 9262;
 
@@ -13344,7 +13344,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Array not allocated large enough"：按输入规模预估分配的缓冲不够写——三角形数/邻接数超出预估（极端退化点集是常见推手 （具体语义以 HALCON 错误码说明和算子文档为准））。平面网格化模块同义码 9284。</para>
 	///   <para><b>坑</b>这是原生层记账错误，用户没有"把数组调大"的参数可改；唯一可动的旋钮是缩小单次输入规模。</para>
-	///   <para><b>处置</b>分批/子采样后重试可绕过，根治需上报。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>分批/子采样后重试可绕过，根治需上报。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_NALLOC = 9263;
 
@@ -13352,7 +13352,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Triangle is degenerate"：三角化过程中出现面积为 0 或近 0 的三角形——三点共线或两顶点重合。退化三角形上做的插值/法向计算数值全不可信，算法宁可报错也不产出。</para>
 	///   <para><b>坑</b>它是"事后失败"：通过了"前三点共线"检查（9261）不代表后面不会共线——点集里任意近共线三点都可能让算法走到一半才爆本码。批量数据先做共线性预筛能省掉半途失败。</para>
-	///   <para><b>处置</b>删近共线/重合点或放宽退化判定阈值 （详见 HALCON 错误码参考）。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>删近共线/重合点或放宽退化判定阈值 （详见 HALCON 错误码参考）。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_DEGEN = 9264;
 
@@ -13360,7 +13360,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Inconsistent triangulation"：已建三角网格的内部不变量被破坏（邻接关系、共边配对着不上）。属三角化内核层错误，不是输入数据非法；平面网格化模块的同义码是 9285。</para>
 	///   <para><b>坑</b>与 9267（输入多边形数据不一致）方向相反：9267 错在你的输入表，本码错在算法产出的网格——改输入通常没用，该复现上报。</para>
-	///   <para><b>处置</b>记录点集/参数最小化复现并上报；若输入含退化结构（重复点、自交边界），先修数据可间接绕开。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>记录点集/参数最小化复现并上报；若输入含退化结构（重复点、自交边界），先修数据可间接绕开。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_ITRI = 9265;
 
@@ -13368,42 +13368,42 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Self-intersecting polygon"：边界多边形存在不相邻的边相互交叉，围出"8 字"形——区域内外失去良定义，带约束的三角化无法判定哪些面在内部，直接拒算。</para>
 	///   <para><b>坑</b>视觉上不觉得自交的近退化多边形（相邻顶点重复、针状回勾）同样触发本码；且自交点若恰好重合于顶点，报错文本可能只给本码不给位置 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>处置</b>先做多边形自交检测/简化再进三角化。本库无对应包装，Grep 无本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>先做多边形自交检测/简化再进三角化。本库无对应包装，代码中没有本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_SELFINT = 9266;
 
 	/// <summary>多边形数据不一致（取值 9267）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Inconsistent polygon data"：作为三角化边界的多边形集在拓扑上自相矛盾——公共边两侧记录不吻合、孔洞归属错乱等。与 9266（自交）区分：9266 是几何层面边交叉，本码是数据/拓扑层面拼不上 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>处置</b>由单一数据源一次性生成多边形集（含内外环顺序），不要手工拼接多个来源的顶点表。本库无多边形三角化包装，Grep 无本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>由单一数据源一次性生成多边形集（含内外环顺序），不要手工拼接多个来源的顶点表。本库无多边形三角化包装，代码中没有本常量引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_INCONS = 9267;
 
 	/// <summary>大圆弧相交结果不唯一（取值 9268）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Ambiguous great circle arc intersection"：球面上两条大圆弧的交点不止一个可接受解（弧段重叠共线，或交点落在两端点的临界处），三角化无法裁决取哪个交点。姊妹码 9269（弧本身不唯一）。</para>
-	///   <para><b>何时遇到与处置</b>多发生在两点近对径或弧共线的退化几何 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无球面/三角化包装，Grep 无本常量引用，仅作原生错误表保留项；处置方向同样是去退化而非重试。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>多发生在两点近对径或弧共线的退化几何 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无球面/三角化包装，代码中没有本常量引用，仅作原生错误表保留项；处置方向同样是去退化而非重试。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_AMBINT = 9268;
 
 	/// <summary>球面大圆弧不唯一：弧段本身无法被唯一定义（取值 9269）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Ambiguous great circle arc"：球面上两点一般确定唯一短弧，但当两点趋于对径（相距半个大圆）时，过两点的大圆有无穷多个，"哪段弧"失去唯一答案，球面三角化的边就定不下来。姊妹码 9268（两弧交点不唯一），同根成因是对径/半周长配置。</para>
-	///   <para><b>何时遇到与处置</b>本库无球面三角化包装，Grep 无本常量引用，仅作原生错误表保留项。方向是把对径点扰动或合并，退化几何改数据而不是改参数。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库无球面三角化包装，代码中没有本常量引用，仅作原生错误表保留项。方向是把对径点扰动或合并，退化几何改数据而不是改参数。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_AMBARC = 9269;
 
 	/// <summary>三角化模块收到非法参数（取值 9270）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Illegal parameter"（笼统，不指明哪个参数）：三角化算法的约束参数（阈值/模式类）越界 （详见 HALCON 错误码参考）。与通用参数族区分：13xx 段是"所有算子共用的值域检查"，本码是三角化模块内部的专属校验，说明值过了通用检查却没过后端算法检查。</para>
-	///   <para><b>处置</b>回查三角化调用的模块私有参数而非公共参数表；用 <c>JlNativeApi.GetErrorMessage</c> 取文本辅助定位。本库无三角化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>回查三角化调用的模块私有参数而非公共参数表；用 <c>JlNativeApi.GetErrorMessage</c> 取文本辅助定位。本库无三角化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_STRI_ILLPAR = 9270;
 
 	/// <summary>平面三角网格化的点数不足（取值 9280）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Not enough points for planar triangular meshing"：少于 3 个点连一个三角形都拼不出，网格化无从开始。通用三角化同义码是 9260（STRI_NPNT）。</para>
-	///   <para><b>何时遇到</b>多见于上游过滤（阈值、区域交点筛选）过狠把点抽空——本码常在管线"静默变空"之后才现身，值得回头查过滤器而不是网格化本身 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无网格化包装，Grep 无引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>多见于上游过滤（阈值、区域交点筛选）过狠把点抽空——本码常在管线"静默变空"之后才现身，值得回头查过滤器而不是网格化本身 （具体语义以 HALCON 错误码说明和算子文档为准）。本库无网格化包装，代码中没有引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>放宽上游筛选或对本步做空点集短路（点数判 0 直接跳过），比捕获异常省。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_NPNT = 9280;
@@ -13412,7 +13412,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "The first three points of the triangular meshing are collinear"：算法以输入序的前三点建立初始参考三角形，三点共线则初始三角形不存在，从头失败。通用三角化同义码是 9261（STRI_COLL）。</para>
 	///   <para><b>坑</b>判的是"第 1、2、3 个点"这三点，不是"整体存在共线"：点集里其他地方共线不触发本码。因此打乱或挑选前三点即可绕过，别误以为整批数据报废。</para>
-	///   <para><b>处置</b>把三个不共线的点排到输入最前面再调网格化；放宽数值容差不是正解。本库无网格化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>把三个不共线的点排到输入最前面再调网格化；放宽数值容差不是正解。本库无网格化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_COLL = 9281;
 
@@ -13420,14 +13420,14 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Planar triangular meshing contains identical input points"：两点坐标完全相同会造出零长度边，三角化拓扑退化。通用三角化同义码是 9262（STRI_IDPNT）。</para>
 	///   <para><b>坑</b>按"完全相同"判重：距离 1e-12 的不重复点能过本关，却会在后续产生极瘦长的退化三角形，症状推迟到 9264（STRI 族退化）一类码才爆——去重阈值要按量纲取epsilon级，别只删严格相等。</para>
-	///   <para><b>处置</b>网格化前做点集合并去重；本库无网格化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>网格化前做点集合并去重；本库无网格化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_IDPNT = 9282;
 
 	/// <summary>平面网格化的输入点非法（取值 9283）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid points for planar triangular meshing"：点坐标本身不可参与计算（NaN/无穷等非法数值，或落在计算域外 （具体语义以 HALCON 错误码说明和算子文档为准））。与 9282 区分：9282 是"点合法但彼此重复"，本码是"点本身不合法"。</para>
-	///   <para><b>处置</b>网格化前先过滤非有限坐标；上游拟合/变换产生 NaN 时要回查那一步而不是网格化。本库无网格化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>网格化前先过滤非有限坐标；上游拟合/变换产生 NaN 时要回查那一步而不是网格化。本库无网格化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_IDPNTIN = 9283;
 
@@ -13435,7 +13435,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Internal error: allocated array too small for planar triangular meshing"：内部按输入规模预估分配的缓冲不够用——极端退化点集使三角形数量超出常规预估时可能发生 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>与相邻码区分</b>同义的通用三角化码是 9263（STRI_NALLOC）；本码限定在平面网格化模块。两码都是内核层记账错，不是用户参数错。</para>
-	///   <para><b>处置</b>缩小单次输入（分批/子采样）重试可绕过；根治靠上报原生层修正预估。本库无网格化包装，Grep 无引用，仅作原生错误表保留项；≥1000 属真错误。</para>
+	///   <para><b>处置</b>缩小单次输入（分批/子采样）重试可绕过；根治靠上报原生层修正预估。本库无网格化包装，代码中没有引用，仅作原生错误表保留项；≥1000 属真错误。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_NALLOC = 9284;
 
@@ -13443,7 +13443,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本自带 "Internal error" 前缀：生成的网格拓扑没通过自洽检查（相邻三角形共边对不上、覆盖不闭合）。这不是输入数据非法，而是网格化算法内部不变量被破坏。</para>
 	///   <para><b>与相邻码区分</b>9280-9283 是数据层（点数、共线、重复、非法点），用户可修；本码与 9284（缓冲不足）属内核层，用户改参数一般无效。一般三角化的同义码在 STRI 族（9265）。</para>
-	///   <para><b>处置</b>记录输入点集与参数复现上报；本库未提供网格化包装、全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>处置</b>记录输入点集与参数复现上报；本库未提供网格化包装、代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_ITRI = 9285;
 
@@ -13451,7 +13451,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Node index outside triangulation range"：给出的节点/点索引不在当前网格的顶点范围内——多半是外部索引与网格版本不配套：网格重算过一次，手里还拿着旧序号。</para>
 	///   <para><b>坑</b>只有越界的索引才报本码；若索引在界内但指向错误顶点（重排后的"同号异点"），会静默取错点而不报错。凡跨调用缓存过索引，网格一变必须全部作废。</para>
-	///   <para><b>何时遇到与处置</b>本库未提供网格化/三角化包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置是当场由网格对象重新导出索引，不做长期缓存。</para>
+	///   <para><b>何时遇到与处置</b>本库未提供网格化/三角化包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置是当场由网格对象重新导出索引，不做长期缓存。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_OUTR = 9286;
 
@@ -13459,14 +13459,14 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本把两种成因写进了括号里——邻域参数过严以致几乎没有点能通过邻域校验，或稠密点云没先子采样导致每个点的局部结构都相互矛盾，平面网格化无法推进。</para>
 	///   <para><b>坑</b>TRI 族里 9280-9286 都指"输入数据本身不合法"（点数不足/共线/重复），本码却指"参数与点密度不匹配"：拿清洗数据的思路（去重、删点）修不动它，方向在预处理与参数。</para>
-	///   <para><b>何时遇到与处置</b>本库未提供平面网格化包装，全库 Grep 无本常量引用，仅作原生错误表保留项。方向：放宽邻域参数或先子采样点云。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库未提供平面网格化包装，代码库中没有本常量引用，仅作原生错误表保留项。方向：放宽邻域参数或先子采样点云。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_TRI_LOCINC = 9290;
 
 	/// <summary>视点与参考点重合（取值 9300）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Eye point and reference point coincide"：投影几何里相机视点（eye point）与参考点落在同一位置，视线方向失去定义，投影/视角变换退化。下游常表现为 9499（视角位姿估计失败）。</para>
-	///   <para><b>何时遇到</b>本库已删除 3D 投影/标定包装（<c>JlHomMat3D</c>、<c>JlCamPar</c> 等已移除；2D 的 <c>JlHomMat2D</c> 投影族不使用本码），全库 Grep 无本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到</b>本库已删除 3D 投影/标定包装（<c>JlHomMat3D</c>、<c>JlCamPar</c> 等已移除；2D 的 <c>JlHomMat2D</c> 投影族不使用本码），代码库中没有本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>处置</b>≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。解法是几何去退化：把视点与参考点拉开，重试不改数据无效。</para>
 	/// </remarks>
 	public const int Jl_ERR_WSPVP = 9300;
@@ -13474,7 +13474,7 @@ public class JlErrorDef
 	/// <summary>对偶四元数的实部长度为 0（取值 9310）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Real part of the dual quaternion has length 0"：对偶四元数用实部（单位四元数）编码旋转、对偶部编码平移；实部范数为 0 时不表示任何旋转，归一化与位姿转换在数学上就不成立。</para>
-	///   <para><b>何时遇到</b>本库已删除对偶四元数/四元数类型（<c>JlDualQuaternion</c>、<c>JlQuaternion</c> 均不存在），全库 Grep 无本常量引用，仅作原生错误表保留项；若出现，多为上游把全零 4 向量当位姿写出 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到</b>本库已删除对偶四元数/四元数类型（<c>JlDualQuaternion</c>、<c>JlQuaternion</c> 均不存在），代码库中没有本常量引用，仅作原生错误表保留项；若出现，多为上游把全零 4 向量当位姿写出 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>处置</b>≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。使用侧给位姿前校验四元数范数非零、非退化，比捕获本码更前置。</para>
 	/// </remarks>
 	public const int Jl_ERR_DQ_ZERO_NORM = 9310;
@@ -13498,7 +13498,7 @@ public class JlErrorDef
 	/// <summary>参数 part_size 取值非法（取值 9450）；常量名写 WRONG_NUM_CLUSTER，原生文本却是 "Invalid 'part_size'"。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>以文本为准：出错的参数是 part_size（模型分块/分区尺寸类参数 （详见 HALCON 错误码参考））。名与文一对错位：按 "cluster" 检索文档或按常量名猜参数名去改设置，都会改错地方。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以 <c>JlNativeApi.GetErrorMessage</c> 的文本定位到 part_size 再改。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以 <c>JlNativeApi.GetErrorMessage</c> 的文本定位到 part_size 再改。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_NUM_CLUSTER = 9450;
 
@@ -13506,49 +13506,49 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>以文本为准：min_size（最小尺寸阈值类参数）越界 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>与 9458 的英文文本一字不差（都是 "Invalid 'min_size'"），检索文档或做码表比对时两条会互相"撞文本"，务必以数值 9451/9458 与常量名区分。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_NUM_MIN_SIZE = 9451;
 
 	/// <summary>最小二乘迭代次数非法（取值 9452）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid number of least-squares iterations"：可变形模型匹配的精修阶段按最小二乘迭代收敛位姿，迭代次数给了 0/负数/超上限即本码 （详见 HALCON 错误码参考）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。次数是"越多越精、越慢"的权衡量，报本码时先确认没传成 0。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。次数是"越多越精、越慢"的权衡量，报本码时先确认没传成 0。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_NUM_LSQ = 9452;
 
 	/// <summary>参数 angle_step 取值非法（取值 9453）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'angle_step'"：训练可变形模型时的角度离散化步长；步长越小模板姿态越密，训练耗时与匹配耗时按约 1/step 膨胀 （详见 HALCON 错误码参考）。非法值（负、零、超过角度总范围）报本码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_ANGLE_STEP = 9453;
 
 	/// <summary>参数 scale_r_step 取值非法（取值 9454）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'scale_r_step'"：行方向（r = row，全库坐标约定 row = y 向下为正）的缩放搜索步长 （详见 HALCON 错误码参考）；与 9455 的 c（列方向）步长成对。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；负值/零/过大先查这三样。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；负值/零/过大先查这三样。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_SCALE_R_STEP = 9454;
 
 	/// <summary>参数 scale_c_step 取值非法（取值 9455）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'scale_c_step'"：列方向（c = column，全库坐标约定 column = x 向右为正）的缩放搜索步长 （详见 HALCON 错误码参考）；与 9454 的 r（row 行方向）步长成对。步长越小模板越密、训练与匹配越慢。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；负值/零/过大先查这三样。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；负值/零/过大先查这三样。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_SCALE_C_STEP = 9455;
 
 	/// <summary>参数 max_angle_distortion 取值非法（取值 9456）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'max_angle_distortion'"：训练期允许的最大局部角度畸变 （详见 HALCON 错误码参考）；与 9457（各向异性缩放畸变）成对，一个管转动畸变一个管拉伸畸变。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生消息核对取值域。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生消息核对取值域。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_MAX_ANGLE = 9456;
 
 	/// <summary>参数 max_aniso_scale_distortion 取值非法（取值 9457）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'max_aniso_scale_distortion'"：可变形模型训练期允许的最大各向异性缩放畸变——行、列方向缩放变化幅度之比的上限 （详见 HALCON 错误码参考）；负数、零或过大都会触发本码。姊妹码 9456（最大角度畸变）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误；把它当"训练参数越界"处理，取值先回默认再逐步放宽。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误；把它当"训练参数越界"处理，取值先回默认再逐步放宽。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_MAX_ANISO = 9457;
 
@@ -13556,35 +13556,35 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'min_size'"：训练可变形模型时的最小尺寸阈值参数越界（如负值或超过图像尺寸）（详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>9451（常量名 WRONG_NUM_MIN_SIZE）与 9458（WRONG_MIN_SIZE）共享同一句英文 "Invalid 'min_size'"，靠文本无从分辨，只能以数值区分两码；两者哪个对应训练哪个对应匹配，本库不可考 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_MIN_SIZE = 9458;
 
 	/// <summary>参数 cov_pose_mode 取值非法（取值 9459）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'cov_pose_mode'"：位姿协方差计算模式是个字符串标志参数，传了不在允许集合里的拼写即本码（允许值集合本库不可考 （具体语义以 HALCON 错误码说明和算子文档为准））。属"值不合法"而非 12xx 的"类型不对"：给对了字符串类型但词不在表内。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生消息核对合法模式名。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生消息核对合法模式名。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_COV_POSE_MODE = 9459;
 
 	/// <summary>模型不含标定信息（取值 9460）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Model contains no calibration information"：需要真实尺度/相机几何的步骤（以标定换物理单位的匹配或位姿输出）用在了训练时未随附标定的模型上。属模型属性缺失，不是参数错误。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装与相机参数类型，全库 Grep 无本常量引用，仅作原生错误表保留项。方向是带标定重训模型，或改用像素域模式回避该前提 （具体语义以 HALCON 错误码说明和算子文档为准）。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装与相机参数类型，代码库中没有本常量引用，仅作原生错误表保留项。方向是带标定重训模型，或改用像素域模式回避该前提 （具体语义以 HALCON 错误码说明和算子文档为准）。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_NO_CALIBRATION_INFO = 9460;
 
 	/// <summary>给定的通用参数名不存在（取值 9461）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Generic parameter name does not exist"：读写模型通用参数（gen param / get param 那对接口）时给了参数表里没有的名字 （详见 HALCON 错误码参考）。参数名区分大小写，写错一个字母即本码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。排障靠先读回全部参数名再核对，而不是猜拼写。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。排障靠先读回全部参数名再核对，而不是猜拼写。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_PARAM_NAME = 9461;
 
 	/// <summary>相机分辨率与图像尺寸不一致（取值 9462）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本（小写开头）"camera has different resolution than image"：带标定信息走模型流程时，随附相机参数的成像尺寸与实际图像宽高对不上——投影/坐标换算失去一致的定义域。</para>
-	///   <para><b>何时遇到</b>换了相机或改过采集分辨率却没重建/重标模型，或把 A 相机的标定配到 B 相机拍的图上 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除可变形模型与相机参数类型（<c>JlCamPar</c> 已移除），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>换了相机或改过采集分辨率却没重建/重标模型，或把 A 相机的标定配到 B 相机拍的图上 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除可变形模型与相机参数类型（<c>JlCamPar</c> 已移除），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>核对图像来源与标定归属是否同一相机同档分辨率；改参数救不了，须数据配套。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_IMAGE_TO_CAMERA_DIFF = 9462;
@@ -13592,35 +13592,35 @@ public class JlErrorDef
 	/// <summary>读取可变形模型时文件格式非法（取值 9463）；常量名写 NO_MODEL_IN_FILE，原生文本是 "Invalid file format for deformable model"。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>以文本为准：文件结构解析不成可变形模型（拿错文件类型、内容损坏或截断）。常量名直译"文件里没有模型"容易误导成"路径不存在"——文件不存在属系统层错误，不走本码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。用配套的模型保存流程重新导出；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。用配套的模型保存流程重新导出；≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_NO_MODEL_IN_FILE = 9463;
 
 	/// <summary>可变形模型文件的版本不被支持（取值 9464）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "The version of the deformable model is not supported"：文件头版本号能读出但运行时不支持。三兄弟分工：9463 格式不认（读不出结构）、本码版本拒载（认得但太新/太旧）、9468 反序列化项类型不对（根本不是模型）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。方向是升级运行时或用同版本工具链重存文件；重试原文件必复发。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。方向是升级运行时或用同版本工具链重存文件；重试原文件必复发。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_VERSION = 9464;
 
 	/// <summary>参数 deformation_smoothness 取值非法（取值 9465）；常量名简写作 SMOOTH_DEFORM，指的是同一参数。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'deformation_smoothness'"：该参数权衡形变场的平滑度/正则强度——越小越允许剧烈形变 （详见 HALCON 错误码参考）；越出允许范围即本码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生文本提示修正取值。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；按原生文本提示修正取值。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_SMOOTH_DEFORM = 9465;
 
 	/// <summary>参数 expand_border 取值非法（取值 9466）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 'expand_border'"：expand_border 用于把模板图像的边界向外扩张、给模型留边缘余量 （详见 HALCON 错误码参考）；负数、非整数或超上限的取值会以本码拒绝。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误；真收到时按 <c>JlNativeApi.GetErrorMessage</c> 的原生提示核对该参数取值域，不属参数族 14xx 的"个数不对"，是单值合法性问题。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误；真收到时按 <c>JlNativeApi.GetErrorMessage</c> 的原生提示核对该参数取值域，不属参数族 14xx 的"个数不对"，是单值合法性问题。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_WRONG_EXPAND_BORDER = 9466;
 
 	/// <summary>模型原点落在模板区域的轴对齐包围矩形之外（取值 9467）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Model origin outside of axis-aligned bounding rectangle of template region"：训练可变形模型时给定的参考点（原点 row/column）不在模板区域的外接矩形内。可变形模型以原点为锚做局部形变展开，原点必须在模板"地盘"里，否则形变场失去支撑。</para>
-	///   <para><b>何时遇到</b>手工指定原点偏出区域，或模板区域在上游被收缩后沿用旧原点 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除可变形模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>手工指定原点偏出区域，或模板区域在上游被收缩后沿用旧原点 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除可变形模型包装，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>把原点改到区域内（区域重心最稳妥）。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_ORIGIN_OUTSIDE_TEMPLATE = 9467;
@@ -13629,14 +13629,14 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Serialized item does not contain a valid deformable model"：给模型反序列化的缓冲不是可变形模型的序列化产物。与 9463（文件格式非法）、9464（版本不支持）区分：本码是"类型不对"，那两个是"文件/版本不对"。</para>
 	///   <para><b>坑</b>NOSITEM 后缀码按族各有一枚（矩阵 9222、表面模型 9508、本码），错投他类缓冲触发的是接收方那一族的 NOSITEM，而非发送方的码；据码定位出错的是哪次读取。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除可变形模型能力（<c>JlDeformableModel</c> 一类类已不存在），全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重试无效，核对缓冲来源。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除可变形模型能力（<c>JlDeformableModel</c> 一类类已不存在），代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重试无效，核对缓冲来源。</para>
 	/// </remarks>
 	public const int Jl_ERR_DEFORM_NOSITEM = 9468;
 
 	/// <summary>视角位姿（viewpose）估计失败（取值 9499）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Estimation of viewpose failed"：求解相机视角位姿的数值步骤失败（无法收敛或几何约束退化）。本码不指明具体成因，须配 <c>JlNativeApi.GetErrorMessage</c> 查原生文本；上游几何退化（如 9300 视点与参考点重合）常以本码为最终表象。</para>
-	///   <para><b>何时遇到</b>本库已删除 3D 投影/标定包装，全库 Grep 无本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到</b>本库已删除 3D 投影/标定包装，代码库中没有本常量引用，仅作原生错误表保留项 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>处置</b>≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。排查方向是输入几何构型（对应点分布、退化配置），单纯重试无效。</para>
 	/// </remarks>
 	public const int Jl_ERR_VIEW_ESTIM_FAIL = 9499;
@@ -13644,7 +13644,7 @@ public class JlErrorDef
 	/// <summary>3D 物体模型为空：没有任何点（取值 9500）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Object model has no points"：模型连最基础的点集都是空的；面（9501）与法向量（9502）都以点为载体，本码是三兄弟里最底层的缺失。</para>
-	///   <para><b>何时遇到</b>训练/导入管线以 0 点输入跑完得到空壳模型，或模型句柄被提前清空后仍被下游引用 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 物体/表面模型能力，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>训练/导入管线以 0 点输入跑完得到空壳模型，或模型句柄被提前清空后仍被下游引用 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 物体/表面模型能力，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>回查模型生成步骤的输入点数统计；≥1000 属真错误（<c>JlNativeApi.IsError</c> 判 true），统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NO_POINTS = 9500;
@@ -13652,7 +13652,7 @@ public class JlErrorDef
 	/// <summary>3D 物体模型缺少面（三角面片）数据（取值 9501）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Object model has no faces"：模型只有散点、没有三角面片拓扑。需要连续表面支撑的步骤（可见性判定、法向插值、投影轮廓生成）失去依据。同族完整性三码：9500 无点、本码无面、9502 无法向量。</para>
-	///   <para><b>何时遇到</b>纯点云文件被误当表面模型加载，或建模流程在点云阶段就中止未做网格化 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>纯点云文件被误当表面模型加载，或建模流程在点云阶段就中止未做网格化 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>在建模端完成网格化/三角化后重新导出；重试原模型无效。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NO_FACES = 9501;
@@ -13660,7 +13660,7 @@ public class JlErrorDef
 	/// <summary>3D 物体模型缺少法向量数据（取值 9502）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Object model has no normals"：模型点没有配套法向量。表面匹配靠法向量判断面元朝向（对镜头可见/背对）并做姿态评分，缺法向量则该步无从计算。同族完整性三码：9500 无点、9501 无面、本码无法向量。</para>
-	///   <para><b>何时遇到</b>从不含 normals 属性的格式（如纯点云）直接导入当模型用 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 物体/表面模型能力，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>从不含 normals 属性的格式（如纯点云）直接导入当模型用 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 物体/表面模型能力，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>在模型制备阶段补算/重导出带法向量的模型；属数据完整性问题，与运行时参数无关。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NO_NORMALS = 9502;
@@ -13676,7 +13676,7 @@ public class JlErrorDef
 	/// <summary>3D 表面模型未经过 3D 边缘训练，无法启用基于边缘的匹配（取值 9504）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "3D surface model not trained for edge-supported matching"：3D 边缘是训练期预计算的辅助数据，模型里没有它却要求边缘匹配模式，直接被拒。姊妹码 9503（未训练可见性），同属"训练配置不全"族，与 9500-9502（点/面/法向量缺失）的"数据层缺失"不同层面。</para>
-	///   <para><b>何时遇到</b>只做几何导入、跳过完整训练流程的精简模型是典型场景 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力（无 JlSurfaceModel 一类类），全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>只做几何导入、跳过完整训练流程的精简模型是典型场景 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力（无 JlSurfaceModel 一类类），代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>重训模型并包含 3D 边缘，或改用不依赖边缘的匹配模式回避该前提。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NO_3D_EDGES = 9504;
@@ -13685,14 +13685,14 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>以内嵌文本为准：表面模型文件内容解析不成合法格式（拿错文件、内容损坏或截断）。常量名容易误导成"文件不存在"——那是文件系统层的错，不经原生错误码；本码管"读得开但认不出"。</para>
 	///   <para><b>坑</b>SFM 族缺 9505（9504 之后直接 9506），排障时不必寻找一个不存在的码；再用 <c>JlNativeApi.GetErrorMessage</c> 的文本区分是格式（本码）、版本（9507）还是序列化项类型（9508）问题。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 表面匹配能力，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新导出完整文件。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 表面匹配能力，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新导出完整文件。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NO_SFM_FILE = 9506;
 
 	/// <summary>3D 表面模型文件的版本超出当前运行时支持（取值 9507）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "The version of the 3D surface model is not supported"：文件头版本号能读出但过新或过旧，运行时拒载。姊妹码 9506（格式根本不认）、9508（反序列化项不是模型）：那两个是"坏/错"，本码是"认得但不支持"。</para>
-	///   <para><b>何时遇到</b>较新版本工具保存的模型文件放到较旧运行时加载最常见 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力，全库 Grep 无本常量引用，仅作原生错误表保留项。</para>
+	///   <para><b>何时遇到</b>较新版本工具保存的模型文件放到较旧运行时加载最常见 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 表面匹配能力，代码库中没有本常量引用，仅作原生错误表保留项。</para>
 	///   <para><b>处置</b>升级运行时或改用同版本平台重新导出文件，重试原文件必然复发。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_WRONG_FILE_VERSION = 9507;
@@ -13701,14 +13701,14 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Serialized item does not contain a valid 3D surface model"：交给表面模型反序列化的字节项根本不是表面模型的序列化产物（可能是矩阵、图像或其他模型的产物），或缓冲已损坏。与 9506（文件格式不认）、9507（版本不支持）分属"类型不对/文件不对/版本不对"三个层面。</para>
 	///   <para><b>坑</b>NOSITEM 同名码散在多族：矩阵 9222、可变形模型 9468、本码 9508——各类型序列化缓冲外观相似但带类型标记，拿错族段就会查错处置方向；排障先按数值定位族。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 表面匹配能力，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；遇之核对缓冲来源，重试无效。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 表面匹配能力，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；遇之核对缓冲来源，重试无效。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_NOSITEM = 9508;
 
 	/// <summary>3D 表面/物体模型匹配产生的对称等价位姿过多（取值 9509）。</summary>
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Poses generate too many symmetries"：模型对称性强（如球、圆柱这类微转不改变外观的形状），枚举出的候选位姿数量超过原生层允许的上限，整个结果被拒而不返回截断后的列表。</para>
-	///   <para><b>何时遇到</b>本库已删除 3D 表面匹配/物体模型能力（无对应包装类），全库 Grep 无本常量引用，本码仅作为原生错误表保留项；若日志真出现，来自原生核内部路径 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到</b>本库已删除 3D 表面匹配/物体模型能力（无对应包装类），代码库中没有本常量引用，本码仅作为原生错误表保留项；若日志真出现，来自原生核内部路径 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>处置</b>≥1000 属真错误（<c>JlNativeApi.IsError</c> 判 true、<c>JlNativeApi.IsFailure</c> 亦 true），统一检查经 <c>JlNativeApi.GetErrorMessage</c> 附文本抛 <c>JlOperatorException</c>。方向是削减对称声明或收紧位姿去重阈值 （具体语义以 HALCON 错误码说明和算子文档为准），本库未暴露可调的包装入口。</para>
 	/// </remarks>
 	public const int Jl_ERR_SFM_TOO_MANY_SYMMS = 9509;
@@ -13717,7 +13717,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 3D file"：OM3D 文件族（9510–9546）的首码。文件能打开、类型也认得，但内容解析不成合法的 3D 模型——拿错文件、导出中断、传输截断都在这里挡下。它是"文件三兄弟"的中间档：9512 是类型不认（没进解析器）、本码是进了解析器被拒、9513 是版本不支持。</para>
 	///   <para><b>坑</b>SFM 族的 9506 文本几乎同句（那句专管表面模型文件），按异常文本检索会两族互串，判族必须看数值；文件系统层的"文件不存在"不走本码，报到这里说明字节已到手。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查经 <c>JlNativeApi.GetErrorMessage</c> 附文本抛 <c>JlOperatorException</c>；重新导出完整文件，原样重试必然复发。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查经 <c>JlNativeApi.GetErrorMessage</c> 附文本抛 <c>JlOperatorException</c>；重新导出完整文件，原样重试必然复发。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_INVALID_FILE = 9510;
 
@@ -13725,7 +13725,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Invalid 3D Object Model"：问题出在内存里的模型对象本身而不是文件——构造/读入失败后残留的空句柄、被释放或类型挂错的引用继续往下传，运行时一验对象就报本码。与 9510 的分界：9510 发生在读文件阶段，本码发生在拿对象干活阶段。</para>
 	///   <para><b>坑</b>本码是 OM3D 族里少数与文件无关的码，拿"重存一遍文件"的直觉去排障会白忙；常见诱因是上一步操作已抛错、输出模型没检查就被当有效输入接着用——错误链里的第二张多米诺。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；回溯到该模型的最初产出步确认其成功生成。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；回溯到该模型的最初产出步确认其成功生成。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_INVALID_MODEL = 9511;
 
@@ -13733,7 +13733,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Unknown 3D file type"：文件的类型标识（扩展名或显式传入的类型参数）没有对应的读取器，压根没进解析阶段。与 9510 的分界在此：9510 是"认得出是哪类文件、打开后内容不合法"，本码是"连门都没进"；9513 又再晚一层——认得出也进得去、版本不支持。</para>
 	///   <para><b>坑</b>本库原生层支持的 3D 文件格式清单（如常见的网格/点云格式哪些可读）无现有文档支撑 （具体语义以 HALCON 错误码说明和算子文档为准）；改名丢扩展名、大小写或传错类型字符串都报此码，先确认文件本身没拿错。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；换成受支持的格式或显式指定正确类型再读。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；换成受支持的格式或显式指定正确类型再读。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_UNKNOWN_FILE_TYPE = 9512;
 
@@ -13741,7 +13741,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "The version of the 3D object model is not supported"：文件头能被解析、版本字段能读出，但值在当前运行时的支持范围外，拒载。文件读取三码的最后一层：9510 是"内容读不出名堂"，9512 是"类型压根不认"，本码是"认得但伺候不了"。</para>
 	///   <para><b>坑</b>与 SFM 族 9507 文本几乎同句（那句管表面模型，本句管目标模型），按异常文本搜索会互相命中，判族必须看数值。较新平台导出的文件配较旧运行时最常见 （具体语义以 HALCON 错误码说明和算子文档为准）；重读原文件必然复发。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；升级运行时或用同版本平台重新导出。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；升级运行时或用同版本平台重新导出。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_WRONG_FILE_VERSION = 9513;
 
@@ -13749,7 +13749,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute is missing"：属性缺失族的总兜底码。原生层识别出"必需属性不在"却没把它归到具名专码（point_coord→9515、point_normal→9516、face_triangle→9517、line_array→9518、f_trineighb→9519、face_polygon→9520、xyz_mapping→9521、o_primitive→9522、shape_model→9523）就落在这里。</para>
 	///   <para><b>坑</b>本码的原文同样不带属性名，光看异常信息是瞎子：得从"调用的是哪个算子、它要什么属性"反推 （具体语义以 HALCON 错误码说明和算子文档为准）；扩展属性方向的兜底另有 9524，两码分工不同别互串。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；对照算子的属性前提补齐再试。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；对照算子的属性前提补齐再试。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB = 9514;
 
@@ -13757,7 +13757,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute point_coord is missing"：point_coord 是 OM3D 唯一不可缺的属性——没有 xyz 坐标就没有几何。报本码意味着手里的"模型"是个空壳：只挂了面索引或其他属性却没有点，或点属性在加工中被清空。</para>
 	///   <para><b>坑</b>具名属性缺失码 9515–9523 里本码级别最低也最致命：其他属性缺了换条操作路径还能活，点缺了整个模型不可用，别指望跳过它做后续加工。反面配对码：写入侧约束看 9531/9533。</para>
-	///   <para><b>何时遇到与处置</b>多为上一步算子的输出根本没接对（把别的对象当模型传进来）（具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>多为上一步算子的输出根本没接对（把别的对象当模型传进来）（具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_V_COORD = 9515;
 
@@ -13765,7 +13765,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute point_normal is missing"：法向是逐点的三维单位向量属性，常量名 V_NORMALS 的 V 即 vertex（点级）。曲面匹配、光照相关、按朝向筛选等操作没它不转；传感器原始点云通常不带法向，只有显式做过法向估计的模型才有。</para>
 	///   <para><b>坑</b>法向的"朝向"有双解（一面两个法向都算对），重估一次整体翻转不会报本码但会污染下游结果 （具体语义以 HALCON 错误码说明和算子文档为准）；本码只管"有没有"，不管"指哪边"。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先跑法向估计步骤。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先跑法向估计步骤。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_V_NORMALS = 9516;
 
@@ -13773,7 +13773,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute face_triangle is missing"：face_triangle 是定长的三角形顶点索引表（每三角形 3 个索引）。点云只有 point_coord 时它不存在——三角网不是随点自动有的，必须显式跑一次三角化。曲面匹配类下游（9550）同样吃这个属性。</para>
 	///   <para><b>坑</b>反面码 9527 说明"从零建网"的操作又要求它不存在：建过网的模型直接重跑三角化会撞 9527，两条码合起来才是完整规则——换网要先拆再建。法向在不在（9516）不影响本码，别一起查。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_F_TRIANGLES = 9517;
 
@@ -13781,7 +13781,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute line_array is missing"：OM3D 里三维折线存放在 line_array 属性（常量名却叫 F_LINES，原生文本又称 polylines，见 9537——同一概念三种叫法，检索时都试）。提取边缘线、按线测量的操作要求模型先有线。</para>
 	///   <para><b>坑</b>线结构通常由提取算子事后生成 （具体语义以 HALCON 错误码说明和算子文档为准）；反面码 9528 说明另一批操作恰恰要求"没有线"才能写入，两族操作对同一属性的期望相反，模型加工顺序不能随意颠倒。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先执行生成线结构的步骤。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先执行生成线结构的步骤。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_F_LINES = 9518;
 
@@ -13789,7 +13789,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute f_trineighb is missing"：f_trineighb 记录每个三角形与相邻三角形共边的对应关系，名字直译"三角邻接"。区域生长、沿面平滑、连通性分析这类要"从一个面走到邻居"的操作全靠它；只有 face_triangle 没有邻接表时会报本码。</para>
 	///   <para><b>坑</b>有面没邻接是合法状态：手工拼的面索引、部分文件导入的模型可能三角网在但拓扑没建 （具体语义以 HALCON 错误码说明和算子文档为准）。删面/加面后邻接表必须重建，旧表不报错但会静默指错邻居，比缺表更危险。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重跑建邻接的前置步骤即可 （详见 HALCON 错误码参考）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重跑建邻接的前置步骤即可 （详见 HALCON 错误码参考）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_F_TRINEIGB = 9519;
 
@@ -13797,7 +13797,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute face_polygon is missing"：face_polygon 是面索引的变长结构（每条记录先给该面顶点数、再跟顶点索引，故与定长的 face_triangle 分属两个属性 （详见 HALCON 错误码参考））。按多边形面处理的操作（非三角面渲染/分析）要求模型带它。</para>
 	///   <para><b>坑</b>"有三角面"不等于"有多边形面"：本族把两种面结构分开计（9517/9520 两个码、9527/9529 两个反面码），三角化的模型照样可能报缺多边形；反之亦然。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先执行生成面结构的前置算子 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先执行生成面结构的前置算子 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_F_POLYGONS = 9520;
 
@@ -13805,7 +13805,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute xyz_mapping is missing"：xyz_mapping 记录每个 3D 点对应到源图像的行列位置，常量名里的 V_2DMAP 即此物。纹理贴图、把图像强度回填到点、按像素反查三维坐标，全依赖这一属性；只从深度数据独立重建的模型不带它。</para>
 	///   <para><b>坑</b>它只能来自"模型与图像同源"的路径（相机式重建、随文件一同读入）（具体语义以 HALCON 错误码说明和算子文档为准）；模型做过裁剪/降采样后映射要随之重建，旧映射配新点集会从"缺属性"变成 9538 的"数量不匹配"。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_V_2DMAP = 9521;
 
@@ -13813,7 +13813,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute o_primitive is missing"：o_primitive 存的是模型对几何基元（平面、圆柱、球等）的拟合描述，依赖基元语义的操作（按基元选择、测量、简化）要求先做基元拟合才有这个属性；原始扫描/文件模型默认不带。</para>
 	///   <para><b>坑</b>与 9526 分两层：本码是"属性整个没有"（没拟合过），9526 是"属性有了但扩展数据空"（拟合过、做得不全）。先分清缺哪个再补作业。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；补跑基元拟合步骤 （详见 HALCON 错误码参考）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；补跑基元拟合步骤 （详见 HALCON 错误码参考）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_O_PRIMITIVE = 9522;
 
@@ -13821,7 +13821,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required attribute shape_model is missing"：shape_model 是在原始点/面之上另行计算并挂载的派生属性（供形状类操作消费的模型描述），不是读文件自动就有的；裸模型直接送进依赖它的操作即报本码。具名属性缺失专码（9515–9523）的最后一个。</para>
 	///   <para><b>坑</b>派生属性经不起"再加工"：模型被裁剪、简化或变换后，旧的 shape_model 要么失效要么随属性被剥离，重新生成一步不能省 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型与形状匹配包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先跑生成该属性的预处理再重试。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型与形状匹配包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先跑生成该属性的预处理再重试。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_SHAPE_MODEL = 9523;
 
@@ -13829,7 +13829,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Required extended attribute missing in 3D object model"：操作依赖某个扩展属性（点/面基础属性之外、按算子追加的那批），模型没带。与 9514 同为泛化兜底码，本码专指扩展属性；具名缺失各有专码（9515–9523）。</para>
 	///   <para><b>坑</b>文本不带属性名是本码最大的信息损失——只知道"扩展属性缺"，不知道缺哪个；此时从调用它的算子反推其属性前提（例如做过一次简化/滤波的模型常丢下游属性）（具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；用原始模型重走一遍属性生成链通常比补单个属性可靠。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；用原始模型重走一遍属性生成链通常比补单个属性可靠。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_ATTRIB_EXTENDED = 9524;
 
@@ -13837,7 +13837,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Serialized item does not contain a valid 3D object model"：交给 3D 目标模型反序列化的字节项确实是序列化项、但装的不是 OM3D（可能是矩阵、表面模型或其他对象的产物），或缓冲损坏。与 9510（文件内容坏）、9513（版本不支持）分属"类型不对/文件不对/版本不对"三层。</para>
 	///   <para><b>坑</b>NOSITEM 同名码散在多族：矩阵 9222、可变形模型 9468、表面模型 9508、本码 9525——序列化缓冲外观相似但带类型标记，拿错族段就会查错处置方向；排障先按数值定位族，再核对缓冲的产出方是不是同族算子。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重试无效，核对数据来源才是出路。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重试无效，核对数据来源才是出路。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NOSITEM = 9525;
 
@@ -13845,7 +13845,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Primitive in 3D object model has no extended data"：o_primitive（见 9522）属性存在、模型确实带基元描述，但某个操作要用的那部分扩展数据（基元的细化信息）是空的——比 9522 更进一步：那不是"没有基元"，而是"有基元但基元不够用"。</para>
 	///   <para><b>坑</b>常见于基元拟合时只存了类型/位姿没存完整参数，或模型经转换/简化后扩展数据被丢 （具体语义以 HALCON 错误码说明和算子文档为准）。排障顺序：先确认 9522 不报（属性在），再怀疑扩展数据缺（本码）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新做一遍带扩展输出的基元拟合是方向 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新做一遍带扩展输出的基元拟合是方向 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_O_PRIMITIVE_EXTENSION = 9526;
 
@@ -13853,7 +13853,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Operation invalid, 3D object model already contains triangles"：目标操作（典型是重新三角化一类"从零建网"的步骤）只在无面模型上合法；模型已有 face_triangle 时再建一次会双重定义拓扑，原生层直接拒，不会静默替换旧网。9517（MISSING_ATTRIB_F_TRIANGLES）的反面码：一个"要面没面"，一个"不该有面"。</para>
 	///   <para><b>坑</b>"想换一张网"的正确姿势不是重跑建网操作，而是先删旧面属性再建（入口 （具体语义以 HALCON 错误码说明和算子文档为准））；直接重试原操作永远撞同一码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_CONTAIN_ATTRIB_F_TRIANGLES = 9527;
 
@@ -13861,7 +13861,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Operation invalid, 3D object model already contains lines"：目标操作要在模型里生成折线/线结构（line_array，见 9518），而模型已经带着一套；再生成等于双重定义，原生层拒掉而不是覆盖旧的。9518 的反面码：那边"要线没线"，这边"不该有线却有线"。</para>
 	///   <para><b>坑</b>同族 CONTAIN 码按占位的结构类型分档（9527 三角/9528 线/9529 面），先分清操作要重建的是哪种结构再删对应属性，删错档等于白删。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；清除已有线属性后重跑，或换用支持追加的结构操作 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；清除已有线属性后重跑，或换用支持追加的结构操作 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_CONTAIN_ATTRIB_F_LINES = 9528;
 
@@ -13869,7 +13869,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Operation invalid, 3D object model already contains faces or polygons"：某些操作（如由点集重新构建面结构）只在"无面"前提下有意义，模型已带 face_polygon 或面信息时再执行会产生双重定义，原生层选择报错而不是悄悄覆盖。它是 9520（MISSING_ATTRIB_F_POLYGONS）的反面码：那码是"要面却没面"，本码是"不该有面却有了面"。</para>
 	///   <para><b>坑</b>CONTAIN 三兄弟（9527 三角、9528 线、9529 面/多边形）合并进一条文本的只有本码——faces or polygons 两种都算占位，删干净才能继续。判断不清就检查"与 MISSING 码同名属性"是否存在。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先删除已有面属性再执行 （详见 HALCON 错误码参考）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先删除已有面属性再执行 （详见 HALCON 错误码参考）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_CONTAIN_ATTRIB_F_POLYGONS = 9529;
 
@@ -13877,7 +13877,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "In a global registration an input object has no neighbors"：多片段全局配准靠的是片段两两之间的重叠对应关系推整体位姿；某个输入模型与其他任何模型都找不到邻居（重叠不足或初始位姿差太远没对上），它的变换无解，整个配准被拒而不是跳过它配其余。</para>
 	///   <para><b>坑</b>整批失败是本码最伤的地方：九个片段里一个孤立，九个结果全拿不到。补拍让它产生重叠、给它更准的初始位姿、或把它剔出本批单独配，三条路都比原样重试有效；"邻居"的判定距离/重叠度参数 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_ISOLATED_OBJECT = 9530;
 
@@ -13885,7 +13885,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "All components of points must be set at once"：point_coord 的 x/y/z 是不可拆的整体，单独更新某一轴（比如只做高度平移只给 z）会被拒——原生层保证模型里不存在"缺轴的点"。</para>
 	///   <para><b>坑</b>做单轴变换的正确姿势是整点集重算后全量回写，或直接改用模型级刚体变换属性，而不是试图逐分量打补丁。与 9532（法向同规则）对仗；数量对不上归 9533 管，本码只管分量齐不齐。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；组装完整三元组后一次写入。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；组装完整三元组后一次写入。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_SET_ALL_COORD = 9531;
 
@@ -13893,7 +13893,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "All components of normals must be set at once"：point_normal 的 nx/ny/nz 是一个不可拆的整体，试图分开写（比如只更新 nx）被直接拒绝——原生层不允许模型存在"半个法向"的中间态。</para>
 	///   <para><b>坑</b>这是设计约束不是数据错误：想"只改一个分量"也必须把完整的三元组重新提交。与 9531（点坐标同规则）对仗；数量维度由 9534 管，本码只管"分量齐不齐"，两个码报错含义不同别混查。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；组装好全部分量再一次写入。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；组装好全部分量再一次写入。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_SET_ALL_NORMALS = 9532;
 
@@ -13901,7 +13901,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to number of already existing points"：向已含 point_coord（见 9515）的模型写逐点数据时，新值数量必须以现存点数为基准；每个点是三维坐标，按"点数"还是按"3×点数"校验原文未写明 （具体语义以 HALCON 错误码说明和算子文档为准），数值差 3 倍先查口径。</para>
 	///   <para><b>坑</b>NUM_NOT_FIT 系列（9533–9539）的共同病灶是"基准过期"：点数被裁剪/降采样改变后，所有按旧点数准备的数组都在各自粒度上撞墙——本码是点粒度，9534 是法向，9535/9536 是面，逐级往上查能快速定位是哪层数据没跟着重算。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；与 9531 配对排查（一个管分量没给全，一个管数量没对上）。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；与 9531 配对排查（一个管分量没给全，一个管数量没对上）。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_COORD = 9533;
 
@@ -13909,7 +13909,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to number of already existing normals"：改 point_normal（见 9516）时，值的总量必须与现存法向数量一致；法向是三维向量，"个数"按向量计还是按 x/y/z 分量计原文未言明 （具体语义以 HALCON 错误码说明和算子文档为准），差 3 倍时优先怀疑口径。</para>
 	///   <para><b>坑</b>法向必须逐点对应：点集裁剪、滤波、重法向估计之后法向数量随之改变，拿处理前算好的法向数组回填就会撞本码。与 9532 分工：9532 管"分量没一次给全"，本码管"整体数量对不上"。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以当前点集为基准重算法向再写。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以当前点集为基准重算法向再写。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_NORMALS = 9534;
 
@@ -13917,7 +13917,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to already existing triangulation"：face_triangle 是定长结构——每个三角形固定占 3 个顶点索引（索引从 0 起算），所以与它配对的量要么恒为 3 的倍数、要么恰为三角形个数，任何一侧对不上都报本码 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>三角网被重跑过一次（重新三角化、删面、细分）后三角形数就变了，旧规模的邻接表、面属性数组会整体失配；本码常是"忘了重算下游数组"的第一个信号，紧随其后往往还有 9519/9539。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以当前三角网为准重建配套数据。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；以当前三角网为准重建配套数据。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_TRIANGLES = 9535;
 
@@ -13925,7 +13925,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to length of already existing polygons"：face_polygon（见 9520）同样是变长结构——每个面边数可以不同，所以校验口径是所有面的顶点索引总数；给面级属性赋值时值数必须与这个总长一致 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>与 9535（三角网口径）的区别就在"是否定长"：三角网天然每个面 3 顶点、索引数恒为 3 的倍数；多边形面数不定，长度基准只能从模型读回，凭记忆硬算最容易差一差二。删一个面、改一次细分都会移动基准。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先查模型当前面结构规模再备值。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先查模型当前面结构规模再备值。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_POLYGONS = 9536;
 
@@ -13933,7 +13933,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to length of already existing polylines"：折线类属性（存储走 line_array，见 9518）是变长结构，本码核对的是所有折线的顶点总数而不是折线条数——每条折线长度可以互不相同，改值时必须按"总长"对齐 （详见 HALCON 错误码参考）。</para>
 	///   <para><b>坑</b>常量名叫 LINES、原生文本说 polylines，同一族里两种叫法混用（9518 的属性名又是 line_array），检索时三个词都得试。合并/拆分折线会改变总长基准，之后按旧总长给值必然撞本码。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先读回当前折线结构规模再准备值。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先读回当前折线结构规模再准备值。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_LINES = 9537;
 
@@ -13941,7 +13941,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond already existing 2D mapping"：2D 映射把 3D 点与图像像素行列对应起来，改它时新值的个数必须与现存映射结构一致（映射按点计，每个点携带的像素坐标分量数固定 （具体语义以 HALCON 错误码说明和算子文档为准））。原文缺了 "to"（correspond already），那是原生自带的小笔误，按 "correspond to" 理解即可。</para>
 	///   <para><b>坑</b>NUM_NOT_FIT 系列（9533–9539）里本码最隐蔽：图像换了分辨率、或点集裁剪过，映射的"点数基准"变了而代码还按旧图准备值；报数字不匹配，实际是两侧不同源。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重建映射时务必用当前点集与当前图像同批生成。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重建映射时务必用当前点集与当前图像同批生成。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_2DMAP = 9538;
 
@@ -13949,7 +13949,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Number of values doesn't correspond to already existing extended attribute"：NUM_NOT_FIT 系列（9533–9539）的收尾码，管点/法向/三角/多边形/折线/2D 映射之外的扩展属性——改这类属性时值数量必须与模型现有元素数逐一对齐，多一个少一个都不行。</para>
 	///   <para><b>坑</b>该系列整体有个共同陷阱：报错说"数量不对"，对的是"已有"结构的大小——点集刚被裁剪或滤波过，手里还按旧长度准备值，就会在这里撞墙。先查最近一次改变点数的操作，再查长度本身。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新按当前模型规模取数再赋值。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；重新按当前模型规模取数再赋值。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NUM_NOT_FIT_EXTENDED = 9539;
 
@@ -13957,7 +13957,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Per-face intensity is used with point attribute"：按面存强度（每个三角形/多边形一个灰度）的前提是模型真的有面；纯点云只有点没有面，面级强度无处挂靠，属性粒度与数据层级配错了。</para>
 	///   <para><b>坑</b>OM3D 属性分点级（point_coord、point_normal、强度按点）与面级（face_triangle、面强度）两套粒度，赋值时给错的不是值而是"挂靠层"。改法二选一：先三角化再用面级强度，或把强度降到点级。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；这是调用方的属性组织错误，重试无意义。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；这是调用方的属性组织错误，重试无意义。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_FACE_INTENSITY_WITH_POINTS = 9540;
 
@@ -13965,7 +13965,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Attribute is not (yet) supported"：属性名落在 OM3D 的属性语法里，但当前运行时没有实现它的读写。注意原文里的 "(yet)"——原生层自述这是"暂时未支持"，同一属性名在别的版本可能就能用，支持集随版本漂移 （具体语义以 HALCON 错误码说明和算子文档为准）。</para>
 	///   <para><b>坑</b>与本族"属性缺失"码（9514–9523）区分开：那些是"属性体系存在、这个模型没带该属性"，本码是"属性体系本身没实现"。前者换模型能好，后者换模型也没用，得换运行时版本。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先排除属性名拼写，再确认运行时版本。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；先排除属性名拼写，再确认运行时版本。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_ATTRIBUTE_NOT_SUPPORTED = 9541;
 
@@ -13973,7 +13973,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "No point within bounding box"：给定的三维包围盒与模型的点集完全不相交，裁剪或按盒提取的结果是空集，原生层按真错误抛出而不是返回空模型。</para>
 	///   <para><b>坑</b>包围盒用的是模型局部坐标系——模型若被刚体变换移动过，旧盒坐标立刻失效，这是"明明框过怎么现在框不住"的最常见来源 （具体语义以 HALCON 错误码说明和算子文档为准）；另外三维盒常以最小/最大角点两对角点表达，行列混淆会把盒旋到别处。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置方向是先读回模型当前的实际范围再定盒，而不是拿设计态坐标硬框。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置方向是先读回模型当前的实际范围再定盒，而不是拿设计态坐标硬框。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_NOT_IN_BB = 9542;
 
@@ -13981,7 +13981,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "distance_in_front is smaller than the resolution"：distance_in_front 是沿表面法向向前留出的余量距离（原生参数名直译"前方距离"，精确用途 （具体语义以 HALCON 错误码说明和算子文档为准））；它小于采样分辨率时，这层余量在网格上连一个像素都占不到，等于白设，原生层拒绝这组参数。</para>
 	///   <para><b>坑</b>常量名是 DIF_ 前缀、不带 OM3D 字样，但它物理位于 OM3D 族段内（9543，夹在 9542 与 9544 之间），按族查码时别当成漏写前缀的孤儿码；与 9544 同为"生成参数低于分辨率下限"一族。原生文本用的是下划线参数名，检索时两种写法都要试。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D/曲面匹配包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；把该距离抬到分辨率之上即可恢复。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D/曲面匹配包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；把该距离抬到分辨率之上即可恢复。</para>
 	/// </remarks>
 	public const int Jl_ERR_DIF_TOO_SMALL = 9543;
 
@@ -13989,7 +13989,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "The minimum thickness is smaller than the surface tolerance"：最小厚度用于把薄于该值的结构从模型中剔除，而曲面容差是判定"同面/异面"的分辨率下限；最小厚度设得比容差还小，被剔除判定的层本身已在容差噪声之内，参数失去意义，原生层直接拒收。</para>
 	///   <para><b>坑</b>两参同向调才收敛：要处理更薄的特征就同时下调容差，而不是一味压低最小厚度。与 9543（distance_in_front 低于分辨率）同属"生成参数低于分辨率下限"一族，常量名不带 OM3D 前缀，按数值 9543/9544 定位。</para>
-	///   <para><b>何时遇到与处置</b>出现在由 3D 目标模型生成曲面匹配模型的参数校验阶段 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D/曲面匹配包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；把最小厚度抬到容差之上即可恢复。</para>
+	///   <para><b>何时遇到与处置</b>出现在由 3D 目标模型生成曲面匹配模型的参数校验阶段 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D/曲面匹配包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；把最小厚度抬到容差之上即可恢复。</para>
 	/// </remarks>
 	public const int Jl_ERR_MINTH_TOO_SMALL = 9544;
 
@@ -13997,7 +13997,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Input width or height does not match the number of points in 3D object model"：把逐像素的 2D 数据（强度图、纹理）绑到按栅格组织的模型上时，约定是一像素对一点，因此要求 width*height 与模型点数严格相等——是"恰好相等"，不是"覆盖得住"就行。</para>
 	///   <para><b>坑</b>图像裁剪、缩放或模型做过一次滤波/降采样后点数就变了，两边任一被动过都会打破等式；报的是尺寸码，病灶常在"最近一次点集处理"。姊妹码 9546 是宽高压根没设，两者先后来查。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置是回到同源重建：图像与模型必须出自同一次未再处理的采集。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；处置是回到同源重建：图像与模型必须出自同一次未再处理的采集。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_WRONG_DIMENSION = 9545;
 
@@ -14005,7 +14005,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Image width or height must be set"：按图像栅格组织的 3D 模型（深度图反投影、带 2D 映射的模型）必须同时携带图像宽度和高度两个维度属性，缺任何一个，依赖像素坐标的解释都无从谈起。</para>
 	///   <para><b>坑</b>与 9545 是一对前后脚：9545 是"宽高设了但和点数对不上"，本码是"根本没设"。先补维度再看数值匹配，顺序反了会连续踩两个码。</para>
-	///   <para><b>何时遇到与处置</b>多为手工拼装模型时只塞了点集忘了维度属性 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 目标模型包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；用产生该模型的采集/反投影源头补上宽高后重建。</para>
+	///   <para><b>何时遇到与处置</b>多为手工拼装模型时只塞了点集忘了维度属性 （具体语义以 HALCON 错误码说明和算子文档为准）。本库已删除 3D 目标模型包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查抛 <c>JlOperatorException</c>；用产生该模型的采集/反投影源头补上宽高后重建。</para>
 	/// </remarks>
 	public const int Jl_ERR_OM3D_MISSING_DIMENSION = 9546;
 
@@ -14013,7 +14013,7 @@ public class JlErrorDef
 	/// <remarks>
 	///   <para><b>含义</b>原生文本 "Triangles of the 3D object model are not suitable for this operator"：模型虽带 face_triangle，但三角形的质量或数量没达到曲面匹配算子的下限——网格太稀、退化三角形过多或构网未覆盖点集都可能触发，具体判定阈值 （具体语义以 HALCON 错误码说明和算子文档为准）。与 9551 成对：9551 是"点不够"，本码是"点够了但面不能用"。</para>
 	///   <para><b>坑</b>本码与 9551 处于 OM3D 文件族（9510–9546）与 SF 表面模型族（9506–9509）的交界处：排障时先查模型的网格质量，而不是文件完整性或版本。</para>
-	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型与曲面匹配包装，全库 Grep 无本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查经 <c>JlNativeApi.GetErrorMessage</c> 附文本抛 <c>JlOperatorException</c>；处置方向是重新构网（重跑三角化或降低简化程度），拿原模型重试必然复发。</para>
+	///   <para><b>何时遇到与处置</b>本库已删除 3D 目标模型与曲面匹配包装，代码库中没有本常量引用，仅作原生错误表保留项。≥1000 属真错误，统一检查经 <c>JlNativeApi.GetErrorMessage</c> 附文本抛 <c>JlOperatorException</c>；处置方向是重新构网（重跑三角化或降低简化程度），拿原模型重试必然复发。</para>
 	/// </remarks>
 	public const int Jl_ERR_SF_OM3D_TRIANGLES_NOT_SUITABLE = 9550;
 

@@ -1013,7 +1013,7 @@ public class JlObject : JlObjectBase, ISerializable, ICloneable
 	/// <returns>替换后的新对象元组（新句柄）；原元组本身不变，结果需自行 <see cref="JlObjectBase.Dispose()"/>。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>底层算子 replace_obj（id 2006）。本对象存入原生参数 1，<paramref name="objectsReplace"/> 存入参数 2，索引写入参数 0；输出经 InitOCT 装载为新句柄，属"返回新句柄"而非原地改写。</para>
-	///   <para><b>约束或前提</b>替换区间 [index, index + len(objectsReplace)) 必须落在原元组长度内，越界由原生层报错；两方都必须已初始化。本标量重载用 <c>StoreI</c> 直写 int，无钉固定元组的开销。</para>
+	///   <para><b>约束或前提</b>从 index 开始的连续替换范围必须完全落在原元组长度内，越界由原生层报错；两方都必须已初始化。本标量重载用 <c>StoreI</c> 直写 int，无钉固定元组的开销。</para>
 	///   <para><b>与相邻算子的取舍</b>要在多个离散位置各放一个对象时用 <see cref="ReplaceObj(JlObject,JlTuple)"/>（元组索引走 Store + 调用后 UnpinTuple）；只做插入不做覆盖用 <see cref="InsertObj"/>；只删不换用 <see cref="RemoveObj(int)"/>。</para>
 	///   <para><b>用法</b></para>
 	///   <code>
