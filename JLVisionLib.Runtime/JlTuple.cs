@@ -694,7 +694,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   <para><b>功能说明</b>：原生算子 id 95（tuple_union 语义）。本元组与 <paramref name="set2"/> 
 	///   在调用内部先钉固定（Store）、原生调用结束即自动解固定，调用方无需也不应自己配对
 	///   <see cref="UnpinTuple()"/>。</para>
-	///   <para><b>约束或前提</b>：输出顺序、重复元素是否去重由原生侧决定 （具体边界行为以对应 HALCON 算子文档为准）；数值与字符串混用
+	///   <para><b>约束或前提</b>：按集合语义去重，结果顺序不保证与输入一致；数值与字符串混用
 	///   时结果类型可能变为 MIXED。</para>
 	///   <para><b>与相邻算子的取舍</b>：只要"在 A 中但不在 B 中"的部分用
 	///   <see cref="TupleDifference(JlTuple)"/>；只要两边独有的用 <see cref="TupleSymmdiff(JlTuple)"/>。</para>
@@ -738,8 +738,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple set2 = new int[] { 3, 4 };
 	///   JlTuple inter = set1.TupleIntersection(set2);
 	///   </code>
-	///   <para><b>资源与坑</b>：结果含句柄元素时用完调用其 <see cref="Dispose()"/>。输出顺序与重复元素
-	///   处理由原生侧决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：结果含句柄元素时用完调用其 <see cref="Dispose()"/>。按集合语义去重；元素类型不同的值视为不同元素，结果顺序不保证与输入一致。</para>
 	/// </remarks>
 	public JlTuple TupleIntersection(JlTuple set2)
 	{
@@ -772,7 +771,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple diff = set1.TupleDifference(set2);
 	///   </code>
 	///   <para><b>资源与坑</b>：返回永不为 null——原生调用失败时也是装载为空的元组；结果含句柄元素时
-	///   用完调用其 <see cref="Dispose()"/>。重复元素处理与输出顺序由原生侧决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   用完调用其 <see cref="Dispose()"/>。按集合语义去重；元素类型不同的值视为不同元素，结果顺序不保证与输入一致。</para>
 	/// </remarks>
 	public JlTuple TupleDifference(JlTuple set2)
 	{
@@ -804,8 +803,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	///   JlTuple set2 = new int[] { 3, 4 };
 	///   JlTuple sym = set1.TupleSymmdiff(set2);
 	///   </code>
-	///   <para><b>资源与坑</b>：结果含句柄元素时用完调用其 <see cref="Dispose()"/>。重复元素处理与输出顺序
-	///   由原生侧决定 （具体边界行为以对应 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>：结果含句柄元素时用完调用其 <see cref="Dispose()"/>。按集合语义去重；元素类型不同的值视为不同元素，结果顺序不保证与输入一致。</para>
 	/// </remarks>
 	public JlTuple TupleSymmdiff(JlTuple set2)
 	{
