@@ -30,7 +30,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   using JlMetrologyModel wrapper = new JlMetrologyModel(src.Handle);
 	///   </code>
 	///   <para><b>资源与坑</b>两壳各自 Dispose 各自那份引用；对 src 换柄（ReadMetrologyModel/CreateMetrologyModel 先 Dispose 再 Load）不影响
-	///   wrapper 继续持有旧模型；对同一模型的原地改动（Add/Clear 对象）wrapper 是否同步可见 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   wrapper 继续持有旧模型。两壳在换柄前指向同一个原生模型，因此通过任一壳执行 Add/Clear 等原地操作，另一壳读取到的也是同一份模型状态。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMetrologyModel(IntPtr handle)
@@ -58,7 +58,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   src.Dispose();
 	///   </code>
 	///   <para><b>资源与坑</b>这是"第二个名字指向同一原生资源"级别的浅别名：壳独立、各还各的引用，一侧 Dispose 不影响另一侧继续使用；
-	///   底层共享程度对 Add/Clear 等原地改动是否可见 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   在任一壳上对模型执行 Add/Clear 等原地操作，另一壳会看到同一份修改。要隔离配置请使用 Clone 或 CopyMetrologyModel。</para>
 	/// </remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public JlMetrologyModel(JlHandle handle)
@@ -104,7 +104,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlMetrologyModel model = new JlMetrologyModel("boremm.dat");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>文件不存在时的异常形态 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；用毕 Dispose。</para>
+	///   <para>文件不存在或内容无法解析时原生算子会抛出异常；成功读取后本对象持有新句柄，用毕 Dispose。</para>
 	/// </remarks>
 	public JlMetrologyModel(string fileName)
 	{
@@ -124,7 +124,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>创建空的 2D 亚像素几何计量模型（原生 id 798）。模型内可含多条测量对象（线/圆/椭圆/矩形），ApplyMetrologyModel 时对每条对象布置一排排微卡尺取边并整体拟合。</para>
 	///   <para><b>约束或前提</b></para>
-	///   <para>建好后的第一步应是 SetMetrologyModelImageSize：测量区域的裁剪与布置基准都依赖图像尺寸，不设就 Add 对象的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>建好后应先调用 SetMetrologyModelImageSize，再添加测量对象。该尺寸用于生成测量区域；如果之后输入图像尺寸不同，ApplyMetrologyModel 会重新计算测量区域，增加执行时间。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>单个/成对边界快速定位用 JlMeasure 1D 卡尺；要拟合完整几何（圆心、半径、直线端点）并利用多边缘点平均降噪时用本类。在既有对象上重建空模型用 CreateMetrologyModel。</para>
 	///   <para><b>可编译用例</b></para>
@@ -270,7 +270,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>给定计量对象的结果轮廓。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>GetMetrologyObjectResultContour 的 JlTuple 重载：同原生 id 768，index/instance 可传多个值一次取多条拟合轮廓（合并进同一个 JlXLDCont；合并方式以 HALCON 算子文档为准）；语义详见 int 重载注释。</para>
+	///   <para>GetMetrologyObjectResultContour 的 JlTuple 重载：同原生 id 768，index/instance 可传多个值一次查询多条拟合轮廓；原生输出是一个 XLD contour 对象，本包装返回一个 JlXLDCont 句柄。语义详见 int 重载注释。</para>
 	///   <para><b>重载二义性</b><c>JlTuple</c> 与 <c>int</c>、<c>string</c> 之间是双向隐式转换，所以
 	///   <c>GetMetrologyObjectResultContour(tupleIndex, "all", 1.5)</c> 会同时匹配本重载与
 	///   <c>(int, string, double)</c> 重载并报 CS0121。走本重载时<b>index 与 instance 都要是 JlTuple</b>
@@ -316,7 +316,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>要参数化结果（圆心/半径/端点、不确定度）用 GetMetrologyObjectResult；要看实际采到的边缘点用 GetMetrologyObjectMeasures；本算子用于把拟合形状转成轮廓做后续区域运算。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>instance 传 "all" 取全部实例，或传实例号字符串 （编号从几开始以 HALCON 算子文档为准）；resolution 越小点越密，与像素尺寸相当或略小即可。</para>
+	///   <para>instance 传 "all" 取全部实例，或传实例号字符串；实例编号按原生参数使用，通常从 0 开始。resolution 是相邻轮廓点的欧氏像素距离，默认 1.5，不能小于 1.192e-7。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -357,7 +357,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>为整个模型设定对齐位姿（原生 id 769）：后续 ApplyMetrologyModel 时，各 metrology object 的测量区域按 (row, column, angle) 平移+旋转后再布置，模型内存储的名义几何本身不变。原地修改，不换句柄。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>TransformMetrologyObject 永久改写对象几何；Align 只在取边时临时挪动测量区域，可反复设定/清除 （取消方式以 HALCON 算子文档为准），适合"先定位后计量"的流水。多个 index 需不同对齐量时传 JlTuple 数组 （逐对象对齐是否支持以 HALCON 算子文档为准）。</para>
+	///   <para>TransformMetrologyObject 永久改写对象几何；Align 只在取边时移动整个模型的测量区域，下一次调用会覆盖上一次对齐值，适合"先定位后计量"的流水。AlignMetrologyModel 本身只接受一个 row/column/angle，不按对象分别设置对齐量。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -368,7 +368,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.AlignMetrologyModel(row, column, angle);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>angle 单位为弧度、绕何点旋转 （绕 (row,column) 还是图像中心，以 HALCON 算子文档为准）；double 重载同 id，仅 StoreD 传参。</para>
+	///   <para>angle 单位为弧度；算子先旋转整个模型，再按 row/column 平移。double 重载同 id，仅 StoreD 传参。</para>
 	/// </remarks>
 	public void AlignMetrologyModel(JlTuple row, JlTuple column, JlTuple angle)
 	{
@@ -427,11 +427,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>通用入口：向模型添加任意类型的 metrology object（原生 id 770），返回其 index（int）。shape 指定类型（默认 "circle"，可选集合；具体规则见目标 HALCON 版本的对应 HALCON 算子文档），shapeParam 为该类型展平后的几何参数序列——圆为 (row, column, radius)、直线为两点坐标等，与各自专用 Add 算子的参数对应。</para>
+	///   <para>通用入口：向模型添加 metrology object（原生 id 770），返回其 index（int）。shape 可取 "circle"、"rectangle2"、"ellipse" 或 "line"；shapeParam 依次为圆的 [row, column, radius]、矩形的 [row, column, phi, length1, length2]、椭圆的 [row, column, phi, radius1, radius2]，或直线的 [rowBegin, columnBegin, rowEnd, columnEnd]。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>类型在编译期已知时用 AddMetrologyObjectCircleMeasure / Line / Ellipse / Rectangle2（参数拆开、不易错）；类型由配置文件驱动的循环里用本算子。返回的 index 语义一致：之后 Set/GetMetrologyObjectParam、取结果、ClearMetrologyObject 都按该 index 寻址，"all" 表示全部对象。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>measureLength1 是垂直于边界方向的半长（微卡尺搜索行程）、measureLength2 是沿边界切向的半长（平均带），measureSigma 平滑、measureThreshold 最小边缘幅值；genParamName/genParamValue 成对给附加参数（如 num_instances、max_deviation、num_measurements，名称集合；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>measureLength1 是垂直于边界方向的半长，measureLength2 是沿边界切向的半长，measureSigma 是高斯平滑 sigma，measureThreshold 是最小边缘幅值；genParamName/genParamValue 可设置 num_instances、min_score、measure_transition、measure_select 等对象参数。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -522,20 +522,20 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   按名读取作用于整个模型的参数值（如 image_size 回 [width, height]），返回 JlTuple；只读不改句柄，无批量重载。
+	///   按名读取作用于整个模型的参数值，返回 JlTuple；只读不改句柄，无批量重载。
 	/// </summary>
 	/// <param name="genParamName">泛型参数的名称。默认值："camera_param"</param>
 	/// <returns>泛型参数的值。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>读取作用于整个模型的参数（原生 id 771），只读、不改句柄。已知名："camera_param"（默认值，来自英文参数说明）、"image_size"（对应 SetMetrologyModelImageSize 的 [width, height]），其余可用名 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>读取作用于整个模型的参数（原生 id 771），只读、不改句柄。参数名可取 "camera_param"、"plane_pose"、"reference_system" 或 "scale"；图像宽高由 SetMetrologyModelImageSize 设置，不属于本算子的查询参数。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>本类未提供 JlMetrologyModel.GetMetrologyModelParam 之外的模型级查询；逐对象参数在 GetMetrologyObjectParam。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
 	///   model.SetMetrologyModelImageSize(640, 480);
-	///   JlTuple size = model.GetMetrologyModelParam("image_size");
+	///   JlTuple camera = model.GetMetrologyModelParam("camera_param");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
 	///   <para>无 string[]/JlTuple 批量重载，取多个名需多次调用。</para>
@@ -554,23 +554,23 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   按名写入模型级通用参数（如 image_size 传 [width, height]），原地生效不换句柄；图像尺寸须在 Add 对象与 Apply 之前定好。
+	///   按名写入模型级通用参数，原地生效不换句柄；图像尺寸须通过 SetMetrologyModelImageSize 设定。
 	/// </summary>
 	/// <param name="genParamName">泛型参数的名称。默认值："camera_param"</param>
 	/// <param name="genParamValue">泛型参数的值。默认值：[]</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>设定模型级通用参数（原生 id 772），原地修改，不换句柄。genParamName 已知约定含 "image_size"（值 [width, height]）与 "camera_param"（默认名）等，完整集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>设定模型级通用参数（原生 id 772），原地修改，不换句柄。genParamName 可取 "camera_param"、"plane_pose"、"reference_system" 或 "scale"；图像尺寸应使用专用 SetMetrologyModelImageSize。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>图像尺寸推荐用专用 SetMetrologyModelImageSize（id 797，意图更明确）；本算子用于其覆盖不到的模型参数。string 值重载（同 id）适合单值字符串参数，其余同本重载。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
-	///   JlTuple size = new int[] { 640, 480 };
-	///   model.SetMetrologyModelParam("image_size", size);
+	///   JlTuple scale = new JlTuple("mm");
+	///   model.SetMetrologyModelParam("scale", scale);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>image_size 影响后续测量区域在图像内的裁剪基准与距离计算基准，应在 Add 对象与 Apply 之前设定。</para>
+	///   <para>camera_param、plane_pose 与 reference_system 会影响结果坐标；scale 只影响 GetMetrologyObjectResult 返回结果的单位。图像尺寸仍应在 Add 对象与 Apply 之前通过 SetMetrologyModelImageSize 设定。</para>
 	/// </remarks>
 	public void SetMetrologyModelParam(string genParamName, JlTuple genParamValue)
 	{
@@ -595,10 +595,10 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
-	///   model.SetMetrologyModelParam("color_type", "byte");
+	///   model.SetMetrologyModelParam("scale", "mm");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>"color_type" 是否为合法模型参数 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>genParamName 必须是原生算子支持的模型参数名；字符串重载适用于参数值本身是字符串的情况，例如 camera_param 的序列化值不应直接用此重载。</para>
 	/// </remarks>
 	public void SetMetrologyModelParam(string genParamName, string genParamValue)
 	{
@@ -626,7 +626,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   restored.DeserializeMetrologyModel(data);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>Clone / Deserialize(Stream) / ISerializable 构造都经由本方法；数据非法时旧句柄已释放 （失败后状态以 HALCON 算子文档为准）。</para>
+	///   <para>Clone / Deserialize(Stream) / ISerializable 构造都经由本方法；数据非法时旧句柄已经释放，本对象保持空壳状态。</para>
 	/// </remarks>
 	public void DeserializeMetrologyModel(byte[] serializedItemHandle)
 		{
@@ -648,7 +648,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>序列化条目的句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>把模型（含全部 metrology object 与已拟合结果；是否含结果以 HALCON 算子文档为准）序列化为 byte[]（原生 id 774）。只读，不动句柄。</para>
+	///   <para>把模型的输入参数（全部 metrology object、模型级设置等）序列化为 byte[]（原生 id 774）。序列化不保存测量区域和 ApplyMetrologyModel 的拟合结果；只读，不动句柄。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
 	///   <para>落盘 WriteMetrologyModel；写流 Serialize；还原用 DeserializeMetrologyModel（注意它是原地替换）。</para>
 	///   <para><b>可编译用例</b></para>
@@ -679,9 +679,9 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="mode">变换模式。默认值："absolute"</param>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>对指定 metrology object 的几何做平移+旋转变换（原生 id 775），原地生效：mode 为 "absolute" 时以给定值作为对象新位姿，"relative" 时在现值上叠加 （叠加基准以 HALCON 算子文档为准）。与 AlignMetrologyModel 不同，变换改的是对象的名义几何本身。</para>
+	///   <para>对指定 metrology object 的几何做平移+旋转变换（原生 id 775），原地生效：mode 为 "absolute" 时把对象移到给定的图像坐标和角度，"relative" 时把给定 row/column/phi 作为相对当前位姿的增量。与 AlignMetrologyModel 不同，变换改的是对象的名义几何本身。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>临时挪动测量区域用 Align（每帧可重设）；本算子用于把示教好的模型整体搬到位姿基准处、或按标定结果固化布局。批量：index/row/column/phi 传等长数组可按对象逐个给值 （并行语义以 HALCON 算子文档为准）。</para>
+	///   <para>临时挪动整个模型的测量区域用 Align（每帧可重设）；本算子用于把示教好的对象几何固化到新的位姿。批量：index、row、column、phi 传等长数组时按对象逐个变换；对 line 和 circle，phi 会被忽略。该算子已标记为兼容旧代码，新代码优先使用 AlignMetrologyModel。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -694,7 +694,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.TransformMetrologyObject(index, row, column, phi, mode);
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>phi 为弧度；变换后原 apply 结果是否失效 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；string 重载同 id，仅标量传参路径不同。</para>
+	///   <para>phi 为弧度；TransformMetrologyObject 会丢弃此前 ApplyMetrologyModel 生成的拟合结果，调用后应再次 Apply。string 重载同 id，仅标量传参路径不同。</para>
 	/// </remarks>
 	public void TransformMetrologyObject(JlTuple index, JlTuple row, JlTuple column, JlTuple phi, JlTuple mode)
 	{
@@ -762,7 +762,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.WriteMetrologyModel("boremm.dat");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>路径/目录错误的表现 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>目标目录必须存在且当前进程具备写权限；路径无效、目录不存在或写入失败时原生算子抛出 <see cref="JlOperatorException"/>。</para>
 	/// </remarks>
 	public void WriteMetrologyModel(string fileName)
 	{
@@ -787,7 +787,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.ReadMetrologyModel("boremm.dat");
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>读取失败时本对象已成空壳 （失败后状态以 HALCON 算子文档为准）。</para>
+	///   <para>方法会先 Dispose 当前句柄，再读取文件；因此读取失败后本对象没有可用模型句柄，需重新创建或调用 CreateMetrologyModel。</para>
 	/// </remarks>
 	public void ReadMetrologyModel(string fileName)
 	{
@@ -802,15 +802,15 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   按 index 挑选 metrology object 子集复制出一个新模型，但返回的是新模型原生句柄的 int 值而非 JlMetrologyModel 对象，且不自动释放。
+	///   按 index 挑选 metrology object 子集复制出一个新模型，但返回的是新模型原生句柄的 int 值而非带托管生命周期的 JlMetrologyModel。
 	/// </summary>
 	/// <param name="index">计量对象的索引。默认值："all"</param>
 	/// <returns>被复制计量模型的句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>复制模型（原生 id 778）：index 选出被复制的 metrology object 子集（"all" 或 index 数组），生成一个新模型。注意返回类型是 int——方法体用 LoadI 把输出按整数读出，即返回的是新模型的原生句柄值而不是 JlMetrologyModel 对象，且复制出的新模型不会自动释放 （资源归属以 HALCON 算子文档为准）。</para>
+	///   <para>复制模型（原生 id 778）：index 选出被复制的 metrology object 子集（"all" 或 index 数组），生成一个新模型。返回类型是 int——方法体用 LoadI 把输出按整数读出，即返回新模型的原生句柄值而不是 JlMetrologyModel 对象。该值不带托管所有权；包装为 JlMetrologyModel 会再复制一份引用，不能单靠包装对象的 Dispose 完成原始输出句柄的释放。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>整模型对象级深拷贝也可用 Clone（序列化往返、返回包装好的对象）；本算子直接调原生复制，能按 index 挑选子集。CopyMetrologyObject 则是在同一模型内复制对象、返回新 index。</para>
+	///   <para>整模型对象级深拷贝优先用 Clone（序列化往返、返回包装好的对象）；本算子适合互操作代码按 index 挑选子集。CopyMetrologyObject 则是在同一模型内复制对象、返回新 index。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -822,7 +822,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlMetrologyModel copy = new JlMetrologyModel(new IntPtr(copyHandle));
 	///   </code>
 	///   <para><b>资源与坑</b></para>
-	///   <para>手工包装出的 copy 须自行 Dispose；新模型的 image_size 是否随复制保留 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>返回模型是独立的新句柄，传入 "all" 会复制全部 metrology object；由于返回值是裸 int，调用方必须通过对应原生清理入口管理它的生命周期。普通托管代码请优先使用 Clone。</para>
 	/// </remarks>
 	public int CopyMetrologyModel(JlTuple index)
 	{
@@ -839,19 +839,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   整模型复制的 string-index 重载："all" 或单索引字符串选出对象子集，同样返回需手工包装、自行释放的新模型句柄 int 值。
+	///   整模型复制的 string-index 重载："all" 或单索引字符串选出对象子集，同样返回不带托管所有权的新模型句柄 int 值。
 	/// </summary>
 	/// <param name="index">计量对象的索引。默认值："all"</param>
 	/// <returns>被复制计量模型的句柄。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>CopyMetrologyModel 的 string 重载：同原生 id 778、返回新模型句柄的 int 值；index 传单对象索引或 "all" 的字符串形式（StoreS）。详见 JlTuple 重载注释。</para>
+	///   <para>CopyMetrologyModel 的 string 重载：同原生 id 778、返回新模型句柄的 int 值；index 传单对象索引或 "all" 的字符串形式（StoreS）。返回值的原生生命周期管理见 JlTuple 重载注释。</para>
 	///   <para><b>可编译用例</b></para>
-	///   <code>
-	///   JlMetrologyModel model = new JlMetrologyModel();
-	///   int copyHandle = model.CopyMetrologyModel("all");
-	///   JlMetrologyModel copy = new JlMetrologyModel(new IntPtr(copyHandle));
-	///   </code>
 	/// </remarks>
 	public int CopyMetrologyModel(string index)
 	{
@@ -875,7 +870,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>在同一模型内复制 metrology object（原生 id 779）：把 index 指定的对象再复制一份，返回新对象 index 的 INTEGER JlTuple（LoadNew 读出，可含多值）。原对象与新对象并存、互不共享参数。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>要"独立模型"用 CopyMetrologyModel（返回新模型句柄的 int 值）；本算子适合按同一基准形状派生多条测量对象再 TransformMetrologyObject 挪位。string 重载同 id 但用 LoadI 只回一个 int——复制多条时可能只取首值 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>要"独立模型"用 CopyMetrologyModel（返回新模型句柄的 int 值）；本算子适合按同一基准形状派生多条测量对象再 TransformMetrologyObject 挪位。string 重载同 id 但返回单个 int；需要保留多个新 index 时使用 JlTuple 重载。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -908,14 +903,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>被复制计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b></para>
-	///   <para>CopyMetrologyObject 的 string 重载：同原生 id 779，但输出经 LoadI 读成 int——复制单个对象时给新 index，复制多个 （结果如何折叠以 HALCON 算子文档为准）。批量取值请用 JlTuple 重载。</para>
+	///   <para>CopyMetrologyObject 的 string 重载：同原生 id 779，但输出经 LoadI 读成 int。复制单个对象时该值就是新 index；传 "all" 或其他多对象输入时原生会返回一组 index，而此重载只保留其中一个值，批量复制请用 JlTuple 重载。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
 	///   model.SetMetrologyModelImageSize(640, 480);
 	///   int circle = model.AddMetrologyObjectCircleMeasure(240.0, 320.0, 100.0,
 	///       20.0, 5.0, 1.0, 30.0, new JlTuple(), new JlTuple());
-	///   int newIndex = model.CopyMetrologyObject("all"); // 多个新 index 时该重载只回一个 int （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）
+	///   int newIndex = model.CopyMetrologyObject("all"); // 需要全部新 index 时改用 JlTuple 重载
 	///   </code>
 	/// </remarks>
 	public int CopyMetrologyObject(string index)
@@ -969,9 +964,9 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   <para><b>功能说明</b></para>
 	///   <para>取某条 metrology object 上次 ApplyMetrologyModel 后找到的实例数（原生 id 780，输出经 LoadD 读成 double——计数以浮点返回是生成绑定的特点）。实例数由对象的 num_instances 参数与图像中实际可拟合的几何个数决定。</para>
 	///   <para><b>与相邻算子的取舍</b></para>
-	///   <para>本方法是"结果数组长度"的换算基准：GetMetrologyObjectResult 把 index × instance × 参数 的结果压进同一条 JlTuple，取第 i 个实例的第 j 个参数必须先用这里的计数核对越界 （结果排布顺序以 HALCON 算子文档为准）。JlTuple 重载可批量取多 index 的计数。</para>
+	///   <para>本方法返回指定对象在最近一次 ApplyMetrologyModel 中产生的实例数，是解析 GetMetrologyObjectResult 结果长度的换算基准。默认每个对象最多保留 1 个实例；要保留多个实例，应在 Apply 前把 num_instances 设为更大值或 "all"。JlTuple 重载可批量取多个 index 的计数。</para>
 	///   <para><b>参数取向</b></para>
-	///   <para>index 传 AddMetrologyObject* 返回的整数；未 Apply 前调用返回 0 还是报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para>index 传 AddMetrologyObject* 返回的整数；本方法读取 ApplyMetrologyModel 的结果，调用前应至少成功 Apply 一次。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1051,8 +1046,8 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamValue">泛型参数的值。默认值："all_param"</param>
 	/// <returns>结果值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>按 index+instance 取某条 metrology object 上次 ApplyMetrologyModel 的拟合结果（原生 id 781）：genParamName "result_type" 配 genParamValue 指定要哪类量（默认 "all_param"，如不确定度等其它取值集合；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。圆给 (row, column, radius[, 起止角])、直线给两端点等，与各自 Add 算子的几何参数量一致。</para>
-	///   <para><b>约束或前提</b>必须先 Apply 过；index 是 AddMetrologyObject* 的返回值，instance 用 "all" 或实例号 （编号起点以 HALCON 算子文档为准）。多实例/多参数时全部压进同一条返回 JlTuple，排布顺序 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——先用 GetMetrologyObjectNumInstances 核对数量再按下标取，防越界错位。</para>
+	///   <para><b>功能说明</b>按 index+instance 取某条 metrology object 上次 ApplyMetrologyModel 的拟合结果（原生 id 781）。genParamName 通常为 "result_type"，genParamValue 可取 "all_param"、具体几何参数名、"score" 或 "used_edges" 对应的值。"all_param" 对圆返回 [row, column, radius]，对椭圆返回 [row, column, phi, radius1, radius2]，对直线返回起点和终点坐标，对矩形返回 [row, column, phi, length1, length2]。</para>
+	///   <para><b>约束或前提</b>必须先 Apply 过；index 是 AddMetrologyObject* 的返回值，instance 用 "all" 或实例号（通常从 0 开始）。批量查询的结果顺序是：第一个对象的全部实例、第二个对象的全部实例，依此类推；先用 GetMetrologyObjectNumInstances 核对每个对象的实例数。</para>
 	///   <para><b>与相邻算子的取舍</b>要参数化数值用本方法；要实际采到的边缘点用 GetMetrologyObjectMeasures；要把拟合形状转成轮廓做区域运算用 GetMetrologyObjectResultContour。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1065,10 +1060,10 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///       model.ApplyMetrologyModel(image);
 	///   }
 	///   JlTuple values = model.GetMetrologyObjectResult(circle, "all", "result_type", "all_param");
-	///   double radiusGuess = values.D; // 首值仅为示意，真实排布 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）
+	///   double row = values[0].D; // all_param 的第一个值是圆心行坐标
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>本重载 index/instance 经 StoreI/StoreS 直写、genParam 对仍钉传（Store+UnpinTuple）；全 JlTuple 重载可批量多 index，见其注释。</para>
+	///   <para><b>资源与坑</b>本重载 index/instance 经 StoreI/StoreS 直写、genParam 对经 Store+UnpinTuple 传入；全 JlTuple 重载可批量多 index，见其注释。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectResult(int index, string instance, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1089,7 +1084,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   取上次 Apply 实际采到的边缘点：out row/column 逐点给出亚像素坐标（DOUBLE 装载），返回每个测量区域矩形轮廓的新建 JlXLDCont 句柄；transition 按极性筛点。
+	///   取上次 Apply 实际采到的边缘点：out row/column 给出亚像素坐标（DOUBLE 装载），返回测量区域矩形轮廓的新建 JlXLDCont 句柄；transition 按极性筛点。
 	/// </summary>
 	/// <param name="index">计量对象的索引。默认值："all"</param>
 	/// <param name="transition">选择由亮到暗或由暗到亮的边缘。默认值："all"</param>
@@ -1098,7 +1093,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>测量区域的矩形 XLD 轮廓。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>取上次 ApplyMetrologyModel 实际采到的边缘点及其测量区域（原生 id 782）：out row/column 为所有被选边缘点的亚像素坐标（DOUBLE 装载、逐点一项），返回的 JlXLDCont 是每个测量区域的矩形轮廓（iconic 输出）。这是"拟合之前"的原始观测，用于诊断边缘质量。</para>
-	///   <para><b>约束或前提</b>必须先 Apply；transition 按极性筛点（"all"/"positive"/"negative"，极性定义；具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。index 传 JlTuple 可一次汇总多条对象 （多对象的拼接顺序以 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>必须先 Apply；transition 可取 "all"、"positive" 或 "negative"，按测量方向筛选边缘。index 传 JlTuple 可一次查询多条对象；返回 row/column 的顺序由原生算子定义，不能据此把某个点绑定到特定测量区域。</para>
 	///   <para><b>与相邻算子的取舍</b>要最终几何量用 GetMetrologyObjectResult；要拟合轮廓用 GetMetrologyObjectResultContour；本算子回答"卡尺到底采到了哪些点"——剔除离群点后不自洽、圆度超差等判定都以它为原料。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1115,7 +1110,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   regions.Dispose();
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的 JlXLDCont 是新句柄，用毕 Dispose；未采到点时各 out 为空元组还是报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>返回的 JlXLDCont 是新句柄，用毕 Dispose；如果尚未 Apply，row 和 column 为空元组；Apply 后没有符合 transition 的边缘时也可能为空。</para>
 	/// </remarks>
 	public JlXLDCont GetMetrologyObjectMeasures(JlTuple index, string transition, out JlTuple row, out JlTuple column)
 	{
@@ -1158,7 +1153,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   regions.Dispose();
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>返回的 JlXLDCont 用毕 Dispose；对空模型（无对象或从未 Apply）调用 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>返回的 JlXLDCont 用毕 Dispose；调用前应已添加对象并执行 ApplyMetrologyModel。若尚未 Apply，row/column 输出为空，但测量区域轮廓仍可返回。</para>
 	/// </remarks>
 	public JlXLDCont GetMetrologyObjectMeasures(string index, string transition, out JlTuple row, out JlTuple column)
 	{
@@ -1184,7 +1179,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="image">输入图像。</param>
 	/// <remarks>
 	///   <para><b>功能说明</b>2D 计量的执行入口（原生 id 783）：对模型内每条 metrology object 沿名义几何布一排排微卡尺、在 image 上取边、再做整体拟合（圆/直线/椭圆/矩形），结果暂存于模型句柄内，经 GetMetrologyObject* 系列取回。每帧调一次，重复 Apply 会整体刷新旧结果。</para>
-	///   <para><b>约束或前提</b>建模顺序硬约束：SetMetrologyModelImageSize 必须先设（裁剪与布置基准），再 Add 对象、可选 SetMetrologyObjectParam（num_instances、max_deviation、num_measurements 等；名称集合以 HALCON 算子文档为准），最后 Apply。本库没有单独的 find_metrology / prepare_metrology_model 绑定；取边与拟合在 ApplyMetrologyModel 中一次完成，没有“只布卡尺不拟合”的中间态。</para>
+	///   <para><b>约束或前提</b>建模顺序建议为：SetMetrologyModelImageSize、Add 对象、按需 SetMetrologyObjectParam、最后 Apply。可设置的对象参数包括 num_instances、min_score、measure_length1/2、measure_sigma、measure_threshold、measure_transition 等。本库没有单独的 find_metrology 或 prepare_metrology_model 绑定；取边与拟合在 ApplyMetrologyModel 中完成。</para>
 	///   <para><b>与相邻算子的取舍</b>本方法无返回值，成败要靠 GetMetrologyObjectNumInstances / 结果数组长度判断；只想拿单点/成对边界不上几何拟合时用 JlMeasure 1D 卡尺更快。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1199,7 +1194,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   double n = model.GetMetrologyObjectNumInstances(circle);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>image 尺寸与建模 image_size 不符时的行为（裁剪/报错）（具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；AlignMetrologyModel 设定的位姿在每次 Apply 生效，忘重设会沿用上帧对齐量。</para>
+	///   <para><b>资源与坑</b>如果 image 的宽高与模型保存的尺寸不同，ApplyMetrologyModel 会重新计算全部测量区域，通常只是增加执行时间。AlignMetrologyModel 的位姿会被下一次 AlignMetrologyModel 覆盖，并在下一次 Apply 时使用；未重新对齐时会继续使用上一次设置。</para>
 	/// </remarks>
 	public void ApplyMetrologyModel(JlImage image)
 	{
@@ -1229,7 +1224,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   bool present = indices.Length == 1; // 应为 { line }
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>空模型返回空元组；index 是否随 Clear 后复用编号 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>空模型返回空元组；删除对象后旧 index 立即失效，后续 Add 返回的编号应以本方法重新读取的集合为准，不要依赖编号是否复用。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectIndices()
 	{
@@ -1260,7 +1255,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.ResetMetrologyObjectFuzzyParam(idx);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>index 传 JlTuple 可批量（Store+UnpinTuple 钉传）；string 重载同 id。</para>
+	///   <para><b>资源与坑</b>index 传 JlTuple 可批量（Store+UnpinTuple 传入）；string 重载同 id。</para>
 	/// </remarks>
 	public void ResetMetrologyObjectFuzzyParam(JlTuple index)
 	{
@@ -1286,7 +1281,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.ResetMetrologyObjectFuzzyParam("all");
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>模型里一条对象都没有时的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>没有对象时没有可复位的内容；通常先添加对象，再按 index 或 "all" 调用本方法。</para>
 	/// </remarks>
 	public void ResetMetrologyObjectFuzzyParam(string index)
 	{
@@ -1299,12 +1294,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   把 index 指定对象的全部参数（num_instances、max_deviation、测量区域尺寸等运行期改过的值）原地复位为默认：对象与 index 保留，复位后须重新 Apply。
+	///   把 index 指定对象中可由 SetMetrologyObjectParam 设置的参数原地复位为默认：对象与 index 保留，复位后须重新 Apply。
 	/// </summary>
 	/// <param name="index">计量对象的索引。默认值："all"</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>把指定 metrology object 的全部参数复位为默认（原生 id 786），原地生效：num_instances、max_deviation、测量区域尺寸等运行期用 SetMetrologyObjectParam 改过的东西一并回到出厂值。</para>
-	///   <para><b>与相邻算子的取舍</b>只想复位模糊一族用 ResetMetrologyObjectFuzzyParam（id 785）；复位不等于删除——对象还在、index 不变；要彻底移除用 ClearMetrologyObject。名义几何（Add 时给的圆心/半径）是否也在复位范围 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>功能说明</b>把指定 metrology object 中可由 SetMetrologyObjectParam 设置的参数复位为默认（原生 id 786），原地生效；名义几何和对象 index 不因复位而删除。</para>
+	///   <para><b>与相邻算子的取舍</b>只想复位模糊一族用 ResetMetrologyObjectFuzzyParam（id 785）；复位不等于删除——对象还在、index 不变；要彻底移除用 ClearMetrologyObject。Add 时给出的名义几何不是 SetMetrologyObjectParam 设置的参数，不由本方法改写。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1359,7 +1354,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamName">泛型参数的名称。默认值："fuzzy_thresh"</param>
 	/// <returns>泛型参数的值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>读回 metrology object 的模糊参数当前值（原生 id 787），只读不改句柄。已知名 "fuzzy_thresh"（隶属度过滤阈值的默认约定），完整可用名集合 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；index 与 genParamName 均为 JlTuple 时可批量交叉取值，返回与请求的对应序 （排布以 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>读回 metrology object 的模糊参数当前值（原生 id 787），只读不改句柄。genParamName 可取 "fuzzy_thresh"、"function_contrast" 或 "function_position"；返回值顺序与请求的参数名一致。index 与 genParamName 均为 JlTuple 时可批量查询。</para>
 	///   <para><b>与相邻算子的取舍</b>普通（非模糊）参数在 GetMetrologyObjectParam（id 788）；写回用 SetMetrologyObjectFuzzyParam（id 789）；一键回默认用 ResetMetrologyObjectFuzzyParam（id 785）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
@@ -1372,7 +1367,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlTuple vals = model.GetMetrologyObjectFuzzyParam(idx, names);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>两个入参都走 Store+UnpinTuple 钉传；非法参数名的报错形态 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>两个入参都走 Store+UnpinTuple 透传；参数名不在上述集合时原生算子会抛出参数错误。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectFuzzyParam(JlTuple index, JlTuple genParamName)
 	{
@@ -1405,7 +1400,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlTuple vals = model.GetMetrologyObjectFuzzyParam("all", "fuzzy_thresh");
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>"all" 时多对象同名的取值如何平铺 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>index 为 "all" 时，结果按对象顺序返回；多个参数名的返回值仍按请求顺序排列。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectFuzzyParam(string index, JlTuple genParamName)
 	{
@@ -1429,8 +1424,8 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamName">泛型参数的名称。默认值："num_measures"</param>
 	/// <returns>泛型参数的值。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>读回 metrology object 的通用参数当前值（原生 id 788），只读。英文说明给出的默认名 "num_measures"（每条对象布置的测量区域数）；可取量还包括 num_instances、measure_length_1/2、measure_sigma、measure_threshold、max_deviation 等；完整名称集合由目标 HALCON 算子定义。index 与名都为 JlTuple 时批量交叉查询，返回平铺序 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
-	///   <para><b>与相邻算子的取舍</b>模型级参数（image_size 等）走 GetMetrologyModelParam（id 771）；模糊一族走 GetMetrologyObjectFuzzyParam（id 787）；测量结果数值走 GetMetrologyObjectResult（id 781）。写回用 SetMetrologyObjectParam（id 790）。</para>
+	///   <para><b>功能说明</b>读回 metrology object 的通用参数当前值（原生 id 788），只读。参数名包括 min_score、num_instances、instances_outside_measure_regions、measure_length1/2、measure_distance、num_measures、measure_sigma、measure_threshold、measure_select、measure_transition、measure_interpolation、distance_threshold、max_num_iterations 和 rand_seed。index 与名都为 JlTuple 时可批量查询，返回值顺序与请求顺序对应。</para>
+	///   <para><b>与相邻算子的取舍</b>模型级参数（camera_param、plane_pose、reference_system、scale）走 GetMetrologyModelParam（id 771）；模糊一族走 GetMetrologyObjectFuzzyParam（id 787）；测量结果数值走 GetMetrologyObjectResult（id 781）。写回用 SetMetrologyObjectParam（id 790）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1440,7 +1435,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlTuple vals = model.GetMetrologyObjectParam(new int[] { circle }, new string[] { "num_measures" });
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>入参 Store+UnpinTuple 钉传；Apply 之后读 num_measures 才能反映实际参与拟合的量 （查询时点差异以 HALCON 算子文档为准）。</para>
+	///   <para><b>资源与坑</b>入参 Store+UnpinTuple 透传；num_measures、measure_distance 等是测量区域配置，读取它们不依赖最近一次 Apply。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectParam(JlTuple index, JlTuple genParamName)
 	{
@@ -1473,7 +1468,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlTuple vals = model.GetMetrologyObjectParam("all", "num_measures");
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>"all" 时多对象同名的取值顺序 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>index 为 "all" 时，结果按对象顺序返回；多个参数名的返回值仍按请求顺序排列。</para>
 	/// </remarks>
 	public JlTuple GetMetrologyObjectParam(string index, JlTuple genParamName)
 	{
@@ -1491,14 +1486,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   成对给名与值设定 metrology object 的模糊参数/隶属函数（阈值值域 0~1），原地生效但需重新 Apply 才反映到结果；index 传 JlTuple 可批量。
+	///   成对给名与值设定 metrology object 的模糊参数或隶属函数，原地生效但需重新 Apply 才反映到结果；index 传 JlTuple 可批量。
 	/// </summary>
 	/// <param name="index">计量对象的索引。默认值："all"</param>
 	/// <param name="genParamName">泛型参数的名称。默认值："fuzzy_thresh"</param>
 	/// <param name="genParamValue">泛型参数的值。默认值：0.5</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>设定 metrology object 的模糊参数/隶属函数（原生 id 789），原地生效：影响 Apply 时采边结果的模糊加权（默认名 "fuzzy_thresh"，值域 0~1）。genParamName 与 genParamValue 成对给，index 传 JlTuple 可批量。</para>
-	///   <para><b>与相邻算子的取舍</b>普通参数（num_instances 等）用 SetMetrologyObjectParam（id 790）；查询当前值 GetMetrologyObjectFuzzyParam（id 787）；回默认 ResetMetrologyObjectFuzzyParam（id 785）。模糊过滤治的是"伪边缘混进拟合"，用 fuzzy_thresh 收紧比放大 measure_threshold 更不容易丢掉真边 （两者效果对比以 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>设定 metrology object 的模糊参数/隶属函数（原生 id 789），原地生效：影响 Apply 时的边缘选择。"fuzzy_thresh" 的值域为 0~1；function_* 参数接收对应模糊函数的参数。genParamName 与 genParamValue 成对给，index 传 JlTuple 可批量。</para>
+	///   <para><b>与相邻算子的取舍</b>普通参数（num_instances 等）用 SetMetrologyObjectParam（id 790）；查询当前值 GetMetrologyObjectFuzzyParam（id 787）；回默认 ResetMetrologyObjectFuzzyParam（id 785）。设置至少一个模糊函数后，ApplyMetrologyModel 会使用模糊测量流程。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1508,7 +1503,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.SetMetrologyObjectFuzzyParam(new int[] { circle }, "fuzzy_thresh", 0.5);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>三个 JlTuple 入参均 Store+UnpinTuple 钉传；改动后需重新 Apply 才反映到结果。</para>
+	///   <para><b>资源与坑</b>三个 JlTuple 入参均 Store+UnpinTuple 透传；改动后需重新 Apply 才反映到结果。</para>
 	/// </remarks>
 	public void SetMetrologyObjectFuzzyParam(JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1540,7 +1535,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.SetMetrologyObjectFuzzyParam("all", "fuzzy_thresh", 0.5);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>"all" + 多值名的广播语义 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>index 为 "all" 时把同一组参数应用到全部对象；多个参数名和值必须按原生算子的成对规则提供。</para>
 	/// </remarks>
 	public void SetMetrologyObjectFuzzyParam(string index, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1563,8 +1558,8 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamName">泛型参数的名称。默认值："num_instances"</param>
 	/// <param name="genParamValue">泛型参数的值。默认值：1</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>设定 metrology object 的通用参数（原生 id 790），原地生效、Apply 时体现。英文默认名 "num_instances"（同一几何允许找几个实例，如视场内多个同心圆）；max_deviation（采边点离名义几何的最大容差，超差的点在拟合中被剔除）与 num_measurements/num_measures 一类名 （支持集合以 HALCON 算子文档为准）——本库无 find_metrology，这些调参全部作用在 ApplyMetrologyModel 上。</para>
-	///   <para><b>与相邻算子的取舍</b>Add 时 genParamName/genParamValue 已能带同样的参数；本方法用于示教后运行期调参。模型级参数（image_size）在 SetMetrologyModelParam（id 772）；模糊一族在 SetMetrologyObjectFuzzyParam（id 789）。</para>
+	///   <para><b>功能说明</b>设定 metrology object 的通用参数（原生 id 790），原地生效并在下一次 ApplyMetrologyModel 时使用。可设置 num_instances、min_score、instances_outside_measure_regions、measure_length1/2、measure_distance、num_measures、measure_sigma、measure_threshold、measure_select、measure_transition、measure_interpolation、distance_threshold、max_num_iterations 和 rand_seed。</para>
+	///   <para><b>与相邻算子的取舍</b>Add 时 genParamName/genParamValue 已能带同样的对象参数；本方法用于示教后运行期调参。模型级参数在 SetMetrologyModelParam（id 772）；模糊一族在 SetMetrologyObjectFuzzyParam（id 789）。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1574,7 +1569,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.SetMetrologyObjectParam(new int[] { circle }, "num_instances", 3);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>index/名/值都是 JlTuple（Store+UnpinTuple 钉传），名值成对、index 可多值 （广播语义以 HALCON 算子文档为准）；调 max_deviation 过小会导致 Apply 后实例数为 0 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>index、参数名和值都以 JlTuple 透传；参数名和值按位置配对，index 可指定多个对象。调小 distance_threshold 或提高 min_score 都可能使 Apply 后的实例数减少。</para>
 	/// </remarks>
 	public void SetMetrologyObjectParam(JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1639,8 +1634,8 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加矩形测量对象（原生 id 791），返回新对象 index（int）：以 (row, column) 为中心、phi（弧度）为长轴方向、length1/length2 为半边的名义矩形，沿四条边各布一排微卡尺，Apply 时对四边联合拟合出一个整体矩形。几何量与取边参数（measureLength1 垂直边界的搜索半长、measureLength2 沿边切向平均半长、sigma 平滑、measureThreshold 最小边缘幅值）可传 JlTuple 多值。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；genParamName/genParamValue 成对附加参数（num_instances、max_deviation 等；名集合以 HALCON 算子文档为准）。返回的 index 是后续 Set/GetMetrologyObjectParam、GetMetrologyObjectResult*、ClearMetrologyObject 的唯一寻址凭据。</para>
-	///   <para><b>与相邻算子的取舍</b>只测一条边用 Line；要整体矩形（中心+角度+两边长）用本算子——四边信息互相约束，比 4 条独立线卡尺抗噪。结果含义随形状：矩形给 (row, column, phi, length1, length2) （排布以 HALCON 算子文档为准）。</para>
+	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；genParamName/genParamValue 按名称和值配对，可设置 num_instances、min_score、measure_transition、measure_select 等对象参数。返回的 index 是后续 Set/GetMetrologyObjectParam、GetMetrologyObjectResult*、ClearMetrologyObject 的唯一寻址凭据。</para>
+	///   <para><b>与相邻算子的取舍</b>只测一条边用 Line；要整体矩形（中心+角度+两边长）用本算子——四边信息互相约束，比 4 条独立线卡尺抗噪。矩形的 all_param 结果顺序为 [row, column, phi, length1, length2]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1649,7 +1644,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///       20.0, 5.0, 1.0, 30.0, new JlTuple(), new JlTuple());
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>本重载十个参数全 JlTuple（Store+UnpinTuple 钉传）；JlTuple 多值是否按对象展开为多个矩形 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），double 重载（同 id）无此歧义。</para>
+	///   <para><b>资源与坑</b>本重载的几何和测量参数都以 JlTuple 透传，包装层不展开或校验多值；返回值仍按当前 int API 装载原生输出。需要明确的单对象调用请使用 double 重载。</para>
 	/// </remarks>
 	public int AddMetrologyObjectRectangle2Measure(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1715,7 +1710,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   JlTuple fit = model.GetMetrologyObjectResult(rect, "all", "result_type", "all_param");
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>退化矩形（length1 或 length2 为 0）的拟合行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>length1 和 length2 都是半边长，必须为正；传入 0 或负值会被原生参数校验拒绝。</para>
 	/// </remarks>
 	public int AddMetrologyObjectRectangle2Measure(double row, double column, double phi, double length1, double length2, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1757,7 +1752,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamValue">泛型参数的值。默认值：[]</param>
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>向模型添加直线测量对象（原生 id 792），返回新对象 index：以两点 (rowBegin, columnBegin)-(rowEnd, columnEnd) 为名义线段，沿线段在其法向两侧布微卡尺取边，Apply 时把所有边缘点最小二乘拟合成一条直线（结果给端点与法向偏差量；结果参数字段以 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>向模型添加直线测量对象（原生 id 792），返回新对象 index：以两点 (rowBegin, columnBegin)-(rowEnd, columnEnd) 为名义线段，沿线段在其法向两侧布微卡尺取边，Apply 时把采到的边缘点拟合成一条直线；结果参数可通过 GetMetrologyObjectResult 的 "all_param" 读取为 [rowBegin, columnBegin, rowEnd, columnEnd, distance]。</para>
 	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；measureLength1 是垂直线段方向的搜索半长（工件位置偏差要落在这里面）、measureLength2 沿线段切向的平均半长。index 之后用于 Set/GetMetrologyObjectParam 与取结果，语义同其它 Add 算子。</para>
 	///   <para><b>与相邻算子的取舍</b>只要一个边缘坐标（如测件左边界位置）用 JlMeasure 1D 卡尺单点即可；要整条边的位置+角度、并对整条边几十个边缘点做平均降噪，用本算子。两条边宽度/厚度成对输出用 JlMeasure.MeasurePairs。</para>
 	///   <para><b>可编译用例</b></para>
@@ -1768,7 +1763,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///       20.0, 5.0, 1.0, 30.0, new JlTuple(), new JlTuple());
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 多值是否展开多条直线对象 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；两点重合的退化线段行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>本重载把元组参数直接传给原生算子，包装层不展开或校验多值；两点重合时不构成有效线段，原生算子会拒绝该几何参数。</para>
 	/// </remarks>
 	public int AddMetrologyObjectLineMeasure(JlTuple rowBegin, JlTuple columnBegin, JlTuple rowEnd, JlTuple columnEnd, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1831,7 +1826,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   double n = model.GetMetrologyObjectNumInstances(line);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>被测边与名义线段交角过大时整批卡尺取不到边，表现为实例数 0 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>测量区域沿名义线段法向布置；被测边方向与名义线段不匹配时，卡尺可能取不到有效边缘，结果实例数为 0。应检查线段方向和 measureLength1/2。</para>
 	/// </remarks>
 	public int AddMetrologyObjectLineMeasure(double rowBegin, double columnBegin, double rowEnd, double columnEnd, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1873,9 +1868,9 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="genParamValue">泛型参数的值。默认值：[]</param>
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
-	///   <para><b>功能说明</b>向模型添加椭圆/椭圆弧测量对象（原生 id 793），返回新对象 index：中心 (row, column)、长轴方向 phi（弧度）、半轴 radius1（长）/radius2（短）。Apply 时沿椭圆周布微卡尺取边并整体拟合。radius1 应不小于 radius2，两者相等退化为圆 （违反时行为以 HALCON 算子文档为准）。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize。只测部分弧段需把测量区域限制在起止角内——通过 genParamName/genParamValue 给 start/end angle 一类参数的路径与名称 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。index 后续寻址语义同其它 Add 算子。</para>
-	///   <para><b>与相邻算子的取舍</b>目标是圆就用 AddMetrologyObjectCircleMeasure（参数少、拟合更稳）；椭圆度/长宽比本身是被测量时才用本算子。结果给 (row, column, phi, radius1, radius2[, 起止角]) （排布以 HALCON 算子文档为准）。</para>
+	///   <para><b>功能说明</b>向模型添加椭圆/椭圆弧测量对象（原生 id 793），返回新对象 index：中心 (row, column)、长轴方向 phi（弧度）、半轴 radius1（长）/radius2（短）。Apply 时沿椭圆周布微卡尺取边并整体拟合。radius1 应不小于 radius2；两者相等时几何上退化为圆。</para>
+	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize。只测部分弧段时，genParamName/genParamValue 可使用 "start_phi"、"end_phi" 和 "point_order" 限定弧段。index 后续寻址语义同其它 Add 算子。</para>
+	///   <para><b>与相邻算子的取舍</b>目标是圆就用 AddMetrologyObjectCircleMeasure（参数少、拟合更稳）；椭圆度/长宽比本身是被测量时才用本算子。椭圆的 all_param 结果顺序为 [row, column, phi, radius1, radius2]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -1884,7 +1879,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///       20.0, 5.0, 1.0, 30.0, new JlTuple(), new JlTuple());
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>弧段过小（可见弧不足约 1/4 周）时椭圆五参数欠约束，拟合易发散 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——这是椭圆版相对圆版的主要坑。</para>
+	///   <para><b>资源与坑</b>弧段过短或有效边缘点太少时，五个几何参数会欠约束，可能无法得到有效实例；应增加可见弧段或测量区域数量。</para>
 	/// </remarks>
 	public int AddMetrologyObjectEllipseMeasure(JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -1993,8 +1988,8 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <returns>新建计量对象的索引。</returns>
 	/// <remarks>
 	///   <para><b>功能说明</b>向模型添加圆/圆弧测量对象（原生 id 794），返回新对象 index：圆心 (row, column)、名义半径 radius（像素）。Apply 时沿圆周等间隔布微卡尺径向取边，把所有边缘点联合最小二乘拟合出圆心与半径——几十个点的平均使半径重复精度远高于单点卡尺。</para>
-	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；圆心半径是名义值，真实位置偏差由 measureLength1（径向搜索半长）兜住。只见部分圆弧时通过 genParamName/genParamValue 限定起止角 （参数名以 HALCON 算子文档为准），且弧段太短时圆心半径欠约束、抖动放大 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。index 是后续按对象设参/取结果的凭据。</para>
-	///   <para><b>与相邻算子的取舍</b>只测孔壁上一点到基准的距离用 JlMeasure 圆弧卡尺（GenMeasureArc）；要完整拟合圆心+半径并输出不确定度类结果用本算子。结果量排布 (row, column, radius[, start, end]) （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>约束或前提</b>须先 SetMetrologyModelImageSize；圆心半径是名义值，真实位置偏差由 measureLength1（径向搜索半长）兜住。只见部分圆弧时，通过 "start_phi"、"end_phi" 和 "point_order" 限定弧段；弧段太短或有效边缘点不足时，圆心和半径会欠约束。index 是后续按对象设参/取结果的凭据。</para>
+	///   <para><b>与相邻算子的取舍</b>只测孔壁上一点到基准的距离用 JlMeasure 圆弧卡尺（GenMeasureArc）；要完整拟合圆心+半径用本算子。圆的 all_param 结果顺序为 [row, column, radius]。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
@@ -2003,7 +1998,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///       20.0, 5.0, 1.0, 30.0, new JlTuple(), new JlTuple());
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>JlTuple 重载的多值是否展开多个圆对象 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；radius 为 0 的退化行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>本重载把元组参数直接传给原生算子，包装层不展开或校验多值；radius 必须为正值，否则原生算子会拒绝该几何参数。</para>
 	/// </remarks>
 	public int AddMetrologyObjectCircleMeasure(JlTuple row, JlTuple column, JlTuple radius, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
@@ -2127,7 +2122,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.ClearMetrologyObject(new int[] { circle });
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>删除后该 index 立即从 GetMetrologyObjectIndices 消失，但缓存的旧 index 变量不会报错——继续用它取结果的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）；编号是否被后续 Add 复用 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>删除后该 index 立即从 GetMetrologyObjectIndices 消失，缓存的旧 index 也随即失效；后续 Add 返回的编号请以 GetMetrologyObjectIndices 重新读取的集合为准。</para>
 	/// </remarks>
 	public void ClearMetrologyObject(JlTuple index)
 	{
@@ -2153,7 +2148,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	///   model.ClearMetrologyObject("all");
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>"all" 清对象后 image_size 等模型级参数是否保留 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>"all" 只删除模型内的 metrology object；模型句柄及其图像尺寸等模型级设置仍保留，可直接重新 Add 对象。</para>
 	/// </remarks>
 	public void ClearMetrologyObject(string index)
 	{
@@ -2171,16 +2166,16 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	/// <param name="width">待处理图像的宽度。默认值：640</param>
 	/// <param name="height">待处理图像的高度。默认值：480</param>
 	/// <remarks>
-	///   <para><b>功能说明</b>声明模型工作的图像幅面（原生 id 797，width/height 为像素整数）。这是所有后续 Add/Apply 的几何基准：测量区域的图内裁剪、距离计算都以此为准，等价于 set_metrology_model_param 的 "image_size"（id 772）专用快捷口。</para>
-	///   <para><b>约束或前提</b>顺序硬约束——必须在 AddMetrologyObject* 与 ApplyMetrologyModel 之前设定；不设就 Add 的行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档），基准不对会导致测量区域被静默裁掉、采边数骤减。换相机分辨率后须重设并复核各对象位置。</para>
-	///   <para><b>与相邻算子的取舍</b>意图直观用本方法（id 797）；批量设其它模型参数才用 SetMetrologyModelParam("image_size", ...)。</para>
+	///   <para><b>功能说明</b>声明模型工作的图像幅面（原生 id 797，width/height 为像素整数）。Add 时据此生成测量区域；如果 Apply 输入图像尺寸不同，原生算子会重新计算测量区域。该操作是独立的图像尺寸设置入口，不是 SetMetrologyModelParam 的通用参数名。</para>
+	///   <para><b>约束或前提</b>建议在 AddMetrologyObject* 之前设定；如果先 Add 再设定，或 Apply 时输入图像尺寸不同，原生会自动重新计算已有对象的测量区域。换相机分辨率后仍应重设并复核各对象位置。</para>
+	///   <para><b>与相邻算子的取舍</b>设置图像宽高用本方法（id 797）；camera_param、plane_pose、reference_system 和 scale 等模型参数使用 SetMetrologyModelParam。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
 	///   model.SetMetrologyModelImageSize(640, 480);
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>width/height 与实图不符时原生层不校验报错 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）——这是"结果莫名漂移"的头号来源，排查从这一行开始。</para>
+	///   <para><b>资源与坑</b>width/height 与实图不符时会触发测量区域重算，通常增加执行时间；为了复用预计算的区域，应让模型尺寸与输入图像一致。</para>
 	/// </remarks>
 	public void SetMetrologyModelImageSize(int width, int height)
 	{
@@ -2194,20 +2189,20 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	}
 
 	/// <summary>
-	///   在既有对象上原地重建空计量模型（原生 id 798，与无参构造同一算子）：先 Dispose 旧句柄再装入新空柄，所有对象、已存结果与 image_size 等模型参数随之清零。
+	///   在既有对象上原地重建空计量模型（原生 id 798，与无参构造同一算子）：先 Dispose 旧句柄再装入新空柄，所有对象、已存结果与模型级参数随之清零。
 	/// </summary>
 	/// <remarks>
-	///   <para><b>功能说明</b>在既有对象上重建一个空计量模型（原生 id 798，与无参构造同一算子）。方法体先 Dispose() 旧句柄再把新空模型句柄装入本对象——原地换柄：所有 metrology object、已存结果、模型级参数（含 image_size）随之清零。</para>
+	///   <para><b>功能说明</b>在既有对象上重建一个空计量模型（原生 id 798，与无参构造同一算子）。方法体先 Dispose() 旧句柄再把新空模型句柄装入本对象——原地换柄：所有 metrology object、已存结果和模型级参数随之清零。</para>
 	///   <para><b>与相邻算子的取舍</b>只想删对象保留模型级设置用 ClearMetrologyObject("all")；只想回退个别对象参数用 ResetMetrologyObjectParam；需要"另一个模型"（旧引用还要用）则 new JlMetrologyModel()。示教换型时本方法是重复建模的一键入口。</para>
 	///   <para><b>可编译用例</b></para>
 	///   <code>
 	///   JlMetrologyModel model = new JlMetrologyModel();
 	///   model.SetMetrologyModelImageSize(640, 480);
-	///   model.CreateMetrologyModel(); // 回到未设 image_size 的空模型
+	///   model.CreateMetrologyModel(); // 回到未设图像尺寸的空模型
 	///   model.SetMetrologyModelImageSize(1024, 768); // 重建后必须重设基准
 	///   model.Dispose();
 	///   </code>
-	///   <para><b>资源与坑</b>旧句柄若被 JlMetrologyModel(handle) 包装共享，释放后的共享行为 （具体规则见目标 HALCON 版本的对应 HALCON 算子文档）。</para>
+	///   <para><b>资源与坑</b>如果旧句柄还有其他 JlMetrologyModel 壳持有，Dispose 只释放当前壳的引用，其他壳仍可继续使用旧模型；本对象随后指向全新的空模型。</para>
 	/// </remarks>
 	public void CreateMetrologyModel()
 	{
