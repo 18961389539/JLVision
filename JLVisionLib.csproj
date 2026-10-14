@@ -101,8 +101,6 @@
 
   <PropertyGroup>
 
-    <ObfuscarConfig>$(MSBuildProjectDirectory)\obfuscar.xml</ObfuscarConfig>
-
     <DistDir>$(MSBuildProjectDirectory)\dist\$(Configuration)\</DistDir>
 
   </PropertyGroup>
@@ -115,9 +113,15 @@
 
       <ObfuscarTool>$(NuGetPackageRoot)obfuscar\2.2.49\tools\Obfuscar.Console.exe</ObfuscarTool>
 
+      <!-- TargetDir is finalized by the SDK after the project properties are
+           evaluated, so resolve the generated config at target execution time. -->
+      <ObfuscarConfig>$(TargetDir)obfuscar.xml</ObfuscarConfig>
+
       <ObfuscarOutPath>$(TargetDir)obfuscated\</ObfuscarOutPath>
 
     </PropertyGroup>
+
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\obfuscar.xml" DestinationFiles="$(ObfuscarConfig)" />
 
     <MakeDir Directories="$(ObfuscarOutPath)" />
 
@@ -126,6 +130,8 @@
     <Copy SourceFiles="$(ObfuscarOutPath)JLVisionLib.dll" DestinationFiles="$(TargetDir)JLVisionLib.dll" />
 
     <Copy SourceFiles="$(ObfuscarOutPath)JLVisionLib.pdb" DestinationFiles="$(TargetDir)JLVisionLib.pdb" Condition="Exists('$(ObfuscarOutPath)JLVisionLib.pdb')" />
+
+    <Delete Files="$(ObfuscarConfig)" />
 
   </Target>
 
