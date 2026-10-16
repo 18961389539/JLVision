@@ -10,6 +10,7 @@ internal sealed class DatasetSpec
     public string Template { get; set; } = string.Empty;
     public double MinScore { get; set; } = 0.35;
     public PlanarAffineCalibration? Calibration { get; set; }
+    public CalibrationEvidence? CalibrationEvidence { get; set; }
     public AcceptanceCriteria? Acceptance { get; set; }
     public List<DatasetFrame> Frames { get; set; } = new();
 }
@@ -98,6 +99,27 @@ internal static class Program
             throw new InvalidDataException("Millimeter accuracy gate requires independently measured planar affine calibration.");
         if (dataset.Acceptance?.MaxRepeatabilityStdDevMm is not null && dataset.Calibration is null)
             throw new InvalidDataException("Millimeter repeatability gate requires planar affine calibration.");
+
+        // Any mm/repeatability quality gate requires independent held-out evidence.
+        // Never treat supplied coefficients alone as proof of metrology accuracy.
+        bool mmGate = dataset.Acceptance?.MaxPositionErrorMm is not null ||
+            dataset.Acceptance?.MaxRepeatabilityStdDevMm is not null;
+        bool anyAuditLimit = dataset.Acceptance?.MaxCalibrationFitErrorMm is not null ||
+            dataset.Acceptance?.MaxCalibrationHoldoutErrorMm is not null ||
+            dataset.Acceptance?.MaxCalibrationHoldoutRmsMm is not null;
+        if ((mmGate || anyAuditLimit) && (dataset.Calibration is null ||
+            dataset.CalibrationEvidence is null ||
+            dataset.Acceptance?.MaxCalibrationFitErrorMm is null ||
+            dataset.Acceptance.MaxCalibrationHoldoutErrorMm is null ||
+            dataset.Acceptance.MaxCalibrationHoldoutRmsMm is null))
+            throw new InvalidDataException("Calibrated mm acceptance requires calibration, independent fit/holdout evidence and explicit fit/holdout residual limits.");
+
+        CalibrationAuditResult? calibrationAudit = dataset.Calibration is not null &&
+            dataset.CalibrationEvidence is not null && dataset.Acceptance?.MaxCalibrationFitErrorMm is double fitLimit &&
+            dataset.Acceptance.MaxCalibrationHoldoutErrorMm is double holdoutLimit &&
+            dataset.Acceptance.MaxCalibrationHoldoutRmsMm is double holdoutRmsLimit
+                ? CalibrationEvidenceAudit.Evaluate(dataset.Calibration, dataset.CalibrationEvidence,
+                    fitLimit, holdoutLimit, holdoutRmsLimit) : null;
 
         string Resolve(string file) => Path.GetFullPath(Path.IsPathRooted(file) ? file : Path.Combine(baseDir, file));
         JLVisionRuntime.Initialize();
@@ -207,7 +229,8 @@ internal static class Program
             return new
             {
                 algorithm = name,
-                acceptancePassed = analysis.Passed && set.All(x => x.Accepted),
+                acceptancePassed = analysis.Passed && set.All(x => x.Accepted) &&
+                    (calibrationAudit is null || calibrationAudit.Passed),
                 acceptance = analysis,
                 frames = set.Length,
                 correct = set.Count(r => r.Accepted),
@@ -235,6 +258,7 @@ internal static class Program
             datasetFrameCount = dataset.Frames.Count,
             minScore = dataset.MinScore,
             calibration = dataset.Calibration,
+            calibrationAudit,
             acceptance = dataset.Acceptance,
             allAlgorithmsPassed = summary.All(x => x.acceptancePassed),
             summary,
@@ -243,7 +267,8 @@ internal static class Program
         Console.WriteLine($"Dataset report: {fullOutput}");
 
         return results.All(r => r.Accepted) &&
-            summary.All(r => r.acceptancePassed) ? 0 : 2;
+            summary.All(r => r.acceptancePassed) &&
+            (calibrationAudit is null || calibrationAudit.Passed) ? 0 : 2;
     }
 
     private static string? FindOption(string[] args, string name)
