@@ -21,6 +21,9 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Audit native operator lifetime scopes
+        run: pwsh ./tools/audit-native-scopes.ps1
+
       - name: Restore
         run: dotnet restore JLVisionLib.slnx
 
