@@ -21,12 +21,14 @@ internal sealed class SyntheticVisionFixture : IDisposable
 
     public string TemplatePath { get; }
     public string ScenePath { get; }
+    public string NegativeScenePath { get; }
 
     public SyntheticVisionFixture()
     {
         Directory.CreateDirectory(directory);
         TemplatePath = Path.Combine(directory, "template.bmp");
         ScenePath = Path.Combine(directory, "scene.bmp");
+        NegativeScenePath = Path.Combine(directory, "negative-scene.bmp");
         byte[] target = BuildTarget();
         byte[] scene = new byte[SceneWidth * SceneHeight];
         Array.Fill(scene, (byte)216);
@@ -37,6 +39,9 @@ internal sealed class SyntheticVisionFixture : IDisposable
         }
         WriteGrayBmp(TemplatePath, TargetWidth, TargetHeight, target);
         WriteGrayBmp(ScenePath, SceneWidth, SceneHeight, scene);
+        var negative = new byte[SceneWidth * SceneHeight];
+        Array.Fill(negative, (byte)216);
+        WriteGrayBmp(NegativeScenePath, SceneWidth, SceneHeight, negative);
     }
 
     private static byte[] BuildTarget()
