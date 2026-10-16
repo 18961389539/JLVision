@@ -103,11 +103,12 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(875);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -141,6 +142,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleRMin, double scaleRMax, JlTuple scaleRStep, double scaleCMin, double scaleCMax, JlTuple scaleCStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -163,7 +165,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleCStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -198,6 +200,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, int numLevels, double angleStart, double angleExtent, double angleStep, double scaleRMin, double scaleRMax, double scaleRStep, double scaleCMin, double scaleCMax, double scaleCStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -215,7 +218,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -247,6 +250,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleMin, double scaleMax, JlTuple scaleStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -265,7 +269,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -297,6 +301,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, int numLevels, double angleStart, double angleExtent, double angleStep, double scaleMin, double scaleMax, double scaleStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -311,7 +316,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -340,6 +345,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -354,7 +360,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(angleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -383,6 +389,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlXLDCont contours, int numLevels, double angleStart, double angleExtent, double angleStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -394,7 +401,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -429,6 +436,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleRMin, double scaleRMax, JlTuple scaleRStep, double scaleCMin, double scaleCMax, JlTuple scaleCStep, JlTuple optimization, string metric, JlTuple contrast, JlTuple minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(895);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -454,7 +462,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -489,6 +497,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, int numLevels, double angleStart, double angleExtent, double angleStep, double scaleRMin, double scaleRMax, double scaleRStep, double scaleCMin, double scaleCMax, double scaleCStep, string optimization, string metric, int contrast, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(895);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -507,7 +516,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -539,6 +548,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleMin, double scaleMax, JlTuple scaleStep, JlTuple optimization, string metric, JlTuple contrast, JlTuple minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(896);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -560,7 +570,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -592,6 +602,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, int numLevels, double angleStart, double angleExtent, double angleStep, double scaleMin, double scaleMax, double scaleStep, string optimization, string metric, int contrast, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(896);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -607,7 +618,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -636,6 +647,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, JlTuple optimization, string metric, JlTuple contrast, JlTuple minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(897);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -653,7 +665,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -682,6 +694,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel(JlImage template, int numLevels, double angleStart, double angleExtent, double angleStep, string optimization, string metric, int contrast, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(897);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -694,7 +707,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -719,10 +732,11 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlShapeModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2122);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -854,11 +868,12 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(874);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -886,11 +901,12 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(875);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -912,11 +928,12 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public byte[] SerializeShapeModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(876);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -944,10 +961,11 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void WriteShapeModel(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(877);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -972,9 +990,10 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void ClearShapeModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(878);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1002,12 +1021,13 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetShapeModelContours(int level)
 	{
 		IntPtr proc = JlNativeApi.PreCall(879);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, level);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1042,6 +1062,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetShapeModelParams(out double angleStart, out double angleExtent, out double angleStep, out JlTuple scaleMin, out JlTuple scaleMax, out JlTuple scaleStep, out string metric, out int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(881);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1062,7 +1083,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out scaleStep);
 		err = JlNativeApi.LoadS(proc, 7, err, out metric);
 		err = JlNativeApi.LoadI(proc, 8, err, out minContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1093,6 +1114,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public int GetShapeModelParams(out double angleStart, out double angleExtent, out double angleStep, out double scaleMin, out double scaleMax, out double scaleStep, out string metric, out int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(881);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1113,7 +1135,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 6, err, out scaleStep);
 		err = JlNativeApi.LoadS(proc, 7, err, out metric);
 		err = JlNativeApi.LoadI(proc, 8, err, out minContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1137,13 +1159,14 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void GetShapeModelOrigin(out double row, out double column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(882);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out row);
 		err = JlNativeApi.LoadD(proc, 1, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1168,11 +1191,12 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void SetShapeModelOrigin(double row, double column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(883);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1224,6 +1248,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		JlTuple hTuple = JlHandleBase.ConcatArray(modelIDs);
 		IntPtr proc = JlNativeApi.PreCall(884);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, hTuple);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -1266,7 +1291,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(modelIDs);
 	}
@@ -1309,6 +1334,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindAnisoShapeModels(JlImage image, double angleStart, double angleExtent, double scaleRMin, double scaleRMax, double scaleCMin, double scaleCMax, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(884);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1338,7 +1364,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1384,6 +1410,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		JlTuple hTuple = JlHandleBase.ConcatArray(modelIDs);
 		IntPtr proc = JlNativeApi.PreCall(885);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, hTuple);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -1420,7 +1447,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(modelIDs);
 	}
@@ -1460,6 +1487,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindScaledShapeModels(JlImage image, double angleStart, double angleExtent, double scaleMin, double scaleMax, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(885);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1485,7 +1513,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1530,6 +1558,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		JlTuple hTuple = JlHandleBase.ConcatArray(modelIDs);
 		IntPtr proc = JlNativeApi.PreCall(886);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, hTuple);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -1560,7 +1589,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(modelIDs);
 	}
@@ -1597,6 +1626,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindShapeModels(JlImage image, double angleStart, double angleExtent, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(886);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1618,7 +1648,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1665,6 +1695,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindAnisoShapeModel(JlImage image, double angleStart, double angleExtent, double scaleRMin, double scaleRMax, double scaleCMin, double scaleCMax, JlTuple minScore, int numMatches, double maxOverlap, JlTuple subPixel, JlTuple numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(887);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1695,7 +1726,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scaleR);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1735,6 +1766,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindAnisoShapeModel(JlImage image, double angleStart, double angleExtent, double scaleRMin, double scaleRMax, double scaleCMin, double scaleCMax, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(887);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1762,7 +1794,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scaleR);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1808,6 +1840,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindScaledShapeModel(JlImage image, double angleStart, double angleExtent, double scaleMin, double scaleMax, JlTuple minScore, int numMatches, double maxOverlap, JlTuple subPixel, JlTuple numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(888);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1834,7 +1867,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1873,6 +1906,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindScaledShapeModel(JlImage image, double angleStart, double angleExtent, double scaleMin, double scaleMax, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(888);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1896,7 +1930,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1944,6 +1978,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindShapeModel(JlImage image, double angleStart, double angleExtent, JlTuple minScore, int numMatches, double maxOverlap, JlTuple subPixel, JlTuple numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(889);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -1966,7 +2001,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -2004,6 +2039,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void FindShapeModel(JlImage image, double angleStart, double angleExtent, double minScore, int numMatches, double maxOverlap, string subPixel, int numLevels, double greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(889);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2023,7 +2059,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -2056,13 +2092,14 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void SetShapeModelMetric(JlImage image, JlHomMat2D homMat2D, string metric)
 	{
 		IntPtr proc = JlNativeApi.PreCall(890);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 1, homMat2D);
 		JlNativeApi.StoreS(proc, 2, metric);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -2088,13 +2125,14 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void SetShapeModelParam(JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(891);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2136,6 +2174,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2158,7 +2197,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleCStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2195,6 +2234,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2212,7 +2252,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2252,6 +2292,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2270,7 +2311,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2306,6 +2347,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2320,7 +2362,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2359,6 +2401,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2373,7 +2416,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(angleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2406,6 +2449,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2417,7 +2461,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 	}
@@ -2464,6 +2508,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(895);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2489,7 +2534,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2526,6 +2571,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(895);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2544,7 +2590,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2583,6 +2629,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(896);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2604,7 +2651,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2641,6 +2688,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(896);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2656,7 +2704,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2692,6 +2740,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(897);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2709,7 +2758,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2743,6 +2792,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(897);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -2755,7 +2805,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(template);
 	}
@@ -2783,6 +2833,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlRegion GetShapeModelClutter(JlTuple genParamName, out JlTuple genParamValue, out JlHomMat2D homMat2D, out int clutterContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2055);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 1);
@@ -2795,7 +2846,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
 		err = JlHomMat2D.LoadNew(proc, 1, err, out homMat2D);
 		err = JlNativeApi.LoadI(proc, 2, err, out clutterContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2821,6 +2872,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public JlRegion GetShapeModelClutter(string genParamName, out string genParamValue, out JlHomMat2D homMat2D, out int clutterContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2055);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 1);
@@ -2832,7 +2884,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		err = JlNativeApi.LoadS(proc, 0, err, out genParamValue);
 		err = JlHomMat2D.LoadNew(proc, 1, err, out homMat2D);
 		err = JlNativeApi.LoadI(proc, 2, err, out clutterContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2863,6 +2915,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void SetShapeModelClutter(JlRegion clutterRegion, JlHomMat2D homMat2D, int clutterContrast, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2057);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, clutterRegion);
 		JlNativeApi.Store(proc, 1, homMat2D);
@@ -2873,7 +2926,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(homMat2D);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(clutterRegion);
 	}
@@ -2902,6 +2955,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 	public void SetShapeModelClutter(JlRegion clutterRegion, JlHomMat2D homMat2D, int clutterContrast, string genParamName, double genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2057);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, clutterRegion);
 		JlNativeApi.Store(proc, 1, homMat2D);
@@ -2910,7 +2964,7 @@ public class JlShapeModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.StoreD(proc, 4, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(clutterRegion);
 	}
