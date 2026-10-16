@@ -21,11 +21,12 @@ public class JlMisc
 	public static void WriteTuple(JlTuple tuple, string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(218);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.StoreS(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>从文件读取一个元组并返回新元组（库原生元组格式）。</summary>
@@ -42,11 +43,12 @@ public class JlMisc
 	public static JlTuple ReadTuple(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(219);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -81,6 +83,7 @@ public class JlMisc
 	public static void ConvertPoint3dSpherToCart(JlTuple longitude, JlTuple latitude, JlTuple radius, string equatPlaneNormal, string zeroMeridian, out JlTuple x, out JlTuple y, out JlTuple z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, longitude);
 		JlNativeApi.Store(proc, 1, latitude);
 		JlNativeApi.Store(proc, 2, radius);
@@ -96,7 +99,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out x);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out y);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 3D 点的球坐标（经度/纬度/半径）换算为直角坐标 x/y/z（标量版）。</summary>
@@ -115,6 +118,7 @@ public class JlMisc
 	public static void ConvertPoint3dSpherToCart(double longitude, double latitude, double radius, string equatPlaneNormal, string zeroMeridian, out double x, out double y, out double z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, longitude);
 		JlNativeApi.StoreD(proc, 1, latitude);
 		JlNativeApi.StoreD(proc, 2, radius);
@@ -127,7 +131,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 0, err, out x);
 		err = JlNativeApi.LoadD(proc, 1, err, out y);
 		err = JlNativeApi.LoadD(proc, 2, err, out z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 3D 点直角坐标 x/y/z 换算为球坐标；经度走返回值，纬度与半径走 out。</summary>
@@ -156,6 +160,7 @@ public class JlMisc
 	public static JlTuple ConvertPoint3dCartToSpher(JlTuple x, JlTuple y, JlTuple z, string equatPlaneNormal, string zeroMeridian, out JlTuple latitude, out JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(997);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, x);
 		JlNativeApi.Store(proc, 1, y);
 		JlNativeApi.Store(proc, 2, z);
@@ -171,7 +176,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out latitude);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -192,6 +197,7 @@ public class JlMisc
 	public static double ConvertPoint3dCartToSpher(double x, double y, double z, string equatPlaneNormal, string zeroMeridian, out double latitude, out double radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(997);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, x);
 		JlNativeApi.StoreD(proc, 1, y);
 		JlNativeApi.StoreD(proc, 2, z);
@@ -204,7 +210,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
 		err = JlNativeApi.LoadD(proc, 1, err, out latitude);
 		err = JlNativeApi.LoadD(proc, 2, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -225,6 +231,7 @@ public class JlMisc
 	public static JlTuple ReadKalman(string fileName, out JlTuple model, out JlTuple measurement, out JlTuple prediction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1053);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -235,7 +242,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out model);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out measurement);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out prediction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -264,6 +271,7 @@ public class JlMisc
 	public static JlTuple UpdateKalman(string fileName, JlTuple dimensionIn, JlTuple modelIn, JlTuple measurementIn, out JlTuple modelOut, out JlTuple measurementOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1054);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.Store(proc, 1, dimensionIn);
 		JlNativeApi.Store(proc, 2, modelIn);
@@ -278,7 +286,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out modelOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out measurementOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -307,6 +315,7 @@ public class JlMisc
 	public static JlTuple FilterKalman(JlTuple dimension, JlTuple model, JlTuple measurement, JlTuple predictionIn, out JlTuple estimate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1055);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, dimension);
 		JlNativeApi.Store(proc, 1, model);
 		JlNativeApi.Store(proc, 2, measurement);
@@ -320,7 +329,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(predictionIn);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out estimate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -339,11 +348,12 @@ public class JlMisc
 	public static void CreateRectificationGrid(double width, int numSquares, string gridFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1105);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, width);
 		JlNativeApi.StoreI(proc, 1, numSquares);
 		JlNativeApi.StoreS(proc, 2, gridFile);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>由实测网格点生成"任意畸变图像 ↔ 校正图像"的投影映射图。</summary>
@@ -373,6 +383,7 @@ public class JlMisc
 	public static JlImage GenArbitraryDistortionMap(int gridSpacing, JlTuple row, JlTuple column, int gridWidth, int imageWidth, int imageHeight, string mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1108);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, gridSpacing);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -385,7 +396,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return obj;
 	}
 
@@ -417,6 +428,7 @@ public class JlMisc
 	public static void ProjectionPl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple rowProj, out JlTuple colProj)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -434,7 +446,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowProj);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colProj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把点正投影到由两定点定义的无限长直线上，返回垂足坐标（标量版）。</summary>
@@ -453,6 +465,7 @@ public class JlMisc
 	public static void ProjectionPl(double row, double column, double row1, double column1, double row2, double column2, out double rowProj, out double colProj)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, row1);
@@ -464,7 +477,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out rowProj);
 		err = JlNativeApi.LoadD(proc, 1, err, out colProj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求椭圆周上指定角度处点的坐标（元组版）。</summary>
@@ -483,6 +496,7 @@ public class JlMisc
 	public static void GetPointsEllipse(JlTuple angle, double row, double column, double phi, double radius1, double radius2, out JlTuple rowPoint, out JlTuple colPoint)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, angle);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
@@ -495,7 +509,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(angle);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowPoint);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colPoint);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求椭圆周上指定角度处点的坐标（标量版）。</summary>
@@ -514,6 +528,7 @@ public class JlMisc
 	public static void GetPointsEllipse(double angle, double row, double column, double phi, double radius1, double radius2, out double rowPoint, out double colPoint)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, angle);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
@@ -525,7 +540,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out rowPoint);
 		err = JlNativeApi.LoadD(proc, 1, err, out colPoint);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两条直线（各由两点确定）的交点，并给出是否平行的判定。</summary>
@@ -561,6 +576,7 @@ public class JlMisc
 	public static void IntersectionLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple row, out JlTuple column, out JlTuple isParallel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -584,7 +600,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isParallel);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两条直线（各由两点确定）的交点，并给出是否平行的判定（标量版）。</summary>
@@ -606,6 +622,7 @@ public class JlMisc
 	public static void IntersectionLl(double rowA1, double columnA1, double rowA2, double columnA2, double rowB1, double columnB1, double rowB2, double columnB2, out double row, out double column, out int isParallel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowA1);
 		JlNativeApi.StoreD(proc, 1, columnA1);
 		JlNativeApi.StoreD(proc, 2, rowA2);
@@ -621,7 +638,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 0, err, out row);
 		err = JlNativeApi.LoadD(proc, 1, err, out column);
 		err = JlNativeApi.LoadI(proc, 2, err, out isParallel);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算从横轴（column 方向）转到两点连线的角度 [rad]。</summary>
@@ -647,6 +664,7 @@ public class JlMisc
 	public static JlTuple AngleLx(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1309);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -658,7 +676,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -675,6 +693,7 @@ public class JlMisc
 	public static double AngleLx(double row1, double column1, double row2, double column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1309);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, column1);
 		JlNativeApi.StoreD(proc, 2, row2);
@@ -682,7 +701,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -717,6 +736,7 @@ public class JlMisc
 	public static JlTuple AngleLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1310);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -736,7 +756,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(rowB2);
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -757,6 +777,7 @@ public class JlMisc
 	public static double AngleLl(double rowA1, double columnA1, double rowA2, double columnA2, double rowB1, double columnB1, double rowB2, double columnB2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1310);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowA1);
 		JlNativeApi.StoreD(proc, 1, columnA1);
 		JlNativeApi.StoreD(proc, 2, rowA2);
@@ -768,7 +789,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -804,6 +825,7 @@ public class JlMisc
 	public static void DistanceSl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1311);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -825,7 +847,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算线段到（无限长）直线的最大/最小距离（标量版）。</summary>
@@ -846,6 +868,7 @@ public class JlMisc
 	public static void DistanceSl(double rowA1, double columnA1, double rowA2, double columnA2, double rowB1, double columnB1, double rowB2, double columnB2, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1311);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowA1);
 		JlNativeApi.StoreD(proc, 1, columnA1);
 		JlNativeApi.StoreD(proc, 2, rowA2);
@@ -859,7 +882,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算两条线段之间的最大/最小距离。</summary>
@@ -894,6 +917,7 @@ public class JlMisc
 	public static void DistanceSs(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1312);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -915,7 +939,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算两条线段之间的最大/最小距离（标量版）。</summary>
@@ -936,6 +960,7 @@ public class JlMisc
 	public static void DistanceSs(double rowA1, double columnA1, double rowA2, double columnA2, double rowB1, double columnB1, double rowB2, double columnB2, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1312);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowA1);
 		JlNativeApi.StoreD(proc, 1, columnA1);
 		JlNativeApi.StoreD(proc, 2, rowA2);
@@ -949,7 +974,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算点到线段的最大/最小距离。</summary>
@@ -980,6 +1005,7 @@ public class JlMisc
 	public static void DistancePs(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1313);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -997,7 +1023,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算点到线段的最大/最小距离（标量版）。</summary>
@@ -1016,6 +1042,7 @@ public class JlMisc
 	public static void DistancePs(double row, double column, double row1, double column1, double row2, double column2, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1313);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, row1);
@@ -1027,7 +1054,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算点到（无限长）直线的垂直距离。</summary>
@@ -1057,6 +1084,7 @@ public class JlMisc
 	public static JlTuple DistancePl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1314);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -1072,7 +1100,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1091,6 +1119,7 @@ public class JlMisc
 	public static double DistancePl(double row, double column, double row1, double column1, double row2, double column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1314);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, row1);
@@ -1100,7 +1129,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -1127,6 +1156,7 @@ public class JlMisc
 	public static JlTuple DistancePp(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1315);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -1138,7 +1168,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1155,6 +1185,7 @@ public class JlMisc
 	public static double DistancePp(double row1, double column1, double row2, double column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1315);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, column1);
 		JlNativeApi.StoreD(proc, 2, row2);
@@ -1162,7 +1193,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -1178,6 +1209,7 @@ public class JlMisc
 	public static int InfoSmooth(string filter, double alpha, out JlTuple coeffs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1358);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, filter);
 		JlNativeApi.StoreD(proc, 1, alpha);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1185,7 +1217,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out coeffs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return intValue;
 	}
 
@@ -1199,11 +1231,12 @@ public class JlMisc
 	public static JlTuple GaussDistribution(double sigma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1382);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, sigma);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1218,6 +1251,7 @@ public class JlMisc
 	public static JlTuple SpDistribution(JlTuple percentSalt, JlTuple percentPepper)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1383);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, percentSalt);
 		JlNativeApi.Store(proc, 1, percentPepper);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1225,7 +1259,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(percentSalt);
 		JlNativeApi.UnpinTuple(percentPepper);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1240,12 +1274,13 @@ public class JlMisc
 	public static JlTuple SpDistribution(double percentSalt, double percentPepper)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1383);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, percentSalt);
 		JlNativeApi.StoreD(proc, 1, percentPepper);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1268,6 +1303,7 @@ public class JlMisc
 	public static int InfoEdges(string filter, string mode, double alpha, out JlTuple coeffs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1486);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, filter);
 		JlNativeApi.StoreS(proc, 1, mode);
 		JlNativeApi.StoreD(proc, 2, alpha);
@@ -1276,7 +1312,7 @@ public class JlMisc
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out coeffs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return intValue;
 	}
 
@@ -1294,10 +1330,11 @@ public class JlMisc
 	public static void CopyFile(string sourceFile, string destinationFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1558);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, sourceFile);
 		JlNativeApi.StoreS(proc, 1, destinationFile);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>设置当前工作目录。</summary>
@@ -1313,9 +1350,10 @@ public class JlMisc
 	public static void SetCurrentDir(string dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1559);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>获取当前工作目录。</summary>
@@ -1330,10 +1368,11 @@ public class JlMisc
 	public static string GetCurrentDir()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1560);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadS(proc, 0, err, out var stringValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return stringValue;
 	}
 
@@ -1350,9 +1389,10 @@ public class JlMisc
 	public static void RemoveDir(string dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1561);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>创建目录。</summary>
@@ -1368,9 +1408,10 @@ public class JlMisc
 	public static void MakeDir(string dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1562);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>列出目录中的所有文件（选项元组版）。</summary>
@@ -1384,13 +1425,14 @@ public class JlMisc
 	public static JlTuple ListFiles(string directory, JlTuple options)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1563);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, directory);
 		JlNativeApi.Store(proc, 1, options);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(options);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1405,12 +1447,13 @@ public class JlMisc
 	public static JlTuple ListFiles(string directory, string options)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1563);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, directory);
 		JlNativeApi.StoreS(proc, 1, options);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1427,9 +1470,10 @@ public class JlMisc
 	public static void DeleteFile(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1564);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>检查文件是否存在。</summary>
@@ -1446,11 +1490,12 @@ public class JlMisc
 	public static int FileExists(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1565);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return intValue;
 	}
 
@@ -1481,6 +1526,7 @@ public class JlMisc
 	public static void SelectLinesLongest(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, int num, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1655);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -1499,7 +1545,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out colBeginOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out rowEndOut);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out colEndOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按特征区间把成组线段分成"满足/不满足"两堆（多特征元组版）。</summary>
@@ -1539,6 +1585,7 @@ public class JlMisc
 	public static void PartitionLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, string operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1656);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -1571,7 +1618,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out failColBOut);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out failRowEOut);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out failColEOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按单个特征名与上下限把线段分成"满足/不满足"两堆（字符串版）。</summary>
@@ -1608,6 +1655,7 @@ public class JlMisc
 	public static void PartitionLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, string feature, string operation, string min, string max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1656);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -1637,7 +1685,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out failColBOut);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out failRowEOut);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out failColEOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按特征区间筛选线段，只返回通过堆（多特征元组版）。</summary>
@@ -1673,6 +1721,7 @@ public class JlMisc
 	public static void SelectLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, string operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1657);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -1697,7 +1746,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out colBeginOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out rowEndOut);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out colEndOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按单个特征名与上下限筛选线段，只返回通过堆（字符串版）。</summary>
@@ -1730,6 +1779,7 @@ public class JlMisc
 	public static void SelectLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, string feature, string operation, string min, string max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1657);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -1751,7 +1801,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out colBeginOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out rowEndOut);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out colEndOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由线段两端点求中点（重心）、欧氏长度与方向角。</summary>
@@ -1780,6 +1830,7 @@ public class JlMisc
 	public static void LinePosition(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd, out JlTuple rowCenter, out JlTuple colCenter, out JlTuple length, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1658);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBegin);
 		JlNativeApi.Store(proc, 1, colBegin);
 		JlNativeApi.Store(proc, 2, rowEnd);
@@ -1797,7 +1848,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colCenter);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out length);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由线段两端点求中点、欧氏长度与方向角（标量版）。</summary>
@@ -1816,6 +1867,7 @@ public class JlMisc
 	public static void LinePosition(double rowBegin, double colBegin, double rowEnd, double colEnd, out double rowCenter, out double colCenter, out double length, out double phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1658);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowBegin);
 		JlNativeApi.StoreD(proc, 1, colBegin);
 		JlNativeApi.StoreD(proc, 2, rowEnd);
@@ -1829,7 +1881,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 1, err, out colCenter);
 		err = JlNativeApi.LoadD(proc, 2, err, out length);
 		err = JlNativeApi.LoadD(proc, 3, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由线段两端点求方向角。</summary>
@@ -1855,6 +1907,7 @@ public class JlMisc
 	public static JlTuple LineOrientation(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1659);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBegin);
 		JlNativeApi.Store(proc, 1, colBegin);
 		JlNativeApi.Store(proc, 2, rowEnd);
@@ -1866,7 +1919,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(rowEnd);
 		JlNativeApi.UnpinTuple(colEnd);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1883,6 +1936,7 @@ public class JlMisc
 	public static double LineOrientation(double rowBegin, double colBegin, double rowEnd, double colEnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1659);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, rowBegin);
 		JlNativeApi.StoreD(proc, 1, colBegin);
 		JlNativeApi.StoreD(proc, 2, rowEnd);
@@ -1890,7 +1944,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -1915,6 +1969,7 @@ public class JlMisc
 	public static void ApproxChainSimple(JlTuple row, JlTuple column, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1660);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1940,7 +1995,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out lineEndRow);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.INTEGER, err, out lineEndCol);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.INTEGER, err, out order);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用圆弧与直线段逼近一条轮廓链（可调参数版）。</summary>
@@ -1976,6 +2031,7 @@ public class JlMisc
 	public static void ApproxChain(JlTuple row, JlTuple column, double minWidthCoord, double maxWidthCoord, double threshStart, double threshEnd, double threshStep, double minWidthSmooth, double maxWidthSmooth, int minWidthCurve, int maxWidthCurve, double weight1, double weight2, double weight3, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1661);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, minWidthCoord);
@@ -2013,7 +2069,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out lineEndRow);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.INTEGER, err, out lineEndCol);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.INTEGER, err, out order);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -2053,6 +2109,7 @@ public class JlMisc
 	public static JlTuple DistancePointLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2140);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -2074,7 +2131,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(point2Y);
 		JlNativeApi.UnpinTuple(point2Z);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -2096,6 +2153,7 @@ public class JlMisc
 	public static double DistancePointLine(double pointX, double pointY, double pointZ, double point1X, double point1Y, double point1Z, double point2X, double point2Y, double point2Z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2140);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, pointX);
 		JlNativeApi.StoreD(proc, 1, pointY);
 		JlNativeApi.StoreD(proc, 2, pointZ);
@@ -2108,7 +2166,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -2145,6 +2203,7 @@ public class JlMisc
 	public static JlTuple DistancePointPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2141);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -2166,7 +2225,7 @@ public class JlMisc
 		JlNativeApi.UnpinTuple(lineMomentY);
 		JlNativeApi.UnpinTuple(lineMomentZ);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -2188,6 +2247,7 @@ public class JlMisc
 	public static double DistancePointPlueckerLine(double pointX, double pointY, double pointZ, double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2141);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, pointX);
 		JlNativeApi.StoreD(proc, 1, pointY);
 		JlNativeApi.StoreD(proc, 2, pointZ);
@@ -2200,7 +2260,7 @@ public class JlMisc
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return doubleValue;
 	}
 
@@ -2236,6 +2296,7 @@ public class JlMisc
 	public static void PlueckerLineToPointDirection(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple pointX, out JlTuple pointY, out JlTuple pointZ, out JlTuple directionX, out JlTuple directionY, out JlTuple directionZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2144);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, lineDirectionX);
 		JlNativeApi.Store(proc, 1, lineDirectionY);
 		JlNativeApi.Store(proc, 2, lineDirectionZ);
@@ -2261,7 +2322,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out directionX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out directionY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out directionZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 Plücker 坐标直线转换为"线上一点 + 方向向量"表示（标量版）。</summary>
@@ -2284,6 +2345,7 @@ public class JlMisc
 	public static void PlueckerLineToPointDirection(double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ, out double pointX, out double pointY, out double pointZ, out double directionX, out double directionY, out double directionZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2144);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, lineDirectionX);
 		JlNativeApi.StoreD(proc, 1, lineDirectionY);
 		JlNativeApi.StoreD(proc, 2, lineDirectionZ);
@@ -2303,7 +2365,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 3, err, out directionX);
 		err = JlNativeApi.LoadD(proc, 4, err, out directionY);
 		err = JlNativeApi.LoadD(proc, 5, err, out directionZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 Plücker 坐标直线转换为线上两点的表示。</summary>
@@ -2338,6 +2400,7 @@ public class JlMisc
 	public static void PlueckerLineToPoints(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple point1X, out JlTuple point1Y, out JlTuple point1Z, out JlTuple point2X, out JlTuple point2Y, out JlTuple point2Z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2145);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, lineDirectionX);
 		JlNativeApi.Store(proc, 1, lineDirectionY);
 		JlNativeApi.Store(proc, 2, lineDirectionZ);
@@ -2363,7 +2426,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out point2X);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out point2Y);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out point2Z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 Plücker 坐标直线转换为线上两点的表示（标量版）。</summary>
@@ -2386,6 +2449,7 @@ public class JlMisc
 	public static void PlueckerLineToPoints(double lineDirectionX, double lineDirectionY, double lineDirectionZ, double lineMomentX, double lineMomentY, double lineMomentZ, out double point1X, out double point1Y, out double point1Z, out double point2X, out double point2Y, out double point2Z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2145);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, lineDirectionX);
 		JlNativeApi.StoreD(proc, 1, lineDirectionY);
 		JlNativeApi.StoreD(proc, 2, lineDirectionZ);
@@ -2405,7 +2469,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 3, err, out point2X);
 		err = JlNativeApi.LoadD(proc, 4, err, out point2Y);
 		err = JlNativeApi.LoadD(proc, 5, err, out point2Z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把"线上一点 + 方向向量"表示的直线转换为 Plücker 坐标。</summary>
@@ -2440,6 +2504,7 @@ public class JlMisc
 	public static void PointDirectionToPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple directionX, JlTuple directionY, JlTuple directionZ, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2146);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -2465,7 +2530,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out lineMomentX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out lineMomentY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把"线上一点 + 方向向量"表示的直线转换为 Plücker 坐标（标量版）。</summary>
@@ -2488,6 +2553,7 @@ public class JlMisc
 	public static void PointDirectionToPlueckerLine(double pointX, double pointY, double pointZ, double directionX, double directionY, double directionZ, out double lineDirectionX, out double lineDirectionY, out double lineDirectionZ, out double lineMomentX, out double lineMomentY, out double lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2146);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, pointX);
 		JlNativeApi.StoreD(proc, 1, pointY);
 		JlNativeApi.StoreD(proc, 2, pointZ);
@@ -2507,7 +2573,7 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 3, err, out lineMomentX);
 		err = JlNativeApi.LoadD(proc, 4, err, out lineMomentY);
 		err = JlNativeApi.LoadD(proc, 5, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把线上两点表示的直线转换为 Plücker 坐标。</summary>
@@ -2542,6 +2608,7 @@ public class JlMisc
 	public static void PointsToPlueckerLine(JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2148);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, point1X);
 		JlNativeApi.Store(proc, 1, point1Y);
 		JlNativeApi.Store(proc, 2, point1Z);
@@ -2567,7 +2634,7 @@ public class JlMisc
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out lineMomentX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out lineMomentY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把线上两点表示的直线转换为 Plücker 坐标（标量版）。</summary>
@@ -2590,6 +2657,7 @@ public class JlMisc
 	public static void PointsToPlueckerLine(double point1X, double point1Y, double point1Z, double point2X, double point2Y, double point2Z, out double lineDirectionX, out double lineDirectionY, out double lineDirectionZ, out double lineMomentX, out double lineMomentY, out double lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2148);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, point1X);
 		JlNativeApi.StoreD(proc, 1, point1Y);
 		JlNativeApi.StoreD(proc, 2, point1Z);
@@ -2609,6 +2677,6 @@ public class JlMisc
 		err = JlNativeApi.LoadD(proc, 3, err, out lineMomentX);
 		err = JlNativeApi.LoadD(proc, 4, err, out lineMomentY);
 		err = JlNativeApi.LoadD(proc, 5, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 }
