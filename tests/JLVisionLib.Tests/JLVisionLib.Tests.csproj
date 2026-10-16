@@ -19,4 +19,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\JLVisionLib.csproj" />
   </ItemGroup>
+  <!-- Ensure native smoke tests exercise the packaged x64 runtime, not a missing-DLL path. -->
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <None Include="..\..\Libs\JLVisionCore.dll"
+          Link="JLVisionCore.dll"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
