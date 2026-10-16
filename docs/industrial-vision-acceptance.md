@@ -29,6 +29,22 @@ Y_mm = yFromColumn * column + yFromRow * row + yOffset
 
 若镜头畸变、透视关系、相机移动或 Eye-in-Hand 变化不可忽略，单一固定平面仿射可能无效，需另外标定、纠畸和转换；本工具没有实现通用机器人手眼坐标链。图像点定位精度 ≠ 机器人最终抓取精度。
 
+## 2.1 独立标定验证点与证据
+
+启用 `acceptance.maxPositionErrorMm` 或 `acceptance.maxRepeatabilityStdDevMm` 时，除了 `calibration` 仿射系数，还**必须提供** `calibrationEvidence` 和下列三个显式门限。否则程序直接拒绝此次验收，不会将未验证的矩阵当作合格标定：
+
+- `maxCalibrationFitErrorMm`：参与拟合的标定点最大径向残差上限；
+- `maxCalibrationHoldoutErrorMm`：**未参与拟合**的独立验证点最大径向残差上限；
+- `maxCalibrationHoldoutRmsMm`：独立验证点径向均方根误差上限。
+
+`calibrationEvidence.calibrationId` 必须对应现场保存的标定版本，`measurementMethod` 应记录独立测量装置及数据来源；这些字符串由使用者填写，工具只能检查非空，**无法证明真实来源**。各点包含 `row`、`column`、`xmm`、`ymm`，至少 4 个非共线拟合点和 3 个独立验证点，且不能复用相同图像坐标。使用完整视野的不同位置作为验证点，不能只验证中心附近。
+
+评测将对已提供的仿射系数分别计算训练点与验证点的每点 `dx/dy`、径向距离、最大值及 RMS，并在 JSON 中输出 `calibrationAudit`。任一残差超限即不通过；这一步**验证已给出的标定系数，不会重新拟合、优化或偷偷覆盖它们**。
+
+简单例子：某模型在已标注工件上误差为 0.05 mm，但独立标定验证点最大残差为 0.14 mm，则即使工件检测指标看似合格，整体验收仍应失败。标定残差通过并不证明重复性、机器人 TCP、镜头畸变或最终抓取精度通过；那些需要其他独立证据。
+
+本仓库 `example.dataset.json` 中拟合/验证点和世界坐标全部是**人为合成的格式示例**，不构成设备实际校准记录，也不能用于签发 ±0.1 mm 认证报告。
+
 ## 3. 质量指标与门禁
 
 配置位于清单的 `acceptance`：
