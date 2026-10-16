@@ -15,6 +15,7 @@ internal sealed class CalibrationEvidence
     public string? MeasurementMethod { get; set; }
     public List<CalibrationPoint> FitPoints { get; set; } = new();
     public List<CalibrationPoint> ValidationPoints { get; set; } = new();
+    public CalibrationImageRegion? ImageRegion { get; set; }
 }
 
 internal sealed class CalibrationPoint
@@ -33,13 +34,16 @@ internal sealed record CalibrationResidualSummary(int Count, double RmsMm,
 
 internal sealed record CalibrationAuditResult(string CalibrationId, string MeasurementMethod,
     CalibrationResidualSummary Fit, CalibrationResidualSummary Holdout,
-    bool Passed, string[] Reasons);
+    bool Passed, string[] Reasons)
+{
+    public CalibrationSpatialReport? Spatial { get; init; }
+}
 
 internal static class CalibrationEvidenceAudit
 {
     public static CalibrationAuditResult Evaluate(PlanarAffineCalibration calibration,
         CalibrationEvidence evidence, double maxFitErrorMm, double maxHoldoutErrorMm,
-        double maxHoldoutRmsMm)
+        double maxHoldoutRmsMm, int? minFitGridCells = null, int? minHoldoutGridCells = null)
     {
         calibration.Validate();
         if (evidence is null)
@@ -53,6 +57,13 @@ internal static class CalibrationEvidenceAudit
         if (evidence.FitPoints is null || evidence.FitPoints.Count < 4 ||
             evidence.ValidationPoints is null || evidence.ValidationPoints.Count < 3)
             throw new ArgumentException("Need at least four fit points and three independent holdout points.");
+        if ((minFitGridCells.HasValue || minHoldoutGridCells.HasValue) &&
+            evidence.ImageRegion is null)
+            throw new ArgumentException("Spatial coverage quality gates require an explicit image region.");
+        foreach (int? minimum in new[] { minFitGridCells, minHoldoutGridCells })
+            if (minimum.HasValue && (minimum.Value < 1 || minimum.Value > 9))
+                throw new ArgumentOutOfRangeException(nameof(minimum),
+                    "Minimum occupied grid cells must lie between 1 and 9.");
 
         CalibrationPoint[] all = evidence.FitPoints.Concat(evidence.ValidationPoints).ToArray();
         foreach (CalibrationPoint point in all)
@@ -76,15 +87,21 @@ internal static class CalibrationEvidenceAudit
 
         CalibrationResidualSummary fit = Summarize(calibration, evidence.FitPoints);
         CalibrationResidualSummary holdout = Summarize(calibration, evidence.ValidationPoints);
-        string[] reasons = new[]
-        {
-            fit.MaxMm > maxFitErrorMm ? "fit residual exceeds limit" : null,
-            holdout.MaxMm > maxHoldoutErrorMm ? "holdout maximum residual exceeds limit" : null,
-            holdout.RmsMm > maxHoldoutRmsMm ? "holdout RMS residual exceeds limit" : null
-        }.Where(x => x is not null).Select(x => x!).ToArray();
+        CalibrationSpatialReport? spatial = evidence.ImageRegion is null ? null :
+            CalibrationSpatialDiagnostics.Analyze(evidence.ImageRegion, evidence.FitPoints,
+                evidence.ValidationPoints, fit, holdout, maxFitErrorMm, maxHoldoutErrorMm);
+
+        var reasons = new List<string>();
+        if (fit.MaxMm > maxFitErrorMm) reasons.Add("fit residual exceeds limit");
+        if (holdout.MaxMm > maxHoldoutErrorMm) reasons.Add("holdout maximum residual exceeds limit");
+        if (holdout.RmsMm > maxHoldoutRmsMm) reasons.Add("holdout RMS residual exceeds limit");
+        if (minFitGridCells.HasValue && spatial!.FitOccupiedCells < minFitGridCells.Value)
+            reasons.Add("fit spatial coverage below minimum occupied cells");
+        if (minHoldoutGridCells.HasValue && spatial!.HoldoutOccupiedCells < minHoldoutGridCells.Value)
+            reasons.Add("holdout spatial coverage below minimum occupied cells");
 
         return new CalibrationAuditResult(evidence.CalibrationId!, evidence.MeasurementMethod!,
-            fit, holdout, reasons.Length == 0, reasons);
+            fit, holdout, reasons.Count == 0, reasons.ToArray()) { Spatial = spatial };
     }
 
     private static CalibrationResidualSummary Summarize(
