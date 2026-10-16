@@ -29,6 +29,7 @@ internal static class Program
         int width = ReadInt(args, "--width", 160, 16, 4_096);
         int height = ReadInt(args, "--height", 120, 16, 4_096);
         int batches = ReadInt(args, "--batches", 5, 1, 100);
+        int durationSeconds = ReadInt(args, "--duration-seconds", 0, 0, 86_400);
         string output = ReadString(args, "--output", "artifacts/jlv-stress.json");
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
@@ -40,6 +41,9 @@ internal static class Program
         JlRuntimeDiagnostics runtime = JLVisionRuntime.Initialize();
         Console.WriteLine("Native runtime: " + runtime.NativeLibraryPath);
         Console.WriteLine($"Iterations={iterations}, Workers={workers}, Image={width}x{height}, Batches={batches}");
+
+        if (durationSeconds > 0)
+            return RunTimed(durationSeconds, workers, width, height, batches, output, runtime);
 
         // Warm up JIT, native initialization, caches and thread pool before measuring.
         for (int i = 0; i < Math.Max(16, workers * 4); i++)
@@ -139,6 +143,119 @@ internal static class Program
         Console.WriteLine($"Private bytes after-GC delta: {report.results.privateByteDeltaAfterGc:N0} bytes");
         // Memory delta is diagnostic. Native allocators cache memory; no universal leak threshold.
         return failures.IsEmpty && completed == iterations ? 0 : 2;
+    }
+
+    private static int RunTimed(
+        int durationSeconds, int workers, int width, int height, int batches,
+        string output, JlRuntimeDiagnostics runtime)
+    {
+        Console.WriteLine($"Time-based soak: {durationSeconds} seconds, workers={workers}, image={width}x{height}");
+        for (int i = 0; i < Math.Max(16, workers * 4); i++)
+            RunWorkload(width, height, includeExpectedFailure: i % 7 == 0);
+
+        using Process process = Process.GetCurrentProcess();
+        List<MemorySample> memory = new();
+        TakeMemorySample(process, memory, "after-warmup", 0);
+
+        // A bounded circular buffer keeps one-hour/overnight soak runs from
+        // accumulating millions of latency samples in managed memory.
+        const int MaxLatencySamples = 100_000;
+        long[] lastLatencies = new long[MaxLatencySamples];
+        int completed = 0;
+        ConcurrentQueue<string> failures = new();
+        ParallelOptions parallelism = new() { MaxDegreeOfParallelism = workers };
+        Stopwatch total = Stopwatch.StartNew();
+        double intervalSeconds = (double)durationSeconds / batches;
+        double nextSnapshotSeconds = intervalSeconds;
+        int sampleNumber = 0;
+
+        while (total.Elapsed.TotalSeconds < durationSeconds && failures.IsEmpty)
+        {
+            // Check the elapsed time between bounded parallel blocks so the
+            // deadline is respected without sharing mutable native objects.
+            Parallel.For(0, Math.Max(128, workers * 64), parallelism, (_, loopState) =>
+            {
+                if (!failures.IsEmpty)
+                {
+                    loopState.Stop();
+                    return;
+                }
+
+                long started = Stopwatch.GetTimestamp();
+                try
+                {
+                    int sequence = Volatile.Read(ref completed);
+                    RunWorkload(width, height, includeExpectedFailure: sequence % 17 == 0);
+                    long elapsedTicks = Stopwatch.GetTimestamp() - started;
+                    int sampleIndex = Interlocked.Increment(ref completed) - 1;
+                    lastLatencies[sampleIndex % MaxLatencySamples] = elapsedTicks;
+                }
+                catch (Exception e)
+                {
+                    failures.Enqueue(e.ToString());
+                    loopState.Stop();
+                }
+            });
+
+            if (total.Elapsed.TotalSeconds >= nextSnapshotSeconds)
+            {
+                TakeMemorySample(process, memory, $"elapsed-{++sampleNumber}", completed);
+                Console.WriteLine($"Elapsed {total.Elapsed.TotalSeconds:F1}s: completed={completed}, privateBytes={memory[^1].PrivateBytes}");
+                nextSnapshotSeconds += intervalSeconds;
+            }
+        }
+        total.Stop();
+        TakeMemorySample(process, memory, "end", completed);
+
+        long[] sorted = lastLatencies.Take(Math.Min(completed, MaxLatencySamples))
+            .Where(t => t > 0).OrderBy(t => t).ToArray();
+        double Millis(long ticks) => ticks * 1_000.0 / Stopwatch.Frequency;
+        double Percentile(double portion) => sorted.Length == 0
+            ? 0 : Millis(sorted[(int)Math.Ceiling((sorted.Length - 1) * portion)]);
+
+        var report = new
+        {
+            schemaVersion = 1,
+            createdUtc = DateTimeOffset.UtcNow,
+            operatingSystem = RuntimeInformation.OSDescription,
+            runtime = RuntimeInformation.FrameworkDescription,
+            architecture = RuntimeInformation.ProcessArchitecture.ToString(),
+            logicalProcessors = Environment.ProcessorCount,
+            nativeLibrary = Path.GetFileName(runtime.NativeLibraryPath),
+            configuration = new { mode = "timed", durationSeconds, workers, width, height, batches },
+            results = new
+            {
+                completed,
+                failed = failures.Count,
+                durationSecondsActual = total.Elapsed.TotalSeconds,
+                throughputOperationsPerSecond = total.Elapsed.TotalSeconds > 0
+                    ? completed / total.Elapsed.TotalSeconds : 0,
+                latencySampleCount = sorted.Length,
+                operationLatencyMs = new
+                {
+                    p50 = Percentile(0.50),
+                    p95 = Percentile(0.95),
+                    p99 = Percentile(0.99),
+                    max = sorted.Length == 0 ? 0 : Millis(sorted[^1])
+                },
+                privateByteDeltaAfterGc = memory[^1].PrivateBytes - memory[0].PrivateBytes
+            },
+            memorySamples = memory,
+            errors = failures.ToArray()
+        };
+
+        string fullPath = Path.GetFullPath(output);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        File.WriteAllText(fullPath, JsonSerializer.Serialize(report, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        }));
+        Console.WriteLine($"Report: {fullPath}");
+        Console.WriteLine($"Timed throughput: {report.results.throughputOperationsPerSecond:F1} ops/s; " +
+                          $"p95={report.results.operationLatencyMs.p95:F2} ms; " +
+                          $"p99={report.results.operationLatencyMs.p99:F2} ms");
+        Console.WriteLine($"Timed memory delta: {report.results.privateByteDeltaAfterGc:N0} bytes");
+        return failures.IsEmpty && completed > 0 ? 0 : 2;
     }
 
     private static void RunWorkload(int width, int height, bool includeExpectedFailure)
