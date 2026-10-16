@@ -9,5 +9,7 @@
     <!-- Pure managed statistics: no native runtime or JLVisionCore.dll needed. -->
     <Compile Include="../JLVision.DatasetBenchmark/AcceptanceMetrics.cs" Link="AcceptanceMetrics.cs" />
     <Compile Include="../JLVision.DatasetBenchmark/CalibrationEvidenceAudit.cs" Link="CalibrationEvidenceAudit.cs" />
+    <Compile Include="../JLVision.DatasetBenchmark/CalibrationSpatialDiagnostics.cs" Link="CalibrationSpatialDiagnostics.cs" />
+    <Compile Include="../JLVision.DatasetBenchmark/CalibrationHeatmapSvg.cs" Link="CalibrationHeatmapSvg.cs" />
   </ItemGroup>
 </Project>
