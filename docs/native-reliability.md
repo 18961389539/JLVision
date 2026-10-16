@@ -17,7 +17,7 @@ dotnet test JLVisionLib.slnx --configuration Debug
 
 The `NativeReliabilityTests` cases deliberately create independent native image, region and tuple instances for every worker. They test concurrent *independent* workloads, not concurrent mutation of the same object. An invalid tuple-index operation is followed by a valid one to check recovery.
 
-The Windows x64 GitHub Actions pipeline additionally executes a **bounded** 400-operation stress baseline and publishes `jlv-stress-report` as a JSON artifact. It records native-process behavior without making machine-dependent memory or latency values hard pass/fail thresholds.
+The Windows x64 GitHub Actions pipeline executes **two bounded, comparable 3,000-operation workloads** (one worker and four independent workers, both 320×240) and publishes `jlv-stress-report` containing separate `jlv-stress-serial.json` and `jlv-stress-parallel.json` artifacts. Compare operation throughput and P95/P99 only on the **same runner** and use repeated runs for reliable trends. Native-process memory and latency values remain diagnostic rather than machine-dependent pass/fail thresholds.
 
 ## Longer local stress runs
 
@@ -28,7 +28,7 @@ dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuratio
 # Independent worker throughput and stability; no mutable object is shared.
 dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 12000 --workers 4 --batches 12 --width 640 --height 480 --output artifacts/stress-parallel.json
 
-# Larger overnight runs can increase iterations up to 200000.
+# Extended single-process runs can increase iterations up to 200000. At high throughput, this may still be short (seconds to minutes); measure actual wall-clock time.
 dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 80000 --workers 4 --batches 20 --width 640 --height 480 --output artifacts/stress-long.json
 ```
 
