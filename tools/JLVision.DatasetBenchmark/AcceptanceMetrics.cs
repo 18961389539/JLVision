@@ -47,12 +47,17 @@ internal sealed class AcceptanceCriteria
     public double? MaxCalibrationHoldoutRmsMm { get; set; }
     public int? MinPositiveFrames { get; set; }
     public int? MinNegativeFrames { get; set; }
+    public int? MinFitCalibrationGridCells { get; set; }
+    public int? MinHoldoutCalibrationGridCells { get; set; }
 
     public void Validate()
     {
         if ((MinPositiveFrames.HasValue && MinPositiveFrames.Value < 1) ||
             (MinNegativeFrames.HasValue && MinNegativeFrames.Value < 1))
             throw new ArgumentException("Minimum dataset population must be at least one frame.");
+        if ((MinFitCalibrationGridCells is int fit && (fit < 1 || fit > 9)) ||
+            (MinHoldoutCalibrationGridCells is int holdout && (holdout < 1 || holdout > 9)))
+            throw new ArgumentException("Spatial coverage thresholds must lie between 1 and 9 occupied grid cells.");
 
         foreach (var (name, value) in new[]
         {
