@@ -7,7 +7,7 @@ using JLVisionLib;
 internal static class Program
 {
     private sealed record MemorySample(
-        string Phase, int Completed, long PrivateBytes, long WorkingSetBytes, long ManagedHeapBytes);
+        string Phase, long Completed, long PrivateBytes, long WorkingSetBytes, long ManagedHeapBytes);
 
     private static int Main(string[] args)
     {
@@ -161,7 +161,7 @@ internal static class Program
         // accumulating millions of latency samples in managed memory.
         const int MaxLatencySamples = 100_000;
         long[] lastLatencies = new long[MaxLatencySamples];
-        int completed = 0;
+        long completed = 0;
         ConcurrentQueue<string> failures = new();
         ParallelOptions parallelism = new() { MaxDegreeOfParallelism = workers };
         Stopwatch total = Stopwatch.StartNew();
@@ -184,11 +184,11 @@ internal static class Program
                 long started = Stopwatch.GetTimestamp();
                 try
                 {
-                    int sequence = Volatile.Read(ref completed);
+                    long sequence = Volatile.Read(ref completed);
                     RunWorkload(width, height, includeExpectedFailure: sequence % 17 == 0);
                     long elapsedTicks = Stopwatch.GetTimestamp() - started;
-                    int sampleIndex = Interlocked.Increment(ref completed) - 1;
-                    lastLatencies[sampleIndex % MaxLatencySamples] = elapsedTicks;
+                    long sampleIndex = Interlocked.Increment(ref completed) - 1;
+                    lastLatencies[(int)(sampleIndex % MaxLatencySamples)] = elapsedTicks;
                 }
                 catch (Exception e)
                 {
@@ -207,7 +207,7 @@ internal static class Program
         total.Stop();
         TakeMemorySample(process, memory, "end", completed);
 
-        long[] sorted = lastLatencies.Take(Math.Min(completed, MaxLatencySamples))
+        long[] sorted = lastLatencies.Take((int)Math.Min(completed, MaxLatencySamples))
             .Where(t => t > 0).OrderBy(t => t).ToArray();
         double Millis(long ticks) => ticks * 1_000.0 / Stopwatch.Frequency;
         double Percentile(double portion) => sorted.Length == 0
@@ -296,7 +296,7 @@ internal static class Program
             throw new InvalidOperationException("Native tuple absolute-value result was incorrect.");
     }
 
-    private static void TakeMemorySample(Process process, List<MemorySample> samples, string phase, int completed)
+    private static void TakeMemorySample(Process process, List<MemorySample> samples, string phase, long completed)
     {
         // The measured steady-state excludes known, collectible managed allocations.
         GC.Collect();
