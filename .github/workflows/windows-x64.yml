@@ -30,8 +30,19 @@ jobs:
       - name: Build and test (Debug)
         run: dotnet test JLVisionLib.slnx --configuration Debug --no-restore --logger "trx;LogFileName=jlv-test-results.trx"
 
+      - name: Run bounded native stress baseline (Windows x64)
+        run: dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 400 --workers 4 --batches 4 --output artifacts/jlv-stress.json
+
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
+
+      - name: Upload native stress report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-stress-report
+          path: artifacts/jlv-stress.json
+          if-no-files-found: warn
 
       - name: Upload test results
         if: always()
