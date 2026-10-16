@@ -43,6 +43,12 @@ jobs:
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
 
+      - name: Restore independent NuGet consumer from local Release package
+        run: dotnet restore tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --source ./artifacts
+
+      - name: Execute independent NuGet consumer (Release)
+        run: dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+
       - name: Upload native stress report
         if: always()
         uses: actions/upload-artifact@v4
