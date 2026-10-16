@@ -28,17 +28,18 @@ dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuratio
 # Independent worker throughput and stability; no mutable object is shared.
 dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 12000 --workers 4 --batches 12 --width 640 --height 480 --output artifacts/stress-parallel.json
 
-# Extended single-process runs can increase iterations up to 200000. At high throughput, this may still be short (seconds to minutes); measure actual wall-clock time.
-dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 80000 --workers 4 --batches 20 --width 640 --height 480 --output artifacts/stress-long.json
+# A true one-hour single-process soak, with periodic after-GC memory samples.
+# A maximum of 100000 recent operation latencies are retained in timed mode.
+dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --duration-seconds 3600 --workers 4 --batches 60 --width 640 --height 480 --output artifacts/stress-one-hour.json
 ```
 
-The runner exits nonzero on incorrect image dimensions, failed native image/region operations, unexpected native exceptions, incorrect tuple results, or incomplete operations. It also periodically triggers an expected operator error followed by a valid operation to check recovery.
+The runner exits nonzero on incorrect image dimensions, failed native image/region operations, unexpected native exceptions, incorrect tuple results, or incomplete operations. It also periodically triggers an expected operator error followed by a valid operation to check recovery. In timed mode (`--duration-seconds`) it runs repeatedly **within one process** for the requested wall-clock duration, samples memory between batches and retains only the most recent 100000 operation latencies, so it remains practical for hours. Timed mode takes precedence over `--iterations` if both are provided. The mode supports up to 24 hours per invocation.
 
 ## JSON report fields
 
 - `configuration`: operation count, worker count, image dimensions and batch count.
 - `results.throughputOperationsPerSecond`: *whole measurement period* throughput (includes inter-batch memory samples).
-- `results.operationLatencyMs`: per-operation P50, P95, P99, maximum; does **not** include inter-batch pauses.
+- `results.operationLatencyMs`: per-operation P50, P95, P99, maximum; does **not** include inter-batch pauses. In timed mode these are computed from at most the **last 100000 operations**, not every operation across the whole soak.
 - `memorySamples`: after-warmup baseline and per-batch `PrivateBytes`, `WorkingSetBytes`, and managed heap bytes after forced GC.
 - `results.privateByteDeltaAfterGc`: last sample's private bytes minus warmup baseline.
 - `errors`: the first failures with operation indexes.
