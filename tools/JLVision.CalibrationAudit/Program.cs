@@ -34,15 +34,30 @@ internal static class Program
 
             input.Acceptance.Validate();
             CalibrationAuditResult result = CalibrationEvidenceAudit.Evaluate(
-                input.Calibration, input.CalibrationEvidence, maxFit, maxHoldout, maxRms);
+                input.Calibration, input.CalibrationEvidence, maxFit, maxHoldout, maxRms,
+                input.Acceptance.MinFitCalibrationGridCells,
+                input.Acceptance.MinHoldoutCalibrationGridCells);
 
             string fullOutput = Path.GetFullPath(output);
             Directory.CreateDirectory(Path.GetDirectoryName(fullOutput)!);
+            string? svgOption = OptionalOption(args, "--heatmap");
+            string? heatmapPath = null;
+            if (svgOption is not null)
+            {
+                if (result.Spatial is null)
+                    throw new InvalidDataException("Heatmap requires calibrationEvidence.imageRegion with explicit row/column bounds.");
+                heatmapPath = Path.GetFullPath(svgOption);
+                Directory.CreateDirectory(Path.GetDirectoryName(heatmapPath)!);
+                File.WriteAllText(heatmapPath,
+                    CalibrationHeatmapSvg.Render(result, maxHoldout));
+            }
+
             File.WriteAllText(fullOutput, JsonSerializer.Serialize(new
             {
                 schemaVersion = 1,
                 generatedUtc = DateTimeOffset.UtcNow,
                 inputManifest = Path.GetFileName(manifestPath),
+                heatmapFilename = heatmapPath is null ? null : Path.GetFileName(heatmapPath),
                 result,
                 thresholds = new { maxFit, maxHoldout, maxHoldoutRmsMm = maxRms }
             }, new JsonSerializerOptions { WriteIndented = true }));
@@ -51,8 +66,13 @@ internal static class Program
             Console.WriteLine($"Fit: {result.Fit.Count} points, max={result.Fit.MaxMm:F5} mm, RMS={result.Fit.RmsMm:F5} mm");
             Console.WriteLine($"Independent holdout: {result.Holdout.Count} points, max={result.Holdout.MaxMm:F5} mm, RMS={result.Holdout.RmsMm:F5} mm");
             Console.WriteLine($"Audit: {(result.Passed ? "PASS" : "FAIL")}");
+            if (result.Spatial is not null)
+            {
+                Console.WriteLine($"Spatial cells: fit {result.Spatial.FitOccupiedCells}/9, independent holdout {result.Spatial.HoldoutOccupiedCells}/9; outliers={result.Spatial.Outliers.Length}");
+            }
             foreach (string reason in result.Reasons) Console.Error.WriteLine(reason);
             Console.WriteLine("JSON: " + fullOutput);
+            if (heatmapPath is not null) Console.WriteLine("SVG: " + heatmapPath);
             return result.Passed ? 0 : 2;
         }
         catch (Exception error)
