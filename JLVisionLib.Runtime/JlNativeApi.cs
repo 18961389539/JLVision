@@ -313,9 +313,10 @@ public class JlNativeApi
 	internal static void ClearObject(IntPtr key)
 	{
 		IntPtr proc = PreCall(570);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		int procResult = CallProcedure(proc);
-		PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	[DllImport("JLVisionCore", CallingConvention = CallingConvention.Cdecl)]
@@ -324,6 +325,7 @@ public class JlNativeApi
 	internal static IntPtr CopyObject(IntPtr key)
 	{
 		IntPtr proc = PreCall(568);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		StoreI(proc, 0, 1);
 		StoreI(proc, 1, -1);
@@ -332,7 +334,7 @@ public class JlNativeApi
 		{
 			num = GetOutputObject(proc, 1, out key);
 		}
-		PostCall(proc, num);
+		nativeCall.Complete(num);
 		return key;
 	}
 
@@ -340,6 +342,7 @@ public class JlNativeApi
 	{
 		JlTuple tuple = "object";
 		IntPtr proc = PreCall(579);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		InitOCT(proc, 0);
 		int num = CallProcedure(proc);
@@ -347,7 +350,7 @@ public class JlNativeApi
 		{
 			num = JlTuple.LoadNew(proc, 0, num, out tuple);
 		}
-		PostCall(proc, num);
+		nativeCall.Complete(num);
 		if (tuple.Length <= 0)
 		{
 			return "any";
