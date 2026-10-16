@@ -35,13 +35,14 @@ internal class JlTupleInt64 : JlTupleImplementation
 
 	internal override void PinTuple()
 	{
-		Monitor.Enter(this);
-		if (pinCount == 0)
+		lock (this)
 		{
-			pinHandle = GCHandle.Alloc(l, GCHandleType.Pinned);
+			if (pinCount == 0)
+			{
+				pinHandle = GCHandle.Alloc(l, GCHandleType.Pinned);
+			}
+			pinCount++;
 		}
-		pinCount++;
-		Monitor.Exit(this);
 	}
 
 	public JlTupleInt64(long l)
