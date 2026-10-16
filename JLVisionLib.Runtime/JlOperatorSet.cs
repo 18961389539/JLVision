@@ -32,6 +32,7 @@ public class JlOperatorSet
 	public static void UnionCotangentialContoursXld(JlObject contours, out JlObject unionContours, JlTuple fitClippingLength, JlTuple fitLength, JlTuple maxTangAngle, JlTuple maxDist, JlTuple maxDistPerp, JlTuple maxOverlap, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(0);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, fitClippingLength);
 		JlNativeApi.Store(proc, 1, fitLength);
@@ -50,7 +51,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxOverlap);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -80,6 +81,7 @@ public class JlOperatorSet
 	public static void GenNurbsInterp(JlTuple rows, JlTuple cols, JlTuple tangents, JlTuple degree, out JlTuple ctrlRows, out JlTuple ctrlCols, out JlTuple knots)
 	{
 		IntPtr proc = JlNativeApi.PreCall(3);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, cols);
 		JlNativeApi.Store(proc, 2, tangents);
@@ -95,7 +97,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ctrlRows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out ctrlCols);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out knots);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把控制多边形加节点向量表示的 NURBS 曲线稠采样近似为一条 XLD 轮廓，结果经 out 走新建句柄。</summary>
@@ -116,6 +118,7 @@ public class JlOperatorSet
 	public static void GenContourNurbsXld(out JlObject contour, JlTuple rows, JlTuple cols, JlTuple knots, JlTuple weights, JlTuple degree, JlTuple maxError, JlTuple maxDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(4);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, cols);
 		JlNativeApi.Store(proc, 2, knots);
@@ -133,7 +136,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxError);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = JlObject.LoadNew(proc, 1, err, out contour);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两组闭合多边形所围区域求几何并集，边界以新多边形集经 out 返回（原生 id 5）。</summary>
@@ -149,12 +152,13 @@ public class JlOperatorSet
 	public static void Union2ClosedPolygonsXld(JlObject polygons1, JlObject polygons2, out JlObject polygonsUnion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(5);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons1);
 		JlNativeApi.Store(proc, 2, polygons2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out polygonsUnion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons1);
 		GC.KeepAlive(polygons2);
 	}
@@ -172,12 +176,13 @@ public class JlOperatorSet
 	public static void Union2ClosedContoursXld(JlObject contours1, JlObject contours2, out JlObject contoursUnion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(6);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out contoursUnion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours1);
 		GC.KeepAlive(contours2);
 	}
@@ -195,12 +200,13 @@ public class JlOperatorSet
 	public static void SymmDifferenceClosedPolygonsXld(JlObject polygons1, JlObject polygons2, out JlObject polygonsDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(7);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons1);
 		JlNativeApi.Store(proc, 2, polygons2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out polygonsDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons1);
 		GC.KeepAlive(polygons2);
 	}
@@ -218,12 +224,13 @@ public class JlOperatorSet
 	public static void SymmDifferenceClosedContoursXld(JlObject contours1, JlObject contours2, out JlObject contoursDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(8);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out contoursDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours1);
 		GC.KeepAlive(contours2);
 	}
@@ -241,12 +248,13 @@ public class JlOperatorSet
 	public static void DifferenceClosedPolygonsXld(JlObject polygons, JlObject sub, out JlObject polygonsDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(9);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 2, sub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out polygonsDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons);
 		GC.KeepAlive(sub);
 	}
@@ -264,12 +272,13 @@ public class JlOperatorSet
 	public static void DifferenceClosedContoursXld(JlObject contours, JlObject sub, out JlObject contoursDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(10);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 2, sub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out contoursDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 		GC.KeepAlive(sub);
 	}
@@ -287,12 +296,13 @@ public class JlOperatorSet
 	public static void IntersectionClosedPolygonsXld(JlObject polygons1, JlObject polygons2, out JlObject polygonsIntersection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(11);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons1);
 		JlNativeApi.Store(proc, 2, polygons2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out polygonsIntersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons1);
 		GC.KeepAlive(polygons2);
 	}
@@ -310,12 +320,13 @@ public class JlOperatorSet
 	public static void IntersectionClosedContoursXld(JlObject contours1, JlObject contours2, out JlObject contoursIntersection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(12);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out contoursIntersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours1);
 		GC.KeepAlive(contours2);
 	}
@@ -340,6 +351,7 @@ public class JlOperatorSet
 	public static void UnionCocircularContoursXld(JlObject contours, out JlObject unionContours, JlTuple maxArcAngleDiff, JlTuple maxArcOverlap, JlTuple maxTangentAngle, JlTuple maxDist, JlTuple maxRadiusDiff, JlTuple maxCenterDist, JlTuple mergeSmallContours, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(13);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, maxArcAngleDiff);
 		JlNativeApi.Store(proc, 1, maxArcOverlap);
@@ -360,7 +372,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mergeSmallContours);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -381,6 +393,7 @@ public class JlOperatorSet
 	public static void CropContoursXld(JlObject contours, out JlObject croppedContours, JlTuple row1, JlTuple col1, JlTuple row2, JlTuple col2, JlTuple closeContours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(14);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, col1);
@@ -395,7 +408,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(col2);
 		JlNativeApi.UnpinTuple(closeContours);
 		err = JlObject.LoadNew(proc, 1, err, out croppedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -414,6 +427,7 @@ public class JlOperatorSet
 	public static void GenCrossContourXld(out JlObject cross, JlTuple row, JlTuple col, JlTuple size, JlTuple angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(15);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.Store(proc, 2, size);
@@ -425,7 +439,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(size);
 		JlNativeApi.UnpinTuple(angle);
 		err = JlObject.LoadNew(proc, 1, err, out cross);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按轮廓间的相对位置（包围盒或首点）重排轮廓集合的元素顺序，结果经 out 走新建裸句柄（原生 id 16）。</summary>
@@ -443,6 +457,7 @@ public class JlOperatorSet
 	public static void SortContoursXld(JlObject contours, out JlObject sortedContours, JlTuple sortMode, JlTuple order, JlTuple rowOrCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(16);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, sortMode);
 		JlNativeApi.Store(proc, 1, order);
@@ -453,7 +468,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(order);
 		JlNativeApi.UnpinTuple(rowOrCol);
 		err = JlObject.LoadNew(proc, 1, err, out sortedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -475,6 +490,7 @@ public class JlOperatorSet
 	public static void MergeContLineScanXld(JlObject currConts, JlObject prevConts, out JlObject currMergedConts, out JlObject prevMergedConts, JlTuple imageHeight, JlTuple margin, JlTuple mergeBorder, JlTuple maxImagesCont)
 	{
 		IntPtr proc = JlNativeApi.PreCall(17);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, currConts);
 		JlNativeApi.Store(proc, 2, prevConts);
 		JlNativeApi.Store(proc, 0, imageHeight);
@@ -490,7 +506,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxImagesCont);
 		err = JlObject.LoadNew(proc, 1, err, out currMergedConts);
 		err = JlObject.LoadNew(proc, 2, err, out prevMergedConts);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(currConts);
 		GC.KeepAlive(prevConts);
 	}
@@ -507,12 +523,13 @@ public class JlOperatorSet
 	public static void ReadPolygonXldArcInfo(out JlObject polygons, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(18);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out polygons);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把多边形集写出为 ARC/INFO generate 文本文件，纯副作用、无输出参数（原生 id 19）。</summary>
@@ -527,11 +544,12 @@ public class JlOperatorSet
 	public static void WritePolygonXldArcInfo(JlObject polygons, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(19);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(polygons);
 	}
 
@@ -547,12 +565,13 @@ public class JlOperatorSet
 	public static void ReadContourXldArcInfo(out JlObject contours, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(20);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out contours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把轮廓集写出为 ARC/INFO generate 文本文件，纯副作用、无输出参数（原生 id 21）。</summary>
@@ -567,11 +586,12 @@ public class JlOperatorSet
 	public static void WriteContourXldArcInfo(JlObject contours, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(21);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(contours);
 	}
 
@@ -587,12 +607,13 @@ public class JlOperatorSet
 	public static void ReadWorldFile(JlTuple fileName, out JlTuple worldTransformation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(22);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out worldTransformation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把轮廓沿法向平移给定距离生成平行轮廓，结果经 out 走新建裸句柄（原生 id 23）。</summary>
@@ -609,6 +630,7 @@ public class JlOperatorSet
 	public static void GenParallelContourXld(JlObject contours, out JlObject parallelContours, JlTuple mode, JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(23);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, distance);
@@ -617,7 +639,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(distance);
 		err = JlObject.LoadNew(proc, 1, err, out parallelContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -637,6 +659,7 @@ public class JlOperatorSet
 	public static void GenRectangle2ContourXld(out JlObject rectangle, JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(24);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -650,7 +673,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = JlObject.LoadNew(proc, 1, err, out rectangle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐点计算轮廓采样点到旋转矩形的距离，整条距离剖面经 out 以新数值元组返回（原生 id 25）。</summary>
@@ -671,6 +694,7 @@ public class JlOperatorSet
 	public static void DistRectangle2ContourPointsXld(JlObject contour, JlTuple clippingEndPoints, JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, out JlTuple distances)
 	{
 		IntPtr proc = JlNativeApi.PreCall(25);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, clippingEndPoints);
 		JlNativeApi.Store(proc, 1, row);
@@ -687,7 +711,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distances);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -714,6 +738,7 @@ public class JlOperatorSet
 	public static void FitRectangle2ContourXld(JlObject contours, JlTuple algorithm, JlTuple maxNumPoints, JlTuple maxClosureDist, JlTuple clippingEndPoints, JlTuple iterations, JlTuple clippingFactor, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple length1, out JlTuple length2, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(26);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, algorithm);
 		JlNativeApi.Store(proc, 1, maxNumPoints);
@@ -740,7 +765,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out length1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length2);
 		err = JlTuple.LoadNew(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -760,6 +785,7 @@ public class JlOperatorSet
 	public static void SegmentContourAttribXld(JlObject contour, out JlObject contourPart, JlTuple attribute, JlTuple operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(27);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, attribute);
 		JlNativeApi.Store(proc, 1, operation);
@@ -772,7 +798,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out contourPart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -792,6 +818,7 @@ public class JlOperatorSet
 	public static void SegmentContoursXld(JlObject contours, out JlObject contoursSplit, JlTuple mode, JlTuple smoothCont, JlTuple maxLineDist1, JlTuple maxLineDist2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(28);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, smoothCont);
@@ -804,7 +831,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxLineDist1);
 		JlNativeApi.UnpinTuple(maxLineDist2);
 		err = JlObject.LoadNew(proc, 1, err, out contoursSplit);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -831,6 +858,7 @@ public class JlOperatorSet
 	public static void FitCircleContourXld(JlObject contours, JlTuple algorithm, JlTuple maxNumPoints, JlTuple maxClosureDist, JlTuple clippingEndPoints, JlTuple iterations, JlTuple clippingFactor, out JlTuple row, out JlTuple column, out JlTuple radius, out JlTuple startPhi, out JlTuple endPhi, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(29);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, algorithm);
 		JlNativeApi.Store(proc, 1, maxNumPoints);
@@ -857,7 +885,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out startPhi);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out endPhi);
 		err = JlTuple.LoadNew(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -884,6 +912,7 @@ public class JlOperatorSet
 	public static void FitLineContourXld(JlObject contours, JlTuple algorithm, JlTuple maxNumPoints, JlTuple clippingEndPoints, JlTuple iterations, JlTuple clippingFactor, out JlTuple rowBegin, out JlTuple colBegin, out JlTuple rowEnd, out JlTuple colEnd, out JlTuple nr, out JlTuple nc, out JlTuple dist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(30);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, algorithm);
 		JlNativeApi.Store(proc, 1, maxNumPoints);
@@ -910,7 +939,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out nr);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out nc);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out dist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -933,6 +962,7 @@ public class JlOperatorSet
 	public static void DistEllipseContourPointsXld(JlObject contour, JlTuple distanceMode, JlTuple clippingEndPoints, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, out JlTuple distances)
 	{
 		IntPtr proc = JlNativeApi.PreCall(31);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, distanceMode);
 		JlNativeApi.Store(proc, 1, clippingEndPoints);
@@ -951,7 +981,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(radius1);
 		JlNativeApi.UnpinTuple(radius2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distances);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -978,6 +1008,7 @@ public class JlOperatorSet
 	public static void DistEllipseContourXld(JlObject contours, JlTuple mode, JlTuple maxNumPoints, JlTuple clippingEndPoints, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, out JlTuple minDist, out JlTuple maxDist, out JlTuple avgDist, out JlTuple sigmaDist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(32);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, maxNumPoints);
@@ -1004,7 +1035,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out maxDist);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out avgDist);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out sigmaDist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1034,6 +1065,7 @@ public class JlOperatorSet
 	public static void FitEllipseContourXld(JlObject contours, JlTuple algorithm, JlTuple maxNumPoints, JlTuple maxClosureDist, JlTuple clippingEndPoints, JlTuple vossTabSize, JlTuple iterations, JlTuple clippingFactor, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple radius1, out JlTuple radius2, out JlTuple startPhi, out JlTuple endPhi, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(33);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, algorithm);
 		JlNativeApi.Store(proc, 1, maxNumPoints);
@@ -1066,7 +1098,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out startPhi);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out endPhi);
 		err = JlTuple.LoadNew(proc, 7, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1088,6 +1120,7 @@ public class JlOperatorSet
 	public static void GenCircleContourXld(out JlObject contCircle, JlTuple row, JlTuple column, JlTuple radius, JlTuple startPhi, JlTuple endPhi, JlTuple pointOrder, JlTuple resolution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(34);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, radius);
@@ -1105,7 +1138,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pointOrder);
 		JlNativeApi.UnpinTuple(resolution);
 		err = JlObject.LoadNew(proc, 1, err, out contCircle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成椭圆或椭圆弧的 XLD 轮廓，结果经 out 走新建裸句柄（原生 id 35）。</summary>
@@ -1128,6 +1161,7 @@ public class JlOperatorSet
 	public static void GenEllipseContourXld(out JlObject contEllipse, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, JlTuple startPhi, JlTuple endPhi, JlTuple pointOrder, JlTuple resolution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(35);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -1149,7 +1183,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pointOrder);
 		JlNativeApi.UnpinTuple(resolution);
 		err = JlObject.LoadNew(proc, 1, err, out contEllipse);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>给轮廓点叠加均匀分布的随机扰动，带噪轮廓经 out 走新建裸句柄、原轮廓不变（原生 id 36）。</summary>
@@ -1166,6 +1200,7 @@ public class JlOperatorSet
 	public static void AddNoiseWhiteContourXld(JlObject contours, out JlObject noisyContours, JlTuple numRegrPoints, JlTuple amp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(36);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numRegrPoints);
 		JlNativeApi.Store(proc, 1, amp);
@@ -1174,7 +1209,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numRegrPoints);
 		JlNativeApi.UnpinTuple(amp);
 		err = JlObject.LoadNew(proc, 1, err, out noisyContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1197,6 +1232,7 @@ public class JlOperatorSet
 	public static void CombineRoadsXld(JlObject edgePolygons, JlObject modParallels, JlObject extParallels, JlObject centerLines, out JlObject roadSides, JlTuple maxAngleParallel, JlTuple maxAngleColinear, JlTuple maxDistanceParallel, JlTuple maxDistanceColinear)
 	{
 		IntPtr proc = JlNativeApi.PreCall(37);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, edgePolygons);
 		JlNativeApi.Store(proc, 2, modParallels);
 		JlNativeApi.Store(proc, 3, extParallels);
@@ -1212,7 +1248,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxDistanceParallel);
 		JlNativeApi.UnpinTuple(maxDistanceColinear);
 		err = JlObject.LoadNew(proc, 1, err, out roadSides);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(edgePolygons);
 		GC.KeepAlive(modParallels);
 		GC.KeepAlive(extParallels);
@@ -1231,11 +1267,12 @@ public class JlOperatorSet
 	public static void MaxParallelsXld(JlObject extParallels, out JlObject maxPolygons)
 	{
 		IntPtr proc = JlNativeApi.PreCall(38);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, extParallels);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out maxPolygons);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(extParallels);
 	}
 
@@ -1257,6 +1294,7 @@ public class JlOperatorSet
 	public static void ModParallelsXld(JlObject parallels, JlObject image, out JlObject modParallels, out JlObject extParallels, JlTuple quality, JlTuple minGray, JlTuple maxGray, JlTuple maxStandard)
 	{
 		IntPtr proc = JlNativeApi.PreCall(39);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, parallels);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, quality);
@@ -1272,7 +1310,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxStandard);
 		err = JlObject.LoadNew(proc, 1, err, out modParallels);
 		err = JlObject.LoadNew(proc, 2, err, out extParallels);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(parallels);
 		GC.KeepAlive(image);
 	}
@@ -1295,6 +1333,7 @@ public class JlOperatorSet
 	public static void InfoParallelsXld(JlObject parallels, JlObject image, out JlTuple qualityMin, out JlTuple qualityMax, out JlTuple grayMin, out JlTuple grayMax, out JlTuple standardMin, out JlTuple standardMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(40);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, parallels);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1310,7 +1349,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out grayMax);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out standardMin);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out standardMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(parallels);
 		GC.KeepAlive(image);
 	}
@@ -1334,6 +1373,7 @@ public class JlOperatorSet
 	public static void GetParallelsXld(JlObject parallels, out JlTuple row1, out JlTuple col1, out JlTuple length1, out JlTuple phi1, out JlTuple row2, out JlTuple col2, out JlTuple length2, out JlTuple phi2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(41);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, parallels);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1352,7 +1392,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out col2);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out length2);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out phi2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(parallels);
 	}
 
@@ -1372,6 +1412,7 @@ public class JlOperatorSet
 	public static void GenParallelsXld(JlObject polygons, out JlObject parallels, JlTuple len, JlTuple dist, JlTuple alpha, JlTuple merge)
 	{
 		IntPtr proc = JlNativeApi.PreCall(42);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 0, len);
 		JlNativeApi.Store(proc, 1, dist);
@@ -1384,7 +1425,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(alpha);
 		JlNativeApi.UnpinTuple(merge);
 		err = JlObject.LoadNew(proc, 1, err, out parallels);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons);
 	}
 
@@ -1405,6 +1446,7 @@ public class JlOperatorSet
 	public static void GetLinesXld(JlObject polygon, out JlTuple beginRow, out JlTuple beginCol, out JlTuple endRow, out JlTuple endCol, out JlTuple length, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(43);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygon);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1419,7 +1461,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out endCol);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygon);
 	}
 
@@ -1438,6 +1480,7 @@ public class JlOperatorSet
 	public static void GetPolygonXld(JlObject polygon, out JlTuple row, out JlTuple col, out JlTuple length, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(44);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygon);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1448,7 +1491,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out col);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out length);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygon);
 	}
 
@@ -1466,6 +1509,7 @@ public class JlOperatorSet
 	public static void GenPolygonsXld(JlObject contours, out JlObject polygons, JlTuple type, JlTuple alpha)
 	{
 		IntPtr proc = JlNativeApi.PreCall(45);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -1474,7 +1518,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(type);
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlObject.LoadNew(proc, 1, err, out polygons);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1493,6 +1537,7 @@ public class JlOperatorSet
 	public static void SplitContoursXld(JlObject polygons, out JlObject contours, JlTuple mode, JlTuple weight, JlTuple smooth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(46);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, weight);
@@ -1503,7 +1548,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(weight);
 		JlNativeApi.UnpinTuple(smooth);
 		err = JlObject.LoadNew(proc, 1, err, out contours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons);
 	}
 
@@ -1520,13 +1565,14 @@ public class JlOperatorSet
 	public static void ProjectiveTransContourXld(JlObject contours, out JlObject contoursProjTrans, JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(47);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlObject.LoadNew(proc, 1, err, out contoursProjTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1543,13 +1589,14 @@ public class JlOperatorSet
 	public static void AffineTransPolygonXld(JlObject polygons, out JlObject polygonsAffineTrans, JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(48);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlObject.LoadNew(proc, 1, err, out polygonsAffineTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygons);
 	}
 
@@ -1566,13 +1613,14 @@ public class JlOperatorSet
 	public static void AffineTransContourXld(JlObject contours, out JlObject contoursAffineTrans, JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(49);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlObject.LoadNew(proc, 1, err, out contoursAffineTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1588,11 +1636,12 @@ public class JlOperatorSet
 	public static void CloseContoursXld(JlObject contours, out JlObject closedContours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(50);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out closedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1610,6 +1659,7 @@ public class JlOperatorSet
 	public static void ClipEndPointsContoursXld(JlObject contours, out JlObject clippedContours, JlTuple mode, JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(51);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, length);
@@ -1618,7 +1668,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(length);
 		err = JlObject.LoadNew(proc, 1, err, out clippedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1638,6 +1688,7 @@ public class JlOperatorSet
 	public static void ClipContoursXld(JlObject contours, out JlObject clippedContours, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(52);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -1650,7 +1701,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlObject.LoadNew(proc, 1, err, out clippedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1670,6 +1721,7 @@ public class JlOperatorSet
 	public static void LocalMaxContoursXld(JlObject contours, JlObject image, out JlObject localMaxContours, JlTuple minPercent, JlTuple minDiff, JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(53);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, minPercent);
@@ -1681,7 +1733,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minDiff);
 		JlNativeApi.UnpinTuple(distance);
 		err = JlObject.LoadNew(proc, 1, err, out localMaxContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 		GC.KeepAlive(image);
 	}
@@ -1707,6 +1759,7 @@ public class JlOperatorSet
 	public static void UnionStraightContoursHistoXld(JlObject contours, out JlObject unionContours, out JlObject selectedContours, JlTuple refLineStartRow, JlTuple refLineStartColumn, JlTuple refLineEndRow, JlTuple refLineEndColumn, JlTuple width, JlTuple maxWidth, JlTuple filterSize, out JlTuple histoValues)
 	{
 		IntPtr proc = JlNativeApi.PreCall(54);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, refLineStartRow);
 		JlNativeApi.Store(proc, 1, refLineStartColumn);
@@ -1729,7 +1782,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
 		err = JlObject.LoadNew(proc, 2, err, out selectedContours);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out histoValues);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1750,6 +1803,7 @@ public class JlOperatorSet
 	public static void UnionStraightContoursXld(JlObject contours, out JlObject unionContours, JlTuple maxDist, JlTuple maxDiff, JlTuple percent, JlTuple mode, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(55);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, maxDist);
 		JlNativeApi.Store(proc, 1, maxDiff);
@@ -1764,7 +1818,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1793,6 +1847,7 @@ public class JlOperatorSet
 	public static void UnionCollinearContoursExtXld(JlObject contours, out JlObject unionContours, JlTuple maxDistAbs, JlTuple maxDistRel, JlTuple maxShift, JlTuple maxAngle, JlTuple maxOverlap, JlTuple maxRegrError, JlTuple maxCosts, JlTuple weightDist, JlTuple weightShift, JlTuple weightAngle, JlTuple weightLink, JlTuple weightRegr, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(56);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, maxDistAbs);
 		JlNativeApi.Store(proc, 1, maxDistRel);
@@ -1823,7 +1878,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(weightRegr);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1844,6 +1899,7 @@ public class JlOperatorSet
 	public static void UnionCollinearContoursXld(JlObject contours, out JlObject unionContours, JlTuple maxDistAbs, JlTuple maxDistRel, JlTuple maxShift, JlTuple maxAngle, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(57);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, maxDistAbs);
 		JlNativeApi.Store(proc, 1, maxDistRel);
@@ -1858,7 +1914,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxAngle);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1877,6 +1933,7 @@ public class JlOperatorSet
 	public static void UnionAdjacentContoursXld(JlObject contours, out JlObject unionContours, JlTuple maxDistAbs, JlTuple maxDistRel, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(58);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, maxDistAbs);
 		JlNativeApi.Store(proc, 1, maxDistRel);
@@ -1887,7 +1944,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxDistRel);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out unionContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1908,6 +1965,7 @@ public class JlOperatorSet
 	public static void SelectContoursXld(JlObject contours, out JlObject selectedContours, JlTuple feature, JlTuple min1, JlTuple max1, JlTuple min2, JlTuple max2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(59);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, feature);
 		JlNativeApi.Store(proc, 1, min1);
@@ -1922,7 +1980,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min2);
 		JlNativeApi.UnpinTuple(max2);
 		err = JlObject.LoadNew(proc, 1, err, out selectedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1947,6 +2005,7 @@ public class JlOperatorSet
 	public static void GetRegressParamsXld(JlObject contours, out JlTuple length, out JlTuple nx, out JlTuple ny, out JlTuple dist, out JlTuple fpx, out JlTuple fpy, out JlTuple lpx, out JlTuple lpy, out JlTuple mean, out JlTuple deviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(60);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -1969,7 +2028,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out lpy);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out mean);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out deviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -1987,6 +2046,7 @@ public class JlOperatorSet
 	public static void RegressContoursXld(JlObject contours, out JlObject regressContours, JlTuple mode, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(61);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -1995,7 +2055,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regressContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -2014,6 +2074,7 @@ public class JlOperatorSet
 	public static void GetContourAngleXld(JlObject contour, JlTuple angleMode, JlTuple calcMode, JlTuple lookaround, out JlTuple angles)
 	{
 		IntPtr proc = JlNativeApi.PreCall(62);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, angleMode);
 		JlNativeApi.Store(proc, 1, calcMode);
@@ -2024,7 +2085,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(calcMode);
 		JlNativeApi.UnpinTuple(lookaround);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out angles);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2041,13 +2102,14 @@ public class JlOperatorSet
 	public static void SmoothContoursXld(JlObject contours, out JlObject smoothedContours, JlTuple numRegrPoints)
 	{
 		IntPtr proc = JlNativeApi.PreCall(63);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numRegrPoints);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(numRegrPoints);
 		err = JlObject.LoadNew(proc, 1, err, out smoothedContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -2063,11 +2125,12 @@ public class JlOperatorSet
 	public static void ContourPointNumXld(JlObject contour, out JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(64);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out length);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2083,11 +2146,12 @@ public class JlOperatorSet
 	public static void QueryContourGlobalAttribsXld(JlObject contour, out JlTuple attribs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(65);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out attribs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2104,13 +2168,14 @@ public class JlOperatorSet
 	public static void GetContourGlobalAttribXld(JlObject contour, JlTuple name, out JlTuple attrib)
 	{
 		IntPtr proc = JlNativeApi.PreCall(66);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(name);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out attrib);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2126,11 +2191,12 @@ public class JlOperatorSet
 	public static void QueryContourAttribsXld(JlObject contour, out JlTuple attribs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(67);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out attribs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2147,13 +2213,14 @@ public class JlOperatorSet
 	public static void GetContourAttribXld(JlObject contour, JlTuple name, out JlTuple attrib)
 	{
 		IntPtr proc = JlNativeApi.PreCall(68);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(name);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out attrib);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2170,13 +2237,14 @@ public class JlOperatorSet
 	public static void GetContourXld(JlObject contour, out JlTuple row, out JlTuple col)
 	{
 		IntPtr proc = JlNativeApi.PreCall(69);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out col);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -2193,13 +2261,14 @@ public class JlOperatorSet
 	public static void GenContourRegionXld(JlObject regions, out JlObject contours, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(70);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out contours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -2218,6 +2287,7 @@ public class JlOperatorSet
 	public static void GenContourPolygonRoundedXld(out JlObject contour, JlTuple row, JlTuple col, JlTuple radius, JlTuple samplingInterval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(71);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.Store(proc, 2, radius);
@@ -2229,7 +2299,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(radius);
 		JlNativeApi.UnpinTuple(samplingInterval);
 		err = JlObject.LoadNew(proc, 1, err, out contour);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用顶点坐标元组生成单条 XLD 多边形轮廓，新句柄走 out。</summary>
@@ -2245,6 +2315,7 @@ public class JlOperatorSet
 	public static void GenContourPolygonXld(out JlObject contour, JlTuple row, JlTuple col)
 	{
 		IntPtr proc = JlNativeApi.PreCall(72);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.InitOCT(proc, 1);
@@ -2252,7 +2323,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(col);
 		err = JlObject.LoadNew(proc, 1, err, out contour);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 1 像素宽的骨架区域跟踪为 XLD 轮廓，可按最短长度过滤，新句柄走 out。</summary>
@@ -2269,6 +2340,7 @@ public class JlOperatorSet
 	public static void GenContoursSkeletonXld(JlObject skeleton, out JlObject contours, JlTuple length, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(73);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, skeleton);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.Store(proc, 1, mode);
@@ -2277,7 +2349,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(length);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out contours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(skeleton);
 	}
 
@@ -2298,6 +2370,7 @@ public class JlOperatorSet
 	public static void WienerFilterNi(JlObject image, JlObject psf, JlObject noiseRegion, out JlObject restoredImage, JlTuple maskWidth, JlTuple maskHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(75);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, psf);
 		JlNativeApi.Store(proc, 3, noiseRegion);
@@ -2308,7 +2381,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskHeight);
 		err = JlObject.LoadNew(proc, 1, err, out restoredImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(psf);
 		GC.KeepAlive(noiseRegion);
@@ -2328,13 +2401,14 @@ public class JlOperatorSet
 	public static void WienerFilter(JlObject image, JlObject psf, JlObject filteredImage, out JlObject restoredImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(76);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, psf);
 		JlNativeApi.Store(proc, 3, filteredImage);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out restoredImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(psf);
 		GC.KeepAlive(filteredImage);
@@ -2356,6 +2430,7 @@ public class JlOperatorSet
 	public static void GenPsfMotion(out JlObject psf, JlTuple PSFwidth, JlTuple PSFheight, JlTuple blurring, JlTuple angle, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(77);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, PSFwidth);
 		JlNativeApi.Store(proc, 1, PSFheight);
 		JlNativeApi.Store(proc, 2, blurring);
@@ -2369,7 +2444,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(angle);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out psf);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对图像施加线性运动模糊模拟，模糊图走 out。</summary>
@@ -2387,6 +2462,7 @@ public class JlOperatorSet
 	public static void SimulateMotion(JlObject image, out JlObject movedImage, JlTuple blurring, JlTuple angle, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(78);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, blurring);
 		JlNativeApi.Store(proc, 1, angle);
@@ -2397,7 +2473,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(angle);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out movedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -2415,6 +2491,7 @@ public class JlOperatorSet
 	public static void GenPsfDefocus(out JlObject psf, JlTuple PSFwidth, JlTuple PSFheight, JlTuple blurring)
 	{
 		IntPtr proc = JlNativeApi.PreCall(79);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, PSFwidth);
 		JlNativeApi.Store(proc, 1, PSFheight);
 		JlNativeApi.Store(proc, 2, blurring);
@@ -2424,7 +2501,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(PSFheight);
 		JlNativeApi.UnpinTuple(blurring);
 		err = JlObject.LoadNew(proc, 1, err, out psf);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对图像施加均匀离焦模糊，模糊图走 out。</summary>
@@ -2440,13 +2517,14 @@ public class JlOperatorSet
 	public static void SimulateDefocus(JlObject image, out JlObject defocusedImage, JlTuple blurring)
 	{
 		IntPtr proc = JlNativeApi.PreCall(80);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, blurring);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(blurring);
 		err = JlObject.LoadNew(proc, 1, err, out defocusedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -2477,6 +2555,7 @@ public class JlOperatorSet
 	public static void TupleUnion(JlTuple set1, JlTuple set2, out JlTuple union)
 	{
 		IntPtr proc = JlNativeApi.PreCall(95);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, set1);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2484,7 +2563,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(set1);
 		JlNativeApi.UnpinTuple(set2);
 		err = JlTuple.LoadNew(proc, 0, err, out union);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两个元组按集合求交，结果元组走 out。</summary>
@@ -2500,6 +2579,7 @@ public class JlOperatorSet
 	public static void TupleIntersection(JlTuple set1, JlTuple set2, out JlTuple intersection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(96);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, set1);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2507,7 +2587,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(set1);
 		JlNativeApi.UnpinTuple(set2);
 		err = JlTuple.LoadNew(proc, 0, err, out intersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求 set1 减去 set2 的单向集合差，结果元组走 out。</summary>
@@ -2523,6 +2603,7 @@ public class JlOperatorSet
 	public static void TupleDifference(JlTuple set1, JlTuple set2, out JlTuple difference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(97);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, set1);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2530,7 +2611,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(set1);
 		JlNativeApi.UnpinTuple(set2);
 		err = JlTuple.LoadNew(proc, 0, err, out difference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两元组的对称差（只属于其中一边的元素），结果元组走 out。</summary>
@@ -2546,6 +2627,7 @@ public class JlOperatorSet
 	public static void TupleSymmdiff(JlTuple set1, JlTuple set2, out JlTuple symmDiff)
 	{
 		IntPtr proc = JlNativeApi.PreCall(98);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, set1);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2553,7 +2635,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(set1);
 		JlNativeApi.UnpinTuple(set2);
 		err = JlTuple.LoadNew(proc, 0, err, out symmDiff);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断元组成员是否为字符串，输出与输入等长的 0/1 整型元组走 out。</summary>
@@ -2568,12 +2650,13 @@ public class JlOperatorSet
 	public static void TupleIsStringElem(JlTuple t, out JlTuple isString)
 	{
 		IntPtr proc = JlNativeApi.PreCall(99);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isString);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断是否为实数（浮点）类型，输出 0/1 整型元组走 out。</summary>
@@ -2588,12 +2671,13 @@ public class JlOperatorSet
 	public static void TupleIsRealElem(JlTuple t, out JlTuple isReal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(100);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isReal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断是否为整数类型，输出 0/1 整型元组走 out。</summary>
@@ -2608,12 +2692,13 @@ public class JlOperatorSet
 	public static void TupleIsIntElem(JlTuple t, out JlTuple isInt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(101);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isInt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素返回其类型码（整数），用于区分 MIXED 元组每一位的实际类型，走 out。</summary>
@@ -2628,12 +2713,13 @@ public class JlOperatorSet
 	public static void TupleTypeElem(JlTuple t, out JlTuple types)
 	{
 		IntPtr proc = JlNativeApi.PreCall(102);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out types);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>判断整个元组是否为混合（MIXED）类型，单值 0/1 整型结果走 out。</summary>
@@ -2648,12 +2734,13 @@ public class JlOperatorSet
 	public static void TupleIsMixed(JlTuple t, out JlTuple isMixed)
 	{
 		IntPtr proc = JlNativeApi.PreCall(103);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isMixed);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>判断元组的内部存储表示是否为字符串型，单值 0/1 整型结果走 out。</summary>
@@ -2668,12 +2755,13 @@ public class JlOperatorSet
 	public static void TupleIsString(JlTuple t, out JlTuple isString)
 	{
 		IntPtr proc = JlNativeApi.PreCall(104);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isString);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>判断元组的内部存储表示是否为 double 型，单值 0/1 整型结果走 out。</summary>
@@ -2688,12 +2776,13 @@ public class JlOperatorSet
 	public static void TupleIsReal(JlTuple t, out JlTuple isReal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(105);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isReal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>判断元组的内部存储表示是否为 32 位整数型，单值 0/1 整型结果走 out。</summary>
@@ -2708,12 +2797,13 @@ public class JlOperatorSet
 	public static void TupleIsInt(JlTuple t, out JlTuple isInt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(106);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isInt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>以整数类型码返回整个元组的类型，单值整型结果走 out。</summary>
@@ -2728,12 +2818,13 @@ public class JlOperatorSet
 	public static void TupleType(JlTuple t, out JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(107);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out type);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在 [min, max] 值域内按等宽 bin 统计元组分布，计数与 bin 宽度两路走 out。</summary>
@@ -2752,6 +2843,7 @@ public class JlOperatorSet
 	public static void TupleHistoRange(JlTuple tuple, JlTuple min, JlTuple max, JlTuple numBins, out JlTuple histo, out JlTuple binSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(108);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, min);
 		JlNativeApi.Store(proc, 2, max);
@@ -2765,7 +2857,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numBins);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out histo);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out binSize);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从字符串元组中挑出匹配正则的元素，匹配项新元组走 out。</summary>
@@ -2781,6 +2873,7 @@ public class JlOperatorSet
 	public static void TupleRegexpSelect(JlTuple data, JlTuple expression, out JlTuple selection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(109);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, data);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2788,7 +2881,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(data);
 		JlNativeApi.UnpinTuple(expression);
 		err = JlTuple.LoadNew(proc, 0, err, out selection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用正则判定字符串元组的匹配情况，INTEGER 结果走 out。</summary>
@@ -2804,6 +2897,7 @@ public class JlOperatorSet
 	public static void TupleRegexpTest(JlTuple data, JlTuple expression, out JlTuple numMatches)
 	{
 		IntPtr proc = JlNativeApi.PreCall(110);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, data);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2811,7 +2905,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(data);
 		JlNativeApi.UnpinTuple(expression);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out numMatches);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用正则把字符串元组中命中的子串替换为 replace，改写后的新元组走 out。</summary>
@@ -2828,6 +2922,7 @@ public class JlOperatorSet
 	public static void TupleRegexpReplace(JlTuple data, JlTuple expression, JlTuple replace, out JlTuple result)
 	{
 		IntPtr proc = JlNativeApi.PreCall(111);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, data);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.Store(proc, 2, replace);
@@ -2837,7 +2932,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(expression);
 		JlNativeApi.UnpinTuple(replace);
 		err = JlTuple.LoadNew(proc, 0, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用正则从字符串元组提取命中的子段，提取结果新元组走 out。</summary>
@@ -2853,6 +2948,7 @@ public class JlOperatorSet
 	public static void TupleRegexpMatch(JlTuple data, JlTuple expression, out JlTuple matches)
 	{
 		IntPtr proc = JlNativeApi.PreCall(112);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, data);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2860,7 +2956,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(data);
 		JlNativeApi.UnpinTuple(expression);
 		err = JlTuple.LoadNew(proc, 0, err, out matches);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成指定长度、取值 0 到 1 的随机数元组，结果走 out。</summary>
@@ -2875,12 +2971,13 @@ public class JlOperatorSet
 	public static void TupleRand(JlTuple length, out JlTuple rand)
 	{
 		IntPtr proc = JlNativeApi.PreCall(113);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(length);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rand);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>返回元组的元素个数，单值整型结果走 out。</summary>
@@ -2895,12 +2992,13 @@ public class JlOperatorSet
 	public static void TupleLength(JlTuple tuple, out JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(114);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out length);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素取符号（正→1、负→-1、零→0），整型结果走 out。</summary>
@@ -2915,12 +3013,13 @@ public class JlOperatorSet
 	public static void TupleSgn(JlTuple t, out JlTuple sgn)
 	{
 		IntPtr proc = JlNativeApi.PreCall(115);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out sgn);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>与另一元组逐元素取较大值（常作下限钳位），结果新元组走 out。</summary>
@@ -2936,6 +3035,7 @@ public class JlOperatorSet
 	public static void TupleMax2(JlTuple t1, JlTuple t2, out JlTuple max2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(116);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2943,7 +3043,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, err, out max2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>两路元组逐元素取较小值（常作上限钳位），结果经 out 给出新元组。</summary>
@@ -2959,6 +3059,7 @@ public class JlOperatorSet
 	public static void TupleMin2(JlTuple t1, JlTuple t2, out JlTuple min2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(117);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2966,7 +3067,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, err, out min2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求整个元组的最大元素，单值新元组经 out 给出。</summary>
@@ -2982,12 +3083,13 @@ public class JlOperatorSet
 	public static void TupleMax(JlTuple tuple, out JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(118);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out max);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求整个元组的最小元素，单值新元组经 out 给出。</summary>
@@ -3003,12 +3105,13 @@ public class JlOperatorSet
 	public static void TupleMin(JlTuple tuple, out JlTuple min)
 	{
 		IntPtr proc = JlNativeApi.PreCall(119);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out min);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐位置累加（前缀和）：结果第 i 项为输入前 i+1 项之和，末项即元组总和。</summary>
@@ -3024,12 +3127,13 @@ public class JlOperatorSet
 	public static void TupleCumul(JlTuple tuple, out JlTuple cumul)
 	{
 		IntPtr proc = JlNativeApi.PreCall(120);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out cumul);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按排名取元素：返回升序排列后第 rankIndex 位的值，不改动输入元组。</summary>
@@ -3046,6 +3150,7 @@ public class JlOperatorSet
 	public static void TupleSelectRank(JlTuple tuple, JlTuple rankIndex, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(121);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, rankIndex);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3053,7 +3158,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(rankIndex);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求元组元素的中位数，单值新元组经 out 给出。</summary>
@@ -3069,12 +3174,13 @@ public class JlOperatorSet
 	public static void TupleMedian(JlTuple tuple, out JlTuple median)
 	{
 		IntPtr proc = JlNativeApi.PreCall(122);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out median);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求全部元素之和，单值新元组经 out 给出。</summary>
@@ -3090,12 +3196,13 @@ public class JlOperatorSet
 	public static void TupleSum(JlTuple tuple, out JlTuple sum)
 	{
 		IntPtr proc = JlNativeApi.PreCall(123);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out sum);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求数值元组的算术平均，out 按 DOUBLE 档位强制装载为单值新元组。</summary>
@@ -3111,12 +3218,13 @@ public class JlOperatorSet
 	public static void TupleMean(JlTuple tuple, out JlTuple mean)
 	{
 		IntPtr proc = JlNativeApi.PreCall(124);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out mean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求元组元素的标准差，out 按 DOUBLE 档位强制装载为单值新元组。</summary>
@@ -3132,12 +3240,13 @@ public class JlOperatorSet
 	public static void TupleDeviation(JlTuple tuple, out JlTuple deviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(125);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out deviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>只去掉相邻的重复：连续相同元素保留一个，返回可能变短的新元组。</summary>
@@ -3152,12 +3261,13 @@ public class JlOperatorSet
 	public static void TupleUniq(JlTuple tuple, out JlTuple uniq)
 	{
 		IntPtr proc = JlNativeApi.PreCall(126);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out uniq);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -3174,6 +3284,7 @@ public class JlOperatorSet
 	public static void TupleFindFirst(JlTuple tuple, JlTuple toFind, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(128);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3181,7 +3292,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>查找 toFind 在元组中的出现位置，返回下标集合，out 按 INTEGER 档位强制装载。</summary>
@@ -3197,6 +3308,7 @@ public class JlOperatorSet
 	public static void TupleFind(JlTuple tuple, JlTuple toFind, out JlTuple indices)
 	{
 		IntPtr proc = JlNativeApi.PreCall(129);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3204,7 +3316,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out indices);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>排序并返回"名次到原下标"的置换索引元组，输入元组不变。</summary>
@@ -3219,12 +3331,13 @@ public class JlOperatorSet
 	public static void TupleSortIndex(JlTuple tuple, out JlTuple indices)
 	{
 		IntPtr proc = JlNativeApi.PreCall(130);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out indices);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>升序排序元素值，返回新的有序元组，输入不变。</summary>
@@ -3239,12 +3352,13 @@ public class JlOperatorSet
 	public static void TupleSort(JlTuple tuple, out JlTuple sorted)
 	{
 		IntPtr proc = JlNativeApi.PreCall(131);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out sorted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把元素次序整体反转（首尾对调），返回等长的新元组。</summary>
@@ -3259,12 +3373,13 @@ public class JlOperatorSet
 	public static void TupleInverse(JlTuple tuple, out JlTuple inverted)
 	{
 		IntPtr proc = JlNativeApi.PreCall(132);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out inverted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把两路元组首尾拼接成一个新元组，out 给出结果。</summary>
@@ -3280,6 +3395,7 @@ public class JlOperatorSet
 	public static void TupleConcat(JlTuple t1, JlTuple t2, out JlTuple concat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(133);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3287,7 +3403,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, err, out concat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>截取连续一段：从下标 leftindex 到 rightindex 的元素组成新元组，经 out 给出。</summary>
@@ -3304,6 +3420,7 @@ public class JlOperatorSet
 	public static void TupleSelectRange(JlTuple tuple, JlTuple leftindex, JlTuple rightindex, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(134);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, leftindex);
 		JlNativeApi.Store(proc, 2, rightindex);
@@ -3313,7 +3430,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(leftindex);
 		JlNativeApi.UnpinTuple(rightindex);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取从下标 index 起到元组末尾的所有元素，新元组经 out 给出。</summary>
@@ -3329,6 +3446,7 @@ public class JlOperatorSet
 	public static void TupleLastN(JlTuple tuple, JlTuple index, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(135);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3336,7 +3454,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从头取下标 index 为止的所有元素，新元组经 out 给出。</summary>
@@ -3352,6 +3470,7 @@ public class JlOperatorSet
 	public static void TupleFirstN(JlTuple tuple, JlTuple index, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(136);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3359,7 +3478,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在下标 index 处挤入 insertTuple 的各元素，其后元素整体后移，返回加长后的新元组。</summary>
@@ -3376,6 +3495,7 @@ public class JlOperatorSet
 	public static void TupleInsert(JlTuple tuple, JlTuple index, JlTuple insertTuple, out JlTuple extended)
 	{
 		IntPtr proc = JlNativeApi.PreCall(137);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, insertTuple);
@@ -3385,7 +3505,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(insertTuple);
 		err = JlTuple.LoadNew(proc, 0, err, out extended);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>覆盖式替换下标 index 处的元素，长度不变，新元组经 out 给出。</summary>
@@ -3402,6 +3522,7 @@ public class JlOperatorSet
 	public static void TupleReplace(JlTuple tuple, JlTuple index, JlTuple replaceTuple, out JlTuple replaced)
 	{
 		IntPtr proc = JlNativeApi.PreCall(138);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, replaceTuple);
@@ -3411,7 +3532,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(replaceTuple);
 		err = JlTuple.LoadNew(proc, 0, err, out replaced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>删除下标 index 处的元素，返回缩短后的新元组。</summary>
@@ -3427,6 +3548,7 @@ public class JlOperatorSet
 	public static void TupleRemove(JlTuple tuple, JlTuple index, out JlTuple reduced)
 	{
 		IntPtr proc = JlNativeApi.PreCall(139);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3434,7 +3556,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out reduced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按掩码逐位筛选：mask 中严格大于 0 的位置对应元素被保留，新元组经 out 给出。</summary>
@@ -3450,6 +3572,7 @@ public class JlOperatorSet
 	public static void TupleSelectMask(JlTuple tuple, JlTuple mask, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(140);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, mask);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3457,7 +3580,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(mask);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按下标取元素：结果按 index 给出的顺序逐位组装，可重复取同一位置，新元组经 out 给出。</summary>
@@ -3473,6 +3596,7 @@ public class JlOperatorSet
 	public static void TupleSelect(JlTuple tuple, JlTuple index, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(141);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3480,7 +3604,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从字符串元素按下标选字符、从整数元素按位序选位（bit），结果新元组经 out 给出。</summary>
@@ -3496,6 +3620,7 @@ public class JlOperatorSet
 	public static void TupleStrBitSelect(JlTuple tuple, JlTuple index, out JlTuple selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(142);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3503,7 +3628,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成等差序列：从 start 起按 step 递增、末项不超过 end，序列新元组经 out 给出。</summary>
@@ -3520,6 +3645,7 @@ public class JlOperatorSet
 	public static void TupleGenSequence(JlTuple start, JlTuple end, JlTuple step, out JlTuple sequence)
 	{
 		IntPtr proc = JlNativeApi.PreCall(143);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, start);
 		JlNativeApi.Store(proc, 1, end);
 		JlNativeApi.Store(proc, 2, step);
@@ -3529,7 +3655,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(end);
 		JlNativeApi.UnpinTuple(step);
 		err = JlTuple.LoadNew(proc, 0, err, out sequence);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成长度为 length、每个元素都等于 constVal 的新元组，经 out 给出。</summary>
@@ -3545,6 +3671,7 @@ public class JlOperatorSet
 	public static void TupleGenConst(JlTuple length, JlTuple constVal, out JlTuple newtuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(144);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.Store(proc, 1, constVal);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3552,7 +3679,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(length);
 		JlNativeApi.UnpinTuple(constVal);
 		err = JlTuple.LoadNew(proc, 0, err, out newtuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>以本参数为环境变量名列表，读出各变量的值，字符串新元组经 out 给出。</summary>
@@ -3567,12 +3694,13 @@ public class JlOperatorSet
 	public static void TupleEnvironment(JlTuple names, out JlTuple values)
 	{
 		IntPtr proc = JlNativeApi.PreCall(145);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, names);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(names);
 		err = JlTuple.LoadNew(proc, 0, err, out values);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按分隔符把字符串元组的每个元素拆成多段，展开后的字符串新元组经 out 给出。</summary>
@@ -3588,6 +3716,7 @@ public class JlOperatorSet
 	public static void TupleSplit(JlTuple stringVal, JlTuple separator, out JlTuple substrings)
 	{
 		IntPtr proc = JlNativeApi.PreCall(146);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, separator);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3595,7 +3724,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(separator);
 		err = JlTuple.LoadNew(proc, 0, err, out substrings);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按字符位置截子串：从 position1 到 position2（两端含闭；具体规则见目标 HALCON 版本的对应 HALCON 算子文档），新元组经 out 给出。</summary>
@@ -3612,6 +3741,7 @@ public class JlOperatorSet
 	public static void TupleSubstr(JlTuple stringVal, JlTuple position1, JlTuple position2, out JlTuple substring)
 	{
 		IntPtr proc = JlNativeApi.PreCall(147);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, position1);
 		JlNativeApi.Store(proc, 2, position2);
@@ -3621,7 +3751,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(position1);
 		JlNativeApi.UnpinTuple(position2);
 		err = JlTuple.LoadNew(proc, 0, err, out substring);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从字符位置 position 起截取每个字符串到串尾（参数是起始位置，不是个数），新元组经 out 给出。</summary>
@@ -3637,6 +3767,7 @@ public class JlOperatorSet
 	public static void TupleStrLastN(JlTuple stringVal, JlTuple position, out JlTuple substring)
 	{
 		IntPtr proc = JlNativeApi.PreCall(148);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, position);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3644,7 +3775,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(position);
 		err = JlTuple.LoadNew(proc, 0, err, out substring);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>截取每个字符串的头部到字符位置 position 为止（参数是末个保留字符的位置，不是个数），新元组经 out 给出。</summary>
@@ -3660,6 +3791,7 @@ public class JlOperatorSet
 	public static void TupleStrFirstN(JlTuple stringVal, JlTuple position, out JlTuple substring)
 	{
 		IntPtr proc = JlNativeApi.PreCall(149);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, position);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3667,7 +3799,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(position);
 		err = JlTuple.LoadNew(proc, 0, err, out substring);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在每个字符串内自后向前搜索字符，返回最后一次出现的位置，INTEGER 新元组经 out 给出。</summary>
@@ -3683,6 +3815,7 @@ public class JlOperatorSet
 	public static void TupleStrrchr(JlTuple stringVal, JlTuple toFind, out JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(150);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3690,7 +3823,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out position);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在每个字符串内自前向后搜索字符，返回第一次出现的位置，INTEGER 新元组经 out 给出。</summary>
@@ -3706,6 +3839,7 @@ public class JlOperatorSet
 	public static void TupleStrchr(JlTuple stringVal, JlTuple toFind, out JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(151);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3713,7 +3847,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out position);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在每个字符串内自后向前搜索子串，返回最后一次命中的起始位置，INTEGER 新元组经 out 给出。</summary>
@@ -3729,6 +3863,7 @@ public class JlOperatorSet
 	public static void TupleStrrstr(JlTuple stringVal, JlTuple toFind, out JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(152);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3736,7 +3871,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out position);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在每个字符串内自前向后搜索子串，返回第一次命中的起始位置，INTEGER 新元组经 out 给出。</summary>
@@ -3752,6 +3887,7 @@ public class JlOperatorSet
 	public static void TupleStrstr(JlTuple stringVal, JlTuple toFind, out JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(153);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3759,7 +3895,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stringVal);
 		JlNativeApi.UnpinTuple(toFind);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out position);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求字符串的字符数，得到与原元组等长的 INTEGER 长度元组，经 out 给出。</summary>
@@ -3774,12 +3910,13 @@ public class JlOperatorSet
 	public static void TupleStrlen(JlTuple t1, out JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(154);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t1);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out length);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断 t1 是否小于等于 t2，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3795,6 +3932,7 @@ public class JlOperatorSet
 	public static void TupleLessEqualElem(JlTuple t1, JlTuple t2, out JlTuple lesseq)
 	{
 		IntPtr proc = JlNativeApi.PreCall(155);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3802,7 +3940,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out lesseq);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断 t1 是否严格小于 t2，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3818,6 +3956,7 @@ public class JlOperatorSet
 	public static void TupleLessElem(JlTuple t1, JlTuple t2, out JlTuple less)
 	{
 		IntPtr proc = JlNativeApi.PreCall(156);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3825,7 +3964,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out less);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断 t1 是否大于等于 t2，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3841,6 +3980,7 @@ public class JlOperatorSet
 	public static void TupleGreaterEqualElem(JlTuple t1, JlTuple t2, out JlTuple greatereq)
 	{
 		IntPtr proc = JlNativeApi.PreCall(157);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3848,7 +3988,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out greatereq);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断 t1 是否严格大于 t2，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3864,6 +4004,7 @@ public class JlOperatorSet
 	public static void TupleGreaterElem(JlTuple t1, JlTuple t2, out JlTuple greater)
 	{
 		IntPtr proc = JlNativeApi.PreCall(158);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3871,7 +4012,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out greater);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断两元组是否不相等，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3887,6 +4028,7 @@ public class JlOperatorSet
 	public static void TupleNotEqualElem(JlTuple t1, JlTuple t2, out JlTuple nequal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(159);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3894,7 +4036,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out nequal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断两元组是否相等，返回按位 0/1 的 INTEGER 新元组，经 out 给出。</summary>
@@ -3910,6 +4052,7 @@ public class JlOperatorSet
 	public static void TupleEqualElem(JlTuple t1, JlTuple t2, out JlTuple equal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(160);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3917,7 +4060,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out equal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做小于等于比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -3933,6 +4076,7 @@ public class JlOperatorSet
 	public static void TupleLessEqual(JlTuple t1, JlTuple t2, out JlTuple lesseq)
 	{
 		IntPtr proc = JlNativeApi.PreCall(161);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3940,7 +4084,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out lesseq);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做严格小于比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -3956,6 +4100,7 @@ public class JlOperatorSet
 	public static void TupleLess(JlTuple t1, JlTuple t2, out JlTuple less)
 	{
 		IntPtr proc = JlNativeApi.PreCall(162);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3963,7 +4108,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out less);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做大于等于比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -3979,6 +4124,7 @@ public class JlOperatorSet
 	public static void TupleGreaterEqual(JlTuple t1, JlTuple t2, out JlTuple greatereq)
 	{
 		IntPtr proc = JlNativeApi.PreCall(163);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3986,7 +4132,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out greatereq);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做严格大于比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -4002,6 +4148,7 @@ public class JlOperatorSet
 	public static void TupleGreater(JlTuple t1, JlTuple t2, out JlTuple greater)
 	{
 		IntPtr proc = JlNativeApi.PreCall(164);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4009,7 +4156,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out greater);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做不相等比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -4025,6 +4172,7 @@ public class JlOperatorSet
 	public static void TupleNotEqual(JlTuple t1, JlTuple t2, out JlTuple nequal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(165);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4032,7 +4180,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out nequal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对两元组整体做相等比较，返回 0/1 的 INTEGER 结果，经 out 给出。</summary>
@@ -4048,6 +4196,7 @@ public class JlOperatorSet
 	public static void TupleEqual(JlTuple t1, JlTuple t2, out JlTuple equal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(166);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4055,7 +4204,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out equal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对元组逐元素取逻辑非：0 变 1、任意非 0 变 0，INTEGER 新元组经 out 给出。</summary>
@@ -4070,12 +4219,13 @@ public class JlOperatorSet
 	public static void TupleNot(JlTuple t, out JlTuple not)
 	{
 		IntPtr proc = JlNativeApi.PreCall(167);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out not);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素做逻辑异或（真值不同为 1、相同为 0），结果以新建的整数元组经 out 返回。</summary>
@@ -4091,6 +4241,7 @@ public class JlOperatorSet
 	public static void TupleXor(JlTuple t1, JlTuple t2, out JlTuple xor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(168);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4098,7 +4249,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out xor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素做逻辑或（任一为真即 1、均假才 0），结果以新建整数元组经 out 返回。</summary>
@@ -4114,6 +4265,7 @@ public class JlOperatorSet
 	public static void TupleOr(JlTuple t1, JlTuple t2, out JlTuple or)
 	{
 		IntPtr proc = JlNativeApi.PreCall(169);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4121,7 +4273,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out or);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素做逻辑与（同时为真才 1、否则 0），结果以新建整数元组经 out 返回。</summary>
@@ -4137,6 +4289,7 @@ public class JlOperatorSet
 	public static void TupleAnd(JlTuple t1, JlTuple t2, out JlTuple and)
 	{
 		IntPtr proc = JlNativeApi.PreCall(170);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4144,7 +4297,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out and);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对元组逐元素按位取反（补码 ~x），结果以新建整数元组经 out 返回。</summary>
@@ -4159,12 +4312,13 @@ public class JlOperatorSet
 	public static void TupleBnot(JlTuple t, out JlTuple BNot)
 	{
 		IntPtr proc = JlNativeApi.PreCall(171);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out BNot);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素按位异或，结果以新建整数元组经 out 返回。</summary>
@@ -4180,6 +4334,7 @@ public class JlOperatorSet
 	public static void TupleBxor(JlTuple t1, JlTuple t2, out JlTuple BXor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(172);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4187,7 +4342,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out BXor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素按位或，结果以新建整数元组经 out 返回。</summary>
@@ -4203,6 +4358,7 @@ public class JlOperatorSet
 	public static void TupleBor(JlTuple t1, JlTuple t2, out JlTuple BOr)
 	{
 		IntPtr proc = JlNativeApi.PreCall(173);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4210,7 +4366,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out BOr);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：对两个元组逐元素按位与（常用作取位掩码），结果以新建整数元组经 out 返回。</summary>
@@ -4226,6 +4382,7 @@ public class JlOperatorSet
 	public static void TupleBand(JlTuple t1, JlTuple t2, out JlTuple BAnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(174);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4233,7 +4390,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out BAnd);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：按 shift 元组给出的位移量对 t 逐元素按位右移，结果以新建整数元组经 out 返回。</summary>
@@ -4249,6 +4406,7 @@ public class JlOperatorSet
 	public static void TupleRsh(JlTuple t, JlTuple shift, out JlTuple rsh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(175);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.Store(proc, 1, shift);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4256,7 +4414,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t);
 		JlNativeApi.UnpinTuple(shift);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rsh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：按 shift 元组给出的位移量对 t 逐元素按位左移，结果以新建整数元组经 out 返回。</summary>
@@ -4272,6 +4430,7 @@ public class JlOperatorSet
 	public static void TupleLsh(JlTuple t, JlTuple shift, out JlTuple lsh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(176);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.Store(proc, 1, shift);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4279,7 +4438,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t);
 		JlNativeApi.UnpinTuple(shift);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out lsh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把整数元组按字符码解释为文本，以 0 值作字符串分隔拼出字符串元组，结果经 out 返回。</summary>
@@ -4294,12 +4453,13 @@ public class JlOperatorSet
 	public static void TupleChrt(JlTuple t, out JlTuple chrt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(177);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out chrt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把字符串元组整体展开为其全部字符的 Unicode/ANSI 字符码整数元组，结果经 out 返回。</summary>
@@ -4314,12 +4474,13 @@ public class JlOperatorSet
 	public static void TupleOrds(JlTuple t, out JlTuple ords)
 	{
 		IntPtr proc = JlNativeApi.PreCall(178);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out ords);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把每个整数按字符码一对一转成对应的单字符字符串，结果字符串元组经 out 返回。</summary>
@@ -4334,12 +4495,13 @@ public class JlOperatorSet
 	public static void TupleChr(JlTuple t, out JlTuple chr)
 	{
 		IntPtr proc = JlNativeApi.PreCall(179);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out chr);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把每个"长度为 1 的字符串"元素逐一转成其 Unicode/ANSI 字符码，结果整数元组经 out 返回。</summary>
@@ -4354,12 +4516,13 @@ public class JlOperatorSet
 	public static void TupleOrd(JlTuple t, out JlTuple ord)
 	{
 		IntPtr proc = JlNativeApi.PreCall(180);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out ord);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：按格式串（类似 printf）把元组各元素格式化为字符串，结果字符串元组经 out 返回。</summary>
@@ -4375,6 +4538,7 @@ public class JlOperatorSet
 	public static void TupleString(JlTuple t, JlTuple format, out JlTuple stringVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(181);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.Store(proc, 1, format);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4382,7 +4546,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t);
 		JlNativeApi.UnpinTuple(format);
 		err = JlTuple.LoadNew(proc, 0, err, out stringVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素判断字符串是否可解释为数值，返回 0/1 整数元组经 out 输出。</summary>
@@ -4397,12 +4561,13 @@ public class JlOperatorSet
 	public static void TupleIsNumber(JlTuple t, out JlTuple isNumber)
 	{
 		IntPtr proc = JlNativeApi.PreCall(182);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isNumber);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把字符串元组逐元素解析为数值，结果数值元组经 out 返回。</summary>
@@ -4417,12 +4582,13 @@ public class JlOperatorSet
 	public static void TupleNumber(JlTuple t, out JlTuple number)
 	{
 		IntPtr proc = JlNativeApi.PreCall(183);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out number);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把元组逐元素四舍五入到最近的整数，结果整数元组经 out 返回。</summary>
@@ -4437,12 +4603,13 @@ public class JlOperatorSet
 	public static void TupleRound(JlTuple t, out JlTuple round)
 	{
 		IntPtr proc = JlNativeApi.PreCall(184);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out round);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把元组逐元素向零截断为整数，结果整数元组经 out 返回。</summary>
@@ -4457,12 +4624,13 @@ public class JlOperatorSet
 	public static void TupleInt(JlTuple t, out JlTuple intVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(185);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out intVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把元组逐元素提升为双精度浮点数，结果 DOUBLE 元组经 out 返回。</summary>
@@ -4477,12 +4645,13 @@ public class JlOperatorSet
 	public static void TupleReal(JlTuple t, out JlTuple real)
 	{
 		IntPtr proc = JlNativeApi.PreCall(186);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out real);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素计算 t1 × 2 的 t2 次方（按 2 的幂缩放），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4498,6 +4667,7 @@ public class JlOperatorSet
 	public static void TupleLdexp(JlTuple t1, JlTuple t2, out JlTuple ldexp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(187);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4505,7 +4675,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ldexp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素浮点取余（fmod，按截断除法、余数符号随被除数），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4521,6 +4691,7 @@ public class JlOperatorSet
 	public static void TupleFmod(JlTuple t1, JlTuple t2, out JlTuple fmod)
 	{
 		IntPtr proc = JlNativeApi.PreCall(188);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4528,7 +4699,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out fmod);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素整数取余（mod），结果 INTEGER 元组经 out 返回。</summary>
@@ -4544,6 +4715,7 @@ public class JlOperatorSet
 	public static void TupleMod(JlTuple t1, JlTuple t2, out JlTuple mod)
 	{
 		IntPtr proc = JlNativeApi.PreCall(189);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4551,7 +4723,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out mod);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素向上取整（不小于该数的最小整数），结果以 DOUBLE 装载经 out 返回。</summary>
@@ -4566,12 +4738,13 @@ public class JlOperatorSet
 	public static void TupleCeil(JlTuple t, out JlTuple ceil)
 	{
 		IntPtr proc = JlNativeApi.PreCall(190);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ceil);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素向下取整（不大于该数的最大整数），结果以 DOUBLE 装载经 out 返回。</summary>
@@ -4586,12 +4759,13 @@ public class JlOperatorSet
 	public static void TupleFloor(JlTuple t, out JlTuple floor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(191);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out floor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素乘方（t1 为底、t2 为指数），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4607,6 +4781,7 @@ public class JlOperatorSet
 	public static void TuplePow(JlTuple t1, JlTuple t2, out JlTuple pow)
 	{
 		IntPtr proc = JlNativeApi.PreCall(192);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4614,7 +4789,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out pow);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取常用对数（以 10 为底），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4629,12 +4804,13 @@ public class JlOperatorSet
 	public static void TupleLog10(JlTuple t, out JlTuple log)
 	{
 		IntPtr proc = JlNativeApi.PreCall(193);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out log);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取自然对数（以 e 为底），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4649,12 +4825,13 @@ public class JlOperatorSet
 	public static void TupleLog(JlTuple t, out JlTuple log)
 	{
 		IntPtr proc = JlNativeApi.PreCall(194);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out log);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取自然指数 e^x，结果 DOUBLE 元组经 out 返回。</summary>
@@ -4669,12 +4846,13 @@ public class JlOperatorSet
 	public static void TupleExp(JlTuple t, out JlTuple exp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(195);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out exp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取双曲正切（恒在 -1 到 1 之间），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4689,12 +4867,13 @@ public class JlOperatorSet
 	public static void TupleTanh(JlTuple t, out JlTuple tanh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(196);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out tanh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取双曲余弦（偶函数、值不小于 1），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4709,12 +4888,13 @@ public class JlOperatorSet
 	public static void TupleCosh(JlTuple t, out JlTuple cosh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(197);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out cosh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取双曲正弦（奇函数），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4729,12 +4909,13 @@ public class JlOperatorSet
 	public static void TupleSinh(JlTuple t, out JlTuple sinh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(198);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out sinh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把角度（度）逐元素转换为弧度（× π / 180），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4749,12 +4930,13 @@ public class JlOperatorSet
 	public static void TupleRad(JlTuple deg, out JlTuple rad)
 	{
 		IntPtr proc = JlNativeApi.PreCall(199);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, deg);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(deg);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rad);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把弧度逐元素转换为角度（度，× 180 / π），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4769,12 +4951,13 @@ public class JlOperatorSet
 	public static void TupleDeg(JlTuple rad, out JlTuple deg)
 	{
 		IntPtr proc = JlNativeApi.PreCall(200);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rad);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(rad);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out deg);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素四象限反正切 atan2(y, x)，y 由首参给出、x 由次参给出，结果弧度 DOUBLE 元组经 out 返回。</summary>
@@ -4790,6 +4973,7 @@ public class JlOperatorSet
 	public static void TupleAtan2(JlTuple y, JlTuple x, out JlTuple ATan)
 	{
 		IntPtr proc = JlNativeApi.PreCall(201);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, y);
 		JlNativeApi.Store(proc, 1, x);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4797,7 +4981,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(y);
 		JlNativeApi.UnpinTuple(x);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ATan);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取单参数反正切，结果弧度 DOUBLE 元组（值域 -π/2 到 π/2）经 out 返回。</summary>
@@ -4812,12 +4996,13 @@ public class JlOperatorSet
 	public static void TupleAtan(JlTuple t, out JlTuple ATan)
 	{
 		IntPtr proc = JlNativeApi.PreCall(202);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ATan);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取反余弦，结果弧度 DOUBLE 元组（值域 0 到 π）经 out 返回。</summary>
@@ -4832,12 +5017,13 @@ public class JlOperatorSet
 	public static void TupleAcos(JlTuple t, out JlTuple ACos)
 	{
 		IntPtr proc = JlNativeApi.PreCall(203);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ACos);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取反正弦，结果弧度 DOUBLE 元组（值域 -π/2 到 π/2）经 out 返回。</summary>
@@ -4852,12 +5038,13 @@ public class JlOperatorSet
 	public static void TupleAsin(JlTuple t, out JlTuple ASin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(204);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ASin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取正切（输入为弧度），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4872,12 +5059,13 @@ public class JlOperatorSet
 	public static void TupleTan(JlTuple t, out JlTuple tan)
 	{
 		IntPtr proc = JlNativeApi.PreCall(205);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out tan);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取余弦（输入为弧度），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4892,12 +5080,13 @@ public class JlOperatorSet
 	public static void TupleCos(JlTuple t, out JlTuple cos)
 	{
 		IntPtr proc = JlNativeApi.PreCall(206);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out cos);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取正弦（输入为弧度），结果 DOUBLE 元组经 out 返回。</summary>
@@ -4912,12 +5101,13 @@ public class JlOperatorSet
 	public static void TupleSin(JlTuple t, out JlTuple sin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(207);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out sin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取绝对值并强制以浮点（DOUBLE）返回，结果元组经 out 输出。</summary>
@@ -4932,12 +5122,13 @@ public class JlOperatorSet
 	public static void TupleFabs(JlTuple t, out JlTuple abs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(208);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out abs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取平方根，结果 DOUBLE 元组经 out 返回。</summary>
@@ -4952,12 +5143,13 @@ public class JlOperatorSet
 	public static void TupleSqrt(JlTuple t, out JlTuple sqrt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(209);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out sqrt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取绝对值并保留输入的数值类型，结果元组经 out 返回。</summary>
@@ -4972,12 +5164,13 @@ public class JlOperatorSet
 	public static void TupleAbs(JlTuple t, out JlTuple abs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(210);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out abs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：逐元素取负（乘以 -1）并保留输入的数值类型，结果元组经 out 返回。</summary>
@@ -4992,12 +5185,13 @@ public class JlOperatorSet
 	public static void TupleNeg(JlTuple t, out JlTuple neg)
 	{
 		IntPtr proc = JlNativeApi.PreCall(211);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out neg);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：两元组逐元素相除（首参为被除数、次参为除数），结果按 MIXED 装载经 out 返回。</summary>
@@ -5013,6 +5207,7 @@ public class JlOperatorSet
 	public static void TupleDiv(JlTuple q1, JlTuple q2, out JlTuple quot)
 	{
 		IntPtr proc = JlNativeApi.PreCall(212);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, q1);
 		JlNativeApi.Store(proc, 1, q2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5020,7 +5215,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(q1);
 		JlNativeApi.UnpinTuple(q2);
 		err = JlTuple.LoadNew(proc, 0, err, out quot);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：两元组逐元素相乘（对等下标配对、单元素广播），结果元组经 out 返回。</summary>
@@ -5036,6 +5231,7 @@ public class JlOperatorSet
 	public static void TupleMult(JlTuple p1, JlTuple p2, out JlTuple prod)
 	{
 		IntPtr proc = JlNativeApi.PreCall(213);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, p1);
 		JlNativeApi.Store(proc, 1, p2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5043,7 +5239,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(p1);
 		JlNativeApi.UnpinTuple(p2);
 		err = JlTuple.LoadNew(proc, 0, err, out prod);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：两元组逐元素相减（首参减次参），结果元组经 out 返回。</summary>
@@ -5059,6 +5255,7 @@ public class JlOperatorSet
 	public static void TupleSub(JlTuple d1, JlTuple d2, out JlTuple diff)
 	{
 		IntPtr proc = JlNativeApi.PreCall(214);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, d1);
 		JlNativeApi.Store(proc, 1, d2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5066,7 +5263,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(d1);
 		JlNativeApi.UnpinTuple(d2);
 		err = JlTuple.LoadNew(proc, 0, err, out diff);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：两元组逐元素相加，结果元组经 out 返回。</summary>
@@ -5082,6 +5279,7 @@ public class JlOperatorSet
 	public static void TupleAdd(JlTuple s1, JlTuple s2, out JlTuple sum)
 	{
 		IntPtr proc = JlNativeApi.PreCall(215);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, s1);
 		JlNativeApi.Store(proc, 1, s2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5089,7 +5287,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(s1);
 		JlNativeApi.UnpinTuple(s2);
 		err = JlTuple.LoadNew(proc, 0, err, out sum);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：由序列化缓冲元组还原出一个独立元组，结果经 out 返回（对应原生 id 216）。</summary>
@@ -5104,12 +5302,13 @@ public class JlOperatorSet
 	public static void DeserializeTuple(JlTuple serializedItemHandle, out JlTuple tuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(216);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>门面静态方法：把元组序列化为自描述的序列化缓冲元组，结果经 out 返回（对应原生 id 217）。</summary>
@@ -5124,12 +5323,13 @@ public class JlOperatorSet
 	public static void SerializeTuple(JlTuple tuple, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(217);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个元组按原生序列化格式整体写进文件：两个形参都是输入，没有 out，也没有返回值。</summary>
@@ -5144,12 +5344,13 @@ public class JlOperatorSet
 	public static void WriteTuple(JlTuple tuple, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(218);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>从文件读回一个元组，结果经 out 带回全新 JlTuple 句柄（不是往已有对象上改写）。</summary>
@@ -5164,12 +5365,13 @@ public class JlOperatorSet
 	public static void ReadTuple(JlTuple fileName, out JlTuple tuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(219);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对一组位姿求（加权）平均，经 out 同时带回平均位姿与偏差质量。</summary>
@@ -5189,6 +5391,7 @@ public class JlOperatorSet
 	public static void PoseAverage(JlTuple poses, JlTuple weights, JlTuple mode, JlTuple sigmaT, JlTuple sigmaR, out JlTuple averagePose, out JlTuple quality)
 	{
 		IntPtr proc = JlNativeApi.PreCall(220);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, poses);
 		JlNativeApi.Store(proc, 1, weights);
 		JlNativeApi.Store(proc, 2, mode);
@@ -5204,7 +5407,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sigmaR);
 		err = JlTuple.LoadNew(proc, 0, err, out averagePose);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out quality);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -5224,12 +5427,13 @@ public class JlOperatorSet
 	public static void PoseInvert(JlTuple pose, out JlTuple poseInvert)
 	{
 		IntPtr proc = JlNativeApi.PreCall(226);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pose);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(pose);
 		err = JlTuple.LoadNew(proc, 0, err, out poseInvert);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把两个位姿元组复合，结果位姿集经 out 以新元组交付。</summary>
@@ -5245,6 +5449,7 @@ public class JlOperatorSet
 	public static void PoseCompose(JlTuple poseLeft, JlTuple poseRight, out JlTuple poseCompose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(227);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, poseLeft);
 		JlNativeApi.Store(proc, 1, poseRight);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5252,7 +5457,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(poseLeft);
 		JlNativeApi.UnpinTuple(poseRight);
 		err = JlTuple.LoadNew(proc, 0, err, out poseCompose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -5273,12 +5478,13 @@ public class JlOperatorSet
 	public static void DeserializeHomMat2d(JlTuple serializedItemHandle, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(234);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个或多个变换矩阵交原生编码，序列化项句柄经 out 交付。</summary>
@@ -5293,12 +5499,13 @@ public class JlOperatorSet
 	public static void SerializeHomMat2d(JlTuple homMat2D, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(235);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -5350,6 +5557,7 @@ public class JlOperatorSet
 	public static void VectorToProjHomMat2dDistortion(JlTuple points1Row, JlTuple points1Col, JlTuple points2Row, JlTuple points2Col, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlTuple imageWidth, JlTuple imageHeight, JlTuple method, out JlTuple homMat2D, out JlTuple kappa, out JlTuple error)
 	{
 		IntPtr proc = JlNativeApi.PreCall(259);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, points1Row);
 		JlNativeApi.Store(proc, 1, points1Col);
 		JlNativeApi.Store(proc, 2, points2Row);
@@ -5383,7 +5591,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out kappa);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out error);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用带第三维的齐次点对估计投影矩阵，矩阵以新元组经 out 交付。</summary>
@@ -5404,6 +5612,7 @@ public class JlOperatorSet
 	public static void HomVectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple pw, JlTuple qx, JlTuple qy, JlTuple qw, JlTuple method, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(260);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, pw);
@@ -5421,7 +5630,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qw);
 		JlNativeApi.UnpinTuple(method);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用 2D 点对估计投影矩阵，并把矩阵与它的协方差一起经 out 带回。</summary>
@@ -5447,6 +5656,7 @@ public class JlOperatorSet
 	public static void VectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, JlTuple method, JlTuple covXX1, JlTuple covYY1, JlTuple covXY1, JlTuple covXX2, JlTuple covYY2, JlTuple covXY2, out JlTuple homMat2D, out JlTuple covariance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(261);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -5474,7 +5684,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(covXY2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out covariance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把变换矩阵分解成缩放、旋转、斜切、平移六组仿射参数，六组结果各自经 out 元组带回。</summary>
@@ -5494,6 +5704,7 @@ public class JlOperatorSet
 	public static void HomMat2dToAffinePar(JlTuple homMat2D, out JlTuple sx, out JlTuple sy, out JlTuple phi, out JlTuple theta, out JlTuple tx, out JlTuple ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(262);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -5509,7 +5720,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out theta);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out tx);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out ty);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由一对"位置加姿态角"求出把原位置映到目标位置的刚体变换矩阵，矩阵经 out 元组交付。</summary>
@@ -5529,6 +5740,7 @@ public class JlOperatorSet
 	public static void VectorAngleToRigid(JlTuple row1, JlTuple column1, JlTuple angle1, JlTuple row2, JlTuple column2, JlTuple angle2, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(263);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, angle1);
@@ -5544,7 +5756,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		JlNativeApi.UnpinTuple(angle2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按指定变换类型用"点到直线"对应近似估计变换矩阵，矩阵经 out 元组交付。</summary>
@@ -5565,6 +5777,7 @@ public class JlOperatorSet
 	public static void PointLineToHomMat2d(JlTuple transformationType, JlTuple px, JlTuple py, JlTuple l1x, JlTuple l1y, JlTuple l2x, JlTuple l2y, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(264);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, transformationType);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -5582,7 +5795,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(l2x);
 		JlNativeApi.UnpinTuple(l2y);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由完整点对近似刚体变换（只含旋转与平移），矩阵经 out 元组交付。</summary>
@@ -5600,6 +5813,7 @@ public class JlOperatorSet
 	public static void VectorToRigid(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(265);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -5611,7 +5825,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由点对近似相似变换（旋转、平移加一个统一缩放），矩阵经 out 元组交付。</summary>
@@ -5629,6 +5843,7 @@ public class JlOperatorSet
 	public static void VectorToSimilarity(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(266);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -5640,7 +5855,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由点对近似各向异性相似变换（两轴独立缩放、无斜切），矩阵经 out 元组交付。</summary>
@@ -5658,6 +5873,7 @@ public class JlOperatorSet
 	public static void VectorToAniso(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(267);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -5669,7 +5885,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由点对估计一般仿射矩阵（六自由度），矩阵经 out 元组交付。</summary>
@@ -5687,6 +5903,7 @@ public class JlOperatorSet
 	public static void VectorToHomMat2d(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(268);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -5698,7 +5915,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用投影矩阵映射像素行列坐标，变换后的行与列各经 out 元组带回。</summary>
@@ -5716,6 +5933,7 @@ public class JlOperatorSet
 	public static void ProjectiveTransPixel(JlTuple homMat2D, JlTuple row, JlTuple col, out JlTuple rowTrans, out JlTuple colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(269);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, col);
@@ -5727,7 +5945,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(col);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowTrans);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用投影矩阵映射齐次二维点，输出的齐次三分量 x/y/w 各经一个 out 元组带回。</summary>
@@ -5747,6 +5965,7 @@ public class JlOperatorSet
 	public static void ProjectiveTransPoint2d(JlTuple homMat2D, JlTuple px, JlTuple py, JlTuple pw, out JlTuple qx, out JlTuple qy, out JlTuple qw)
 	{
 		IntPtr proc = JlNativeApi.PreCall(270);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -5762,7 +5981,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out qx);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out qy);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out qw);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用仿射矩阵映射像素行列坐标，变换后的行与列各经 out 元组带回。</summary>
@@ -5780,6 +5999,7 @@ public class JlOperatorSet
 	public static void AffineTransPixel(JlTuple homMat2D, JlTuple row, JlTuple col, out JlTuple rowTrans, out JlTuple colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(271);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, col);
@@ -5791,7 +6011,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(col);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowTrans);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用仿射矩阵映射点坐标，变换后的两个分量各经 out 元组带回。</summary>
@@ -5809,6 +6029,7 @@ public class JlOperatorSet
 	public static void AffineTransPoint2d(JlTuple homMat2D, JlTuple px, JlTuple py, out JlTuple qx, out JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(272);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -5820,7 +6041,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out qx);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out qy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求变换矩阵的行列式，结果经 out 元组带回；矩阵本身不被改动。</summary>
@@ -5835,12 +6056,13 @@ public class JlOperatorSet
 	public static void HomMat2dDeterminant(JlTuple homMat2D, out JlTuple determinant)
 	{
 		IntPtr proc = JlNativeApi.PreCall(273);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out determinant);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>转置变换矩阵，结果经 out 元组交付，输入矩阵保持不变。</summary>
@@ -5855,12 +6077,13 @@ public class JlOperatorSet
 	public static void HomMat2dTranspose(JlTuple homMat2D, out JlTuple homMat2DTranspose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(274);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DTranspose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求变换矩阵的逆，结果经 out 元组交付，输入矩阵保持不变。</summary>
@@ -5875,12 +6098,13 @@ public class JlOperatorSet
 	public static void HomMat2dInvert(JlTuple homMat2D, out JlTuple homMat2DInvert)
 	{
 		IntPtr proc = JlNativeApi.PreCall(275);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DInvert);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>矩阵乘法复合两个变换，复合结果经 out 元组交付，两个操作数都不被改动。</summary>
@@ -5896,6 +6120,7 @@ public class JlOperatorSet
 	public static void HomMat2dCompose(JlTuple homMat2DLeft, JlTuple homMat2DRight, out JlTuple homMat2DCompose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(276);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2DLeft);
 		JlNativeApi.Store(proc, 1, homMat2DRight);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5903,7 +6128,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(homMat2DLeft);
 		JlNativeApi.UnpinTuple(homMat2DRight);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DCompose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次局部反射，新矩阵经 out 元组交付。</summary>
@@ -5920,6 +6145,7 @@ public class JlOperatorSet
 	public static void HomMat2dReflectLocal(JlTuple homMat2D, JlTuple px, JlTuple py, out JlTuple homMat2DReflect)
 	{
 		IntPtr proc = JlNativeApi.PreCall(277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -5929,7 +6155,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DReflect);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次由两点确定轴的反射，新矩阵经 out 元组交付。</summary>
@@ -5948,6 +6174,7 @@ public class JlOperatorSet
 	public static void HomMat2dReflect(JlTuple homMat2D, JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, out JlTuple homMat2DReflect)
 	{
 		IntPtr proc = JlNativeApi.PreCall(278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -5961,7 +6188,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DReflect);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次局部斜切，新矩阵经 out 元组交付。</summary>
@@ -5978,6 +6205,7 @@ public class JlOperatorSet
 	public static void HomMat2dSlantLocal(JlTuple homMat2D, JlTuple theta, JlTuple axis, out JlTuple homMat2DSlant)
 	{
 		IntPtr proc = JlNativeApi.PreCall(279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, theta);
 		JlNativeApi.Store(proc, 2, axis);
@@ -5987,7 +6215,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(theta);
 		JlNativeApi.UnpinTuple(axis);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DSlant);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次绕固定点的斜切，新矩阵经 out 元组交付。</summary>
@@ -6006,6 +6234,7 @@ public class JlOperatorSet
 	public static void HomMat2dSlant(JlTuple homMat2D, JlTuple theta, JlTuple axis, JlTuple px, JlTuple py, out JlTuple homMat2DSlant)
 	{
 		IntPtr proc = JlNativeApi.PreCall(280);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, theta);
 		JlNativeApi.Store(proc, 2, axis);
@@ -6019,7 +6248,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DSlant);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次局部旋转（不带固定点），新矩阵经 out 元组交付。</summary>
@@ -6035,6 +6264,7 @@ public class JlOperatorSet
 	public static void HomMat2dRotateLocal(JlTuple homMat2D, JlTuple phi, out JlTuple homMat2DRotate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(281);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, phi);
 		JlNativeApi.InitOCT(proc, 0);
@@ -6042,7 +6272,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(homMat2D);
 		JlNativeApi.UnpinTuple(phi);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DRotate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次绕固定点的旋转，新矩阵经 out 元组交付。</summary>
@@ -6060,6 +6290,7 @@ public class JlOperatorSet
 	public static void HomMat2dRotate(JlTuple homMat2D, JlTuple phi, JlTuple px, JlTuple py, out JlTuple homMat2DRotate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(282);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, phi);
 		JlNativeApi.Store(proc, 2, px);
@@ -6071,7 +6302,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DRotate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次局部缩放（无固定点），新矩阵经 out 元组交付。</summary>
@@ -6088,6 +6319,7 @@ public class JlOperatorSet
 	public static void HomMat2dScaleLocal(JlTuple homMat2D, JlTuple sx, JlTuple sy, out JlTuple homMat2DScale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(283);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, sx);
 		JlNativeApi.Store(proc, 2, sy);
@@ -6097,7 +6329,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sx);
 		JlNativeApi.UnpinTuple(sy);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DScale);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次以固定点为中心的缩放，新矩阵经 out 元组交付。</summary>
@@ -6116,6 +6348,7 @@ public class JlOperatorSet
 	public static void HomMat2dScale(JlTuple homMat2D, JlTuple sx, JlTuple sy, JlTuple px, JlTuple py, out JlTuple homMat2DScale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(284);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, sx);
 		JlNativeApi.Store(proc, 2, sy);
@@ -6129,7 +6362,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DScale);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次局部平移，新矩阵经 out 元组交付。</summary>
@@ -6146,6 +6379,7 @@ public class JlOperatorSet
 	public static void HomMat2dTranslateLocal(JlTuple homMat2D, JlTuple tx, JlTuple ty, out JlTuple homMat2DTranslate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(285);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, tx);
 		JlNativeApi.Store(proc, 2, ty);
@@ -6155,7 +6389,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tx);
 		JlNativeApi.UnpinTuple(ty);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DTranslate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在既有矩阵上叠加一次全局平移，新矩阵经 out 元组交付。</summary>
@@ -6172,6 +6406,7 @@ public class JlOperatorSet
 	public static void HomMat2dTranslate(JlTuple homMat2D, JlTuple tx, JlTuple ty, out JlTuple homMat2DTranslate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(286);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, tx);
 		JlNativeApi.Store(proc, 2, ty);
@@ -6181,7 +6416,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tx);
 		JlNativeApi.UnpinTuple(ty);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DTranslate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>产出一个单位（恒等）变换矩阵，九个值经 out 元组交付。</summary>
@@ -6195,10 +6430,11 @@ public class JlOperatorSet
 	public static void HomMat2dIdentity(out JlTuple homMat2DIdentity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(287);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2DIdentity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -6262,12 +6498,13 @@ public class JlOperatorSet
 	public static void ReceiveTuple(JlTuple socket, out JlTuple tuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(328);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, socket);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(socket);
 		err = JlTuple.LoadNew(proc, 0, err, out tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个元组整体通过 socket 连接发出：两个形参都是输入，不取回任何数据。</summary>
@@ -6291,12 +6528,13 @@ public class JlOperatorSet
 	public static void SendTuple(JlTuple socket, JlTuple tuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(329);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, socket);
 		JlNativeApi.Store(proc, 1, tuple);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(socket);
 		JlNativeApi.UnpinTuple(tuple);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>用通用 socket 连接从外部设备收取任意数据，按格式串转换成元组，并带回对端地址。</summary>
@@ -6323,6 +6561,7 @@ public class JlOperatorSet
 	public static void ReceiveData(JlTuple socket, JlTuple format, out JlTuple data, out JlTuple from)
 	{
 		IntPtr proc = JlNativeApi.PreCall(330);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, socket);
 		JlNativeApi.Store(proc, 1, format);
 		JlNativeApi.InitOCT(proc, 0);
@@ -6332,7 +6571,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(format);
 		err = JlTuple.LoadNew(proc, 0, err, out data);
 		err = JlTuple.LoadNew(proc, 1, err, out from);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用通用 socket 连接把任意数据按格式串编码后发出，可指定目标地址；四个形参全是输入。</summary>
@@ -6358,6 +6597,7 @@ public class JlOperatorSet
 	public static void SendData(JlTuple socket, JlTuple format, JlTuple data, JlTuple to)
 	{
 		IntPtr proc = JlNativeApi.PreCall(331);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, socket);
 		JlNativeApi.Store(proc, 1, format);
 		JlNativeApi.Store(proc, 2, data);
@@ -6367,7 +6607,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(format);
 		JlNativeApi.UnpinTuple(data);
 		JlNativeApi.UnpinTuple(to);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -6420,6 +6660,7 @@ public class JlOperatorSet
 	public static void VectorToEssentialMatrix(JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlTuple camMat1, JlTuple camMat2, JlTuple method, out JlTuple EMatrix, out JlTuple covEMat, out JlTuple error, out JlTuple x, out JlTuple y, out JlTuple z, out JlTuple covXYZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(352);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows1);
 		JlNativeApi.Store(proc, 1, cols1);
 		JlNativeApi.Store(proc, 2, rows2);
@@ -6461,7 +6702,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out y);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out z);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out covXYZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -6501,6 +6742,7 @@ public class JlOperatorSet
 	public static void MatchEssentialMatrixRansac(JlObject image1, JlObject image2, JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple camMat1, JlTuple camMat2, JlTuple grayMatchMethod, JlTuple maskSize, JlTuple rowMove, JlTuple colMove, JlTuple rowTolerance, JlTuple colTolerance, JlTuple rotation, JlTuple matchThreshold, JlTuple estimationMethod, JlTuple distanceThreshold, JlTuple randSeed, out JlTuple EMatrix, out JlTuple covEMat, out JlTuple error, out JlTuple points1, out JlTuple points2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(356);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, rows1);
@@ -6548,7 +6790,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out error);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out points1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out points2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -6600,6 +6842,7 @@ public class JlOperatorSet
 	public static void ShadeHeightField(JlObject imageHeight, out JlObject imageShade, JlTuple slant, JlTuple tilt, JlTuple albedo, JlTuple ambient, JlTuple shadows)
 	{
 		IntPtr proc = JlNativeApi.PreCall(387);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageHeight);
 		JlNativeApi.Store(proc, 0, slant);
 		JlNativeApi.Store(proc, 1, tilt);
@@ -6614,7 +6857,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(ambient);
 		JlNativeApi.UnpinTuple(shadows);
 		err = JlObject.LoadNew(proc, 1, err, out imageShade);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageHeight);
 	}
 
@@ -6631,13 +6874,14 @@ public class JlOperatorSet
 	public static void EstimateAlAm(JlObject image, out JlTuple albedo, out JlTuple ambient)
 	{
 		IntPtr proc = JlNativeApi.PreCall(388);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out albedo);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out ambient);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6654,13 +6898,14 @@ public class JlOperatorSet
 	public static void EstimateSlAlZc(JlObject image, out JlTuple slant, out JlTuple albedo)
 	{
 		IntPtr proc = JlNativeApi.PreCall(389);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out slant);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out albedo);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6677,13 +6922,14 @@ public class JlOperatorSet
 	public static void EstimateSlAlLr(JlObject image, out JlTuple slant, out JlTuple albedo)
 	{
 		IntPtr proc = JlNativeApi.PreCall(390);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out slant);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out albedo);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6699,11 +6945,12 @@ public class JlOperatorSet
 	public static void EstimateTiltZc(JlObject image, out JlTuple tilt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(391);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out tilt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6719,11 +6966,12 @@ public class JlOperatorSet
 	public static void EstimateTiltLr(JlObject image, out JlTuple tilt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(392);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out tilt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6742,6 +6990,7 @@ public class JlOperatorSet
 	public static void ReconstructHeightFieldFromGradient(JlObject gradient, out JlObject heightField, JlTuple reconstructionMethod, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(393);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, gradient);
 		JlNativeApi.Store(proc, 0, reconstructionMethod);
 		JlNativeApi.Store(proc, 1, genParamName);
@@ -6752,7 +7001,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out heightField);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(gradient);
 	}
 
@@ -6773,6 +7022,7 @@ public class JlOperatorSet
 	public static void SfsPentland(JlObject image, out JlObject height, JlTuple slant, JlTuple tilt, JlTuple albedo, JlTuple ambient)
 	{
 		IntPtr proc = JlNativeApi.PreCall(395);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, slant);
 		JlNativeApi.Store(proc, 1, tilt);
@@ -6785,7 +7035,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(albedo);
 		JlNativeApi.UnpinTuple(ambient);
 		err = JlObject.LoadNew(proc, 1, err, out height);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6805,6 +7055,7 @@ public class JlOperatorSet
 	public static void SfsOrigLr(JlObject image, out JlObject height, JlTuple slant, JlTuple tilt, JlTuple albedo, JlTuple ambient)
 	{
 		IntPtr proc = JlNativeApi.PreCall(396);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, slant);
 		JlNativeApi.Store(proc, 1, tilt);
@@ -6817,7 +7068,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(albedo);
 		JlNativeApi.UnpinTuple(ambient);
 		err = JlObject.LoadNew(proc, 1, err, out height);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -6864,6 +7115,7 @@ public class JlOperatorSet
 	public static void SelectCharacters(JlObject region, out JlObject regionCharacters, JlTuple dotPrint, JlTuple strokeWidth, JlTuple charWidth, JlTuple charHeight, JlTuple punctuation, JlTuple diacriticMarks, JlTuple partitionMethod, JlTuple partitionLines, JlTuple fragmentDistance, JlTuple connectFragments, JlTuple clutterSizeMax, JlTuple stopAfter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(416);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, dotPrint);
 		JlNativeApi.Store(proc, 1, strokeWidth);
@@ -6892,7 +7144,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(clutterSizeMax);
 		JlNativeApi.UnpinTuple(stopAfter);
 		err = JlObject.LoadNew(proc, 1, err, out regionCharacters);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -6913,6 +7165,7 @@ public class JlOperatorSet
 	public static void TextLineSlant(JlObject region, JlObject image, JlTuple charHeight, JlTuple slantFrom, JlTuple slantTo, out JlTuple slantAngle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(418);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, charHeight);
@@ -6924,7 +7177,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(slantFrom);
 		JlNativeApi.UnpinTuple(slantTo);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out slantAngle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -6945,6 +7198,7 @@ public class JlOperatorSet
 	public static void TextLineOrientation(JlObject region, JlObject image, JlTuple charHeight, JlTuple orientationFrom, JlTuple orientationTo, out JlTuple orientationAngle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(419);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, charHeight);
@@ -6956,7 +7210,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(orientationFrom);
 		JlNativeApi.UnpinTuple(orientationTo);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out orientationAngle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -6986,13 +7240,14 @@ public class JlOperatorSet
 	public static void Class2dimSup(JlObject imageCol, JlObject imageRow, JlObject featureSpace, out JlObject regionClass2Dim)
 	{
 		IntPtr proc = JlNativeApi.PreCall(431);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageCol);
 		JlNativeApi.Store(proc, 2, imageRow);
 		JlNativeApi.Store(proc, 3, featureSpace);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionClass2Dim);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageCol);
 		GC.KeepAlive(imageRow);
 		GC.KeepAlive(featureSpace);
@@ -7013,6 +7268,7 @@ public class JlOperatorSet
 	public static void Class2dimUnsup(JlObject image1, JlObject image2, out JlObject classes, JlTuple threshold, JlTuple numClasses)
 	{
 		IntPtr proc = JlNativeApi.PreCall(432);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, threshold);
@@ -7022,7 +7278,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(threshold);
 		JlNativeApi.UnpinTuple(numClasses);
 		err = JlObject.LoadNew(proc, 1, err, out classes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -7046,6 +7302,7 @@ public class JlOperatorSet
 	public static void CheckDifference(JlObject image, JlObject pattern, out JlObject selected, JlTuple mode, JlTuple diffLowerBound, JlTuple diffUpperBound, JlTuple grayOffset, JlTuple addRow, JlTuple addCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(433);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, pattern);
 		JlNativeApi.Store(proc, 0, mode);
@@ -7063,7 +7320,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(addRow);
 		JlNativeApi.UnpinTuple(addCol);
 		err = JlObject.LoadNew(proc, 1, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(pattern);
 	}
@@ -7084,6 +7341,7 @@ public class JlOperatorSet
 	public static void CharThreshold(JlObject image, JlObject histoRegion, out JlObject characters, JlTuple sigma, JlTuple percent, out JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(434);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, histoRegion);
 		JlNativeApi.Store(proc, 0, sigma);
@@ -7095,7 +7353,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(percent);
 		err = JlObject.LoadNew(proc, 1, err, out characters);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out threshold);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(histoRegion);
 	}
@@ -7112,11 +7370,12 @@ public class JlOperatorSet
 	public static void LabelToRegion(JlObject labelImage, out JlObject regions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(435);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, labelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(labelImage);
 	}
 
@@ -7133,13 +7392,14 @@ public class JlOperatorSet
 	public static void NonmaxSuppressionAmp(JlObject imgAmp, out JlObject imageResult, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(436);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imgAmp);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imgAmp);
 	}
 
@@ -7157,6 +7417,7 @@ public class JlOperatorSet
 	public static void NonmaxSuppressionDir(JlObject imgAmp, JlObject imgDir, out JlObject imageResult, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(437);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imgAmp);
 		JlNativeApi.Store(proc, 2, imgDir);
 		JlNativeApi.Store(proc, 0, mode);
@@ -7164,7 +7425,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imgAmp);
 		GC.KeepAlive(imgDir);
 	}
@@ -7184,6 +7445,7 @@ public class JlOperatorSet
 	public static void HysteresisThreshold(JlObject image, out JlObject regionHysteresis, JlTuple low, JlTuple high, JlTuple maxLength)
 	{
 		IntPtr proc = JlNativeApi.PreCall(438);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, low);
 		JlNativeApi.Store(proc, 1, high);
@@ -7194,7 +7456,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(high);
 		JlNativeApi.UnpinTuple(maxLength);
 		err = JlObject.LoadNew(proc, 1, err, out regionHysteresis);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7213,6 +7475,7 @@ public class JlOperatorSet
 	public static void BinaryThreshold(JlObject image, out JlObject region, JlTuple method, JlTuple lightDark, out JlTuple usedThreshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(439);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, method);
 		JlNativeApi.Store(proc, 1, lightDark);
@@ -7223,7 +7486,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(lightDark);
 		err = JlObject.LoadNew(proc, 1, err, out region);
 		err = JlTuple.LoadNew(proc, 0, err, out usedThreshold);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7243,6 +7506,7 @@ public class JlOperatorSet
 	public static void LocalThreshold(JlObject image, out JlObject region, JlTuple method, JlTuple lightDark, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(440);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, method);
 		JlNativeApi.Store(proc, 1, lightDark);
@@ -7255,7 +7519,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7276,6 +7540,7 @@ public class JlOperatorSet
 	public static void VarThreshold(JlObject image, out JlObject region, JlTuple maskWidth, JlTuple maskHeight, JlTuple stdDevScale, JlTuple absThreshold, JlTuple lightDark)
 	{
 		IntPtr proc = JlNativeApi.PreCall(441);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -7290,7 +7555,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(absThreshold);
 		JlNativeApi.UnpinTuple(lightDark);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7309,6 +7574,7 @@ public class JlOperatorSet
 	public static void DynThreshold(JlObject origImage, JlObject thresholdImage, out JlObject regionDynThresh, JlTuple offset, JlTuple lightDark)
 	{
 		IntPtr proc = JlNativeApi.PreCall(442);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, origImage);
 		JlNativeApi.Store(proc, 2, thresholdImage);
 		JlNativeApi.Store(proc, 0, offset);
@@ -7318,7 +7584,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(offset);
 		JlNativeApi.UnpinTuple(lightDark);
 		err = JlObject.LoadNew(proc, 1, err, out regionDynThresh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(origImage);
 		GC.KeepAlive(thresholdImage);
 	}
@@ -7337,6 +7603,7 @@ public class JlOperatorSet
 	public static void Threshold(JlObject image, out JlObject region, JlTuple minGray, JlTuple maxGray)
 	{
 		IntPtr proc = JlNativeApi.PreCall(443);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, minGray);
 		JlNativeApi.Store(proc, 1, maxGray);
@@ -7345,7 +7612,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minGray);
 		JlNativeApi.UnpinTuple(maxGray);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7362,13 +7629,14 @@ public class JlOperatorSet
 	public static void ThresholdSubPix(JlObject image, out JlObject border, JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(444);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, threshold);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlObject.LoadNew(proc, 1, err, out border);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7388,6 +7656,7 @@ public class JlOperatorSet
 	public static void RegiongrowingN(JlObject multiChannelImage, out JlObject regions, JlTuple metric, JlTuple minTolerance, JlTuple maxTolerance, JlTuple minSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(445);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.Store(proc, 0, metric);
 		JlNativeApi.Store(proc, 1, minTolerance);
@@ -7400,7 +7669,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxTolerance);
 		JlNativeApi.UnpinTuple(minSize);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -7420,6 +7689,7 @@ public class JlOperatorSet
 	public static void Regiongrowing(JlObject image, out JlObject regions, JlTuple rasterHeight, JlTuple rasterWidth, JlTuple tolerance, JlTuple minSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(446);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, rasterHeight);
 		JlNativeApi.Store(proc, 1, rasterWidth);
@@ -7432,7 +7702,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tolerance);
 		JlNativeApi.UnpinTuple(minSize);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7452,6 +7722,7 @@ public class JlOperatorSet
 	public static void RegiongrowingMean(JlObject image, out JlObject regions, JlTuple startRows, JlTuple startColumns, JlTuple tolerance, JlTuple minSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(447);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, startRows);
 		JlNativeApi.Store(proc, 1, startColumns);
@@ -7464,7 +7735,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tolerance);
 		JlNativeApi.UnpinTuple(minSize);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7483,6 +7754,7 @@ public class JlOperatorSet
 	public static void Pouring(JlObject image, out JlObject regions, JlTuple mode, JlTuple minGray, JlTuple maxGray)
 	{
 		IntPtr proc = JlNativeApi.PreCall(448);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, minGray);
@@ -7493,7 +7765,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minGray);
 		JlNativeApi.UnpinTuple(maxGray);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7510,13 +7782,14 @@ public class JlOperatorSet
 	public static void WatershedsThreshold(JlObject image, out JlObject basins, JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(449);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, threshold);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlObject.LoadNew(proc, 1, err, out basins);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7533,13 +7806,14 @@ public class JlOperatorSet
 	public static void Watersheds(JlObject image, out JlObject basins, out JlObject watersheds)
 	{
 		IntPtr proc = JlNativeApi.PreCall(450);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out basins);
 		err = JlObject.LoadNew(proc, 2, err, out watersheds);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7560,6 +7834,7 @@ public class JlOperatorSet
 	public static void DualThreshold(JlObject image, out JlObject regionCrossings, JlTuple minSize, JlTuple minGray, JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(453);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, minSize);
 		JlNativeApi.Store(proc, 1, minGray);
@@ -7570,7 +7845,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minGray);
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlObject.LoadNew(proc, 1, err, out regionCrossings);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7587,11 +7862,12 @@ public class JlOperatorSet
 	public static void LocalMin(JlObject image, out JlObject localMinima)
 	{
 		IntPtr proc = JlNativeApi.PreCall(455);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out localMinima);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7607,11 +7883,12 @@ public class JlOperatorSet
 	public static void Lowlands(JlObject image, out JlObject lowlands)
 	{
 		IntPtr proc = JlNativeApi.PreCall(456);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out lowlands);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7627,11 +7904,12 @@ public class JlOperatorSet
 	public static void LowlandsCenter(JlObject image, out JlObject lowlands)
 	{
 		IntPtr proc = JlNativeApi.PreCall(457);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out lowlands);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7647,11 +7925,12 @@ public class JlOperatorSet
 	public static void LocalMax(JlObject image, out JlObject localMaxima)
 	{
 		IntPtr proc = JlNativeApi.PreCall(458);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out localMaxima);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7667,11 +7946,12 @@ public class JlOperatorSet
 	public static void Plateaus(JlObject image, out JlObject plateaus)
 	{
 		IntPtr proc = JlNativeApi.PreCall(459);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out plateaus);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7687,11 +7967,12 @@ public class JlOperatorSet
 	public static void PlateausCenter(JlObject image, out JlObject plateaus)
 	{
 		IntPtr proc = JlNativeApi.PreCall(460);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out plateaus);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7709,13 +7990,14 @@ public class JlOperatorSet
 	public static void AutoThreshold(JlObject image, out JlObject regions, JlTuple sigma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(462);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7731,11 +8013,12 @@ public class JlOperatorSet
 	public static void BinThreshold(JlObject image, out JlObject region)
 	{
 		IntPtr proc = JlNativeApi.PreCall(463);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7754,6 +8037,7 @@ public class JlOperatorSet
 	public static void FastThreshold(JlObject image, out JlObject region, JlTuple minGray, JlTuple maxGray, JlTuple minSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(464);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, minGray);
 		JlNativeApi.Store(proc, 1, maxGray);
@@ -7764,7 +8048,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxGray);
 		JlNativeApi.UnpinTuple(minSize);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -7787,6 +8071,7 @@ public class JlOperatorSet
 	public static void MergeRegionsLineScan(JlObject currRegions, JlObject prevRegions, out JlObject currMergedRegions, out JlObject prevMergedRegions, JlTuple imageHeight, JlTuple mergeBorder, JlTuple maxImagesRegion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(467);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, currRegions);
 		JlNativeApi.Store(proc, 2, prevRegions);
 		JlNativeApi.Store(proc, 0, imageHeight);
@@ -7800,7 +8085,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxImagesRegion);
 		err = JlObject.LoadNew(proc, 1, err, out currMergedRegions);
 		err = JlObject.LoadNew(proc, 2, err, out prevMergedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(currRegions);
 		GC.KeepAlive(prevRegions);
 	}
@@ -7819,6 +8104,7 @@ public class JlOperatorSet
 	public static void PartitionRectangle(JlObject region, out JlObject partitioned, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(468);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -7827,7 +8113,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out partitioned);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -7845,6 +8131,7 @@ public class JlOperatorSet
 	public static void PartitionDynamic(JlObject region, out JlObject partitioned, JlTuple distance, JlTuple percent)
 	{
 		IntPtr proc = JlNativeApi.PreCall(469);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, distance);
 		JlNativeApi.Store(proc, 1, percent);
@@ -7853,7 +8140,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(distance);
 		JlNativeApi.UnpinTuple(percent);
 		err = JlObject.LoadNew(proc, 1, err, out partitioned);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -7872,6 +8159,7 @@ public class JlOperatorSet
 	public static void RegionToLabel(JlObject region, out JlObject imageLabel, JlTuple type, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(470);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
@@ -7882,7 +8170,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageLabel);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -7902,6 +8190,7 @@ public class JlOperatorSet
 	public static void RegionToBin(JlObject region, out JlObject binImage, JlTuple foregroundGray, JlTuple backgroundGray, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(471);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, foregroundGray);
 		JlNativeApi.Store(proc, 1, backgroundGray);
@@ -7914,7 +8203,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out binImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -7931,12 +8220,13 @@ public class JlOperatorSet
 	public static void Union2(JlObject region1, JlObject region2, out JlObject regionUnion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(472);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region1);
 		JlNativeApi.Store(proc, 2, region2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionUnion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region1);
 		GC.KeepAlive(region2);
 	}
@@ -7953,11 +8243,12 @@ public class JlOperatorSet
 	public static void Union1(JlObject region, out JlObject regionUnion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(473);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionUnion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -7979,6 +8270,7 @@ public class JlOperatorSet
 	public static void ClosestPointTransform(JlObject region, out JlObject distances, out JlObject closestPoints, JlTuple metric, JlTuple foreground, JlTuple closestPointMode, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(474);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, metric);
 		JlNativeApi.Store(proc, 1, foreground);
@@ -7995,7 +8287,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out distances);
 		err = JlObject.LoadNew(proc, 2, err, out closestPoints);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8015,6 +8307,7 @@ public class JlOperatorSet
 	public static void DistanceTransform(JlObject region, out JlObject distanceImage, JlTuple metric, JlTuple foreground, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(475);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, metric);
 		JlNativeApi.Store(proc, 1, foreground);
@@ -8027,7 +8320,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out distanceImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8043,11 +8336,12 @@ public class JlOperatorSet
 	public static void Skeleton(JlObject region, out JlObject skeleton)
 	{
 		IntPtr proc = JlNativeApi.PreCall(476);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out skeleton);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8065,6 +8359,7 @@ public class JlOperatorSet
 	public static void ProjectiveTransRegion(JlObject regions, out JlObject transRegions, JlTuple homMat2D, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(477);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -8073,7 +8368,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(homMat2D);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out transRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -8091,6 +8386,7 @@ public class JlOperatorSet
 	public static void AffineTransRegion(JlObject region, out JlObject regionAffineTrans, JlTuple homMat2D, JlTuple interpolate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(478);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolate);
@@ -8099,7 +8395,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(homMat2D);
 		JlNativeApi.UnpinTuple(interpolate);
 		err = JlObject.LoadNew(proc, 1, err, out regionAffineTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8117,6 +8413,7 @@ public class JlOperatorSet
 	public static void MirrorRegion(JlObject region, out JlObject regionMirror, JlTuple mode, JlTuple widthHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(479);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, widthHeight);
@@ -8125,7 +8422,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(widthHeight);
 		err = JlObject.LoadNew(proc, 1, err, out regionMirror);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8143,6 +8440,7 @@ public class JlOperatorSet
 	public static void ZoomRegion(JlObject region, out JlObject regionZoom, JlTuple scaleWidth, JlTuple scaleHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(480);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, scaleWidth);
 		JlNativeApi.Store(proc, 1, scaleHeight);
@@ -8151,7 +8449,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(scaleWidth);
 		JlNativeApi.UnpinTuple(scaleHeight);
 		err = JlObject.LoadNew(proc, 1, err, out regionZoom);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8169,6 +8467,7 @@ public class JlOperatorSet
 	public static void MoveRegion(JlObject region, out JlObject regionMoved, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(481);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -8177,7 +8476,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out regionMoved);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8194,13 +8493,14 @@ public class JlOperatorSet
 	public static void JunctionsSkeleton(JlObject region, out JlObject endPoints, out JlObject juncPoints)
 	{
 		IntPtr proc = JlNativeApi.PreCall(482);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out endPoints);
 		err = JlObject.LoadNew(proc, 2, err, out juncPoints);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8217,12 +8517,13 @@ public class JlOperatorSet
 	public static void Intersection(JlObject region1, JlObject region2, out JlObject regionIntersection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(483);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region1);
 		JlNativeApi.Store(proc, 2, region2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionIntersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region1);
 		GC.KeepAlive(region2);
 	}
@@ -8240,13 +8541,14 @@ public class JlOperatorSet
 	public static void Interjacent(JlObject region, out JlObject regionInterjacent, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(484);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out regionInterjacent);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8262,11 +8564,12 @@ public class JlOperatorSet
 	public static void FillUp(JlObject region, out JlObject regionFillUp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(485);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionFillUp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8285,6 +8588,7 @@ public class JlOperatorSet
 	public static void FillUpShape(JlObject region, out JlObject regionFillUp, JlTuple feature, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(486);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, feature);
 		JlNativeApi.Store(proc, 1, min);
@@ -8295,7 +8599,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out regionFillUp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8314,6 +8618,7 @@ public class JlOperatorSet
 	public static void ExpandRegion(JlObject regions, JlObject forbiddenArea, out JlObject regionExpanded, JlTuple iterations, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(487);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, forbiddenArea);
 		JlNativeApi.Store(proc, 0, iterations);
@@ -8323,7 +8628,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(iterations);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out regionExpanded);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(forbiddenArea);
 	}
@@ -8344,6 +8649,7 @@ public class JlOperatorSet
 	public static void ClipRegionRel(JlObject region, out JlObject regionClipped, JlTuple top, JlTuple bottom, JlTuple left, JlTuple right)
 	{
 		IntPtr proc = JlNativeApi.PreCall(488);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, top);
 		JlNativeApi.Store(proc, 1, bottom);
@@ -8356,7 +8662,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(left);
 		JlNativeApi.UnpinTuple(right);
 		err = JlObject.LoadNew(proc, 1, err, out regionClipped);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8376,6 +8682,7 @@ public class JlOperatorSet
 	public static void ClipRegion(JlObject region, out JlObject regionClipped, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(489);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -8388,7 +8695,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlObject.LoadNew(proc, 1, err, out regionClipped);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8407,6 +8714,7 @@ public class JlOperatorSet
 	public static void RankRegion(JlObject region, out JlObject regionCount, JlTuple width, JlTuple height, JlTuple number)
 	{
 		IntPtr proc = JlNativeApi.PreCall(490);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -8417,7 +8725,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(number);
 		err = JlObject.LoadNew(proc, 1, err, out regionCount);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8433,11 +8741,12 @@ public class JlOperatorSet
 	public static void Connection(JlObject region, out JlObject connectedRegions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(491);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out connectedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8454,12 +8763,13 @@ public class JlOperatorSet
 	public static void SymmDifference(JlObject region1, JlObject region2, out JlObject regionDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(492);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region1);
 		JlNativeApi.Store(proc, 2, region2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region1);
 		GC.KeepAlive(region2);
 	}
@@ -8477,12 +8787,13 @@ public class JlOperatorSet
 	public static void Difference(JlObject region, JlObject sub, out JlObject regionDifference)
 	{
 		IntPtr proc = JlNativeApi.PreCall(493);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, sub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionDifference);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(sub);
 	}
@@ -8499,11 +8810,12 @@ public class JlOperatorSet
 	public static void Complement(JlObject region, out JlObject regionComplement)
 	{
 		IntPtr proc = JlNativeApi.PreCall(494);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionComplement);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8519,11 +8831,12 @@ public class JlOperatorSet
 	public static void BackgroundSeg(JlObject foreground, out JlObject backgroundRegions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(495);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, foreground);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out backgroundRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(foreground);
 	}
 
@@ -8542,6 +8855,7 @@ public class JlOperatorSet
 	public static void HammingChangeRegion(JlObject inputRegion, out JlObject outputRegion, JlTuple width, JlTuple height, JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(496);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, inputRegion);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -8552,7 +8866,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(distance);
 		err = JlObject.LoadNew(proc, 1, err, out outputRegion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(inputRegion);
 	}
 
@@ -8569,13 +8883,14 @@ public class JlOperatorSet
 	public static void RemoveNoiseRegion(JlObject inputRegion, out JlObject outputRegion, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(497);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, inputRegion);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out outputRegion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(inputRegion);
 	}
 
@@ -8592,13 +8907,14 @@ public class JlOperatorSet
 	public static void ShapeTrans(JlObject region, out JlObject regionTrans, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(498);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out regionTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8619,6 +8935,7 @@ public class JlOperatorSet
 	public static void ExpandGray(JlObject regions, JlObject image, JlObject forbiddenArea, out JlObject regionExpand, JlTuple iterations, JlTuple mode, JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(499);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 3, forbiddenArea);
@@ -8631,7 +8948,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlObject.LoadNew(proc, 1, err, out regionExpand);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 		GC.KeepAlive(forbiddenArea);
@@ -8655,6 +8972,7 @@ public class JlOperatorSet
 	public static void ExpandGrayRef(JlObject regions, JlObject image, JlObject forbiddenArea, out JlObject regionExpand, JlTuple iterations, JlTuple mode, JlTuple refGray, JlTuple threshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(500);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 3, forbiddenArea);
@@ -8669,7 +8987,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(refGray);
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlObject.LoadNew(proc, 1, err, out regionExpand);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 		GC.KeepAlive(forbiddenArea);
@@ -8691,6 +9009,7 @@ public class JlOperatorSet
 	public static void SplitSkeletonLines(JlObject skeletonRegion, JlTuple maxDistance, out JlTuple beginRow, out JlTuple beginCol, out JlTuple endRow, out JlTuple endCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(501);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, skeletonRegion);
 		JlNativeApi.Store(proc, 0, maxDistance);
 		JlNativeApi.InitOCT(proc, 0);
@@ -8703,7 +9022,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out beginCol);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out endRow);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out endCol);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(skeletonRegion);
 	}
 
@@ -8720,13 +9039,14 @@ public class JlOperatorSet
 	public static void SplitSkeletonRegion(JlObject skeletonRegion, out JlObject regionLines, JlTuple maxDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(502);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, skeletonRegion);
 		JlNativeApi.Store(proc, 0, maxDistance);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = JlObject.LoadNew(proc, 1, err, out regionLines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(skeletonRegion);
 	}
 
@@ -8745,6 +9065,7 @@ public class JlOperatorSet
 	public static void GenRegionHisto(out JlObject region, JlTuple histogram, JlTuple row, JlTuple column, JlTuple scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(503);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, histogram);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -8756,7 +9077,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(scale);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按行程长度过滤：删除短于下限或长于上限的行程（run），保留其余像素，静态版结果走 out 的裸句柄。</summary>
@@ -8773,6 +9094,7 @@ public class JlOperatorSet
 	public static void EliminateRuns(JlObject region, out JlObject regionClipped, JlTuple elimShorter, JlTuple elimLonger)
 	{
 		IntPtr proc = JlNativeApi.PreCall(504);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, elimShorter);
 		JlNativeApi.Store(proc, 1, elimLonger);
@@ -8781,7 +9103,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(elimShorter);
 		JlNativeApi.UnpinTuple(elimLonger);
 		err = JlObject.LoadNew(proc, 1, err, out regionClipped);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -8856,6 +9178,7 @@ public class JlOperatorSet
 	public static void GetThreadingAttrib(JlTuple threadingHandle, out JlTuple threadingClass, out JlTuple attribName, out JlTuple attribValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(550);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, threadingHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -8865,7 +9188,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, err, out threadingClass);
 		err = JlTuple.LoadNew(proc, 1, err, out attribName);
 		err = JlTuple.LoadNew(proc, 2, err, out attribValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -8898,6 +9221,7 @@ public class JlOperatorSet
 	public static void TestAccess(JlObject objectVal, out JlObject dummy, JlTuple numReadChord, JlTuple numCopyObj, JlTuple writeChord)
 	{
 		IntPtr proc = JlNativeApi.PreCall(557);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objectVal);
 		JlNativeApi.Store(proc, 0, numReadChord);
 		JlNativeApi.Store(proc, 1, numCopyObj);
@@ -8908,7 +9232,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numCopyObj);
 		JlNativeApi.UnpinTuple(writeChord);
 		err = JlObject.LoadNew(proc, 1, err, out dummy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objectVal);
 	}
 
@@ -8925,12 +9249,13 @@ public class JlOperatorSet
 	public static void ObjDiff(JlObject objects, JlObject objectsSub, out JlObject objectsDiff)
 	{
 		IntPtr proc = JlNativeApi.PreCall(558);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 2, objectsSub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out objectsDiff);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 		GC.KeepAlive(objectsSub);
 	}
@@ -8949,6 +9274,7 @@ public class JlOperatorSet
 	public static void SetGrayval(JlObject image, JlTuple row, JlTuple column, JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(559);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -8957,7 +9283,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(grayval);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(image);
 	}
 
@@ -8975,6 +9301,7 @@ public class JlOperatorSet
 	public static void PaintXld(JlObject XLD, JlObject image, out JlObject imageResult, JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(560);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, grayval);
@@ -8982,7 +9309,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(grayval);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 		GC.KeepAlive(image);
 	}
@@ -9002,6 +9329,7 @@ public class JlOperatorSet
 	public static void PaintRegion(JlObject region, JlObject image, out JlObject imageResult, JlTuple grayval, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(561);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, grayval);
@@ -9011,7 +9339,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(grayval);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -9030,6 +9358,7 @@ public class JlOperatorSet
 	public static void OverpaintRegion(JlObject image, JlObject region, JlTuple grayval, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(562);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, grayval);
@@ -9037,7 +9366,7 @@ public class JlOperatorSet
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(grayval);
 		JlNativeApi.UnpinTuple(type);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -9057,13 +9386,14 @@ public class JlOperatorSet
 	public static void GenImageProto(JlObject image, out JlObject imageCleared, JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(563);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, grayval);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(grayval);
 		err = JlObject.LoadNew(proc, 1, err, out imageCleared);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -9081,12 +9411,13 @@ public class JlOperatorSet
 	public static void IntegerToObj(out JlObject objects, JlTuple surrogateTuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(566);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, surrogateTuple);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(surrogateTuple);
 		err = JlObject.LoadNew(proc, 1, err, out objects);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把图标对象元组转成整数替身（surrogate）元组，供只接受整数的接口传递句柄，静态版输出走 out 的新 JlTuple。</summary>
@@ -9103,6 +9434,7 @@ public class JlOperatorSet
 	public static void ObjToInteger(JlObject objects, JlTuple index, JlTuple number, out JlTuple surrogateTuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(567);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.Store(proc, 1, number);
@@ -9111,7 +9443,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(number);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out surrogateTuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 	}
 
@@ -9129,6 +9461,7 @@ public class JlOperatorSet
 	public static void CopyObj(JlObject objects, out JlObject objectsSelected, JlTuple index, JlTuple numObj)
 	{
 		IntPtr proc = JlNativeApi.PreCall(568);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.Store(proc, 1, numObj);
@@ -9137,7 +9470,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(numObj);
 		err = JlObject.LoadNew(proc, 1, err, out objectsSelected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 	}
 
@@ -9154,12 +9487,13 @@ public class JlOperatorSet
 	public static void ConcatObj(JlObject objects1, JlObject objects2, out JlObject objectsConcat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(569);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out objectsConcat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects1);
 		GC.KeepAlive(objects2);
 	}
@@ -9182,9 +9516,10 @@ public class JlOperatorSet
 	public static void ClearObj(JlObject objects)
 	{
 		IntPtr proc = JlNativeApi.PreCall(570);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(objects);
 	}
 
@@ -9200,11 +9535,12 @@ public class JlOperatorSet
 	public static void CopyImage(JlObject image, out JlObject dupImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(571);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out dupImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -9221,13 +9557,14 @@ public class JlOperatorSet
 	public static void SelectObj(JlObject objects, out JlObject objectSelected, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(572);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlObject.LoadNew(proc, 1, err, out objectSelected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 	}
 
@@ -9245,6 +9582,7 @@ public class JlOperatorSet
 	public static void CompareObj(JlObject objects1, JlObject objects2, JlTuple epsilon, out JlTuple isEqual)
 	{
 		IntPtr proc = JlNativeApi.PreCall(573);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.Store(proc, 0, epsilon);
@@ -9252,7 +9590,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(epsilon);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isEqual);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects1);
 		GC.KeepAlive(objects2);
 	}
@@ -9270,12 +9608,13 @@ public class JlOperatorSet
 	public static void TestSubsetRegion(JlObject region1, JlObject region2, out JlTuple isSubset)
 	{
 		IntPtr proc = JlNativeApi.PreCall(574);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region1);
 		JlNativeApi.Store(proc, 2, region2);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isSubset);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region1);
 		GC.KeepAlive(region2);
 	}
@@ -9293,12 +9632,13 @@ public class JlOperatorSet
 	public static void TestEqualRegion(JlObject regions1, JlObject regions2, out JlTuple isEqual)
 	{
 		IntPtr proc = JlNativeApi.PreCall(575);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isEqual);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -9316,12 +9656,13 @@ public class JlOperatorSet
 	public static void TestEqualObj(JlObject objects1, JlObject objects2, out JlTuple isEqual)
 	{
 		IntPtr proc = JlNativeApi.PreCall(576);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isEqual);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects1);
 		GC.KeepAlive(objects2);
 	}
@@ -9338,11 +9679,12 @@ public class JlOperatorSet
 	public static void CountObj(JlObject objects, out JlTuple number)
 	{
 		IntPtr proc = JlNativeApi.PreCall(577);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out number);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 	}
 
@@ -9360,6 +9702,7 @@ public class JlOperatorSet
 	public static void GetChannelInfo(JlObject objectVal, JlTuple request, JlTuple channel, out JlTuple information)
 	{
 		IntPtr proc = JlNativeApi.PreCall(578);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objectVal);
 		JlNativeApi.Store(proc, 0, request);
 		JlNativeApi.Store(proc, 1, channel);
@@ -9368,7 +9711,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(request);
 		JlNativeApi.UnpinTuple(channel);
 		err = JlTuple.LoadNew(proc, 0, err, out information);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objectVal);
 	}
 
@@ -9384,11 +9727,12 @@ public class JlOperatorSet
 	public static void GetObjClass(JlObject objectVal, out JlTuple classVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(579);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objectVal);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out classVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objectVal);
 	}
 
@@ -9415,6 +9759,7 @@ public class JlOperatorSet
 	public static void GenImageInterleaved(out JlObject imageRGB, JlTuple pixelPointer, JlTuple colorFormat, JlTuple originalWidth, JlTuple originalHeight, JlTuple alignment, JlTuple type, JlTuple imageWidth, JlTuple imageHeight, JlTuple startRow, JlTuple startColumn, JlTuple bitsPerChannel, JlTuple bitShift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(580);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pixelPointer);
 		JlNativeApi.Store(proc, 1, colorFormat);
 		JlNativeApi.Store(proc, 2, originalWidth);
@@ -9442,7 +9787,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(bitsPerChannel);
 		JlNativeApi.UnpinTuple(bitShift);
 		err = JlObject.LoadNew(proc, 1, err, out imageRGB);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 XLD 多边形按 mode 填充或描边成区域，静态版结果走 out 的裸句柄。</summary>
@@ -9458,13 +9803,14 @@ public class JlOperatorSet
 	public static void GenRegionPolygonXld(JlObject polygon, out JlObject region, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(581);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygon);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(polygon);
 	}
 
@@ -9481,13 +9827,14 @@ public class JlOperatorSet
 	public static void GenRegionContourXld(JlObject contour, out JlObject region, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(582);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -9504,6 +9851,7 @@ public class JlOperatorSet
 	public static void GenRegionPolygonFilled(out JlObject region, JlTuple rows, JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(583);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, columns);
 		JlNativeApi.InitOCT(proc, 1);
@@ -9511,7 +9859,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rows);
 		JlNativeApi.UnpinTuple(columns);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用顶点序列生成只描边、不填内部的多边形区域，静态版经 LoadNew 产出 out 的新裸句柄。</summary>
@@ -9527,6 +9875,7 @@ public class JlOperatorSet
 	public static void GenRegionPolygon(out JlObject region, JlTuple rows, JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(584);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, columns);
 		JlNativeApi.InitOCT(proc, 1);
@@ -9534,7 +9883,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rows);
 		JlNativeApi.UnpinTuple(columns);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把成对的行列坐标变成单像素区域（集），静态版经 LoadNew 产出 out 的新裸句柄。</summary>
@@ -9550,6 +9899,7 @@ public class JlOperatorSet
 	public static void GenRegionPoints(out JlObject region, JlTuple rows, JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(585);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, columns);
 		JlNativeApi.InitOCT(proc, 1);
@@ -9557,7 +9907,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rows);
 		JlNativeApi.UnpinTuple(columns);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由游程编码（行号、起始列、结束列三条元组）拼出一个区域，结果以 out 裸句柄返回。</summary>
@@ -9574,6 +9924,7 @@ public class JlOperatorSet
 	public static void GenRegionRuns(out JlObject region, JlTuple row, JlTuple columnBegin, JlTuple columnEnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(586);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, columnBegin);
 		JlNativeApi.Store(proc, 2, columnEnd);
@@ -9583,7 +9934,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(columnBegin);
 		JlNativeApi.UnpinTuple(columnEnd);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由中心、转角与两半轴生成任意朝向矩形，结果以 out 裸句柄返回。</summary>
@@ -9602,6 +9953,7 @@ public class JlOperatorSet
 	public static void GenRectangle2(out JlObject rectangle, JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(587);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -9615,7 +9967,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = JlObject.LoadNew(proc, 1, err, out rectangle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由左上/右下两对角点生成轴对齐矩形，结果以 out 裸句柄返回。</summary>
@@ -9633,6 +9985,7 @@ public class JlOperatorSet
 	public static void GenRectangle1(out JlObject rectangle, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(588);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -9644,7 +9997,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlObject.LoadNew(proc, 1, err, out rectangle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成一块外接尺寸为 width×height 的随机区域，结果以 out 裸句柄返回。</summary>
@@ -9660,6 +10013,7 @@ public class JlOperatorSet
 	public static void GenRandomRegion(out JlObject regionRandom, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(589);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
 		JlNativeApi.InitOCT(proc, 1);
@@ -9667,7 +10021,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionRandom);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由 R/G/B 三个平面像素指针生成三通道图像，结果以 out 新裸句柄返回。</summary>
@@ -9687,6 +10041,7 @@ public class JlOperatorSet
 	public static void GenImage3(out JlObject imageRGB, JlTuple type, JlTuple width, JlTuple height, JlTuple pixelPointerRed, JlTuple pixelPointerGreen, JlTuple pixelPointerBlue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(590);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -9702,7 +10057,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pixelPointerGreen);
 		JlNativeApi.UnpinTuple(pixelPointerBlue);
 		err = JlObject.LoadNew(proc, 1, err, out imageRGB);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由单个像素指针生成单通道图像，结果以 out 新裸句柄返回。</summary>
@@ -9720,6 +10075,7 @@ public class JlOperatorSet
 	public static void GenImage1(out JlObject image, JlTuple type, JlTuple width, JlTuple height, JlTuple pixelPointer)
 	{
 		IntPtr proc = JlNativeApi.PreCall(591);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -9731,7 +10087,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(pixelPointer);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>创建整幅为常数灰度的单通道图像，结果以 out 新裸句柄返回。</summary>
@@ -9748,6 +10104,7 @@ public class JlOperatorSet
 	public static void GenImageConst(out JlObject image, JlTuple type, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(592);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -9757,7 +10114,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由中心、转角、两半轴与起止角生成椭圆扇形，结果以 out 裸句柄返回。</summary>
@@ -9778,6 +10135,7 @@ public class JlOperatorSet
 	public static void GenEllipseSector(out JlObject ellipseSector, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, JlTuple startAngle, JlTuple endAngle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(593);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -9795,7 +10153,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(startAngle);
 		JlNativeApi.UnpinTuple(endAngle);
 		err = JlObject.LoadNew(proc, 1, err, out ellipseSector);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由中心、转角与两半轴生成椭圆，结果以 out 裸句柄返回。</summary>
@@ -9814,6 +10172,7 @@ public class JlOperatorSet
 	public static void GenEllipse(out JlObject ellipse, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(594);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -9827,7 +10186,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(radius1);
 		JlNativeApi.UnpinTuple(radius2);
 		err = JlObject.LoadNew(proc, 1, err, out ellipse);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由圆心、半径与起止角生成圆扇形，结果以 out 裸句柄返回。</summary>
@@ -9846,6 +10205,7 @@ public class JlOperatorSet
 	public static void GenCircleSector(out JlObject circleSector, JlTuple row, JlTuple column, JlTuple radius, JlTuple startAngle, JlTuple endAngle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(595);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, radius);
@@ -9859,7 +10219,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(startAngle);
 		JlNativeApi.UnpinTuple(endAngle);
 		err = JlObject.LoadNew(proc, 1, err, out circleSector);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由圆心与半径生成圆，结果以 out 裸句柄返回。</summary>
@@ -9876,6 +10236,7 @@ public class JlOperatorSet
 	public static void GenCircle(out JlObject circle, JlTuple row, JlTuple column, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(596);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, radius);
@@ -9885,7 +10246,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out circle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成一块棋盘格区域，结果以 out 裸句柄返回。</summary>
@@ -9903,6 +10264,7 @@ public class JlOperatorSet
 	public static void GenCheckerRegion(out JlObject regionChecker, JlTuple widthRegion, JlTuple heightRegion, JlTuple widthPattern, JlTuple heightPattern)
 	{
 		IntPtr proc = JlNativeApi.PreCall(597);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, widthRegion);
 		JlNativeApi.Store(proc, 1, heightRegion);
 		JlNativeApi.Store(proc, 2, widthPattern);
@@ -9914,7 +10276,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(widthPattern);
 		JlNativeApi.UnpinTuple(heightPattern);
 		err = JlObject.LoadNew(proc, 1, err, out regionChecker);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按行/列步距生成网格状线区或点阵区域，结果以 out 裸句柄返回。</summary>
@@ -9933,6 +10295,7 @@ public class JlOperatorSet
 	public static void GenGridRegion(out JlObject regionGrid, JlTuple rowSteps, JlTuple columnSteps, JlTuple type, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(598);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowSteps);
 		JlNativeApi.Store(proc, 1, columnSteps);
 		JlNativeApi.Store(proc, 2, type);
@@ -9946,7 +10309,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionGrid);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>批量生成随机圆/矩形/椭圆等区域集合，结果以 out 裸句柄返回。</summary>
@@ -9970,6 +10333,7 @@ public class JlOperatorSet
 	public static void GenRandomRegions(out JlObject regions, JlTuple type, JlTuple widthMin, JlTuple widthMax, JlTuple heightMin, JlTuple heightMax, JlTuple phiMin, JlTuple phiMax, JlTuple numRegions, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(599);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, widthMin);
 		JlNativeApi.Store(proc, 2, widthMax);
@@ -9993,7 +10357,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 Hesse 法线式描述的直线存为区域，结果以 out 裸句柄返回。</summary>
@@ -10009,6 +10373,7 @@ public class JlOperatorSet
 	public static void GenRegionHline(out JlObject regions, JlTuple orientation, JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(600);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, orientation);
 		JlNativeApi.Store(proc, 1, distance);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10016,7 +10381,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(orientation);
 		JlNativeApi.UnpinTuple(distance);
 		err = JlObject.LoadNew(proc, 1, err, out regions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把起止端点表示的线段存为区域，结果以 out 裸句柄返回。</summary>
@@ -10034,6 +10399,7 @@ public class JlOperatorSet
 	public static void GenRegionLine(out JlObject regionLines, JlTuple beginRow, JlTuple beginCol, JlTuple endRow, JlTuple endCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(601);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, beginRow);
 		JlNativeApi.Store(proc, 1, beginCol);
 		JlNativeApi.Store(proc, 2, endRow);
@@ -10045,7 +10411,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(endRow);
 		JlNativeApi.UnpinTuple(endCol);
 		err = JlObject.LoadNew(proc, 1, err, out regionLines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>创建一个空对象元组（长度为 0 的合法句柄），经 out 返回裸句柄。</summary>
@@ -10059,10 +10425,11 @@ public class JlOperatorSet
 	public static void GenEmptyObj(out JlObject emptyObject)
 	{
 		IntPtr proc = JlNativeApi.PreCall(602);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out emptyObject);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>创建一个不含任何像素的空区域，经 out 返回裸句柄。</summary>
@@ -10076,10 +10443,11 @@ public class JlOperatorSet
 	public static void GenEmptyRegion(out JlObject emptyRegion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(603);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out emptyRegion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成按行/列坡率线性铺展的灰度坡图像，结果以 out 新裸句柄返回。</summary>
@@ -10100,6 +10468,7 @@ public class JlOperatorSet
 	public static void GenImageGrayRamp(out JlObject imageGrayRamp, JlTuple alpha, JlTuple beta, JlTuple mean, JlTuple row, JlTuple column, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(604);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, alpha);
 		JlNativeApi.Store(proc, 1, beta);
 		JlNativeApi.Store(proc, 2, mean);
@@ -10117,7 +10486,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageGrayRamp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由三平面指针建三通道图并可注册释放回调，结果以 out 新裸句柄返回。</summary>
@@ -10138,6 +10507,7 @@ public class JlOperatorSet
 	public static void GenImage3Extern(out JlObject image, JlTuple type, JlTuple width, JlTuple height, JlTuple pointerRed, JlTuple pointerGreen, JlTuple pointerBlue, JlTuple clearProc)
 	{
 		IntPtr proc = JlNativeApi.PreCall(605);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -10155,7 +10525,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pointerBlue);
 		JlNativeApi.UnpinTuple(clearProc);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由单通道指针建图并可注册释放回调，结果以 out 新裸句柄返回。</summary>
@@ -10174,6 +10544,7 @@ public class JlOperatorSet
 	public static void GenImage1Extern(out JlObject image, JlTuple type, JlTuple width, JlTuple height, JlTuple pixelPointer, JlTuple clearProc)
 	{
 		IntPtr proc = JlNativeApi.PreCall(606);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -10187,7 +10558,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pixelPointer);
 		JlNativeApi.UnpinTuple(clearProc);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从带行距/位距的外部缓冲抠矩形建图，结果以 out 新裸句柄返回。</summary>
@@ -10209,6 +10580,7 @@ public class JlOperatorSet
 	public static void GenImage1Rect(out JlObject image, JlTuple pixelPointer, JlTuple width, JlTuple height, JlTuple verticalPitch, JlTuple horizontalBitPitch, JlTuple bitsPerPixel, JlTuple doCopy, JlTuple clearProc)
 	{
 		IntPtr proc = JlNativeApi.PreCall(607);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pixelPointer);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -10228,7 +10600,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(doCopy);
 		JlNativeApi.UnpinTuple(clearProc);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取图像域最小外接矩形对应的像素指针及行/位距，多项结果均以 out 元组返回。</summary>
@@ -10248,6 +10620,7 @@ public class JlOperatorSet
 	public static void GetImagePointer1Rect(JlObject image, out JlTuple pixelPointer, out JlTuple width, out JlTuple height, out JlTuple verticalPitch, out JlTuple horizontalBitPitch, out JlTuple bitsPerPixel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(608);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10262,7 +10635,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out verticalPitch);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out horizontalBitPitch);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out bitsPerPixel);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10283,6 +10656,7 @@ public class JlOperatorSet
 	public static void GetImagePointer3(JlObject imageRGB, out JlTuple pointerRed, out JlTuple pointerGreen, out JlTuple pointerBlue, out JlTuple type, out JlTuple width, out JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(609);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageRGB);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10297,7 +10671,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, err, out type);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out width);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out height);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageRGB);
 	}
 
@@ -10316,6 +10690,7 @@ public class JlOperatorSet
 	public static void GetImagePointer1(JlObject image, out JlTuple pointer, out JlTuple type, out JlTuple width, out JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(610);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10326,7 +10701,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, err, out type);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out width);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out height);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10342,11 +10717,12 @@ public class JlOperatorSet
 	public static void GetImageType(JlObject image, out JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(611);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out type);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10363,13 +10739,14 @@ public class JlOperatorSet
 	public static void GetImageSize(JlObject image, out JlTuple width, out JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(612);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out width);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out height);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10392,6 +10769,7 @@ public class JlOperatorSet
 	public static void GetImageTime(JlObject image, out JlTuple MSecond, out JlTuple second, out JlTuple minute, out JlTuple hour, out JlTuple day, out JlTuple YDay, out JlTuple month, out JlTuple year)
 	{
 		IntPtr proc = JlNativeApi.PreCall(613);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10410,7 +10788,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out YDay);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out month);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out year);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10429,6 +10807,7 @@ public class JlOperatorSet
 	public static void GetGrayvalInterpolated(JlObject image, JlTuple row, JlTuple column, JlTuple interpolation, out JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(614);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -10439,7 +10818,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out grayval);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10457,6 +10836,7 @@ public class JlOperatorSet
 	public static void GetGrayval(JlObject image, JlTuple row, JlTuple column, out JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(615);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -10465,7 +10845,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, err, out grayval);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10482,13 +10862,14 @@ public class JlOperatorSet
 	public static void GetRegionThickness(JlObject region, out JlTuple thickness, out JlTuple histogramm)
 	{
 		IntPtr proc = JlNativeApi.PreCall(616);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out thickness);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out histogramm);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10506,6 +10887,7 @@ public class JlOperatorSet
 	public static void GetRegionPolygon(JlObject region, JlTuple tolerance, out JlTuple rows, out JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(617);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, tolerance);
 		JlNativeApi.InitOCT(proc, 0);
@@ -10514,7 +10896,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tolerance);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10531,13 +10913,14 @@ public class JlOperatorSet
 	public static void GetRegionPoints(JlObject region, out JlTuple rows, out JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(618);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10554,13 +10937,14 @@ public class JlOperatorSet
 	public static void GetRegionContour(JlObject region, out JlTuple rows, out JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(619);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10578,6 +10962,7 @@ public class JlOperatorSet
 	public static void GetRegionRuns(JlObject region, out JlTuple row, out JlTuple columnBegin, out JlTuple columnEnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(620);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10586,7 +10971,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columnBegin);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out columnEnd);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10604,6 +10989,7 @@ public class JlOperatorSet
 	public static void GetRegionChain(JlObject region, out JlTuple row, out JlTuple column, out JlTuple chain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(621);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -10612,7 +10998,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out chain);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10629,13 +11015,14 @@ public class JlOperatorSet
 	public static void GetRegionConvex(JlObject region, out JlTuple rows, out JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(622);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10660,12 +11047,13 @@ public class JlOperatorSet
 	public static void DeserializeOcv(JlTuple serializedItemHandle, out JlTuple OCVHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(625);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out OCVHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 OCV 工具序列化成内存中的序列化项句柄，结果以 out 元组返回。</summary>
@@ -10687,12 +11075,13 @@ public class JlOperatorSet
 	public static void SerializeOcv(JlTuple OCVHandle, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(626);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, OCVHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(OCVHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从文件读入一个 OCV 工具，句柄以 out 元组返回。</summary>
@@ -10712,12 +11101,13 @@ public class JlOperatorSet
 	public static void ReadOcv(JlTuple fileName, out JlTuple OCVHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(627);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out OCVHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 OCV 工具保存到文件，无 out 输出。</summary>
@@ -10737,12 +11127,13 @@ public class JlOperatorSet
 	public static void WriteOcv(JlTuple OCVHandle, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(628);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, OCVHandle);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(OCVHandle);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>释放一个 OCV 工具句柄占用的资源，无 out 输出。</summary>
@@ -10760,10 +11151,11 @@ public class JlOperatorSet
 	public static void CloseOcv(JlTuple OCVHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(629);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, OCVHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(OCVHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -10854,6 +11246,7 @@ public class JlOperatorSet
 	public static void SortRegion(JlObject regions, out JlObject sortedRegions, JlTuple sortMode, JlTuple order, JlTuple rowOrCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(703);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, sortMode);
 		JlNativeApi.Store(proc, 1, order);
@@ -10864,7 +11257,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(order);
 		JlNativeApi.UnpinTuple(rowOrCol);
 		err = JlObject.LoadNew(proc, 1, err, out sortedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -10885,6 +11278,7 @@ public class JlOperatorSet
 	public static void CropDomainRel(JlObject image, out JlObject imagePart, JlTuple top, JlTuple left, JlTuple bottom, JlTuple right)
 	{
 		IntPtr proc = JlNativeApi.PreCall(705);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, top);
 		JlNativeApi.Store(proc, 1, left);
@@ -10897,7 +11291,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(bottom);
 		JlNativeApi.UnpinTuple(right);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -10922,13 +11316,14 @@ public class JlOperatorSet
 	public static void Pruning(JlObject region, out JlObject regionPrune, JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(714);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(length);
 		err = JlObject.LoadNew(proc, 1, err, out regionPrune);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10945,13 +11340,14 @@ public class JlOperatorSet
 	public static void Boundary(JlObject region, out JlObject regionBorder, JlTuple boundaryType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(715);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, boundaryType);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(boundaryType);
 		err = JlObject.LoadNew(proc, 1, err, out regionBorder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -10968,12 +11364,13 @@ public class JlOperatorSet
 	public static void Fitting(JlObject region, JlObject structElements, out JlObject regionFitted)
 	{
 		IntPtr proc = JlNativeApi.PreCall(716);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElements);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionFitted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElements);
 	}
@@ -10992,6 +11389,7 @@ public class JlOperatorSet
 	public static void GenStructElements(out JlObject structElements, JlTuple type, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(717);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -11001,7 +11399,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out structElements);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>关于一个参考点镜像区域，结果以 out 裸句柄返回。</summary>
@@ -11018,6 +11416,7 @@ public class JlOperatorSet
 	public static void TransposeRegion(JlObject region, out JlObject transposed, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(718);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -11026,7 +11425,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out transposed);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11044,6 +11443,7 @@ public class JlOperatorSet
 	public static void ThinningSeq(JlObject region, out JlObject regionThin, JlTuple golayElement, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(719);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11052,7 +11452,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionThin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11070,6 +11470,7 @@ public class JlOperatorSet
 	public static void ThinningGolay(JlObject region, out JlObject regionThin, JlTuple golayElement, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(720);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
@@ -11078,7 +11479,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionThin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11099,6 +11500,7 @@ public class JlOperatorSet
 	public static void Thinning(JlObject region, JlObject structElement1, JlObject structElement2, out JlObject regionThin, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(721);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement1);
 		JlNativeApi.Store(proc, 3, structElement2);
@@ -11111,7 +11513,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionThin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement1);
 		GC.KeepAlive(structElement2);
@@ -11131,6 +11533,7 @@ public class JlOperatorSet
 	public static void ThickeningSeq(JlObject region, out JlObject regionThick, JlTuple golayElement, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(722);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11139,7 +11542,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionThick);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11157,6 +11560,7 @@ public class JlOperatorSet
 	public static void ThickeningGolay(JlObject region, out JlObject regionThick, JlTuple golayElement, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(723);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
@@ -11165,7 +11569,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionThick);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11186,6 +11590,7 @@ public class JlOperatorSet
 	public static void Thickening(JlObject region, JlObject structElement1, JlObject structElement2, out JlObject regionThick, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(724);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement1);
 		JlNativeApi.Store(proc, 3, structElement2);
@@ -11198,7 +11603,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionThick);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement1);
 		GC.KeepAlive(structElement2);
@@ -11217,13 +11622,14 @@ public class JlOperatorSet
 	public static void HitOrMissSeq(JlObject region, out JlObject regionHitMiss, JlTuple golayElement)
 	{
 		IntPtr proc = JlNativeApi.PreCall(725);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(golayElement);
 		err = JlObject.LoadNew(proc, 1, err, out regionHitMiss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11241,6 +11647,7 @@ public class JlOperatorSet
 	public static void HitOrMissGolay(JlObject region, out JlObject regionHitMiss, JlTuple golayElement, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(726);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
@@ -11249,7 +11656,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionHitMiss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11269,6 +11676,7 @@ public class JlOperatorSet
 	public static void HitOrMiss(JlObject region, JlObject structElement1, JlObject structElement2, out JlObject regionHitMiss, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(727);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement1);
 		JlNativeApi.Store(proc, 3, structElement2);
@@ -11279,7 +11687,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out regionHitMiss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement1);
 		GC.KeepAlive(structElement2);
@@ -11301,6 +11709,7 @@ public class JlOperatorSet
 	public static void GolayElements(out JlObject structElement1, out JlObject structElement2, JlTuple golayElement, JlTuple rotation, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(728);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
 		JlNativeApi.Store(proc, 2, row);
@@ -11314,7 +11723,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out structElement1);
 		err = JlObject.LoadNew(proc, 2, err, out structElement2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用 Golay 元素 'l' 与 'e' 分两轮顺序细化区域（skiz），结果走 out 的裸句柄。</summary>
@@ -11331,6 +11740,7 @@ public class JlOperatorSet
 	public static void MorphSkiz(JlObject region, out JlObject regionSkiz, JlTuple iterations1, JlTuple iterations2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(729);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, iterations1);
 		JlNativeApi.Store(proc, 1, iterations2);
@@ -11339,7 +11749,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(iterations1);
 		JlNativeApi.UnpinTuple(iterations2);
 		err = JlObject.LoadNew(proc, 1, err, out regionSkiz);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11355,11 +11765,12 @@ public class JlOperatorSet
 	public static void MorphSkeleton(JlObject region, out JlObject regionSkeleton)
 	{
 		IntPtr proc = JlNativeApi.PreCall(730);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionSkeleton);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11376,12 +11787,13 @@ public class JlOperatorSet
 	public static void MorphHat(JlObject region, JlObject structElement, out JlObject regionMorphHat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(731);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionMorphHat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11399,12 +11811,13 @@ public class JlOperatorSet
 	public static void BottomHat(JlObject region, JlObject structElement, out JlObject regionBottomHat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(732);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionBottomHat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11422,12 +11835,13 @@ public class JlOperatorSet
 	public static void TopHat(JlObject region, JlObject structElement, out JlObject regionTopHat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(733);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionTopHat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11448,6 +11862,7 @@ public class JlOperatorSet
 	public static void MinkowskiSub2(JlObject region, JlObject structElement, out JlObject regionMinkSub, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(734);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, row);
@@ -11459,7 +11874,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionMinkSub);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11478,6 +11893,7 @@ public class JlOperatorSet
 	public static void MinkowskiSub1(JlObject region, JlObject structElement, out JlObject regionMinkSub, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(735);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, iterations);
@@ -11485,7 +11901,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionMinkSub);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11506,6 +11922,7 @@ public class JlOperatorSet
 	public static void MinkowskiAdd2(JlObject region, JlObject structElement, out JlObject regionMinkAdd, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(736);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, row);
@@ -11517,7 +11934,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionMinkAdd);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11536,6 +11953,7 @@ public class JlOperatorSet
 	public static void MinkowskiAdd1(JlObject region, JlObject structElement, out JlObject regionMinkAdd, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(737);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, iterations);
@@ -11543,7 +11961,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionMinkAdd);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11562,6 +11980,7 @@ public class JlOperatorSet
 	public static void ClosingRectangle1(JlObject region, out JlObject regionClosing, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(738);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -11570,7 +11989,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11588,6 +12007,7 @@ public class JlOperatorSet
 	public static void ClosingGolay(JlObject region, out JlObject regionClosing, JlTuple golayElement, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(739);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
@@ -11596,7 +12016,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11613,13 +12033,14 @@ public class JlOperatorSet
 	public static void ClosingCircle(JlObject region, out JlObject regionClosing, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(740);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, radius);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out regionClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11636,12 +12057,13 @@ public class JlOperatorSet
 	public static void Closing(JlObject region, JlObject structElement, out JlObject regionClosing)
 	{
 		IntPtr proc = JlNativeApi.PreCall(741);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11659,12 +12081,13 @@ public class JlOperatorSet
 	public static void OpeningSeg(JlObject region, JlObject structElement, out JlObject regionOpening)
 	{
 		IntPtr proc = JlNativeApi.PreCall(742);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11683,6 +12106,7 @@ public class JlOperatorSet
 	public static void OpeningGolay(JlObject region, out JlObject regionOpening, JlTuple golayElement, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(743);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, rotation);
@@ -11691,7 +12115,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11709,6 +12133,7 @@ public class JlOperatorSet
 	public static void OpeningRectangle1(JlObject region, out JlObject regionOpening, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(744);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -11717,7 +12142,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11734,13 +12159,14 @@ public class JlOperatorSet
 	public static void OpeningCircle(JlObject region, out JlObject regionOpening, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(745);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, radius);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out regionOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11757,12 +12183,13 @@ public class JlOperatorSet
 	public static void Opening(JlObject region, JlObject structElement, out JlObject regionOpening)
 	{
 		IntPtr proc = JlNativeApi.PreCall(746);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out regionOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11781,6 +12208,7 @@ public class JlOperatorSet
 	public static void ErosionSeq(JlObject region, out JlObject regionErosion, JlTuple golayElement, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(747);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11789,7 +12217,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11808,6 +12236,7 @@ public class JlOperatorSet
 	public static void ErosionGolay(JlObject region, out JlObject regionErosion, JlTuple golayElement, JlTuple iterations, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(748);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11818,7 +12247,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(iterations);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11836,6 +12265,7 @@ public class JlOperatorSet
 	public static void ErosionRectangle1(JlObject region, out JlObject regionErosion, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(749);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -11844,7 +12274,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11861,13 +12291,14 @@ public class JlOperatorSet
 	public static void ErosionCircle(JlObject region, out JlObject regionErosion, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(750);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, radius);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11887,6 +12318,7 @@ public class JlOperatorSet
 	public static void Erosion2(JlObject region, JlObject structElement, out JlObject regionErosion, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(751);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, row);
@@ -11898,7 +12330,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11917,6 +12349,7 @@ public class JlOperatorSet
 	public static void Erosion1(JlObject region, JlObject structElement, out JlObject regionErosion, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(752);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, iterations);
@@ -11924,7 +12357,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -11943,6 +12376,7 @@ public class JlOperatorSet
 	public static void DilationSeq(JlObject region, out JlObject regionDilation, JlTuple golayElement, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(753);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11951,7 +12385,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(golayElement);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11970,6 +12404,7 @@ public class JlOperatorSet
 	public static void DilationGolay(JlObject region, out JlObject regionDilation, JlTuple golayElement, JlTuple iterations, JlTuple rotation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(754);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, golayElement);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -11980,7 +12415,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(iterations);
 		JlNativeApi.UnpinTuple(rotation);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -11998,6 +12433,7 @@ public class JlOperatorSet
 	public static void DilationRectangle1(JlObject region, out JlObject regionDilation, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(755);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -12006,7 +12442,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -12023,13 +12459,14 @@ public class JlOperatorSet
 	public static void DilationCircle(JlObject region, out JlObject regionDilation, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(756);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, radius);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -12049,6 +12486,7 @@ public class JlOperatorSet
 	public static void Dilation2(JlObject region, JlObject structElement, out JlObject regionDilation, JlTuple row, JlTuple column, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(757);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, row);
@@ -12060,7 +12498,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -12079,6 +12517,7 @@ public class JlOperatorSet
 	public static void Dilation1(JlObject region, JlObject structElement, out JlObject regionDilation, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(758);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, structElement);
 		JlNativeApi.Store(proc, 0, iterations);
@@ -12086,7 +12525,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out regionDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(structElement);
 	}
@@ -12104,12 +12543,13 @@ public class JlOperatorSet
 	public static void GrayBothat(JlObject image, JlObject SE, out JlObject imageBotHat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(759);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageBotHat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12127,12 +12567,13 @@ public class JlOperatorSet
 	public static void GrayTophat(JlObject image, JlObject SE, out JlObject imageTopHat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(760);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageTopHat);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12150,12 +12591,13 @@ public class JlOperatorSet
 	public static void GrayClosing(JlObject image, JlObject SE, out JlObject imageClosing)
 	{
 		IntPtr proc = JlNativeApi.PreCall(761);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12173,12 +12615,13 @@ public class JlOperatorSet
 	public static void GrayOpening(JlObject image, JlObject SE, out JlObject imageOpening)
 	{
 		IntPtr proc = JlNativeApi.PreCall(762);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12196,12 +12639,13 @@ public class JlOperatorSet
 	public static void GrayDilation(JlObject image, JlObject SE, out JlObject imageDilation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(763);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageDilation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12219,12 +12663,13 @@ public class JlOperatorSet
 	public static void GrayErosion(JlObject image, JlObject SE, out JlObject imageErosion)
 	{
 		IntPtr proc = JlNativeApi.PreCall(764);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, SE);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageErosion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(SE);
 	}
@@ -12241,12 +12686,13 @@ public class JlOperatorSet
 	public static void ReadGraySe(out JlObject SE, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(765);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out SE);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成帽状（椭球/圆盘）灰度结构元，作为新图像句柄经 out 返回。</summary>
@@ -12264,6 +12710,7 @@ public class JlOperatorSet
 	public static void GenDiscSe(out JlObject SE, JlTuple type, JlTuple width, JlTuple height, JlTuple smax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(766);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -12275,7 +12722,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(smax);
 		err = JlObject.LoadNew(proc, 1, err, out SE);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -12294,6 +12741,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectResultContour(out JlObject contour, JlTuple metrologyHandle, JlTuple index, JlTuple instance, JlTuple resolution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(768);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, instance);
@@ -12305,7 +12753,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(instance);
 		JlNativeApi.UnpinTuple(resolution);
 		err = JlObject.LoadNew(proc, 1, err, out contour);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按给定位姿（行/列/角）就地平移旋转整个计量模型，无 out 输出。</summary>
@@ -12322,6 +12770,7 @@ public class JlOperatorSet
 	public static void AlignMetrologyModel(JlTuple metrologyHandle, JlTuple row, JlTuple column, JlTuple angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(769);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -12331,7 +12780,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(angle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>向计量模型添加一个通用形状对象，新对象的整型序号经 out 的 JlTuple 返回。</summary>
@@ -12354,6 +12803,7 @@ public class JlOperatorSet
 	public static void AddMetrologyObjectGeneric(JlTuple metrologyHandle, JlTuple shape, JlTuple shapeParam, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(770);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, shape);
 		JlNativeApi.Store(proc, 2, shapeParam);
@@ -12375,7 +12825,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读取计量模型整模型级的通用参数（如相机参数、图像尺寸），参数值以全新 JlTuple 走 out 返回。</summary>
@@ -12391,6 +12841,7 @@ public class JlOperatorSet
 	public static void GetMetrologyModelParam(JlTuple metrologyHandle, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(771);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
@@ -12398,7 +12849,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>设置计量模型整模型级的通用参数（如相机参数），原地生效，无任何输出。</summary>
@@ -12414,6 +12865,7 @@ public class JlOperatorSet
 	public static void SetMetrologyModelParam(JlTuple metrologyHandle, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(772);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -12421,7 +12873,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把序列化的计量模型字节缓冲反序列化，产出一个全新的计量模型句柄走 out 返回。</summary>
@@ -12436,12 +12888,13 @@ public class JlOperatorSet
 	public static void DeserializeMetrologyModel(JlTuple serializedItemHandle, out JlTuple metrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(773);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out metrologyHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把计量模型序列化为字节元组，序列化产物走 out 返回，模型本身不受改动。</summary>
@@ -12456,12 +12909,13 @@ public class JlOperatorSet
 	public static void SerializeMetrologyModel(JlTuple metrologyHandle, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(774);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对计量模型内被选中的计量对象整体做平移加旋转（如随定位结果对齐），原地生效，无输出。</summary>
@@ -12480,6 +12934,7 @@ public class JlOperatorSet
 	public static void TransformMetrologyObject(JlTuple metrologyHandle, JlTuple index, JlTuple row, JlTuple column, JlTuple phi, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(775);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, row);
@@ -12493,7 +12948,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(phi);
 		JlNativeApi.UnpinTuple(mode);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把计量模型写入文件存档，句柄只读使用，不产出任何新对象。</summary>
@@ -12508,12 +12963,13 @@ public class JlOperatorSet
 	public static void WriteMetrologyModel(JlTuple metrologyHandle, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(776);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>从文件读取一个计量模型，产出的新模型句柄走 out 返回。</summary>
@@ -12528,12 +12984,13 @@ public class JlOperatorSet
 	public static void ReadMetrologyModel(JlTuple fileName, out JlTuple metrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(777);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out metrologyHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>复制一个计量模型（可按索引挑选带入副本的计量对象），产出的新模型句柄走 out 返回。</summary>
@@ -12549,6 +13006,7 @@ public class JlOperatorSet
 	public static void CopyMetrologyModel(JlTuple metrologyHandle, JlTuple index, out JlTuple copiedMetrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(778);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -12556,7 +13014,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out copiedMetrologyHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在同一计量模型内部复制被选中的计量对象，副本对象的新索引集合走 out 返回。</summary>
@@ -12572,6 +13030,7 @@ public class JlOperatorSet
 	public static void CopyMetrologyObject(JlTuple metrologyHandle, JlTuple index, out JlTuple copiedIndices)
 	{
 		IntPtr proc = JlNativeApi.PreCall(779);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -12579,7 +13038,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out copiedIndices);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>查询计量模型内各计量对象当前拟合出的实例（检出位置）个数，结果走 out 返回。</summary>
@@ -12595,6 +13054,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectNumInstances(JlTuple metrologyHandle, JlTuple index, out JlTuple numInstances)
 	{
 		IntPtr proc = JlNativeApi.PreCall(780);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -12602,7 +13062,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out numInstances);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取计量模型一次 Apply 之后的测量结果（坐标、距离、半径等），结果值打包成元组走 out 返回。</summary>
@@ -12621,6 +13081,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectResult(JlTuple metrologyHandle, JlTuple index, JlTuple instance, JlTuple genParamName, JlTuple genParamValue, out JlTuple parameter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(781);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, instance);
@@ -12634,7 +13095,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, err, out parameter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取计量对象测量区域边缘点的行列坐标，并附带测量区域的矩形 XLD 轮廓，三个输出全部走 out。</summary>
@@ -12653,6 +13114,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectMeasures(out JlObject contours, JlTuple metrologyHandle, JlTuple index, JlTuple transition, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(782);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, transition);
@@ -12666,7 +13128,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out contours);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对一幅图像执行计量模型：测量并拟合模型内全部计量对象的几何形状，结果写进模型内部，无 out。</summary>
@@ -12681,11 +13143,12 @@ public class JlOperatorSet
 	public static void ApplyMetrologyModel(JlObject image, JlTuple metrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(783);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(image);
 	}
 
@@ -12701,12 +13164,13 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectIndices(JlTuple metrologyHandle, out JlTuple indices)
 	{
 		IntPtr proc = JlNativeApi.PreCall(784);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out indices);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把所选计量对象的模糊（加权评分）参数与隶属函数全部恢复默认，原地生效，无输出。</summary>
@@ -12721,12 +13185,13 @@ public class JlOperatorSet
 	public static void ResetMetrologyObjectFuzzyParam(JlTuple metrologyHandle, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(785);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把所选计量对象的全部参数（测量、拟合、模糊等）恢复默认，原地生效，无输出。</summary>
@@ -12741,12 +13206,13 @@ public class JlOperatorSet
 	public static void ResetMetrologyObjectParam(JlTuple metrologyHandle, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(786);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>读取计量对象的模糊评分参数或隶属函数取值，值集合走 out 返回。</summary>
@@ -12763,6 +13229,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectFuzzyParam(JlTuple metrologyHandle, JlTuple index, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(787);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -12772,7 +13239,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读取计量对象的一个或数个通用参数（如 num_measures、num_instances），值集合走 out 返回。</summary>
@@ -12789,6 +13256,7 @@ public class JlOperatorSet
 	public static void GetMetrologyObjectParam(JlTuple metrologyHandle, JlTuple index, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(788);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -12798,7 +13266,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>为计量对象设置模糊评分参数或自定义隶属函数，原地生效，无输出。</summary>
@@ -12815,6 +13283,7 @@ public class JlOperatorSet
 	public static void SetMetrologyObjectFuzzyParam(JlTuple metrologyHandle, JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(789);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -12824,7 +13293,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>为计量对象设置一个或数个参数（实例数、测量区尺寸等），原地生效，无输出。</summary>
@@ -12841,6 +13310,7 @@ public class JlOperatorSet
 	public static void SetMetrologyObjectParam(JlTuple metrologyHandle, JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(790);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -12850,7 +13320,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>在计量模型中新建一个矩形（带方向）计量对象并按给定卡尺参数建模边缘测量，新对象索引走 out 返回。</summary>
@@ -12876,6 +13346,7 @@ public class JlOperatorSet
 	public static void AddMetrologyObjectRectangle2Measure(JlTuple metrologyHandle, JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(791);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -12903,7 +13374,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在计量模型中新建一条直线计量对象并按给定卡尺参数建模边缘测量，新对象索引走 out 返回。</summary>
@@ -12928,6 +13399,7 @@ public class JlOperatorSet
 	public static void AddMetrologyObjectLineMeasure(JlTuple metrologyHandle, JlTuple rowBegin, JlTuple columnBegin, JlTuple rowEnd, JlTuple columnEnd, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(792);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, rowBegin);
 		JlNativeApi.Store(proc, 2, columnBegin);
@@ -12953,7 +13425,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在计量模型中新建椭圆（或椭圆弧）计量对象并按给定卡尺参数建模边缘测量，新对象索引走 out 返回。</summary>
@@ -12979,6 +13451,7 @@ public class JlOperatorSet
 	public static void AddMetrologyObjectEllipseMeasure(JlTuple metrologyHandle, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(793);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -13006,7 +13479,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在计量模型中新建圆（或圆弧）计量对象并按给定卡尺参数建模边缘测量，新对象索引走 out 返回。</summary>
@@ -13030,6 +13503,7 @@ public class JlOperatorSet
 	public static void AddMetrologyObjectCircleMeasure(JlTuple metrologyHandle, JlTuple row, JlTuple column, JlTuple radius, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(794);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -13053,7 +13527,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>删除整个计量模型并释放其原生内存，句柄调用后即刻失效。</summary>
@@ -13067,10 +13541,11 @@ public class JlOperatorSet
 	public static void ClearMetrologyModel(JlTuple metrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(795);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>从计量模型中删除选中的计量对象并释放其内存，模型句柄本身保留。</summary>
@@ -13085,12 +13560,13 @@ public class JlOperatorSet
 	public static void ClearMetrologyObject(JlTuple metrologyHandle, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(796);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>声明计量模型将来要处理的图像宽与高，作为建模坐标与距离计算的基准，原地生效。</summary>
@@ -13106,6 +13582,7 @@ public class JlOperatorSet
 	public static void SetMetrologyModelImageSize(JlTuple metrologyHandle, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(797);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, metrologyHandle);
 		JlNativeApi.Store(proc, 1, width);
 		JlNativeApi.Store(proc, 2, height);
@@ -13113,7 +13590,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metrologyHandle);
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>创建一个空的计量模型数据结构，新模型句柄走 out 返回，供后续 Add 计量对象。</summary>
@@ -13127,10 +13604,11 @@ public class JlOperatorSet
 	public static void CreateMetrologyModel(out JlTuple metrologyHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(798);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out metrologyHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把卡尺测量对象序列化为字节元组走 out 返回，卡尺本身不受改动。</summary>
@@ -13145,12 +13623,13 @@ public class JlOperatorSet
 	public static void SerializeMeasure(JlTuple measureHandle, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(799);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(measureHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把序列化的卡尺测量对象字节元组还原成全新卡尺句柄，走 out 返回。</summary>
@@ -13165,12 +13644,13 @@ public class JlOperatorSet
 	public static void DeserializeMeasure(JlTuple serializedItemHandle, out JlTuple measureHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(800);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out measureHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把卡尺测量对象写入文件存档，句柄只读使用，无输出。</summary>
@@ -13185,12 +13665,13 @@ public class JlOperatorSet
 	public static void WriteMeasure(JlTuple measureHandle, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(801);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(measureHandle);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>从文件读取一个卡尺测量对象，产出的新卡尺句柄走 out 返回。</summary>
@@ -13205,12 +13686,13 @@ public class JlOperatorSet
 	public static void ReadMeasure(JlTuple fileName, out JlTuple measureHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(802);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out measureHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在卡尺路径上按固定灰度阈值提取等值点，得到点集的行列坐标与相邻间距，三路结果走 out 返回。</summary>
@@ -13231,6 +13713,7 @@ public class JlOperatorSet
 	public static void MeasureThresh(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple threshold, JlTuple select, out JlTuple rowThresh, out JlTuple columnThresh, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(803);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13247,7 +13730,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowThresh);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out columnThresh);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13262,10 +13745,11 @@ public class JlOperatorSet
 	public static void CloseMeasure(JlTuple measureHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(804);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(measureHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>沿卡尺垂直方向提取灰度剖面线，剖面灰度序列走 out 返回。</summary>
@@ -13281,13 +13765,14 @@ public class JlOperatorSet
 	public static void MeasureProjection(JlObject image, JlTuple measureHandle, out JlTuple grayValues)
 	{
 		IntPtr proc = JlNativeApi.PreCall(805);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(measureHandle);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out grayValues);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13303,12 +13788,13 @@ public class JlOperatorSet
 	public static void ResetFuzzyMeasure(JlTuple measureHandle, JlTuple setType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(806);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, setType);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(measureHandle);
 		JlNativeApi.UnpinTuple(setType);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>为卡尺的边缘对配对自定义"归一化"模糊评分函数（按期望边缘对宽度归一），原地写入卡尺，无输出。</summary>
@@ -13333,6 +13819,7 @@ public class JlOperatorSet
 	public static void SetFuzzyMeasureNormPair(JlTuple measureHandle, JlTuple pairSize, JlTuple setType, JlTuple function)
 	{
 		IntPtr proc = JlNativeApi.PreCall(807);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, pairSize);
 		JlNativeApi.Store(proc, 2, setType);
@@ -13342,7 +13829,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(pairSize);
 		JlNativeApi.UnpinTuple(setType);
 		JlNativeApi.UnpinTuple(function);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>为卡尺测量对象按指定模糊集合自定义隶属函数（非归一化版），原地写入卡尺，无输出。</summary>
@@ -13366,6 +13853,7 @@ public class JlOperatorSet
 	public static void SetFuzzyMeasure(JlTuple measureHandle, JlTuple setType, JlTuple function)
 	{
 		IntPtr proc = JlNativeApi.PreCall(808);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, setType);
 		JlNativeApi.Store(proc, 2, function);
@@ -13373,7 +13861,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(measureHandle);
 		JlNativeApi.UnpinTuple(setType);
 		JlNativeApi.UnpinTuple(function);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>沿卡尺提取带模糊评分与配对约束的直线边缘对，成对边缘的两侧坐标、幅度、对中点、评分与对内间距共十路结果走 out 返回。</summary>
@@ -13404,6 +13892,7 @@ public class JlOperatorSet
 	public static void FuzzyMeasurePairing(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple ampThresh, JlTuple fuzzyThresh, JlTuple transition, JlTuple pairing, JlTuple numPairs, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowPairCenter, out JlTuple columnPairCenter, out JlTuple fuzzyScore, out JlTuple intraDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(809);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13440,7 +13929,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out columnPairCenter);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out intraDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13471,6 +13960,7 @@ public class JlOperatorSet
 	public static void FuzzyMeasurePairs(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple ampThresh, JlTuple fuzzyThresh, JlTuple transition, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter, out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13505,7 +13995,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out intraDistance);
 		err = JlTuple.LoadNew(proc, 10, JlTupleType.DOUBLE, err, out interDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13530,6 +14020,7 @@ public class JlOperatorSet
 	public static void FuzzyMeasurePos(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple ampThresh, JlTuple fuzzyThresh, JlTuple transition, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple fuzzyScore, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(811);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13552,7 +14043,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out amplitude);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13580,6 +14071,7 @@ public class JlOperatorSet
 	public static void MeasurePairs(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple threshold, JlTuple transition, JlTuple select, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple intraDistance, out JlTuple interDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(812);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13608,7 +14100,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out amplitudeSecond);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out intraDistance);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out interDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13632,6 +14124,7 @@ public class JlOperatorSet
 	public static void MeasurePos(JlObject image, JlTuple measureHandle, JlTuple sigma, JlTuple threshold, JlTuple transition, JlTuple select, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(813);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -13652,7 +14145,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out columnEdge);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out amplitude);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -13669,6 +14162,7 @@ public class JlOperatorSet
 	public static void TranslateMeasure(JlTuple measureHandle, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(814);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -13676,7 +14170,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(measureHandle);
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>生成一个圆环弧卡尺测量对象（准备沿弧法向提取直线边缘），新卡尺句柄走 out 返回。</summary>
@@ -13699,6 +14193,7 @@ public class JlOperatorSet
 	public static void GenMeasureArc(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, JlTuple width, JlTuple height, JlTuple interpolation, out JlTuple measureHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, centerRow);
 		JlNativeApi.Store(proc, 1, centerCol);
 		JlNativeApi.Store(proc, 2, radius);
@@ -13720,7 +14215,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlTuple.LoadNew(proc, 0, err, out measureHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成一个带方向的矩形卡尺测量对象（准备沿矩形法向提取直线边缘），新卡尺句柄走 out 返回。</summary>
@@ -13742,6 +14237,7 @@ public class JlOperatorSet
 	public static void GenMeasureRectangle2(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, JlTuple width, JlTuple height, JlTuple interpolation, out JlTuple measureHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -13761,7 +14257,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlTuple.LoadNew(proc, 0, err, out measureHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把序列化的矩阵字节元组反序列化，产出一个全新的矩阵句柄走 out 返回。</summary>
@@ -13776,12 +14272,13 @@ public class JlOperatorSet
 	public static void DeserializeMatrix(JlTuple serializedItemHandle, out JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(817);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把矩阵序列化成字节元组走 out 返回，原矩阵不受改动。</summary>
@@ -13796,12 +14293,13 @@ public class JlOperatorSet
 	public static void SerializeMatrix(JlTuple matrixID, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(818);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从文件读取一个矩阵，产出的新矩阵句柄走 out 返回。</summary>
@@ -13816,12 +14314,13 @@ public class JlOperatorSet
 	public static void ReadMatrix(JlTuple fileName, out JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(819);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把矩阵按指定格式写入文件，句柄只读使用，无输出。</summary>
@@ -13837,6 +14336,7 @@ public class JlOperatorSet
 	public static void WriteMatrix(JlTuple matrixID, JlTuple fileFormat, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(820);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, fileFormat);
 		JlNativeApi.Store(proc, 2, fileName);
@@ -13844,7 +14344,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(fileFormat);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>对元组携带的矩阵句柄做正交分解（QR 等），正交部分与三角部分作为两枚新句柄走 out 元组带回。</summary>
@@ -13863,6 +14363,7 @@ public class JlOperatorSet
 	public static void OrthogonalDecomposeMatrix(JlTuple matrixID, JlTuple decompositionType, JlTuple outputMatricesType, JlTuple computeOrthogonal, out JlTuple matrixOrthogonalID, out JlTuple matrixTriangularID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(821);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, decompositionType);
 		JlNativeApi.Store(proc, 2, outputMatricesType);
@@ -13876,7 +14377,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(computeOrthogonal);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixOrthogonalID);
 		err = JlTuple.LoadNew(proc, 1, err, out matrixTriangularID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按 matrixType 指定的类型分解矩阵，两个分解结果矩阵各以新句柄走 out 元组带回。</summary>
@@ -13893,6 +14394,7 @@ public class JlOperatorSet
 	public static void DecomposeMatrix(JlTuple matrixID, JlTuple matrixType, out JlTuple matrix1ID, out JlTuple matrix2ID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(822);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -13902,7 +14404,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrix1ID);
 		err = JlTuple.LoadNew(proc, 1, err, out matrix2ID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对句柄矩阵做奇异值分解，左奇异向量、奇异值、右奇异向量三枚新句柄全部走 out 元组带回。</summary>
@@ -13921,6 +14423,7 @@ public class JlOperatorSet
 	public static void SvdMatrix(JlTuple matrixID, JlTuple SVDType, JlTuple computeSingularVectors, out JlTuple matrixUID, out JlTuple matrixSID, out JlTuple matrixVID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(823);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, SVDType);
 		JlNativeApi.Store(proc, 2, computeSingularVectors);
@@ -13934,7 +14437,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, err, out matrixUID);
 		err = JlTuple.LoadNew(proc, 1, err, out matrixSID);
 		err = JlTuple.LoadNew(proc, 2, err, out matrixVID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对成对句柄矩阵 (A,B) 求广义特征值（可选特征向量），实部/虚部共四枚新句柄全部走 out 元组带回。</summary>
@@ -13954,6 +14457,7 @@ public class JlOperatorSet
 	public static void GeneralizedEigenvaluesGeneralMatrix(JlTuple matrixAID, JlTuple matrixBID, JlTuple computeEigenvectors, out JlTuple eigenvaluesRealID, out JlTuple eigenvaluesImagID, out JlTuple eigenvectorsRealID, out JlTuple eigenvectorsImagID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(824);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.Store(proc, 2, computeEigenvectors);
@@ -13969,7 +14473,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, err, out eigenvaluesImagID);
 		err = JlTuple.LoadNew(proc, 2, err, out eigenvectorsRealID);
 		err = JlTuple.LoadNew(proc, 3, err, out eigenvectorsImagID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对对称矩阵对 (A,B) 求广义特征值（可选特征向量），两枚新句柄走 out 元组带回；对称情形特征值为实数。</summary>
@@ -13987,6 +14491,7 @@ public class JlOperatorSet
 	public static void GeneralizedEigenvaluesSymmetricMatrix(JlTuple matrixAID, JlTuple matrixBID, JlTuple computeEigenvectors, out JlTuple eigenvaluesID, out JlTuple eigenvectorsID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(825);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.Store(proc, 2, computeEigenvectors);
@@ -13998,7 +14503,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(computeEigenvectors);
 		err = JlTuple.LoadNew(proc, 0, err, out eigenvaluesID);
 		err = JlTuple.LoadNew(proc, 1, err, out eigenvectorsID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对单个句柄矩阵求特征值（可选特征向量），实部/虚部共四枚新句柄全部走 out 元组带回。</summary>
@@ -14017,6 +14522,7 @@ public class JlOperatorSet
 	public static void EigenvaluesGeneralMatrix(JlTuple matrixID, JlTuple computeEigenvectors, out JlTuple eigenvaluesRealID, out JlTuple eigenvaluesImagID, out JlTuple eigenvectorsRealID, out JlTuple eigenvectorsImagID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(826);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, computeEigenvectors);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14030,7 +14536,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, err, out eigenvaluesImagID);
 		err = JlTuple.LoadNew(proc, 2, err, out eigenvectorsRealID);
 		err = JlTuple.LoadNew(proc, 3, err, out eigenvectorsImagID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对对称句柄矩阵求特征值（可选特征向量），两枚新句柄走 out 元组带回；对称情形特征值为实数。</summary>
@@ -14047,6 +14553,7 @@ public class JlOperatorSet
 	public static void EigenvaluesSymmetricMatrix(JlTuple matrixID, JlTuple computeEigenvectors, out JlTuple eigenvaluesID, out JlTuple eigenvectorsID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(827);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, computeEigenvectors);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14056,7 +14563,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(computeEigenvectors);
 		err = JlTuple.LoadNew(proc, 0, err, out eigenvaluesID);
 		err = JlTuple.LoadNew(proc, 1, err, out eigenvectorsID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>解方程组 A·X=B：左端系数矩阵与右端矩阵各以句柄元组传入，解矩阵以新句柄走 out 带回，两个入参矩阵都不被改动。</summary>
@@ -14074,6 +14581,7 @@ public class JlOperatorSet
 	public static void SolveMatrix(JlTuple matrixLHSID, JlTuple matrixLHSType, JlTuple epsilon, JlTuple matrixRHSID, out JlTuple matrixResultID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(828);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixLHSID);
 		JlNativeApi.Store(proc, 1, matrixLHSType);
 		JlNativeApi.Store(proc, 2, epsilon);
@@ -14085,7 +14593,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(epsilon);
 		JlNativeApi.UnpinTuple(matrixRHSID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixResultID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求句柄矩阵的行列式，标量结果按 DOUBLE 类型装载成数值元组走 out 带回，不涉及句柄。</summary>
@@ -14101,6 +14609,7 @@ public class JlOperatorSet
 	public static void DeterminantMatrix(JlTuple matrixID, JlTuple matrixType, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(829);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14108,7 +14617,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(matrixType);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地求逆：原生层把逆矩阵直接写回传入句柄所指的矩阵，无 out、不产生新句柄，原矩阵内容不可恢复。</summary>
@@ -14124,6 +14633,7 @@ public class JlOperatorSet
 	public static void InvertMatrixMod(JlTuple matrixID, JlTuple matrixType, JlTuple epsilon)
 	{
 		IntPtr proc = JlNativeApi.PreCall(830);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, epsilon);
@@ -14131,7 +14641,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(matrixType);
 		JlNativeApi.UnpinTuple(epsilon);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>求句柄矩阵的逆，逆矩阵以新句柄走 out 元组带回，原矩阵不被改动。</summary>
@@ -14148,6 +14658,7 @@ public class JlOperatorSet
 	public static void InvertMatrix(JlTuple matrixID, JlTuple matrixType, JlTuple epsilon, out JlTuple matrixInvID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(831);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, epsilon);
@@ -14157,7 +14668,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixType);
 		JlNativeApi.UnpinTuple(epsilon);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixInvID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地转置：传入句柄所指的矩阵原地行列互换，无参数、无 out、不产生新句柄。</summary>
@@ -14171,10 +14682,11 @@ public class JlOperatorSet
 	public static void TransposeMatrixMod(JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(832);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>转置句柄矩阵，转置结果以新句柄走 out 元组带回，原矩阵不变。</summary>
@@ -14189,12 +14701,13 @@ public class JlOperatorSet
 	public static void TransposeMatrix(JlTuple matrixID, out JlTuple matrixTransposedID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(833);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixTransposedID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对句柄矩阵按 maxType 指定方向归约求最大值，结果以新句柄走 out 元组带回。</summary>
@@ -14210,6 +14723,7 @@ public class JlOperatorSet
 	public static void MaxMatrix(JlTuple matrixID, JlTuple maxType, out JlTuple matrixMaxID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(834);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, maxType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14217,7 +14731,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(maxType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixMaxID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对句柄矩阵按 minType 指定方向归约求最小值，结果以新句柄走 out 元组带回。</summary>
@@ -14233,6 +14747,7 @@ public class JlOperatorSet
 	public static void MinMatrix(JlTuple matrixID, JlTuple minType, out JlTuple matrixMinID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(835);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, minType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14240,7 +14755,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(minType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixMinID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地求矩阵幂：传入句柄所指的矩阵被原地改写为 A 的 power 次幂（矩阵连乘意义），无 out、不产生新句柄。</summary>
@@ -14256,6 +14771,7 @@ public class JlOperatorSet
 	public static void PowMatrixMod(JlTuple matrixID, JlTuple matrixType, JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(836);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, power);
@@ -14263,7 +14779,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(matrixType);
 		JlNativeApi.UnpinTuple(power);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>求句柄矩阵的矩阵幂 A^p（矩阵连乘意义），结果以新句柄走 out 元组带回，原矩阵不变。</summary>
@@ -14280,6 +14796,7 @@ public class JlOperatorSet
 	public static void PowMatrix(JlTuple matrixID, JlTuple matrixType, JlTuple power, out JlTuple matrixPowID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(837);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, power);
@@ -14289,7 +14806,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixType);
 		JlNativeApi.UnpinTuple(power);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixPowID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素求幂：句柄 A 的每个元素原地取句柄 B 对应元素为指数，无 out、不产生新句柄，B 只读。</summary>
@@ -14304,12 +14821,13 @@ public class JlOperatorSet
 	public static void PowElementMatrixMod(JlTuple matrixID, JlTuple matrixExpID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(838);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixExpID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(matrixExpID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵逐元素求幂（A 各元素取 B 对应元素为指数），结果以新句柄走 out 元组带回，两入参不变。</summary>
@@ -14325,6 +14843,7 @@ public class JlOperatorSet
 	public static void PowElementMatrix(JlTuple matrixID, JlTuple matrixExpID, out JlTuple matrixPowID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(839);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixExpID);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14332,7 +14851,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(matrixExpID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixPowID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地给句柄矩阵每个元素取同一标量次幂，无 out、不产生新句柄，维度不变、原值不可恢复。</summary>
@@ -14347,12 +14866,13 @@ public class JlOperatorSet
 	public static void PowScalarElementMatrixMod(JlTuple matrixID, JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(840);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, power);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(power);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>句柄矩阵每个元素取同一标量次幂，返回同维度的新句柄走 out 元组带回；是逐元素幂不是矩阵幂。</summary>
@@ -14368,6 +14888,7 @@ public class JlOperatorSet
 	public static void PowScalarElementMatrix(JlTuple matrixID, JlTuple power, out JlTuple matrixPowID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(841);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, power);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14375,7 +14896,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(power);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixPowID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素开平方：传入句柄所指的矩阵每个元素原地取平方根，无参数、无 out、不产生新句柄。</summary>
@@ -14389,10 +14910,11 @@ public class JlOperatorSet
 	public static void SqrtMatrixMod(JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(842);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>句柄矩阵逐元素开平方（非矩阵平方根 A^(1/2)），结果以同维度新句柄走 out 元组带回。</summary>
@@ -14407,12 +14929,13 @@ public class JlOperatorSet
 	public static void SqrtMatrix(JlTuple matrixID, out JlTuple matrixSqrtID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(843);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixSqrtID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素取绝对值：传入句柄所指的矩阵原地变为各元素绝对值，无参数、无 out，符号信息即时丢失。</summary>
@@ -14426,10 +14949,11 @@ public class JlOperatorSet
 	public static void AbsMatrixMod(JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(844);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>句柄矩阵逐元素取绝对值，结果以同维度新句柄走 out 元组带回，原矩阵不变。</summary>
@@ -14444,12 +14968,13 @@ public class JlOperatorSet
 	public static void AbsMatrix(JlTuple matrixID, out JlTuple matrixAbsID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(845);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixAbsID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求句柄矩阵的范数，标量结果按 DOUBLE 类型装载成数值元组走 out 带回，不涉及句柄。</summary>
@@ -14465,6 +14990,7 @@ public class JlOperatorSet
 	public static void NormMatrix(JlTuple matrixID, JlTuple normType, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(846);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, normType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14472,7 +14998,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(normType);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>句柄矩阵按 meanType 方向归约求均值，结果以新句柄走 out 元组带回；是统计归约不是均值滤波。</summary>
@@ -14488,6 +15014,7 @@ public class JlOperatorSet
 	public static void MeanMatrix(JlTuple matrixID, JlTuple meanType, out JlTuple matrixMeanID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(847);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, meanType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14495,7 +15022,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(meanType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixMeanID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>句柄矩阵按 sumType 方向归约求和，结果仍是新句柄走 out 元组带回而非标量。</summary>
@@ -14511,6 +15038,7 @@ public class JlOperatorSet
 	public static void SumMatrix(JlTuple matrixID, JlTuple sumType, out JlTuple matrixSumID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(848);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, sumType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14518,7 +15046,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(sumType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixSumID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素相除：原生槽 0 句柄的矩阵被改写为对应元素除以槽 1 句柄矩阵，无 out、不产生新句柄。</summary>
@@ -14533,12 +15061,13 @@ public class JlOperatorSet
 	public static void DivElementMatrixMod(JlTuple matrixAID, JlTuple matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(849);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵逐元素相除（A 除以 B 对应元素），结果以同维度新句柄走 out 元组带回，两入参不变。</summary>
@@ -14554,6 +15083,7 @@ public class JlOperatorSet
 	public static void DivElementMatrix(JlTuple matrixAID, JlTuple matrixBID, out JlTuple matrixDivID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(850);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14561,7 +15091,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixDivID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素相乘（Hadamard 积）：原生槽 0 句柄的矩阵被改写为与槽 1 句柄矩阵对应元素之积，无 out。</summary>
@@ -14576,12 +15106,13 @@ public class JlOperatorSet
 	public static void MultElementMatrixMod(JlTuple matrixAID, JlTuple matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(851);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵逐元素相乘（Hadamard 积），结果以同维度新句柄走 out 元组带回，两入参不变。</summary>
@@ -14597,6 +15128,7 @@ public class JlOperatorSet
 	public static void MultElementMatrix(JlTuple matrixAID, JlTuple matrixBID, out JlTuple matrixMultID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(852);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14604,7 +15136,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixMultID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地标量缩放：传入句柄所指的矩阵每个元素原地乘 factor，无 out、不产生新句柄。</summary>
@@ -14619,12 +15151,13 @@ public class JlOperatorSet
 	public static void ScaleMatrixMod(JlTuple matrixID, JlTuple factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(853);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, factor);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(factor);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>句柄矩阵整体乘一个标量因子，结果以同维度新句柄走 out 元组带回，原矩阵不变。</summary>
@@ -14640,6 +15173,7 @@ public class JlOperatorSet
 	public static void ScaleMatrix(JlTuple matrixID, JlTuple factor, out JlTuple matrixScaledID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(854);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, factor);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14647,7 +15181,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(factor);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixScaledID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素相减：原生槽 0 句柄的矩阵被改写为减去槽 1 句柄矩阵，无 out、不产生新句柄，顺序不可交换。</summary>
@@ -14662,12 +15196,13 @@ public class JlOperatorSet
 	public static void SubMatrixMod(JlTuple matrixAID, JlTuple matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(855);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵逐元素相减（A 减 B），结果以新句柄走 out 元组带回；顺序写反得到反号结果且不报错。</summary>
@@ -14683,6 +15218,7 @@ public class JlOperatorSet
 	public static void SubMatrix(JlTuple matrixAID, JlTuple matrixBID, out JlTuple matrixSubID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(856);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14690,7 +15226,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixSubID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地逐元素相加：原生槽 1 句柄的矩阵被累加进槽 0 句柄的矩阵，无 out、不产生新句柄。</summary>
@@ -14705,12 +15241,13 @@ public class JlOperatorSet
 	public static void AddMatrixMod(JlTuple matrixAID, JlTuple matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(857);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵逐元素相加，结果以同维度新句柄走 out 元组带回，两入参不变。</summary>
@@ -14726,6 +15263,7 @@ public class JlOperatorSet
 	public static void AddMatrix(JlTuple matrixAID, JlTuple matrixBID, out JlTuple matrixSumID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(858);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14733,7 +15271,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixSumID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地矩阵乘法：槽 0 句柄的矩阵（充当 A）被改写为与槽 1 句柄矩阵按 multType 组合的乘积，无 out。</summary>
@@ -14749,6 +15287,7 @@ public class JlOperatorSet
 	public static void MultMatrixMod(JlTuple matrixAID, JlTuple matrixBID, JlTuple multType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(859);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.Store(proc, 2, multType);
@@ -14756,7 +15295,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixAID);
 		JlNativeApi.UnpinTuple(matrixBID);
 		JlNativeApi.UnpinTuple(multType);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>两个句柄矩阵按 multType 做线性代数乘法，乘积以新句柄走 out 元组带回，两入参不变。</summary>
@@ -14773,6 +15312,7 @@ public class JlOperatorSet
 	public static void MultMatrix(JlTuple matrixAID, JlTuple matrixBID, JlTuple multType, out JlTuple matrixMultID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(860);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixAID);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.Store(proc, 2, multType);
@@ -14782,7 +15322,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixBID);
 		JlNativeApi.UnpinTuple(multType);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixMultID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>一次调用取回句柄矩阵的行数与列数，两个输出各按 INTEGER 类型装载成数值元组走 out 带回。</summary>
@@ -14798,6 +15338,7 @@ public class JlOperatorSet
 	public static void GetSizeMatrix(JlTuple matrixID, out JlTuple rows, out JlTuple columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(861);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -14805,7 +15346,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out rows);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把句柄矩阵在行、列方向各平铺若干份，拼成一个更大的新矩阵句柄走 out 元组带回。</summary>
@@ -14822,6 +15363,7 @@ public class JlOperatorSet
 	public static void RepeatMatrix(JlTuple matrixID, JlTuple rows, JlTuple columns, out JlTuple matrixRepeatedID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(862);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, rows);
 		JlNativeApi.Store(proc, 2, columns);
@@ -14831,7 +15373,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rows);
 		JlNativeApi.UnpinTuple(columns);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixRepeatedID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>复制句柄矩阵，内容与维度相同的新句柄走 out 元组带回，原矩阵不变。</summary>
@@ -14846,12 +15388,13 @@ public class JlOperatorSet
 	public static void CopyMatrix(JlTuple matrixID, out JlTuple matrixCopyID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(863);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixCopyID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地覆写对角线：用句柄向量里的值写入母矩阵句柄的指定对角线，无 out，非对角元素保持原值。</summary>
@@ -14867,6 +15410,7 @@ public class JlOperatorSet
 	public static void SetDiagonalMatrix(JlTuple matrixID, JlTuple vectorID, JlTuple diagonal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(864);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, vectorID);
 		JlNativeApi.Store(proc, 2, diagonal);
@@ -14874,7 +15418,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(vectorID);
 		JlNativeApi.UnpinTuple(diagonal);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>抽取句柄矩阵的指定对角线，对角元素以新矩阵句柄（当向量用）走 out 元组带回。</summary>
@@ -14890,6 +15434,7 @@ public class JlOperatorSet
 	public static void GetDiagonalMatrix(JlTuple matrixID, JlTuple diagonal, out JlTuple vectorID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(865);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, diagonal);
 		JlNativeApi.InitOCT(proc, 0);
@@ -14897,7 +15442,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(diagonal);
 		err = JlTuple.LoadNew(proc, 0, err, out vectorID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地嵌入子块：把句柄子矩阵的值写进母句柄矩阵的指定左上角位置，无 out，母矩阵维度不变。</summary>
@@ -14914,6 +15459,7 @@ public class JlOperatorSet
 	public static void SetSubMatrix(JlTuple matrixID, JlTuple matrixSubID, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(866);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, matrixSubID);
 		JlNativeApi.Store(proc, 2, row);
@@ -14923,7 +15469,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(matrixSubID);
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>截取子块：从指定左上角取 rowsSub×columnsSub 的新矩阵句柄走 out 元组带回（独立句柄，非视图）。</summary>
@@ -14942,6 +15488,7 @@ public class JlOperatorSet
 	public static void GetSubMatrix(JlTuple matrixID, JlTuple row, JlTuple column, JlTuple rowsSub, JlTuple columnsSub, out JlTuple matrixSubID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(867);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -14955,7 +15502,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rowsSub);
 		JlNativeApi.UnpinTuple(columnsSub);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixSubID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地整表覆写：用 values 元组里的值写入句柄矩阵，无 out，矩阵须已带正确维度。</summary>
@@ -14970,12 +15517,13 @@ public class JlOperatorSet
 	public static void SetFullMatrix(JlTuple matrixID, JlTuple values)
 	{
 		IntPtr proc = JlNativeApi.PreCall(868);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, values);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		JlNativeApi.UnpinTuple(values);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把句柄矩阵整表展平读出，值按 DOUBLE 类型装载成一条数值元组走 out 带回，不产生句柄。</summary>
@@ -14990,12 +15538,13 @@ public class JlOperatorSet
 	public static void GetFullMatrix(JlTuple matrixID, out JlTuple values)
 	{
 		IntPtr proc = JlNativeApi.PreCall(869);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out values);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>就地改指定坐标的元素：行列按整型、值按数值经元组通道传入原生槽 1 至 3，无 out，维度不变。</summary>
@@ -15012,6 +15561,7 @@ public class JlOperatorSet
 	public static void SetValueMatrix(JlTuple matrixID, JlTuple row, JlTuple column, JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(870);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -15021,7 +15571,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(value);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>按成对坐标读回矩阵元素值，结果恒以 DOUBLE 数值元组经 out 新建返回（原生 id 871），不改动原矩阵。</summary>
@@ -15038,6 +15588,7 @@ public class JlOperatorSet
 	public static void GetValueMatrix(JlTuple matrixID, JlTuple row, JlTuple column, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(871);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -15047,7 +15598,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>释放矩阵句柄在原生侧占用的内存，无输出；matrixID 可传含多个句柄的元组以一次批量释放。</summary>
@@ -15060,10 +15611,11 @@ public class JlOperatorSet
 	public static void ClearMatrix(JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(872);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, matrixID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(matrixID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>新建一个 rows×columns、元素初值为 value 的矩阵，其句柄经 out 以整数句柄元组返回。</summary>
@@ -15079,6 +15631,7 @@ public class JlOperatorSet
 	public static void CreateMatrix(JlTuple rows, JlTuple columns, JlTuple value, out JlTuple matrixID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(873);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, columns);
 		JlNativeApi.Store(proc, 2, value);
@@ -15088,7 +15641,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(columns);
 		JlNativeApi.UnpinTuple(value);
 		err = JlTuple.LoadNew(proc, 0, err, out matrixID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把序列化的形状模型缓冲还原为模型对象，模型句柄经 out 以整数句柄元组返回。</summary>
@@ -15102,12 +15655,13 @@ public class JlOperatorSet
 	public static void DeserializeShapeModel(JlTuple serializedItemHandle, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(874);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从磁盘文件读入一个形状模型，其句柄经 out 以整数句柄元组返回。</summary>
@@ -15121,12 +15675,13 @@ public class JlOperatorSet
 	public static void ReadShapeModel(JlTuple fileName, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(875);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把形状模型序列化为可存储/传输的序列化项句柄，经 out 返回，供 DeserializeShapeModel 还原。</summary>
@@ -15140,12 +15695,13 @@ public class JlOperatorSet
 	public static void SerializeShapeModel(JlTuple modelID, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(876);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把形状模型写入磁盘文件（如 .shm），无输出，与 ReadShapeModel 配对。</summary>
@@ -15159,12 +15715,13 @@ public class JlOperatorSet
 	public static void WriteShapeModel(JlTuple modelID, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(877);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>释放形状模型句柄占用的原生内存，无输出；句柄用毕必须释放。</summary>
@@ -15177,10 +15734,11 @@ public class JlOperatorSet
 	public static void ClearShapeModel(JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(878);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>取回形状模型在指定金字塔层的轮廓表示，经 out 以新建的裸 JlObject 句柄返回。</summary>
@@ -15195,6 +15753,7 @@ public class JlOperatorSet
 	public static void GetShapeModelContours(out JlObject modelContours, JlTuple modelID, JlTuple level)
 	{
 		IntPtr proc = JlNativeApi.PreCall(879);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, level);
 		JlNativeApi.InitOCT(proc, 1);
@@ -15202,7 +15761,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(level);
 		err = JlObject.LoadNew(proc, 1, err, out modelContours);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>依据模板图自动确定形状模型的训练参数，以参数名/参数值两条并行元组经 out 返回，供 CreateShapeModel 族直接采用。</summary>
@@ -15227,6 +15786,7 @@ public class JlOperatorSet
 	public static void DetermineShapeModelParams(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleMin, JlTuple scaleMax, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, JlTuple parameters, out JlTuple parameterName, out JlTuple parameterValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(880);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15253,7 +15813,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(parameters);
 		err = JlTuple.LoadNew(proc, 0, err, out parameterName);
 		err = JlTuple.LoadNew(proc, 1, err, out parameterValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -15276,6 +15836,7 @@ public class JlOperatorSet
 	public static void GetShapeModelParams(JlTuple modelID, out JlTuple numLevels, out JlTuple angleStart, out JlTuple angleExtent, out JlTuple angleStep, out JlTuple scaleMin, out JlTuple scaleMax, out JlTuple scaleStep, out JlTuple metric, out JlTuple minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(881);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -15297,7 +15858,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out scaleStep);
 		err = JlTuple.LoadNew(proc, 7, err, out metric);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.INTEGER, err, out minContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取回形状模型的原点（参考点）行/列坐标，两路以 DOUBLE out 返回。</summary>
@@ -15312,6 +15873,7 @@ public class JlOperatorSet
 	public static void GetShapeModelOrigin(JlTuple modelID, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(882);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -15319,7 +15881,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>设置形状模型的原点（参考点）行/列坐标，原地改写模型，无输出。</summary>
@@ -15334,6 +15896,7 @@ public class JlOperatorSet
 	public static void SetShapeModelOrigin(JlTuple modelID, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(883);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -15341,7 +15904,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>在一批各向异性（行列独立）缩放形状模型中查找最优匹配实例，位置、角度、行列缩放、得分、模型序号七路经 out 并行返回。</summary>
@@ -15374,6 +15937,7 @@ public class JlOperatorSet
 	public static void FindAnisoShapeModels(JlObject image, JlTuple modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(884);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelIDs);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15416,7 +15980,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15447,6 +16011,7 @@ public class JlOperatorSet
 	public static void FindScaledShapeModels(JlObject image, JlTuple modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleMin, JlTuple scaleMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(885);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelIDs);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15483,7 +16048,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15511,6 +16076,7 @@ public class JlOperatorSet
 	public static void FindShapeModels(JlObject image, JlTuple modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(886);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelIDs);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15541,7 +16107,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15574,6 +16140,7 @@ public class JlOperatorSet
 	public static void FindAnisoShapeModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scaleR, out JlTuple scaleC, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(887);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15614,7 +16181,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scaleR);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out scaleC);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15644,6 +16211,7 @@ public class JlOperatorSet
 	public static void FindScaledShapeModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple scaleMin, JlTuple scaleMax, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple scale, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(888);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15678,7 +16246,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out scale);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15705,6 +16273,7 @@ public class JlOperatorSet
 	public static void FindShapeModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, JlTuple greediness, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(889);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15733,7 +16302,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -15750,6 +16319,7 @@ public class JlOperatorSet
 	public static void SetShapeModelMetric(JlObject image, JlTuple modelID, JlTuple homMat2D, JlTuple metric)
 	{
 		IntPtr proc = JlNativeApi.PreCall(890);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, homMat2D);
@@ -15758,7 +16328,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(homMat2D);
 		JlNativeApi.UnpinTuple(metric);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(image);
 	}
 
@@ -15774,6 +16344,7 @@ public class JlOperatorSet
 	public static void SetShapeModelParam(JlTuple modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(891);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -15781,7 +16352,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>用一组 XLD 轮廓训练各向异性（行列独立）缩放的形状模型，全新模型句柄经 out 返回。</summary>
@@ -15808,6 +16379,7 @@ public class JlOperatorSet
 	public static void CreateAnisoShapeModelXld(JlObject contours, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleRStep, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple scaleCStep, JlTuple optimization, JlTuple metric, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15838,7 +16410,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metric);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -15863,6 +16435,7 @@ public class JlOperatorSet
 	public static void CreateScaledShapeModelXld(JlObject contours, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleMin, JlTuple scaleMax, JlTuple scaleStep, JlTuple optimization, JlTuple metric, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15887,7 +16460,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metric);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -15909,6 +16482,7 @@ public class JlOperatorSet
 	public static void CreateShapeModelXld(JlObject contours, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple optimization, JlTuple metric, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15927,7 +16501,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(metric);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -15956,6 +16530,7 @@ public class JlOperatorSet
 	public static void CreateAnisoShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleRMin, JlTuple scaleRMax, JlTuple scaleRStep, JlTuple scaleCMin, JlTuple scaleCMax, JlTuple scaleCStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(895);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -15988,7 +16563,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -16014,6 +16589,7 @@ public class JlOperatorSet
 	public static void CreateScaledShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple scaleMin, JlTuple scaleMax, JlTuple scaleStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(896);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -16040,7 +16616,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -16063,6 +16639,7 @@ public class JlOperatorSet
 	public static void CreateShapeModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple optimization, JlTuple metric, JlTuple contrast, JlTuple minContrast, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(897);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -16083,7 +16660,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(contrast);
 		JlNativeApi.UnpinTuple(minContrast);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -16101,6 +16678,7 @@ public class JlOperatorSet
 	public static void InspectShapeModel(JlObject image, out JlObject modelImages, out JlObject modelRegions, JlTuple numLevels, JlTuple contrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(898);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, contrast);
@@ -16111,7 +16689,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(contrast);
 		err = JlObject.LoadNew(proc, 1, err, out modelImages);
 		err = JlObject.LoadNew(proc, 2, err, out modelRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -16162,10 +16740,11 @@ public class JlOperatorSet
 	public static void ClearNccModel(JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(936);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把序列化的 NCC 模型缓冲还原为模型对象，模型句柄经 out 以整数句柄元组返回。</summary>
@@ -16179,12 +16758,13 @@ public class JlOperatorSet
 	public static void DeserializeNccModel(JlTuple serializedItemHandle, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(937);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 NCC 模型序列化为可存储/传输的序列化项句柄，经 out 返回，供 DeserializeNccModel 还原。</summary>
@@ -16198,12 +16778,13 @@ public class JlOperatorSet
 	public static void SerializeNccModel(JlTuple modelID, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(938);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从磁盘文件读入一个 NCC 模型，其句柄经 out 以整数句柄元组返回。</summary>
@@ -16217,12 +16798,13 @@ public class JlOperatorSet
 	public static void ReadNccModel(JlTuple fileName, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(939);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 NCC 模型写入磁盘文件（如 .ncm），无输出，与 ReadNccModel 配对。</summary>
@@ -16236,12 +16818,13 @@ public class JlOperatorSet
 	public static void WriteNccModel(JlTuple modelID, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(940);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>依据模板图自动确定 NCC 模型的训练参数，以参数名/参数值两条并行元组经 out 返回，供 CreateNccModel 采用。</summary>
@@ -16261,6 +16844,7 @@ public class JlOperatorSet
 	public static void DetermineNccModelParams(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple metric, JlTuple parameters, out JlTuple parameterName, out JlTuple parameterValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(941);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -16277,7 +16861,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(parameters);
 		err = JlTuple.LoadNew(proc, 0, err, out parameterName);
 		err = JlTuple.LoadNew(proc, 1, err, out parameterValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -16296,6 +16880,7 @@ public class JlOperatorSet
 	public static void GetNccModelParams(JlTuple modelID, out JlTuple numLevels, out JlTuple angleStart, out JlTuple angleExtent, out JlTuple angleStep, out JlTuple metric)
 	{
 		IntPtr proc = JlNativeApi.PreCall(942);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -16309,7 +16894,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angleExtent);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out angleStep);
 		err = JlTuple.LoadNew(proc, 4, err, out metric);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取回 NCC 模型的原点（参考点）行/列坐标，两路以 DOUBLE out 返回。</summary>
@@ -16324,6 +16909,7 @@ public class JlOperatorSet
 	public static void GetNccModelOrigin(JlTuple modelID, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(943);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -16331,7 +16917,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>设置 NCC 模型的原点（参考点）行/列坐标，原地改写模型，无输出。</summary>
@@ -16346,6 +16932,7 @@ public class JlOperatorSet
 	public static void SetNccModelOrigin(JlTuple modelID, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(944);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -16353,7 +16940,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>在图像里查找 NCC 模型的匹配实例，命中位置行/列、旋转角与得分四路 DOUBLE 元组经 out 返回（原生 id 945）。</summary>
@@ -16379,6 +16966,7 @@ public class JlOperatorSet
 	public static void FindNccModel(JlObject image, JlTuple modelID, JlTuple angleStart, JlTuple angleExtent, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score)
 	{
 		IntPtr proc = JlNativeApi.PreCall(945);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -16405,7 +16993,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -16422,6 +17010,7 @@ public class JlOperatorSet
 	public static void SetNccModelParam(JlTuple modelID, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(946);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -16429,7 +17018,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modelID);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>依据模板图的 domain 训练一个 NCC（灰度相关）模型，全新模型句柄经 out 以元组返回（原生 id 947）。</summary>
@@ -16449,6 +17038,7 @@ public class JlOperatorSet
 	public static void CreateNccModel(JlObject template, JlTuple numLevels, JlTuple angleStart, JlTuple angleExtent, JlTuple angleStep, JlTuple metric, out JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(947);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, template);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -16463,7 +17053,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(angleStep);
 		JlNativeApi.UnpinTuple(metric);
 		err = JlTuple.LoadNew(proc, 0, err, out modelID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(template);
 	}
 
@@ -16500,6 +17090,7 @@ public class JlOperatorSet
 	public static void GetComponentRelations(out JlObject relations, JlTuple componentTrainingID, JlTuple referenceComponent, JlTuple image, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple length1, out JlTuple length2, out JlTuple angleStart, out JlTuple angleExtent)
 	{
 		IntPtr proc = JlNativeApi.PreCall(960);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, componentTrainingID);
 		JlNativeApi.Store(proc, 1, referenceComponent);
 		JlNativeApi.Store(proc, 2, image);
@@ -16523,7 +17114,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length2);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out angleStart);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out angleExtent);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -16542,6 +17133,7 @@ public class JlOperatorSet
 	public static void ModifyComponentRelations(JlTuple componentTrainingID, JlTuple referenceComponent, JlTuple toleranceComponent, JlTuple positionTolerance, JlTuple angleTolerance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(962);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, componentTrainingID);
 		JlNativeApi.Store(proc, 1, referenceComponent);
 		JlNativeApi.Store(proc, 2, toleranceComponent);
@@ -16553,7 +17145,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(toleranceComponent);
 		JlNativeApi.UnpinTuple(positionTolerance);
 		JlNativeApi.UnpinTuple(angleTolerance);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -16576,6 +17168,7 @@ public class JlOperatorSet
 	public static void ClusterModelComponents(JlObject trainingImages, out JlObject modelComponents, JlTuple componentTrainingID, JlTuple ambiguityCriterion, JlTuple maxContourOverlap, JlTuple clusterThreshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(967);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, trainingImages);
 		JlNativeApi.Store(proc, 0, componentTrainingID);
 		JlNativeApi.Store(proc, 1, ambiguityCriterion);
@@ -16588,7 +17181,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxContourOverlap);
 		JlNativeApi.UnpinTuple(clusterThreshold);
 		err = JlObject.LoadNew(proc, 1, err, out modelComponents);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(trainingImages);
 	}
 
@@ -16607,6 +17200,7 @@ public class JlOperatorSet
 	public static void InspectClusteredComponents(out JlObject modelComponents, JlTuple componentTrainingID, JlTuple ambiguityCriterion, JlTuple maxContourOverlap, JlTuple clusterThreshold)
 	{
 		IntPtr proc = JlNativeApi.PreCall(968);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, componentTrainingID);
 		JlNativeApi.Store(proc, 1, ambiguityCriterion);
 		JlNativeApi.Store(proc, 2, maxContourOverlap);
@@ -16618,7 +17212,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxContourOverlap);
 		JlNativeApi.UnpinTuple(clusterThreshold);
 		err = JlObject.LoadNew(proc, 1, err, out modelComponents);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>以模型图、初始组件与一组训练图训练组件基匹配的刚体组件及其关系，产出组件轮廓区域（新句柄）与训练结果句柄两路 out（原生 id 969）。</summary>
@@ -16647,6 +17241,7 @@ public class JlOperatorSet
 	public static void TrainModelComponents(JlObject modelImage, JlObject initialComponents, JlObject trainingImages, out JlObject modelComponents, JlTuple contrastLow, JlTuple contrastHigh, JlTuple minSize, JlTuple minScore, JlTuple searchRowTol, JlTuple searchColumnTol, JlTuple searchAngleTol, JlTuple trainingEmphasis, JlTuple ambiguityCriterion, JlTuple maxContourOverlap, JlTuple clusterThreshold, out JlTuple componentTrainingID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(969);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, modelImage);
 		JlNativeApi.Store(proc, 2, initialComponents);
 		JlNativeApi.Store(proc, 3, trainingImages);
@@ -16677,7 +17272,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(clusterThreshold);
 		err = JlObject.LoadNew(proc, 1, err, out modelComponents);
 		err = JlTuple.LoadNew(proc, 0, err, out componentTrainingID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(modelImage);
 		GC.KeepAlive(initialComponents);
 		GC.KeepAlive(trainingImages);
@@ -16701,6 +17296,7 @@ public class JlOperatorSet
 	public static void GenInitialComponents(JlObject modelImage, out JlObject initialComponents, JlTuple contrastLow, JlTuple contrastHigh, JlTuple minSize, JlTuple mode, JlTuple genericName, JlTuple genericValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(970);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, modelImage);
 		JlNativeApi.Store(proc, 0, contrastLow);
 		JlNativeApi.Store(proc, 1, contrastHigh);
@@ -16717,7 +17313,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genericName);
 		JlNativeApi.UnpinTuple(genericValue);
 		err = JlObject.LoadNew(proc, 1, err, out initialComponents);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(modelImage);
 	}
 
@@ -16764,6 +17360,7 @@ public class JlOperatorSet
 	public static void CreateCamPoseLookAtPoint(JlTuple camPosX, JlTuple camPosY, JlTuple camPosZ, JlTuple lookAtX, JlTuple lookAtY, JlTuple lookAtZ, JlTuple refPlaneNormal, JlTuple camRoll, out JlTuple camPose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(995);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, camPosX);
 		JlNativeApi.Store(proc, 1, camPosY);
 		JlNativeApi.Store(proc, 2, camPosZ);
@@ -16783,7 +17380,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(refPlaneNormal);
 		JlNativeApi.UnpinTuple(camRoll);
 		err = JlTuple.LoadNew(proc, 0, err, out camPose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 3D 点球坐标（经度/纬度/半径）按轴向约定换算为直角坐标 x/y/z，三路以 DOUBLE 元组经 out 返回（原生 id 996）。</summary>
@@ -16804,6 +17401,7 @@ public class JlOperatorSet
 	public static void ConvertPoint3dSpherToCart(JlTuple longitude, JlTuple latitude, JlTuple radius, JlTuple equatPlaneNormal, JlTuple zeroMeridian, out JlTuple x, out JlTuple y, out JlTuple z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, longitude);
 		JlNativeApi.Store(proc, 1, latitude);
 		JlNativeApi.Store(proc, 2, radius);
@@ -16821,7 +17419,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out x);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out y);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 3D 点直角坐标 x/y/z 换算为球坐标，经度/纬度/半径三路均以 DOUBLE 元组经 out 返回（原生 id 997）。</summary>
@@ -16842,6 +17440,7 @@ public class JlOperatorSet
 	public static void ConvertPoint3dCartToSpher(JlTuple x, JlTuple y, JlTuple z, JlTuple equatPlaneNormal, JlTuple zeroMeridian, out JlTuple longitude, out JlTuple latitude, out JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(997);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, x);
 		JlNativeApi.Store(proc, 1, y);
 		JlNativeApi.Store(proc, 2, z);
@@ -16859,7 +17458,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out longitude);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out latitude);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -16936,6 +17535,7 @@ public class JlOperatorSet
 	public static void ReadKalman(JlTuple fileName, out JlTuple dimension, out JlTuple model, out JlTuple measurement, out JlTuple prediction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1053);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -16947,7 +17547,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out model);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out measurement);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out prediction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读取 Kalman 滤波器的更新文件，把新的维度与模型/量测矩阵作为三个新建多值元组经 out 返回。</summary>
@@ -16970,6 +17570,7 @@ public class JlOperatorSet
 	public static void UpdateKalman(JlTuple fileName, JlTuple dimensionIn, JlTuple modelIn, JlTuple measurementIn, out JlTuple dimensionOut, out JlTuple modelOut, out JlTuple measurementOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1054);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.Store(proc, 1, dimensionIn);
 		JlNativeApi.Store(proc, 2, modelIn);
@@ -16985,7 +17586,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out dimensionOut);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out modelOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out measurementOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用一帧新量测跑一步 Kalman 预测+更新，返回外推态与滤波后状态两串新建多值元组。</summary>
@@ -17004,6 +17605,7 @@ public class JlOperatorSet
 	public static void FilterKalman(JlTuple dimension, JlTuple model, JlTuple measurement, JlTuple predictionIn, out JlTuple predictionOut, out JlTuple estimate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1055);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, dimension);
 		JlNativeApi.Store(proc, 1, model);
 		JlNativeApi.Store(proc, 2, measurement);
@@ -17017,7 +17619,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(predictionIn);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out predictionOut);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out estimate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -17036,6 +17638,7 @@ public class JlOperatorSet
 	public static void GetParamTypes(JlTuple operatorName, out JlTuple inpCtrlParType, out JlTuple outpCtrlParType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1059);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, operatorName);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -17043,7 +17646,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(operatorName);
 		err = JlTuple.LoadNew(proc, 0, err, out inpCtrlParType);
 		err = JlTuple.LoadNew(proc, 1, err, out outpCtrlParType);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>查询某个视觉算子的底层 C 函数名、四类参数个数以及它是系统算子还是用户过程。</summary>
@@ -17063,6 +17666,7 @@ public class JlOperatorSet
 	public static void GetParamNum(JlTuple operatorName, out JlTuple CName, out JlTuple inpObjPar, out JlTuple outpObjPar, out JlTuple inpCtrlPar, out JlTuple outpCtrlPar, out JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1060);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, operatorName);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -17078,7 +17682,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out inpCtrlPar);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out outpCtrlPar);
 		err = JlTuple.LoadNew(proc, 5, err, out type);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>查询某个视觉算子四类参数的名字，返回输入图标/输出图标/输入控制/输出控制四串名称元组。</summary>
@@ -17096,6 +17700,7 @@ public class JlOperatorSet
 	public static void GetParamNames(JlTuple operatorName, out JlTuple inpObjPar, out JlTuple outpObjPar, out JlTuple inpCtrlPar, out JlTuple outpCtrlPar)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1061);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, operatorName);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -17107,7 +17712,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, err, out outpObjPar);
 		err = JlTuple.LoadNew(proc, 2, err, out inpCtrlPar);
 		err = JlTuple.LoadNew(proc, 3, err, out outpCtrlPar);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -17124,12 +17729,13 @@ public class JlOperatorSet
 	public static void SearchOperator(JlTuple keyword, out JlTuple operatorNames)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1064);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, keyword);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(keyword);
 		err = JlTuple.LoadNew(proc, 0, err, out operatorNames);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取名字含指定子串的那批算子所携带的关键字，合并成一串关键字元组返回。</summary>
@@ -17144,12 +17750,13 @@ public class JlOperatorSet
 	public static void GetKeywords(JlTuple operatorName, out JlTuple keywords)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1065);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, operatorName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(operatorName);
 		err = JlTuple.LoadNew(proc, 0, err, out keywords);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐层浏览算子分类目录：给空串取顶层算子类，给类名取子目录，给子目录名取该类下的算子清单。</summary>
@@ -17164,12 +17771,13 @@ public class JlOperatorSet
 	public static void GetChapterInfo(JlTuple chapter, out JlTuple info)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1066);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, chapter);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(chapter);
 		err = JlTuple.LoadNew(proc, 0, err, out info);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一组单通道图（图标数组）堆叠成一张多通道图，结果是一个新建句柄。</summary>
@@ -17186,11 +17794,12 @@ public class JlOperatorSet
 	public static void ChannelsToImage(JlObject images, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1067);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -17207,11 +17816,12 @@ public class JlOperatorSet
 	public static void ImageToChannels(JlObject multiChannelImage, out JlObject images)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1068);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out images);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17233,6 +17843,7 @@ public class JlOperatorSet
 	public static void Compose7(JlObject image1, JlObject image2, JlObject image3, JlObject image4, JlObject image5, JlObject image6, JlObject image7, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1069);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 3, image3);
@@ -17243,7 +17854,7 @@ public class JlOperatorSet
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 		GC.KeepAlive(image3);
@@ -17270,6 +17881,7 @@ public class JlOperatorSet
 	public static void Compose6(JlObject image1, JlObject image2, JlObject image3, JlObject image4, JlObject image5, JlObject image6, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1070);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 3, image3);
@@ -17279,7 +17891,7 @@ public class JlOperatorSet
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 		GC.KeepAlive(image3);
@@ -17304,6 +17916,7 @@ public class JlOperatorSet
 	public static void Compose5(JlObject image1, JlObject image2, JlObject image3, JlObject image4, JlObject image5, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1071);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 3, image3);
@@ -17312,7 +17925,7 @@ public class JlOperatorSet
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 		GC.KeepAlive(image3);
@@ -17335,6 +17948,7 @@ public class JlOperatorSet
 	public static void Compose4(JlObject image1, JlObject image2, JlObject image3, JlObject image4, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1072);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 3, image3);
@@ -17342,7 +17956,7 @@ public class JlOperatorSet
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 		GC.KeepAlive(image3);
@@ -17365,13 +17979,14 @@ public class JlOperatorSet
 	public static void Compose3(JlObject image1, JlObject image2, JlObject image3, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1073);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 3, image3);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 		GC.KeepAlive(image3);
@@ -17397,12 +18012,13 @@ public class JlOperatorSet
 	public static void Compose2(JlObject image1, JlObject image2, out JlObject multiChannelImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1074);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out multiChannelImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -17425,6 +18041,7 @@ public class JlOperatorSet
 	public static void Decompose7(JlObject multiChannelImage, out JlObject image1, out JlObject image2, out JlObject image3, out JlObject image4, out JlObject image5, out JlObject image6, out JlObject image7)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1075);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
@@ -17441,7 +18058,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 5, err, out image5);
 		err = JlObject.LoadNew(proc, 6, err, out image6);
 		err = JlObject.LoadNew(proc, 7, err, out image7);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17462,6 +18079,7 @@ public class JlOperatorSet
 	public static void Decompose6(JlObject multiChannelImage, out JlObject image1, out JlObject image2, out JlObject image3, out JlObject image4, out JlObject image5, out JlObject image6)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1076);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
@@ -17476,7 +18094,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 4, err, out image4);
 		err = JlObject.LoadNew(proc, 5, err, out image5);
 		err = JlObject.LoadNew(proc, 6, err, out image6);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17496,6 +18114,7 @@ public class JlOperatorSet
 	public static void Decompose5(JlObject multiChannelImage, out JlObject image1, out JlObject image2, out JlObject image3, out JlObject image4, out JlObject image5)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1077);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
@@ -17508,7 +18127,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 3, err, out image3);
 		err = JlObject.LoadNew(proc, 4, err, out image4);
 		err = JlObject.LoadNew(proc, 5, err, out image5);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17527,6 +18146,7 @@ public class JlOperatorSet
 	public static void Decompose4(JlObject multiChannelImage, out JlObject image1, out JlObject image2, out JlObject image3, out JlObject image4)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1078);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
@@ -17537,7 +18157,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 2, err, out image2);
 		err = JlObject.LoadNew(proc, 3, err, out image3);
 		err = JlObject.LoadNew(proc, 4, err, out image4);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17555,6 +18175,7 @@ public class JlOperatorSet
 	public static void Decompose3(JlObject multiChannelImage, out JlObject image1, out JlObject image2, out JlObject image3)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1079);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
@@ -17563,7 +18184,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out image1);
 		err = JlObject.LoadNew(proc, 2, err, out image2);
 		err = JlObject.LoadNew(proc, 3, err, out image3);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17580,13 +18201,14 @@ public class JlOperatorSet
 	public static void Decompose2(JlObject multiChannelImage, out JlObject image1, out JlObject image2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1080);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out image1);
 		err = JlObject.LoadNew(proc, 2, err, out image2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17602,11 +18224,12 @@ public class JlOperatorSet
 	public static void CountChannels(JlObject multiChannelImage, out JlTuple channels)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1081);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out channels);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17623,12 +18246,13 @@ public class JlOperatorSet
 	public static void AppendChannel(JlObject multiChannelImage, JlObject image, out JlObject imageExtended)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1082);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageExtended);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 		GC.KeepAlive(image);
 	}
@@ -17657,13 +18281,14 @@ public class JlOperatorSet
 	public static void AccessChannel(JlObject multiChannelImage, out JlObject image, JlTuple channel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1083);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multiChannelImage);
 		JlNativeApi.Store(proc, 0, channel);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(channel);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multiChannelImage);
 	}
 
@@ -17687,6 +18312,7 @@ public class JlOperatorSet
 	public static void TileImagesOffset(JlObject images, out JlObject tiledImage, JlTuple offsetRow, JlTuple offsetCol, JlTuple row1, JlTuple col1, JlTuple row2, JlTuple col2, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1084);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, offsetRow);
 		JlNativeApi.Store(proc, 1, offsetCol);
@@ -17707,7 +18333,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out tiledImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -17725,6 +18351,7 @@ public class JlOperatorSet
 	public static void TileImages(JlObject images, out JlObject tiledImage, JlTuple numColumns, JlTuple tileOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1085);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, numColumns);
 		JlNativeApi.Store(proc, 1, tileOrder);
@@ -17733,7 +18360,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numColumns);
 		JlNativeApi.UnpinTuple(tileOrder);
 		err = JlObject.LoadNew(proc, 1, err, out tiledImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -17751,6 +18378,7 @@ public class JlOperatorSet
 	public static void TileChannels(JlObject image, out JlObject tiledImage, JlTuple numColumns, JlTuple tileOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1086);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, numColumns);
 		JlNativeApi.Store(proc, 1, tileOrder);
@@ -17759,7 +18387,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numColumns);
 		JlNativeApi.UnpinTuple(tileOrder);
 		err = JlObject.LoadNew(proc, 1, err, out tiledImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17775,11 +18403,12 @@ public class JlOperatorSet
 	public static void CropDomain(JlObject image, out JlObject imagePart)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1087);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17799,6 +18428,7 @@ public class JlOperatorSet
 	public static void CropRectangle1(JlObject image, out JlObject imagePart, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1088);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -17811,7 +18441,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17831,6 +18461,7 @@ public class JlOperatorSet
 	public static void CropPart(JlObject image, out JlObject imagePart, JlTuple row, JlTuple column, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1089);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -17843,7 +18474,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17861,6 +18492,7 @@ public class JlOperatorSet
 	public static void ChangeFormat(JlObject image, out JlObject imagePart, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1090);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -17869,7 +18501,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17886,12 +18518,13 @@ public class JlOperatorSet
 	public static void ChangeDomain(JlObject image, JlObject newDomain, out JlObject imageNew)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1091);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, newDomain);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageNew);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(newDomain);
 	}
@@ -17909,12 +18542,13 @@ public class JlOperatorSet
 	public static void AddChannels(JlObject regions, JlObject image, out JlObject grayRegions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1092);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out grayRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -17935,6 +18569,7 @@ public class JlOperatorSet
 	public static void Rectangle1Domain(JlObject image, out JlObject imageReduced, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1093);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -17947,7 +18582,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlObject.LoadNew(proc, 1, err, out imageReduced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -17964,12 +18599,13 @@ public class JlOperatorSet
 	public static void ReduceDomain(JlObject image, JlObject region, out JlObject imageReduced)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1094);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageReduced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -17986,11 +18622,12 @@ public class JlOperatorSet
 	public static void FullDomain(JlObject image, out JlObject imageFull)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1095);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageFull);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -18006,11 +18643,12 @@ public class JlOperatorSet
 	public static void GetDomain(JlObject image, out JlObject domain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1096);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out domain);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -18038,6 +18676,7 @@ public class JlOperatorSet
 	public static void SelectMatchingLines(JlObject regionIn, out JlObject regionLines, JlTuple angleIn, JlTuple distIn, JlTuple lineWidth, JlTuple thresh, out JlTuple angleOut, out JlTuple distOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1103);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regionIn);
 		JlNativeApi.Store(proc, 0, angleIn);
 		JlNativeApi.Store(proc, 1, distIn);
@@ -18054,7 +18693,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out regionLines);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out angleOut);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regionIn);
 	}
 
@@ -18072,6 +18711,7 @@ public class JlOperatorSet
 	public static void FindRectificationGrid(JlObject image, out JlObject gridRegion, JlTuple minContrast, JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1104);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, minContrast);
 		JlNativeApi.Store(proc, 1, radius);
@@ -18080,7 +18720,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minContrast);
 		JlNativeApi.UnpinTuple(radius);
 		err = JlObject.LoadNew(proc, 1, err, out gridRegion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -18096,6 +18736,7 @@ public class JlOperatorSet
 	public static void CreateRectificationGrid(JlTuple width, JlTuple numSquares, JlTuple gridFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1105);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, numSquares);
 		JlNativeApi.Store(proc, 2, gridFile);
@@ -18103,7 +18744,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(numSquares);
 		JlNativeApi.UnpinTuple(gridFile);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>按网格点坐标在相邻格点间连出轮廓线，用于后续网格校正，轮廓以新句柄经 out 返回（原生 id 1106）。</summary>
@@ -18122,6 +18763,7 @@ public class JlOperatorSet
 	public static void ConnectGridPoints(JlObject image, out JlObject connectingLines, JlTuple row, JlTuple column, JlTuple sigma, JlTuple maxDist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1106);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -18134,7 +18776,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sigma);
 		JlNativeApi.UnpinTuple(maxDist);
 		err = JlObject.LoadNew(proc, 1, err, out connectingLines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -18158,6 +18800,7 @@ public class JlOperatorSet
 	public static void GenGridRectificationMap(JlObject image, JlObject connectingLines, out JlObject map, out JlObject meshes, JlTuple gridSpacing, JlTuple rotation, JlTuple row, JlTuple column, JlTuple mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1107);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, connectingLines);
 		JlNativeApi.Store(proc, 0, gridSpacing);
@@ -18175,7 +18818,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mapType);
 		err = JlObject.LoadNew(proc, 1, err, out map);
 		err = JlObject.LoadNew(proc, 2, err, out meshes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(connectingLines);
 	}
@@ -18198,6 +18841,7 @@ public class JlOperatorSet
 	public static void GenArbitraryDistortionMap(out JlObject map, JlTuple gridSpacing, JlTuple row, JlTuple column, JlTuple gridWidth, JlTuple imageWidth, JlTuple imageHeight, JlTuple mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1108);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, gridSpacing);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -18215,7 +18859,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(imageHeight);
 		JlNativeApi.UnpinTuple(mapType);
 		err = JlObject.LoadNew(proc, 1, err, out map);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -18317,10 +18961,11 @@ public class JlOperatorSet
 	public static void QueryShape(out JlTuple displayShape)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1198);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out displayShape);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -18335,12 +18980,13 @@ public class JlOperatorSet
 	public static void QueryLineWidth(out JlTuple min, out JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1200);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out min);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out max);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -18354,10 +19000,11 @@ public class JlOperatorSet
 	public static void QueryColored(out JlTuple possibleNumberOfColors)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1202);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out possibleNumberOfColors);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -18452,6 +19099,7 @@ public class JlOperatorSet
 	public static void ProjectionPl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple rowProj, out JlTuple colProj)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -18469,7 +19117,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowProj);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colProj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按给定参数角求椭圆周上对应点的坐标，以元组经 out 返回（原生 id 1278）。</summary>
@@ -18490,6 +19138,7 @@ public class JlOperatorSet
 	public static void GetPointsEllipse(JlTuple angle, JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, out JlTuple rowPoint, out JlTuple colPoint)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, angle);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -18507,7 +19156,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(radius2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowPoint);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colPoint);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两条“各由两点定义”的直线的交点，交点坐标与平行标志经 out 返回（原生 id 1279）。</summary>
@@ -18531,6 +19180,7 @@ public class JlOperatorSet
 	public static void IntersectionLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple row, out JlTuple column, out JlTuple isParallel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -18554,7 +19204,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isParallel);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两组 XLD 轮廓两两相交的交点集合，坐标以多值元组经 out 返回、重叠标志按 INTEGER 装载。</summary>
@@ -18573,6 +19223,7 @@ public class JlOperatorSet
 	public static void IntersectionContoursXld(JlObject contour1, JlObject contour2, JlTuple intersectionType, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1280);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, intersectionType);
@@ -18584,7 +19235,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour1);
 		GC.KeepAlive(contour2);
 	}
@@ -18608,6 +19259,7 @@ public class JlOperatorSet
 	public static void IntersectionCircleContourXld(JlObject contour, JlTuple circleRow, JlTuple circleColumn, JlTuple circleRadius, JlTuple circleStartPhi, JlTuple circleEndPhi, JlTuple circlePointOrder, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1281);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, circleRow);
 		JlNativeApi.Store(proc, 1, circleColumn);
@@ -18626,7 +19278,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(circlePointOrder);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -18655,6 +19307,7 @@ public class JlOperatorSet
 	public static void IntersectionCircles(JlTuple circle1Row, JlTuple circle1Column, JlTuple circle1Radius, JlTuple circle1StartPhi, JlTuple circle1EndPhi, JlTuple circle1PointOrder, JlTuple circle2Row, JlTuple circle2Column, JlTuple circle2Radius, JlTuple circle2StartPhi, JlTuple circle2EndPhi, JlTuple circle2PointOrder, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1282);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, circle1Row);
 		JlNativeApi.Store(proc, 1, circle1Column);
 		JlNativeApi.Store(proc, 2, circle1Radius);
@@ -18686,7 +19339,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求一条直线与 XLD 轮廓的交点点集，坐标以多值元组经 out 返回、共线标志按 INTEGER 装载。</summary>
@@ -18707,6 +19360,7 @@ public class JlOperatorSet
 	public static void IntersectionLineContourXld(JlObject contour, JlTuple lineRow1, JlTuple lineColumn1, JlTuple lineRow2, JlTuple lineColumn2, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1283);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, lineRow1);
 		JlNativeApi.Store(proc, 1, lineColumn1);
@@ -18723,7 +19377,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -18749,6 +19403,7 @@ public class JlOperatorSet
 	public static void IntersectionLineCircle(JlTuple lineRow1, JlTuple lineColumn1, JlTuple lineRow2, JlTuple lineColumn2, JlTuple circleRow, JlTuple circleColumn, JlTuple circleRadius, JlTuple circleStartPhi, JlTuple circleEndPhi, JlTuple circlePointOrder, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1284);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, lineRow1);
 		JlNativeApi.Store(proc, 1, lineColumn1);
 		JlNativeApi.Store(proc, 2, lineRow2);
@@ -18774,7 +19429,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(circlePointOrder);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两条无限长直线的交点，附带的整型标志指示两线是否重合（等价同一直线）。</summary>
@@ -18798,6 +19453,7 @@ public class JlOperatorSet
 	public static void IntersectionLines(JlTuple line1Row1, JlTuple line1Column1, JlTuple line1Row2, JlTuple line1Column2, JlTuple line2Row1, JlTuple line2Column1, JlTuple line2Row2, JlTuple line2Column2, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1285);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, line1Row1);
 		JlNativeApi.Store(proc, 1, line1Column1);
 		JlNativeApi.Store(proc, 2, line1Row2);
@@ -18821,7 +19477,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求线段与 XLD 轮廓的交点点集，坐标以多值元组经 out 返回、共段标志按 INTEGER 装载。</summary>
@@ -18842,6 +19498,7 @@ public class JlOperatorSet
 	public static void IntersectionSegmentContourXld(JlObject contour, JlTuple segmentRow1, JlTuple segmentColumn1, JlTuple segmentRow2, JlTuple segmentColumn2, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1286);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, segmentRow1);
 		JlNativeApi.Store(proc, 1, segmentColumn1);
@@ -18858,7 +19515,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -18884,6 +19541,7 @@ public class JlOperatorSet
 	public static void IntersectionSegmentCircle(JlTuple segmentRow1, JlTuple segmentColumn1, JlTuple segmentRow2, JlTuple segmentColumn2, JlTuple circleRow, JlTuple circleColumn, JlTuple circleRadius, JlTuple circleStartPhi, JlTuple circleEndPhi, JlTuple circlePointOrder, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1287);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, segmentRow1);
 		JlNativeApi.Store(proc, 1, segmentColumn1);
 		JlNativeApi.Store(proc, 2, segmentRow2);
@@ -18909,7 +19567,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(circlePointOrder);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求线段与直线的交点，附带的整型标志指示二者是否存在共段。</summary>
@@ -18933,6 +19591,7 @@ public class JlOperatorSet
 	public static void IntersectionSegmentLine(JlTuple segmentRow1, JlTuple segmentColumn1, JlTuple segmentRow2, JlTuple segmentColumn2, JlTuple lineRow1, JlTuple lineColumn1, JlTuple lineRow2, JlTuple lineColumn2, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1288);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, segmentRow1);
 		JlNativeApi.Store(proc, 1, segmentColumn1);
 		JlNativeApi.Store(proc, 2, segmentRow2);
@@ -18956,7 +19615,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两线段的交点，附带的整型标志指示两段是否存在共段。</summary>
@@ -18980,6 +19639,7 @@ public class JlOperatorSet
 	public static void IntersectionSegments(JlTuple segment1Row1, JlTuple segment1Column1, JlTuple segment1Row2, JlTuple segment1Column2, JlTuple segment2Row1, JlTuple segment2Column1, JlTuple segment2Row2, JlTuple segment2Column2, out JlTuple row, out JlTuple column, out JlTuple isOverlapping)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1289);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, segment1Row1);
 		JlNativeApi.Store(proc, 1, segment1Column1);
 		JlNativeApi.Store(proc, 2, segment1Row2);
@@ -19003,7 +19663,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out isOverlapping);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>释放一个 XLD 距离变换句柄占用的原生资源，无返回值。</summary>
@@ -19017,10 +19677,11 @@ public class JlOperatorSet
 	public static void ClearDistanceTransformXld(JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1290);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distanceTransformID);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>用预建的 XLD 距离变换给一组轮廓逐点量距，结果作为带"距离属性"的新轮廓句柄经 out 返回。</summary>
@@ -19036,13 +19697,14 @@ public class JlOperatorSet
 	public static void ApplyDistanceTransformXld(JlObject contour, out JlObject contourOut, JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1291);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		err = JlObject.LoadNew(proc, 1, err, out contourOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -19058,12 +19720,13 @@ public class JlOperatorSet
 	public static void ReadDistanceTransformXld(JlTuple fileName, out JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1292);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out distanceTransformID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从序列化缓冲中还原一个 XLD 距离变换，新句柄以 JlTuple 经 out 返回。</summary>
@@ -19078,12 +19741,13 @@ public class JlOperatorSet
 	public static void DeserializeDistanceTransformXld(JlTuple serializedItemHandle, out JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1293);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out distanceTransformID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个 XLD 距离变换序列化成缓冲句柄，产物以 JlTuple 经 out 返回。</summary>
@@ -19098,12 +19762,13 @@ public class JlOperatorSet
 	public static void SerializeDistanceTransformXld(JlTuple distanceTransformID, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1294);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个 XLD 距离变换序列化写入磁盘文件，无返回值。</summary>
@@ -19118,12 +19783,13 @@ public class JlOperatorSet
 	public static void WriteDistanceTransformXld(JlTuple distanceTransformID, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1295);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>就地修改 XLD 距离变换的通用参数（如 mode、max_distance），无返回值。</summary>
@@ -19139,6 +19805,7 @@ public class JlOperatorSet
 	public static void SetDistanceTransformXldParam(JlTuple distanceTransformID, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1296);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -19146,7 +19813,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>读回一个 XLD 距离变换的通用参数当前值，按参数名以多值元组经 out 返回。</summary>
@@ -19162,6 +19829,7 @@ public class JlOperatorSet
 	public static void GetDistanceTransformXldParam(JlTuple distanceTransformID, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1297);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
@@ -19169,7 +19837,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取回一个 XLD 距离变换所依据的参考轮廓，以新轮廓句柄经 out 返回。</summary>
@@ -19184,12 +19852,13 @@ public class JlOperatorSet
 	public static void GetDistanceTransformXldContour(out JlObject contour, JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1298);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, distanceTransformID);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distanceTransformID);
 		err = JlObject.LoadNew(proc, 1, err, out contour);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>以参考轮廓预计算一张可复用的 XLD 距离变换，句柄以 JlTuple 经 out 返回。</summary>
@@ -19206,6 +19875,7 @@ public class JlOperatorSet
 	public static void CreateDistanceTransformXld(JlObject contour, JlTuple mode, JlTuple maxDistance, out JlTuple distanceTransformID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1299);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, maxDistance);
@@ -19214,7 +19884,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = JlTuple.LoadNew(proc, 0, err, out distanceTransformID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -19232,6 +19902,7 @@ public class JlOperatorSet
 	public static void DistanceContoursXld(JlObject contourFrom, JlObject contourTo, out JlObject contourOut, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1300);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contourFrom);
 		JlNativeApi.Store(proc, 2, contourTo);
 		JlNativeApi.Store(proc, 0, mode);
@@ -19239,7 +19910,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out contourOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contourFrom);
 		GC.KeepAlive(contourTo);
 	}
@@ -19258,6 +19929,7 @@ public class JlOperatorSet
 	public static void DistanceCcMin(JlObject contour1, JlObject contour2, JlTuple mode, out JlTuple distanceMin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1301);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -19265,7 +19937,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour1);
 		GC.KeepAlive(contour2);
 	}
@@ -19285,6 +19957,7 @@ public class JlOperatorSet
 	public static void DistanceCc(JlObject contour1, JlObject contour2, JlTuple mode, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1302);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -19294,7 +19967,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour1);
 		GC.KeepAlive(contour2);
 	}
@@ -19316,6 +19989,7 @@ public class JlOperatorSet
 	public static void DistanceSc(JlObject contour, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1303);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -19330,7 +20004,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -19351,6 +20025,7 @@ public class JlOperatorSet
 	public static void DistanceLc(JlObject contour, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1304);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -19365,7 +20040,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -19384,6 +20059,7 @@ public class JlOperatorSet
 	public static void DistancePc(JlObject contour, JlTuple row, JlTuple column, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1305);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -19394,7 +20070,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -19415,6 +20091,7 @@ public class JlOperatorSet
 	public static void DistanceSr(JlObject region, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1306);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -19429,7 +20106,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -19450,6 +20127,7 @@ public class JlOperatorSet
 	public static void DistanceLr(JlObject region, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1307);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -19464,7 +20142,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -19483,6 +20161,7 @@ public class JlOperatorSet
 	public static void DistancePr(JlObject region, JlTuple row, JlTuple column, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1308);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -19493,7 +20172,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -19512,6 +20191,7 @@ public class JlOperatorSet
 	public static void AngleLx(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1309);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -19523,7 +20203,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out angle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求两条无限长直线的夹角，弧度制经 out 返回。</summary>
@@ -19545,6 +20225,7 @@ public class JlOperatorSet
 	public static void AngleLl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1310);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -19564,7 +20245,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rowB2);
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out angle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算线段到无限长直线的最近与最远距离（像素），两个标量各以 DOUBLE 元组经 out 返回（原生 id 1311）。</summary>
@@ -19587,6 +20268,7 @@ public class JlOperatorSet
 	public static void DistanceSl(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1311);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -19608,7 +20290,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算两条线段间的最近与最远距离（像素），两个标量各以 DOUBLE 元组经 out 返回（原生 id 1312）。</summary>
@@ -19631,6 +20313,7 @@ public class JlOperatorSet
 	public static void DistanceSs(JlTuple rowA1, JlTuple columnA1, JlTuple rowA2, JlTuple columnA2, JlTuple rowB1, JlTuple columnB1, JlTuple rowB2, JlTuple columnB2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1312);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowA1);
 		JlNativeApi.Store(proc, 1, columnA1);
 		JlNativeApi.Store(proc, 2, rowA2);
@@ -19652,7 +20335,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(columnB2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算点到线段的最近与最远距离（像素），两个标量各以 DOUBLE 元组经 out 返回（原生 id 1313）。</summary>
@@ -19673,6 +20356,7 @@ public class JlOperatorSet
 	public static void DistancePs(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1313);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -19690,7 +20374,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>计算点到（无限长）直线的垂直距离（像素），单标量结果以 DOUBLE 元组经 out 返回（原生 id 1314）。</summary>
@@ -19710,6 +20394,7 @@ public class JlOperatorSet
 	public static void DistancePl(JlTuple row, JlTuple column, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1314);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, row1);
@@ -19725,7 +20410,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐对计算两点间欧氏距离（像素），单标量结果以 DOUBLE 元组经 out 返回（原生 id 1315）。</summary>
@@ -19743,6 +20428,7 @@ public class JlOperatorSet
 	public static void DistancePp(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1315);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -19754,7 +20440,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>串联两个一维函数（一个的 y 值作为另一个的 x 输入），复合函数经 out 返回（原生 id 1316）。</summary>
@@ -19771,6 +20457,7 @@ public class JlOperatorSet
 	public static void ComposeFunct1d(JlTuple function1, JlTuple function2, JlTuple border, out JlTuple composedFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1316);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function1);
 		JlNativeApi.Store(proc, 1, function2);
 		JlNativeApi.Store(proc, 2, border);
@@ -19780,7 +20467,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function2);
 		JlNativeApi.UnpinTuple(border);
 		err = JlTuple.LoadNew(proc, 0, err, out composedFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>将一维函数的 x/y 互换求反函数，结果作为新函数对象经 out 返回（原生 id 1317）。</summary>
@@ -19795,12 +20482,13 @@ public class JlOperatorSet
 	public static void InvertFunct1d(JlTuple function, out JlTuple inverseFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1317);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, err, out inverseFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对一维函数按控制点间距做数值微分，导数函数作为新函数对象经 out 返回（原生 id 1318）。</summary>
@@ -19816,6 +20504,7 @@ public class JlOperatorSet
 	public static void DerivateFunct1d(JlTuple function, JlTuple mode, out JlTuple derivative)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1318);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, mode);
 		JlNativeApi.InitOCT(proc, 0);
@@ -19823,7 +20512,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, err, out derivative);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>检出一维函数的全部局部极小与极大点位置，两组 DOUBLE 元组经 out 返回（原生 id 1319）。</summary>
@@ -19841,6 +20530,7 @@ public class JlOperatorSet
 	public static void LocalMinMaxFunct1d(JlTuple function, JlTuple mode, JlTuple interpolation, out JlTuple min, out JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1319);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, mode);
 		JlNativeApi.Store(proc, 2, interpolation);
@@ -19852,7 +20542,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out min);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out max);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -19870,6 +20560,7 @@ public class JlOperatorSet
 	public static void ScaleYFunct1d(JlTuple function, JlTuple mult, JlTuple add, out JlTuple functionScaled)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1321);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, mult);
 		JlNativeApi.Store(proc, 2, add);
@@ -19879,7 +20570,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlTuple.LoadNew(proc, 0, err, out functionScaled);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对一维函数逐控制点翻转 y 符号（y' = -y），产出新函数对象经 out 返回（原生 id 1322）。</summary>
@@ -19894,12 +20585,13 @@ public class JlOperatorSet
 	public static void NegateFunct1d(JlTuple function, out JlTuple functionInverted)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1322);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, err, out functionInverted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对一维函数逐控制点取 y 的绝对值，产出新函数对象经 out 返回（原生 id 1323）。</summary>
@@ -19914,12 +20606,13 @@ public class JlOperatorSet
 	public static void AbsFunct1d(JlTuple function, out JlTuple functionAbsolute)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1323);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, err, out functionAbsolute);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在一维函数上按任意连续 x 位置插值求 y，单标量结果以 DOUBLE 元组经 out 返回（原生 id 1324）。</summary>
@@ -19936,6 +20629,7 @@ public class JlOperatorSet
 	public static void GetYValueFunct1d(JlTuple function, JlTuple x, JlTuple border, out JlTuple y)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1324);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, x);
 		JlNativeApi.Store(proc, 2, border);
@@ -19945,7 +20639,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(x);
 		JlNativeApi.UnpinTuple(border);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out y);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按控制点下标取回一维函数该点的 x/y 坐标，两个标量各以 DOUBLE 元组经 out 返回（原生 id 1325）。</summary>
@@ -19962,6 +20656,7 @@ public class JlOperatorSet
 	public static void GetPairFunct1d(JlTuple function, JlTuple index, out JlTuple x, out JlTuple y)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1325);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -19971,7 +20666,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out x);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out y);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读出一维函数的控制点个数，计数以 INTEGER 元组经 out 返回（原生 id 1326）。</summary>
@@ -19986,12 +20681,13 @@ public class JlOperatorSet
 	public static void NumPointsFunct1d(JlTuple function, out JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1326);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out length);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读出一维函数全部控制点 y 值的最小与最大（值域上下界），两个标量以 DOUBLE 元组经 out 返回（原生 id 1327）。</summary>
@@ -20007,6 +20703,7 @@ public class JlOperatorSet
 	public static void YRangeFunct1d(JlTuple function, out JlTuple YMin, out JlTuple YMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1327);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -20014,7 +20711,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out YMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out YMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>读出一维函数全部控制点 x 值的最小与最大（定义域左右边界），两个标量以 DOUBLE 元组经 out 返回（原生 id 1328）。</summary>
@@ -20030,6 +20727,7 @@ public class JlOperatorSet
 	public static void XRangeFunct1d(JlTuple function, out JlTuple XMin, out JlTuple XMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1328);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -20037,7 +20735,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out XMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out XMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一条 1D 函数拆成等长的 x 序列与 y 序列，两个 out 各返回一个新元组（原生 id 1329）。</summary>
@@ -20052,6 +20750,7 @@ public class JlOperatorSet
 	public static void Funct1dToPairs(JlTuple function, out JlTuple XValues, out JlTuple YValues)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1329);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -20059,7 +20758,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, err, out XValues);
 		err = JlTuple.LoadNew(proc, 1, err, out YValues);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在给定 x 区间内按等间距对 1D 函数重采样，产出一条新的等距函数（原生 id 1330）。</summary>
@@ -20077,6 +20776,7 @@ public class JlOperatorSet
 	public static void SampleFunct1d(JlTuple function, JlTuple XMin, JlTuple XMax, JlTuple XDist, JlTuple border, out JlTuple sampledFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1330);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, XMin);
 		JlNativeApi.Store(proc, 2, XMax);
@@ -20090,7 +20790,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(XDist);
 		JlNativeApi.UnpinTuple(border);
 		err = JlTuple.LoadNew(proc, 0, err, out sampledFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用一组变换参数对 1D 函数做平移/缩放，返回变换后的新函数（原生 id 1331）。</summary>
@@ -20105,6 +20805,7 @@ public class JlOperatorSet
 	public static void TransformFunct1d(JlTuple function, JlTuple paramsVal, out JlTuple transformedFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1331);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, paramsVal);
 		JlNativeApi.InitOCT(proc, 0);
@@ -20112,7 +20813,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		JlNativeApi.UnpinTuple(paramsVal);
 		err = JlTuple.LoadNew(proc, 0, err, out transformedFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>拟合使 function1 对齐 function2 所需的 1D 函数变换参数，并给出卡方误差与协方差（原生 id 1332）。</summary>
@@ -20132,6 +20833,7 @@ public class JlOperatorSet
 	public static void MatchFunct1dTrans(JlTuple function1, JlTuple function2, JlTuple border, JlTuple paramsConst, JlTuple useParams, out JlTuple paramsVal, out JlTuple chiSquare, out JlTuple covar)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1332);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function1);
 		JlNativeApi.Store(proc, 1, function2);
 		JlNativeApi.Store(proc, 2, border);
@@ -20149,7 +20851,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out paramsVal);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out chiSquare);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out covar);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按不变量模式计算两条 1D 函数之间的距离（差异度量），返回标量元组（原生 id 1333）。</summary>
@@ -20166,6 +20868,7 @@ public class JlOperatorSet
 	public static void DistanceFunct1d(JlTuple function1, JlTuple function2, JlTuple mode, JlTuple sigma, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1333);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function1);
 		JlNativeApi.Store(proc, 1, function2);
 		JlNativeApi.Store(proc, 2, mode);
@@ -20177,7 +20880,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlTuple.LoadNew(proc, 0, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用高斯核对等距 1D 函数做平滑去噪，返回新的平滑函数（原生 id 1334）。</summary>
@@ -20193,6 +20896,7 @@ public class JlOperatorSet
 	public static void SmoothFunct1dGauss(JlTuple function, JlTuple sigma, out JlTuple smoothedFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1334);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, sigma);
 		JlNativeApi.InitOCT(proc, 0);
@@ -20200,7 +20904,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlTuple.LoadNew(proc, 0, err, out smoothedFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>分别求出 1D 函数正部与负部下的面积，两个 out 各返回一个 DOUBLE 标量（原生 id 1335）。</summary>
@@ -20215,6 +20919,7 @@ public class JlOperatorSet
 	public static void IntegrateFunct1d(JlTuple function, out JlTuple positive, out JlTuple negative)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1335);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -20222,7 +20927,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(function);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out positive);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out negative);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从磁盘文件读回一条 1D 函数，经 out 返回新建元组（原生 id 1336）。</summary>
@@ -20236,12 +20941,13 @@ public class JlOperatorSet
 	public static void ReadFunct1d(JlTuple fileName, out JlTuple function)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1336);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out function);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一条 1D 函数写到磁盘文件，无返回值（原生 id 1337）。</summary>
@@ -20255,12 +20961,13 @@ public class JlOperatorSet
 	public static void WriteFunct1d(JlTuple function, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1337);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(function);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>由一串 y 值构造 1D 函数，x 自动按整数序号 0,1,2… 铺开（原生 id 1338）。</summary>
@@ -20274,12 +20981,13 @@ public class JlOperatorSet
 	public static void CreateFunct1dArray(JlTuple YValues, out JlTuple function)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1338);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, YValues);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(YValues);
 		err = JlTuple.LoadNew(proc, 0, err, out function);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由一组 (x,y) 配对点构造 1D 函数，x 可非等距（原生 id 1339）。</summary>
@@ -20295,6 +21003,7 @@ public class JlOperatorSet
 	public static void CreateFunct1dPairs(JlTuple XValues, JlTuple YValues, out JlTuple function)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1339);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, XValues);
 		JlNativeApi.Store(proc, 1, YValues);
 		JlNativeApi.InitOCT(proc, 0);
@@ -20302,7 +21011,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(XValues);
 		JlNativeApi.UnpinTuple(YValues);
 		err = JlTuple.LoadNew(proc, 0, err, out function);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用滑动均值核对等距 1D 函数迭代平滑，返回新的平滑函数（原生 id 1340）。</summary>
@@ -20319,6 +21028,7 @@ public class JlOperatorSet
 	public static void SmoothFunct1dMean(JlTuple function, JlTuple smoothSize, JlTuple iterations, out JlTuple smoothedFunction)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1340);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, function);
 		JlNativeApi.Store(proc, 1, smoothSize);
 		JlNativeApi.Store(proc, 2, iterations);
@@ -20328,7 +21038,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(smoothSize);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlTuple.LoadNew(proc, 0, err, out smoothedFunction);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -20346,6 +21056,7 @@ public class JlOperatorSet
 	public static void DeviationImage(JlObject image, out JlObject imageDeviation, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1342);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -20354,7 +21065,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageDeviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20372,6 +21083,7 @@ public class JlOperatorSet
 	public static void EntropyImage(JlObject image, out JlObject imageEntropy, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1343);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -20380,7 +21092,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageEntropy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20398,6 +21110,7 @@ public class JlOperatorSet
 	public static void IsotropicDiffusion(JlObject image, out JlObject smoothedImage, JlTuple sigma, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1344);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.Store(proc, 1, iterations);
@@ -20406,7 +21119,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sigma);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out smoothedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20425,6 +21138,7 @@ public class JlOperatorSet
 	public static void SmoothImage(JlObject image, out JlObject imageSmooth, JlTuple filter, JlTuple alpha)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1346);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -20433,7 +21147,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(filter);
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlObject.LoadNew(proc, 1, err, out imageSmooth);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20452,6 +21166,7 @@ public class JlOperatorSet
 	public static void SigmaImage(JlObject image, out JlObject imageSigma, JlTuple maskHeight, JlTuple maskWidth, JlTuple sigma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1347);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -20462,7 +21177,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlObject.LoadNew(proc, 1, err, out imageSigma);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20480,6 +21195,7 @@ public class JlOperatorSet
 	public static void MidrangeImage(JlObject image, JlObject mask, out JlObject imageMidrange, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1348);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, mask);
 		JlNativeApi.Store(proc, 0, margin);
@@ -20487,7 +21203,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageMidrange);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(mask);
 	}
@@ -20508,6 +21224,7 @@ public class JlOperatorSet
 	public static void TrimmedMean(JlObject image, JlObject mask, out JlObject imageTMean, JlTuple number, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1349);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, mask);
 		JlNativeApi.Store(proc, 0, number);
@@ -20517,7 +21234,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(number);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageTMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(mask);
 	}
@@ -20537,6 +21254,7 @@ public class JlOperatorSet
 	public static void MedianSeparate(JlObject image, out JlObject imageSMedian, JlTuple maskWidth, JlTuple maskHeight, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1350);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20547,7 +21265,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageSMedian);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20565,6 +21283,7 @@ public class JlOperatorSet
 	public static void MedianRect(JlObject image, out JlObject imageMedian, JlTuple maskWidth, JlTuple maskHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1351);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20573,7 +21292,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskHeight);
 		err = JlObject.LoadNew(proc, 1, err, out imageMedian);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20592,6 +21311,7 @@ public class JlOperatorSet
 	public static void MedianImage(JlObject image, out JlObject imageMedian, JlTuple maskType, JlTuple radius, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1352);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskType);
 		JlNativeApi.Store(proc, 1, radius);
@@ -20602,7 +21322,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(radius);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageMedian);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20620,6 +21340,7 @@ public class JlOperatorSet
 	public static void MedianWeighted(JlObject image, out JlObject imageWMedian, JlTuple maskType, JlTuple maskSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1353);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskType);
 		JlNativeApi.Store(proc, 1, maskSize);
@@ -20628,7 +21349,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskType);
 		JlNativeApi.UnpinTuple(maskSize);
 		err = JlObject.LoadNew(proc, 1, err, out imageWMedian);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20647,6 +21368,7 @@ public class JlOperatorSet
 	public static void RankRect(JlObject image, out JlObject imageRank, JlTuple maskWidth, JlTuple maskHeight, JlTuple rank)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1354);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20657,7 +21379,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(rank);
 		err = JlObject.LoadNew(proc, 1, err, out imageRank);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20677,6 +21399,7 @@ public class JlOperatorSet
 	public static void RankImage(JlObject image, JlObject mask, out JlObject imageRank, JlTuple rank, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1355);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, mask);
 		JlNativeApi.Store(proc, 0, rank);
@@ -20686,7 +21409,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rank);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageRank);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(mask);
 	}
@@ -20707,6 +21430,7 @@ public class JlOperatorSet
 	public static void DualRank(JlObject image, out JlObject imageRank, JlTuple maskType, JlTuple radius, JlTuple modePercent, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1356);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskType);
 		JlNativeApi.Store(proc, 1, radius);
@@ -20719,7 +21443,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(modePercent);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageRank);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20737,6 +21461,7 @@ public class JlOperatorSet
 	public static void MeanImage(JlObject image, out JlObject imageMean, JlTuple maskWidth, JlTuple maskHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1357);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20745,7 +21470,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskHeight);
 		err = JlObject.LoadNew(proc, 1, err, out imageMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20762,6 +21487,7 @@ public class JlOperatorSet
 	public static void InfoSmooth(JlTuple filter, JlTuple alpha, out JlTuple size, out JlTuple coeffs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1358);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
 		JlNativeApi.InitOCT(proc, 0);
@@ -20771,7 +21497,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out size);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out coeffs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用二项式核对图像平滑（可分离、系数取杨辉三角），返回新图（原生 id 1359）。</summary>
@@ -20788,6 +21514,7 @@ public class JlOperatorSet
 	public static void BinomialFilter(JlObject image, out JlObject imageBinomial, JlTuple maskWidth, JlTuple maskHeight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1359);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20796,7 +21523,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskHeight);
 		err = JlObject.LoadNew(proc, 1, err, out imageBinomial);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20813,13 +21540,14 @@ public class JlOperatorSet
 	public static void GaussImage(JlObject image, out JlObject imageGauss, JlTuple size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1360);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, size);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(size);
 		err = JlObject.LoadNew(proc, 1, err, out imageGauss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20836,13 +21564,14 @@ public class JlOperatorSet
 	public static void GaussFilter(JlObject image, out JlObject imageGauss, JlTuple size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1361);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, size);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(size);
 		err = JlObject.LoadNew(proc, 1, err, out imageGauss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20862,6 +21591,7 @@ public class JlOperatorSet
 	public static void EliminateMinMax(JlObject image, out JlObject filteredImage, JlTuple maskWidth, JlTuple maskHeight, JlTuple gap, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1362);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20874,7 +21604,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(gap);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out filteredImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20890,13 +21620,14 @@ public class JlOperatorSet
 	public static void FillInterlace(JlObject imageCamera, out JlObject imageFilled, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1363);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageCamera);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out imageFilled);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageCamera);
 	}
 
@@ -20913,13 +21644,14 @@ public class JlOperatorSet
 	public static void RankN(JlObject image, out JlObject rankImage, JlTuple rankIndex)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1364);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, rankIndex);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(rankIndex);
 		err = JlObject.LoadNew(proc, 1, err, out rankImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20935,11 +21667,12 @@ public class JlOperatorSet
 	public static void MeanN(JlObject image, out JlObject imageMean)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1365);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20959,6 +21692,7 @@ public class JlOperatorSet
 	public static void EliminateSp(JlObject image, out JlObject imageFillSP, JlTuple maskWidth, JlTuple maskHeight, JlTuple minThresh, JlTuple maxThresh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1366);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -20971,7 +21705,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minThresh);
 		JlNativeApi.UnpinTuple(maxThresh);
 		err = JlObject.LoadNew(proc, 1, err, out imageFillSP);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -20990,6 +21724,7 @@ public class JlOperatorSet
 	public static void MeanSp(JlObject image, out JlObject imageSPMean, JlTuple maskWidth, JlTuple maskHeight, JlTuple minThresh, JlTuple maxThresh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1367);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -21002,7 +21737,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minThresh);
 		JlNativeApi.UnpinTuple(maxThresh);
 		err = JlObject.LoadNew(proc, 1, err, out imageSPMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21025,6 +21760,7 @@ public class JlOperatorSet
 	public static void PointsSojka(JlObject image, JlTuple maskSize, JlTuple sigmaW, JlTuple sigmaD, JlTuple minGrad, JlTuple minApparentness, JlTuple minAngle, JlTuple subpix, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1368);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskSize);
 		JlNativeApi.Store(proc, 1, sigmaW);
@@ -21045,7 +21781,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(subpix);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21063,6 +21799,7 @@ public class JlOperatorSet
 	public static void DotsImage(JlObject image, out JlObject dotImage, JlTuple diameter, JlTuple filterType, JlTuple pixelShift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1369);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, diameter);
 		JlNativeApi.Store(proc, 1, filterType);
@@ -21073,7 +21810,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(filterType);
 		JlNativeApi.UnpinTuple(pixelShift);
 		err = JlObject.LoadNew(proc, 1, err, out dotImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21092,6 +21829,7 @@ public class JlOperatorSet
 	public static void LocalMinSubPix(JlObject image, JlTuple filter, JlTuple sigma, JlTuple threshold, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1370);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -21104,7 +21842,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21123,6 +21861,7 @@ public class JlOperatorSet
 	public static void LocalMaxSubPix(JlObject image, JlTuple filter, JlTuple sigma, JlTuple threshold, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1371);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -21135,7 +21874,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21160,6 +21899,7 @@ public class JlOperatorSet
 	public static void CriticalPointsSubPix(JlObject image, JlTuple filter, JlTuple sigma, JlTuple threshold, out JlTuple rowMin, out JlTuple columnMin, out JlTuple rowMax, out JlTuple columnMax, out JlTuple rowSaddle, out JlTuple columnSaddle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1373);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, sigma);
@@ -21180,7 +21920,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out columnMax);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out rowSaddle);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out columnSaddle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21200,6 +21940,7 @@ public class JlOperatorSet
 	public static void PointsHarris(JlObject image, JlTuple sigmaGrad, JlTuple sigmaSmooth, JlTuple alpha, JlTuple threshold, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1374);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigmaGrad);
 		JlNativeApi.Store(proc, 1, sigmaSmooth);
@@ -21214,7 +21955,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(threshold);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21235,6 +21976,7 @@ public class JlOperatorSet
 	public static void PointsHarrisBinomial(JlObject image, JlTuple maskSizeGrad, JlTuple maskSizeSmooth, JlTuple alpha, JlTuple threshold, JlTuple subpix, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1375);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskSizeGrad);
 		JlNativeApi.Store(proc, 1, maskSizeSmooth);
@@ -21251,7 +21993,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(subpix);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21272,6 +22014,7 @@ public class JlOperatorSet
 	public static void PointsLepetit(JlObject image, JlTuple radius, JlTuple checkNeighbor, JlTuple minCheckNeighborDiff, JlTuple minScore, JlTuple subpix, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1376);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, radius);
 		JlNativeApi.Store(proc, 1, checkNeighbor);
@@ -21288,7 +22031,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(subpix);
 		err = JlTuple.LoadNew(proc, 0, err, out row);
 		err = JlTuple.LoadNew(proc, 1, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21320,6 +22063,7 @@ public class JlOperatorSet
 	public static void PointsFoerstner(JlObject image, JlTuple sigmaGrad, JlTuple sigmaInt, JlTuple sigmaPoints, JlTuple threshInhom, JlTuple threshShape, JlTuple smoothing, JlTuple eliminateDoublets, out JlTuple rowJunctions, out JlTuple columnJunctions, out JlTuple coRRJunctions, out JlTuple coRCJunctions, out JlTuple coCCJunctions, out JlTuple rowArea, out JlTuple columnArea, out JlTuple coRRArea, out JlTuple coRCArea, out JlTuple coCCArea)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1377);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigmaGrad);
 		JlNativeApi.Store(proc, 1, sigmaInt);
@@ -21356,7 +22100,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out coRRArea);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out coRCArea);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out coCCArea);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21373,6 +22117,7 @@ public class JlOperatorSet
 	public static void EstimateNoise(JlObject image, JlTuple method, JlTuple percent, out JlTuple sigma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1378);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, method);
 		JlNativeApi.Store(proc, 1, percent);
@@ -21381,7 +22126,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(method);
 		JlNativeApi.UnpinTuple(percent);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out sigma);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21398,6 +22143,7 @@ public class JlOperatorSet
 	public static void NoiseDistributionMean(JlObject constRegion, JlObject image, JlTuple filterSize, out JlTuple distribution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1379);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, constRegion);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, filterSize);
@@ -21405,7 +22151,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(filterSize);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distribution);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(constRegion);
 		GC.KeepAlive(image);
 	}
@@ -21422,13 +22168,14 @@ public class JlOperatorSet
 	public static void AddNoiseWhite(JlObject image, out JlObject imageNoise, JlTuple amp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1380);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, amp);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(amp);
 		err = JlObject.LoadNew(proc, 1, err, out imageNoise);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21444,13 +22191,14 @@ public class JlOperatorSet
 	public static void AddNoiseDistribution(JlObject image, out JlObject imageNoise, JlTuple distribution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1381);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, distribution);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distribution);
 		err = JlObject.LoadNew(proc, 1, err, out imageNoise);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21465,12 +22213,13 @@ public class JlOperatorSet
 	public static void GaussDistribution(JlTuple sigma, out JlTuple distribution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1382);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distribution);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按盐、椒占比生成一幅椒盐噪声分布，结果经 out 元组返回（原生 id 1383）。</summary>
@@ -21485,6 +22234,7 @@ public class JlOperatorSet
 	public static void SpDistribution(JlTuple percentSalt, JlTuple percentPepper, out JlTuple distribution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1383);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, percentSalt);
 		JlNativeApi.Store(proc, 1, percentPepper);
 		JlNativeApi.InitOCT(proc, 0);
@@ -21492,7 +22242,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(percentSalt);
 		JlNativeApi.UnpinTuple(percentPepper);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distribution);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把多通道图像逐像素对各通道求标准差，压成单通道结果（原生 id 1384）。</summary>
@@ -21506,11 +22256,12 @@ public class JlOperatorSet
 	public static void DeviationN(JlObject image, out JlObject imageDeviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1384);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageDeviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21532,6 +22283,7 @@ public class JlOperatorSet
 	public static void InpaintingCt(JlObject image, JlObject region, out JlObject inpaintedImage, JlTuple epsilon, JlTuple kappa, JlTuple sigma, JlTuple rho, JlTuple channelCoefficients)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1386);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, epsilon);
@@ -21547,7 +22299,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rho);
 		JlNativeApi.UnpinTuple(channelCoefficients);
 		err = JlObject.LoadNew(proc, 1, err, out inpaintedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -21567,6 +22319,7 @@ public class JlOperatorSet
 	public static void InpaintingMcf(JlObject image, JlObject region, out JlObject inpaintedImage, JlTuple sigma, JlTuple theta, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1387);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, sigma);
@@ -21578,7 +22331,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(theta);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out inpaintedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -21599,6 +22352,7 @@ public class JlOperatorSet
 	public static void InpaintingCed(JlObject image, JlObject region, out JlObject inpaintedImage, JlTuple sigma, JlTuple rho, JlTuple theta, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1388);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, sigma);
@@ -21612,7 +22366,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(theta);
 		JlNativeApi.UnpinTuple(iterations);
 		err = JlObject.LoadNew(proc, 1, err, out inpaintedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -21634,6 +22388,7 @@ public class JlOperatorSet
 	public static void InpaintingAniso(JlObject image, JlObject region, out JlObject inpaintedImage, JlTuple mode, JlTuple contrast, JlTuple theta, JlTuple iterations, JlTuple rho)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1389);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, mode);
@@ -21649,7 +22404,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(iterations);
 		JlNativeApi.UnpinTuple(rho);
 		err = JlObject.LoadNew(proc, 1, err, out inpaintedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -21667,6 +22422,7 @@ public class JlOperatorSet
 	public static void HarmonicInterpolation(JlObject image, JlObject region, out JlObject inpaintedImage, JlTuple precision)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1390);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, region);
 		JlNativeApi.Store(proc, 0, precision);
@@ -21674,7 +22430,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(precision);
 		err = JlObject.LoadNew(proc, 1, err, out inpaintedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(region);
 	}
@@ -21691,13 +22447,14 @@ public class JlOperatorSet
 	public static void ExpandDomainGray(JlObject inputImage, out JlObject expandedImage, JlTuple expansionRange)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1391);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, inputImage);
 		JlNativeApi.Store(proc, 0, expansionRange);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(expansionRange);
 		err = JlObject.LoadNew(proc, 1, err, out expandedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(inputImage);
 	}
 
@@ -21712,11 +22469,12 @@ public class JlOperatorSet
 	public static void TopographicSketch(JlObject image, out JlObject sketch)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1392);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out sketch);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21732,13 +22490,14 @@ public class JlOperatorSet
 	public static void LinearTransColor(JlObject image, out JlObject imageTrans, JlTuple transMat)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1393);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, transMat);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(transMat);
 		err = JlObject.LoadNew(proc, 1, err, out imageTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21758,6 +22517,7 @@ public class JlOperatorSet
 	public static void GenPrincipalCompTrans(JlObject multichannelImage, out JlTuple trans, out JlTuple transInv, out JlTuple mean, out JlTuple cov, out JlTuple infoPerComp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1394);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multichannelImage);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -21770,7 +22530,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out mean);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out cov);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out infoPerComp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multichannelImage);
 	}
 
@@ -21787,13 +22547,14 @@ public class JlOperatorSet
 	public static void PrincipalComp(JlObject multichannelImage, out JlObject PCAImage, out JlTuple infoPerComp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1395);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multichannelImage);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out PCAImage);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out infoPerComp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multichannelImage);
 	}
 
@@ -21812,6 +22573,7 @@ public class JlOperatorSet
 	public static void FuzzyEntropy(JlObject regions, JlObject image, JlTuple apar, JlTuple cpar, out JlTuple entropy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1396);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, apar);
@@ -21821,7 +22583,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(apar);
 		JlNativeApi.UnpinTuple(cpar);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out entropy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -21841,6 +22603,7 @@ public class JlOperatorSet
 	public static void FuzzyPerimeter(JlObject regions, JlObject image, JlTuple apar, JlTuple cpar, out JlTuple perimeter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1397);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, apar);
@@ -21850,7 +22613,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(apar);
 		JlNativeApi.UnpinTuple(cpar);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out perimeter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -21869,6 +22632,7 @@ public class JlOperatorSet
 	public static void GrayClosingShape(JlObject image, out JlObject imageClosing, JlTuple maskHeight, JlTuple maskWidth, JlTuple maskShape)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1398);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -21879,7 +22643,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskShape);
 		err = JlObject.LoadNew(proc, 1, err, out imageClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21897,6 +22661,7 @@ public class JlOperatorSet
 	public static void GrayOpeningShape(JlObject image, out JlObject imageOpening, JlTuple maskHeight, JlTuple maskWidth, JlTuple maskShape)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1399);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -21907,7 +22672,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskShape);
 		err = JlObject.LoadNew(proc, 1, err, out imageOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21925,6 +22690,7 @@ public class JlOperatorSet
 	public static void GrayErosionShape(JlObject image, out JlObject imageMin, JlTuple maskHeight, JlTuple maskWidth, JlTuple maskShape)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1400);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -21935,7 +22701,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskShape);
 		err = JlObject.LoadNew(proc, 1, err, out imageMin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21953,6 +22719,7 @@ public class JlOperatorSet
 	public static void GrayDilationShape(JlObject image, out JlObject imageMax, JlTuple maskHeight, JlTuple maskWidth, JlTuple maskShape)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1401);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -21963,7 +22730,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskWidth);
 		JlNativeApi.UnpinTuple(maskShape);
 		err = JlObject.LoadNew(proc, 1, err, out imageMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -21980,6 +22747,7 @@ public class JlOperatorSet
 	public static void GrayRangeRect(JlObject image, out JlObject imageResult, JlTuple maskHeight, JlTuple maskWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1402);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -21988,7 +22756,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maskWidth);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22005,6 +22773,7 @@ public class JlOperatorSet
 	public static void GrayClosingRect(JlObject image, out JlObject imageClosing, JlTuple maskHeight, JlTuple maskWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1403);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -22013,7 +22782,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maskWidth);
 		err = JlObject.LoadNew(proc, 1, err, out imageClosing);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22030,6 +22799,7 @@ public class JlOperatorSet
 	public static void GrayOpeningRect(JlObject image, out JlObject imageOpening, JlTuple maskHeight, JlTuple maskWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1404);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -22038,7 +22808,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maskWidth);
 		err = JlObject.LoadNew(proc, 1, err, out imageOpening);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22055,6 +22825,7 @@ public class JlOperatorSet
 	public static void GrayErosionRect(JlObject image, out JlObject imageMin, JlTuple maskHeight, JlTuple maskWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1405);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -22063,7 +22834,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maskWidth);
 		err = JlObject.LoadNew(proc, 1, err, out imageMin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22080,6 +22851,7 @@ public class JlOperatorSet
 	public static void GrayDilationRect(JlObject image, out JlObject imageMax, JlTuple maskHeight, JlTuple maskWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1406);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskHeight);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -22088,7 +22860,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maskWidth);
 		err = JlObject.LoadNew(proc, 1, err, out imageMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22103,11 +22875,12 @@ public class JlOperatorSet
 	public static void GraySkeleton(JlObject image, out JlObject graySkeleton)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1407);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out graySkeleton);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22123,13 +22896,14 @@ public class JlOperatorSet
 	public static void LutTrans(JlObject image, out JlObject imageResult, JlTuple lut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1408);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, lut);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(lut);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22146,6 +22920,7 @@ public class JlOperatorSet
 	public static void ConvolImage(JlObject image, out JlObject imageResult, JlTuple filterMask, JlTuple margin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1409);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filterMask);
 		JlNativeApi.Store(proc, 1, margin);
@@ -22154,7 +22929,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(filterMask);
 		JlNativeApi.UnpinTuple(margin);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22170,13 +22945,14 @@ public class JlOperatorSet
 	public static void ConvertImageType(JlObject image, out JlObject imageConverted, JlTuple newType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1410);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, newType);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(newType);
 		err = JlObject.LoadNew(proc, 1, err, out imageConverted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22193,6 +22969,7 @@ public class JlOperatorSet
 	public static void RealToVectorField(JlObject row, JlObject col, out JlObject vectorField, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1411);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, col);
 		JlNativeApi.Store(proc, 0, type);
@@ -22200,7 +22977,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out vectorField);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(row);
 		GC.KeepAlive(col);
 	}
@@ -22217,13 +22994,14 @@ public class JlOperatorSet
 	public static void VectorFieldToReal(JlObject vectorField, out JlObject row, out JlObject col)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1412);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, vectorField);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out row);
 		err = JlObject.LoadNew(proc, 2, err, out col);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(vectorField);
 	}
 
@@ -22239,12 +23017,13 @@ public class JlOperatorSet
 	public static void RealToComplex(JlObject imageReal, JlObject imageImaginary, out JlObject imageComplex)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1413);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageReal);
 		JlNativeApi.Store(proc, 2, imageImaginary);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageComplex);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageReal);
 		GC.KeepAlive(imageImaginary);
 	}
@@ -22261,13 +23040,14 @@ public class JlOperatorSet
 	public static void ComplexToReal(JlObject imageComplex, out JlObject imageReal, out JlObject imageImaginary)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1414);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageComplex);
 		JlNativeApi.InitOCT(proc, 1);
 		JlNativeApi.InitOCT(proc, 2);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageReal);
 		err = JlObject.LoadNew(proc, 2, err, out imageImaginary);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageComplex);
 	}
 
@@ -22283,12 +23063,13 @@ public class JlOperatorSet
 	public static void RegionToMean(JlObject regions, JlObject image, out JlObject imageMean)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1415);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -22304,11 +23085,12 @@ public class JlOperatorSet
 	public static void GrayInside(JlObject image, out JlObject imageDist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1416);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageDist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22326,6 +23108,7 @@ public class JlOperatorSet
 	public static void Symmetry(JlObject image, out JlObject imageSymmetry, JlTuple maskSize, JlTuple direction, JlTuple exponent)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1417);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskSize);
 		JlNativeApi.Store(proc, 1, direction);
@@ -22336,7 +23119,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(direction);
 		JlNativeApi.UnpinTuple(exponent);
 		err = JlObject.LoadNew(proc, 1, err, out imageSymmetry);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22352,12 +23135,13 @@ public class JlOperatorSet
 	public static void SelectGrayvaluesFromChannels(JlObject multichannelImage, JlObject indexImage, out JlObject selected)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1418);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multichannelImage);
 		JlNativeApi.Store(proc, 2, indexImage);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out selected);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multichannelImage);
 		GC.KeepAlive(indexImage);
 	}
@@ -22379,6 +23163,7 @@ public class JlOperatorSet
 	public static void DerivateVectorField(JlObject vectorField, out JlObject result, JlTuple sigma, JlTuple component)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1423);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, vectorField);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.Store(proc, 1, component);
@@ -22387,7 +23172,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sigma);
 		JlNativeApi.UnpinTuple(component);
 		err = JlObject.LoadNew(proc, 1, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(vectorField);
 	}
 
@@ -22408,6 +23193,7 @@ public class JlOperatorSet
 	public static void CornerResponse(JlObject image, out JlObject imageCorner, JlTuple size, JlTuple weight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1428);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, size);
 		JlNativeApi.Store(proc, 1, weight);
@@ -22416,7 +23202,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(size);
 		JlNativeApi.UnpinTuple(weight);
 		err = JlObject.LoadNew(proc, 1, err, out imageCorner);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22433,6 +23219,7 @@ public class JlOperatorSet
 	public static void GenGaussPyramid(JlObject image, out JlObject imagePyramid, JlTuple mode, JlTuple scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1429);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, scale);
@@ -22441,7 +23228,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		JlNativeApi.UnpinTuple(scale);
 		err = JlObject.LoadNew(proc, 1, err, out imagePyramid);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22463,6 +23250,7 @@ public class JlOperatorSet
 	public static void LinesColor(JlObject image, out JlObject lines, JlTuple sigma, JlTuple low, JlTuple high, JlTuple extractWidth, JlTuple completeJunctions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1432);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.Store(proc, 1, low);
@@ -22477,7 +23265,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(extractWidth);
 		JlNativeApi.UnpinTuple(completeJunctions);
 		err = JlObject.LoadNew(proc, 1, err, out lines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22499,6 +23287,7 @@ public class JlOperatorSet
 	public static void LinesGauss(JlObject image, out JlObject lines, JlTuple sigma, JlTuple low, JlTuple high, JlTuple lightDark, JlTuple extractWidth, JlTuple lineModel, JlTuple completeJunctions)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1433);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.Store(proc, 1, low);
@@ -22517,7 +23306,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(lineModel);
 		JlNativeApi.UnpinTuple(completeJunctions);
 		err = JlObject.LoadNew(proc, 1, err, out lines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22536,6 +23325,7 @@ public class JlOperatorSet
 	public static void LinesFacet(JlObject image, out JlObject lines, JlTuple maskSize, JlTuple low, JlTuple high, JlTuple lightDark)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1434);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskSize);
 		JlNativeApi.Store(proc, 1, low);
@@ -22548,7 +23338,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(high);
 		JlNativeApi.UnpinTuple(lightDark);
 		err = JlObject.LoadNew(proc, 1, err, out lines);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22566,6 +23356,7 @@ public class JlOperatorSet
 	public static void GenFilterMask(out JlObject imageFilter, JlTuple filterMask, JlTuple scale, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1435);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, filterMask);
 		JlNativeApi.Store(proc, 1, scale);
 		JlNativeApi.Store(proc, 2, width);
@@ -22577,7 +23368,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageFilter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在频域生成一枚均值（低通）核图像，imageMean 经 out 返回新句柄。</summary>
@@ -22598,6 +23389,7 @@ public class JlOperatorSet
 	public static void GenMeanFilter(out JlObject imageMean, JlTuple maskShape, JlTuple diameter1, JlTuple diameter2, JlTuple phi, JlTuple norm, JlTuple mode, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1436);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, maskShape);
 		JlNativeApi.Store(proc, 1, diameter1);
 		JlNativeApi.Store(proc, 2, diameter2);
@@ -22617,7 +23409,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在频域生成一枚二维高斯（低通）核图像，imageGauss 经 out 返回新句柄。</summary>
@@ -22637,6 +23429,7 @@ public class JlOperatorSet
 	public static void GenGaussFilter(out JlObject imageGauss, JlTuple sigma1, JlTuple sigma2, JlTuple phi, JlTuple norm, JlTuple mode, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1437);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, sigma1);
 		JlNativeApi.Store(proc, 1, sigma2);
 		JlNativeApi.Store(proc, 2, phi);
@@ -22654,7 +23447,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageGauss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在频域生成一枚方向导数滤波器核图像，imageDerivative 经 out 返回新句柄（原生算子 id 1438）。</summary>
@@ -22673,6 +23466,7 @@ public class JlOperatorSet
 	public static void GenDerivativeFilter(out JlObject imageDerivative, JlTuple derivative, JlTuple exponent, JlTuple norm, JlTuple mode, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1438);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, derivative);
 		JlNativeApi.Store(proc, 1, exponent);
 		JlNativeApi.Store(proc, 2, norm);
@@ -22688,7 +23482,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageDerivative);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -22732,11 +23526,12 @@ public class JlOperatorSet
 	public static void EquHistoImage(JlObject image, out JlObject imageEquHisto)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1469);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageEquHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22754,6 +23549,7 @@ public class JlOperatorSet
 	public static void Illuminate(JlObject image, out JlObject imageIlluminate, JlTuple maskWidth, JlTuple maskHeight, JlTuple factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1470);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -22764,7 +23560,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(factor);
 		err = JlObject.LoadNew(proc, 1, err, out imageIlluminate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22782,6 +23578,7 @@ public class JlOperatorSet
 	public static void Emphasize(JlObject image, out JlObject imageEmphasize, JlTuple maskWidth, JlTuple maskHeight, JlTuple factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1471);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, maskWidth);
 		JlNativeApi.Store(proc, 1, maskHeight);
@@ -22792,7 +23589,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(factor);
 		err = JlObject.LoadNew(proc, 1, err, out imageEmphasize);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22807,11 +23604,12 @@ public class JlOperatorSet
 	public static void ScaleImageMax(JlObject image, out JlObject imageScaleMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1472);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageScaleMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22836,6 +23634,7 @@ public class JlOperatorSet
 	public static void SobelAmp(JlObject image, out JlObject edgeAmplitude, JlTuple filterType, JlTuple size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1481);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filterType);
 		JlNativeApi.Store(proc, 1, size);
@@ -22844,7 +23643,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(filterType);
 		JlNativeApi.UnpinTuple(size);
 		err = JlObject.LoadNew(proc, 1, err, out edgeAmplitude);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22862,6 +23661,7 @@ public class JlOperatorSet
 	public static void SobelDir(JlObject image, out JlObject edgeAmplitude, out JlObject edgeDirection, JlTuple filterType, JlTuple size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1482);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filterType);
 		JlNativeApi.Store(proc, 1, size);
@@ -22872,7 +23672,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(size);
 		err = JlObject.LoadNew(proc, 1, err, out edgeAmplitude);
 		err = JlObject.LoadNew(proc, 2, err, out edgeDirection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22888,13 +23688,14 @@ public class JlOperatorSet
 	public static void Roberts(JlObject image, out JlObject imageRoberts, JlTuple filterType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1483);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filterType);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(filterType);
 		err = JlObject.LoadNew(proc, 1, err, out imageRoberts);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22912,6 +23713,7 @@ public class JlOperatorSet
 	public static void Laplace(JlObject image, out JlObject imageLaplace, JlTuple resultType, JlTuple maskSize, JlTuple filterMask)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1484);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, resultType);
 		JlNativeApi.Store(proc, 1, maskSize);
@@ -22922,7 +23724,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskSize);
 		JlNativeApi.UnpinTuple(filterMask);
 		err = JlObject.LoadNew(proc, 1, err, out imageLaplace);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22939,6 +23741,7 @@ public class JlOperatorSet
 	public static void HighpassImage(JlObject image, out JlObject highpass, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1485);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -22947,7 +23750,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out highpass);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -22965,6 +23768,7 @@ public class JlOperatorSet
 	public static void InfoEdges(JlTuple filter, JlTuple mode, JlTuple alpha, out JlTuple size, out JlTuple coeffs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1486);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, mode);
 		JlNativeApi.Store(proc, 2, alpha);
@@ -22976,7 +23780,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out size);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out coeffs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用 Deriche/Shen/Canny 抽彩色亚像素边缘，结果 edges 是经 out 返回的 XLD 轮廓新句柄。</summary>
@@ -22994,6 +23798,7 @@ public class JlOperatorSet
 	public static void EdgesColorSubPix(JlObject image, out JlObject edges, JlTuple filter, JlTuple alpha, JlTuple low, JlTuple high)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1487);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -23006,7 +23811,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(low);
 		JlNativeApi.UnpinTuple(high);
 		err = JlObject.LoadNew(proc, 1, err, out edges);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23027,6 +23832,7 @@ public class JlOperatorSet
 	public static void EdgesColor(JlObject image, out JlObject imaAmp, out JlObject imaDir, JlTuple filter, JlTuple alpha, JlTuple NMS, JlTuple low, JlTuple high)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1488);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -23043,7 +23849,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(high);
 		err = JlObject.LoadNew(proc, 1, err, out imaAmp);
 		err = JlObject.LoadNew(proc, 2, err, out imaDir);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23062,6 +23868,7 @@ public class JlOperatorSet
 	public static void EdgesSubPix(JlObject image, out JlObject edges, JlTuple filter, JlTuple alpha, JlTuple low, JlTuple high)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1489);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -23074,7 +23881,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(low);
 		JlNativeApi.UnpinTuple(high);
 		err = JlObject.LoadNew(proc, 1, err, out edges);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23095,6 +23902,7 @@ public class JlOperatorSet
 	public static void EdgesImage(JlObject image, out JlObject imaAmp, out JlObject imaDir, JlTuple filter, JlTuple alpha, JlTuple NMS, JlTuple low, JlTuple high)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1490);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -23111,7 +23919,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(high);
 		err = JlObject.LoadNew(proc, 1, err, out imaAmp);
 		err = JlObject.LoadNew(proc, 2, err, out imaDir);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23128,13 +23936,14 @@ public class JlOperatorSet
 	public static void LaplaceOfGauss(JlObject image, out JlObject imageLaplace, JlTuple sigma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1492);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(sigma);
 		err = JlObject.LoadNew(proc, 1, err, out imageLaplace);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23151,6 +23960,7 @@ public class JlOperatorSet
 	public static void DiffOfGauss(JlObject image, out JlObject diffOfGauss, JlTuple sigma, JlTuple sigFactor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1493);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sigma);
 		JlNativeApi.Store(proc, 1, sigFactor);
@@ -23159,7 +23969,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(sigma);
 		JlNativeApi.UnpinTuple(sigFactor);
 		err = JlObject.LoadNew(proc, 1, err, out diffOfGauss);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23177,6 +23987,7 @@ public class JlOperatorSet
 	public static void CloseEdgesLength(JlObject edges, JlObject gradient, out JlObject closedEdges, JlTuple minAmplitude, JlTuple maxGapLength)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1494);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, edges);
 		JlNativeApi.Store(proc, 2, gradient);
 		JlNativeApi.Store(proc, 0, minAmplitude);
@@ -23186,7 +23997,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(minAmplitude);
 		JlNativeApi.UnpinTuple(maxGapLength);
 		err = JlObject.LoadNew(proc, 1, err, out closedEdges);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(edges);
 		GC.KeepAlive(gradient);
 	}
@@ -23204,6 +24015,7 @@ public class JlOperatorSet
 	public static void CloseEdges(JlObject edges, JlObject edgeImage, out JlObject regionResult, JlTuple minAmplitude)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1495);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, edges);
 		JlNativeApi.Store(proc, 2, edgeImage);
 		JlNativeApi.Store(proc, 0, minAmplitude);
@@ -23211,7 +24023,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(minAmplitude);
 		err = JlObject.LoadNew(proc, 1, err, out regionResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(edges);
 		GC.KeepAlive(edgeImage);
 	}
@@ -23234,6 +24046,7 @@ public class JlOperatorSet
 	public static void DetectEdgeSegments(JlObject image, JlTuple sobelSize, JlTuple minAmplitude, JlTuple maxDistance, JlTuple minLength, out JlTuple beginRow, out JlTuple beginCol, out JlTuple endRow, out JlTuple endCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1496);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, sobelSize);
 		JlNativeApi.Store(proc, 1, minAmplitude);
@@ -23252,7 +24065,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out beginCol);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out endRow);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out endCol);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23272,6 +24085,7 @@ public class JlOperatorSet
 	public static void CfaToRgb(JlObject CFAImage, out JlObject RGBImage, JlTuple CFAType, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1500);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, CFAImage);
 		JlNativeApi.Store(proc, 0, CFAType);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -23280,7 +24094,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(CFAType);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out RGBImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(CFAImage);
 	}
 
@@ -23295,11 +24109,12 @@ public class JlOperatorSet
 	public static void Rgb1ToGray(JlObject RGBImage, out JlObject grayImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1501);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, RGBImage);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out grayImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(RGBImage);
 	}
 
@@ -23316,13 +24131,14 @@ public class JlOperatorSet
 	public static void Rgb3ToGray(JlObject imageRed, JlObject imageGreen, JlObject imageBlue, out JlObject imageGray)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1502);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageRed);
 		JlNativeApi.Store(proc, 2, imageGreen);
 		JlNativeApi.Store(proc, 3, imageBlue);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageGray);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageRed);
 		GC.KeepAlive(imageGreen);
 		GC.KeepAlive(imageBlue);
@@ -23344,6 +24160,7 @@ public class JlOperatorSet
 	public static void TransFromRgb(JlObject imageRed, JlObject imageGreen, JlObject imageBlue, out JlObject imageResult1, out JlObject imageResult2, out JlObject imageResult3, JlTuple colorSpace)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1503);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageRed);
 		JlNativeApi.Store(proc, 2, imageGreen);
 		JlNativeApi.Store(proc, 3, imageBlue);
@@ -23356,7 +24173,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out imageResult1);
 		err = JlObject.LoadNew(proc, 2, err, out imageResult2);
 		err = JlObject.LoadNew(proc, 3, err, out imageResult3);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageRed);
 		GC.KeepAlive(imageGreen);
 		GC.KeepAlive(imageBlue);
@@ -23378,6 +24195,7 @@ public class JlOperatorSet
 	public static void TransToRgb(JlObject imageInput1, JlObject imageInput2, JlObject imageInput3, out JlObject imageRed, out JlObject imageGreen, out JlObject imageBlue, JlTuple colorSpace)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1504);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageInput1);
 		JlNativeApi.Store(proc, 2, imageInput2);
 		JlNativeApi.Store(proc, 3, imageInput3);
@@ -23390,7 +24208,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 1, err, out imageRed);
 		err = JlObject.LoadNew(proc, 2, err, out imageGreen);
 		err = JlObject.LoadNew(proc, 3, err, out imageBlue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageInput1);
 		GC.KeepAlive(imageInput2);
 		GC.KeepAlive(imageInput3);
@@ -23408,13 +24226,14 @@ public class JlOperatorSet
 	public static void BitMask(JlObject image, out JlObject imageMask, JlTuple bitMask)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1505);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, bitMask);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(bitMask);
 		err = JlObject.LoadNew(proc, 1, err, out imageMask);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23430,13 +24249,14 @@ public class JlOperatorSet
 	public static void BitSlice(JlObject image, out JlObject imageSlice, JlTuple bit)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1506);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, bit);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(bit);
 		err = JlObject.LoadNew(proc, 1, err, out imageSlice);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23452,13 +24272,14 @@ public class JlOperatorSet
 	public static void BitRshift(JlObject image, out JlObject imageRShift, JlTuple shift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1507);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, shift);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(shift);
 		err = JlObject.LoadNew(proc, 1, err, out imageRShift);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23474,13 +24295,14 @@ public class JlOperatorSet
 	public static void BitLshift(JlObject image, out JlObject imageLShift, JlTuple shift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1508);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, shift);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(shift);
 		err = JlObject.LoadNew(proc, 1, err, out imageLShift);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23495,11 +24317,12 @@ public class JlOperatorSet
 	public static void BitNot(JlObject image, out JlObject imageNot)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1509);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageNot);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23515,12 +24338,13 @@ public class JlOperatorSet
 	public static void BitXor(JlObject image1, JlObject image2, out JlObject imageXor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1510);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageXor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23537,12 +24361,13 @@ public class JlOperatorSet
 	public static void BitOr(JlObject image1, JlObject image2, out JlObject imageOr)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1511);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageOr);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23559,12 +24384,13 @@ public class JlOperatorSet
 	public static void BitAnd(JlObject image1, JlObject image2, out JlObject imageAnd)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1512);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageAnd);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23585,6 +24411,7 @@ public class JlOperatorSet
 	public static void GammaImage(JlObject image, out JlObject gammaImage, JlTuple gamma, JlTuple offset, JlTuple threshold, JlTuple maxGray, JlTuple encode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1513);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, gamma);
 		JlNativeApi.Store(proc, 1, offset);
@@ -23599,7 +24426,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxGray);
 		JlNativeApi.UnpinTuple(encode);
 		err = JlObject.LoadNew(proc, 1, err, out gammaImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23615,13 +24442,14 @@ public class JlOperatorSet
 	public static void PowImage(JlObject image, out JlObject powImage, JlTuple exponent)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1514);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, exponent);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(exponent);
 		err = JlObject.LoadNew(proc, 1, err, out powImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23637,13 +24465,14 @@ public class JlOperatorSet
 	public static void ExpImage(JlObject image, out JlObject expImage, JlTuple baseVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1515);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, baseVal);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(baseVal);
 		err = JlObject.LoadNew(proc, 1, err, out expImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23660,13 +24489,14 @@ public class JlOperatorSet
 	public static void LogImage(JlObject image, out JlObject logImage, JlTuple baseVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1516);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, baseVal);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(baseVal);
 		err = JlObject.LoadNew(proc, 1, err, out logImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23683,12 +24513,13 @@ public class JlOperatorSet
 	public static void Atan2Image(JlObject imageY, JlObject imageX, out JlObject arctanImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1517);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageY);
 		JlNativeApi.Store(proc, 2, imageX);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out arctanImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageY);
 		GC.KeepAlive(imageX);
 	}
@@ -23705,11 +24536,12 @@ public class JlOperatorSet
 	public static void AtanImage(JlObject image, out JlObject arctanImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1518);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out arctanImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23725,11 +24557,12 @@ public class JlOperatorSet
 	public static void AcosImage(JlObject image, out JlObject arccosImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1519);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out arccosImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23745,11 +24578,12 @@ public class JlOperatorSet
 	public static void AsinImage(JlObject image, out JlObject arcsinImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1520);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out arcsinImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23765,11 +24599,12 @@ public class JlOperatorSet
 	public static void TanImage(JlObject image, out JlObject tanImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1521);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out tanImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23785,11 +24620,12 @@ public class JlOperatorSet
 	public static void CosImage(JlObject image, out JlObject cosImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1522);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out cosImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23805,11 +24641,12 @@ public class JlOperatorSet
 	public static void SinImage(JlObject image, out JlObject sinImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1523);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out sinImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23827,6 +24664,7 @@ public class JlOperatorSet
 	public static void AbsDiffImage(JlObject image1, JlObject image2, out JlObject imageAbsDiff, JlTuple mult)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1524);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, mult);
@@ -23834,7 +24672,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mult);
 		err = JlObject.LoadNew(proc, 1, err, out imageAbsDiff);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23851,11 +24689,12 @@ public class JlOperatorSet
 	public static void SqrtImage(JlObject image, out JlObject sqrtImage)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1525);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out sqrtImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23874,6 +24713,7 @@ public class JlOperatorSet
 	public static void SubImage(JlObject imageMinuend, JlObject imageSubtrahend, out JlObject imageSub, JlTuple mult, JlTuple add)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1526);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, imageMinuend);
 		JlNativeApi.Store(proc, 2, imageSubtrahend);
 		JlNativeApi.Store(proc, 0, mult);
@@ -23883,7 +24723,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlObject.LoadNew(proc, 1, err, out imageSub);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(imageMinuend);
 		GC.KeepAlive(imageSubtrahend);
 	}
@@ -23902,6 +24742,7 @@ public class JlOperatorSet
 	public static void ScaleImage(JlObject image, out JlObject imageScaled, JlTuple mult, JlTuple add)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1527);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, mult);
 		JlNativeApi.Store(proc, 1, add);
@@ -23910,7 +24751,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlObject.LoadNew(proc, 1, err, out imageScaled);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -23929,6 +24770,7 @@ public class JlOperatorSet
 	public static void DivImage(JlObject image1, JlObject image2, out JlObject imageResult, JlTuple mult, JlTuple add)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1528);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, mult);
@@ -23938,7 +24780,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23958,6 +24800,7 @@ public class JlOperatorSet
 	public static void MultImage(JlObject image1, JlObject image2, out JlObject imageResult, JlTuple mult, JlTuple add)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1529);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, mult);
@@ -23967,7 +24810,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -23987,6 +24830,7 @@ public class JlOperatorSet
 	public static void AddImage(JlObject image1, JlObject image2, out JlObject imageResult, JlTuple mult, JlTuple add)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1530);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.Store(proc, 0, mult);
@@ -23996,7 +24840,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mult);
 		JlNativeApi.UnpinTuple(add);
 		err = JlObject.LoadNew(proc, 1, err, out imageResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -24013,11 +24857,12 @@ public class JlOperatorSet
 	public static void AbsImage(JlObject image, out JlObject imageAbs)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1531);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageAbs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24034,12 +24879,13 @@ public class JlOperatorSet
 	public static void MinImage(JlObject image1, JlObject image2, out JlObject imageMin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1532);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -24057,12 +24903,13 @@ public class JlOperatorSet
 	public static void MaxImage(JlObject image1, JlObject image2, out JlObject imageMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1533);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
 	}
@@ -24079,11 +24926,12 @@ public class JlOperatorSet
 	public static void InvertImage(JlObject image, out JlObject imageInvert)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1534);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageInvert);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24106,6 +24954,7 @@ public class JlOperatorSet
 	public static void AdjustMosaicImages(JlObject images, out JlObject correctedImages, JlTuple from, JlTuple to, JlTuple referenceImage, JlTuple homMatrices2D, JlTuple estimationMethod, JlTuple estimateParameters, JlTuple OECFModel)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1535);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, from);
 		JlNativeApi.Store(proc, 1, to);
@@ -24124,7 +24973,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(estimateParameters);
 		JlNativeApi.UnpinTuple(OECFModel);
 		err = JlObject.LoadNew(proc, 1, err, out correctedImages);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -24150,6 +24999,7 @@ public class JlOperatorSet
 	public static void GenCubeMapMosaic(JlObject images, out JlObject front, out JlObject rear, out JlObject left, out JlObject right, out JlObject top, out JlObject bottom, JlTuple cameraMatrices, JlTuple rotationMatrices, JlTuple cubeMapDimension, JlTuple stackingOrder, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1536);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, cameraMatrices);
 		JlNativeApi.Store(proc, 1, rotationMatrices);
@@ -24174,7 +25024,7 @@ public class JlOperatorSet
 		err = JlObject.LoadNew(proc, 4, err, out right);
 		err = JlObject.LoadNew(proc, 5, err, out top);
 		err = JlObject.LoadNew(proc, 6, err, out bottom);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -24199,6 +25049,7 @@ public class JlOperatorSet
 	public static void GenSphericalMosaic(JlObject images, out JlObject mosaicImage, JlTuple cameraMatrices, JlTuple rotationMatrices, JlTuple latMin, JlTuple latMax, JlTuple longMin, JlTuple longMax, JlTuple latLongStep, JlTuple stackingOrder, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1537);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, cameraMatrices);
 		JlNativeApi.Store(proc, 1, rotationMatrices);
@@ -24221,7 +25072,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(stackingOrder);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out mosaicImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -24245,6 +25096,7 @@ public class JlOperatorSet
 	public static void GenProjectiveMosaic(JlObject images, out JlObject mosaicImage, JlTuple startImage, JlTuple mappingSource, JlTuple mappingDest, JlTuple homMatrices2D, JlTuple stackingOrder, JlTuple transformDomain, out JlTuple mosaicMatrices2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1539);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, images);
 		JlNativeApi.Store(proc, 0, startImage);
 		JlNativeApi.Store(proc, 1, mappingSource);
@@ -24263,7 +25115,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(transformDomain);
 		err = JlObject.LoadNew(proc, 1, err, out mosaicImage);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out mosaicMatrices2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(images);
 	}
 
@@ -24284,6 +25136,7 @@ public class JlOperatorSet
 	public static void ProjectiveTransImageSize(JlObject image, out JlObject transImage, JlTuple homMat2D, JlTuple interpolation, JlTuple width, JlTuple height, JlTuple transformDomain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1540);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -24298,7 +25151,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(transformDomain);
 		err = JlObject.LoadNew(proc, 1, err, out transImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24318,6 +25171,7 @@ public class JlOperatorSet
 	public static void ProjectiveTransImage(JlObject image, out JlObject transImage, JlTuple homMat2D, JlTuple interpolation, JlTuple adaptImageSize, JlTuple transformDomain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1541);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -24330,7 +25184,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(adaptImageSize);
 		JlNativeApi.UnpinTuple(transformDomain);
 		err = JlObject.LoadNew(proc, 1, err, out transImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24350,6 +25204,7 @@ public class JlOperatorSet
 	public static void AffineTransImageSize(JlObject image, out JlObject imageAffineTrans, JlTuple homMat2D, JlTuple interpolation, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1542);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -24362,7 +25217,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageAffineTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24381,6 +25236,7 @@ public class JlOperatorSet
 	public static void AffineTransImage(JlObject image, out JlObject imageAffineTrans, JlTuple homMat2D, JlTuple interpolation, JlTuple adaptImageSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1543);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -24391,7 +25247,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(interpolation);
 		JlNativeApi.UnpinTuple(adaptImageSize);
 		err = JlObject.LoadNew(proc, 1, err, out imageAffineTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24410,6 +25266,7 @@ public class JlOperatorSet
 	public static void ZoomImageFactor(JlObject image, out JlObject imageZoomed, JlTuple scaleWidth, JlTuple scaleHeight, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1544);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, scaleWidth);
 		JlNativeApi.Store(proc, 1, scaleHeight);
@@ -24420,7 +25277,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(scaleHeight);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out imageZoomed);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24439,6 +25296,7 @@ public class JlOperatorSet
 	public static void ZoomImageSize(JlObject image, out JlObject imageZoom, JlTuple width, JlTuple height, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1545);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, width);
 		JlNativeApi.Store(proc, 1, height);
@@ -24449,7 +25307,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(height);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out imageZoom);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24466,13 +25324,14 @@ public class JlOperatorSet
 	public static void MirrorImage(JlObject image, out JlObject imageMirror, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1546);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out imageMirror);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24490,6 +25349,7 @@ public class JlOperatorSet
 	public static void RotateImage(JlObject image, out JlObject imageRotate, JlTuple phi, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1547);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, phi);
 		JlNativeApi.Store(proc, 1, interpolation);
@@ -24498,7 +25358,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(phi);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out imageRotate);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24517,11 +25377,12 @@ public class JlOperatorSet
 	public static void VectorFieldToHomMat2d(JlObject vectorField, out JlTuple homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1551);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, vectorField);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out homMat2D);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(vectorField);
 	}
 
@@ -24537,12 +25398,13 @@ public class JlOperatorSet
 	public static void DeserializeXld(out JlObject XLD, JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1552);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlObject.LoadNew(proc, 1, err, out XLD);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 XLD 轮廓对象序列化进内存序列块，经 out 返回一个承载序列结果的元组句柄（原生 id 1553）。</summary>
@@ -24557,11 +25419,12 @@ public class JlOperatorSet
 	public static void SerializeXld(JlObject XLD, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1553);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -24580,6 +25443,7 @@ public class JlOperatorSet
 	public static void ReadPolygonXldDxf(out JlObject polygons, JlTuple fileName, JlTuple genParamName, JlTuple genParamValue, out JlTuple dxfStatus)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1554);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -24591,7 +25455,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out polygons);
 		err = JlTuple.LoadNew(proc, 0, err, out dxfStatus);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 XLD 多边形集以 DXF 矢量格式落盘（CAD 可编辑），无输出（原生 id 1555）。</summary>
@@ -24606,11 +25470,12 @@ public class JlOperatorSet
 	public static void WritePolygonXldDxf(JlObject polygons, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1555);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(polygons);
 	}
 
@@ -24629,6 +25494,7 @@ public class JlOperatorSet
 	public static void ReadContourXldDxf(out JlObject contours, JlTuple fileName, JlTuple genParamName, JlTuple genParamValue, out JlTuple dxfStatus)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1556);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -24640,7 +25506,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out contours);
 		err = JlTuple.LoadNew(proc, 0, err, out dxfStatus);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 XLD 轮廓集以 DXF 矢量格式落盘（CAD 可编辑），无输出（原生 id 1557）。</summary>
@@ -24655,11 +25521,12 @@ public class JlOperatorSet
 	public static void WriteContourXldDxf(JlObject contours, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1557);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(contours);
 	}
 
@@ -24675,12 +25542,13 @@ public class JlOperatorSet
 	public static void CopyFile(JlTuple sourceFile, JlTuple destinationFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1558);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, sourceFile);
 		JlNativeApi.Store(proc, 1, destinationFile);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(sourceFile);
 		JlNativeApi.UnpinTuple(destinationFile);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把原生运行时侧的当前工作目录切到指定路径，无输出（原生 id 1559）。</summary>
@@ -24694,10 +25562,11 @@ public class JlOperatorSet
 	public static void SetCurrentDir(JlTuple dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1559);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(dirName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>取原生运行时侧的当前工作目录，经 out 出字符串元组（原生 id 1560）。</summary>
@@ -24711,10 +25580,11 @@ public class JlOperatorSet
 	public static void GetCurrentDir(out JlTuple dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1560);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out dirName);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>删除一个空目录（非空会失败），无输出（原生 id 1561）。</summary>
@@ -24728,10 +25598,11 @@ public class JlOperatorSet
 	public static void RemoveDir(JlTuple dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1561);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(dirName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>创建目录，无输出（原生 id 1562）。</summary>
@@ -24745,10 +25616,11 @@ public class JlOperatorSet
 	public static void MakeDir(JlTuple dirName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1562);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, dirName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(dirName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>按选项列举目录条目，经 out 出文件（及目录）名元组（原生 id 1563）。</summary>
@@ -24764,6 +25636,7 @@ public class JlOperatorSet
 	public static void ListFiles(JlTuple directory, JlTuple options, out JlTuple files)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1563);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, directory);
 		JlNativeApi.Store(proc, 1, options);
 		JlNativeApi.InitOCT(proc, 0);
@@ -24771,7 +25644,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(directory);
 		JlNativeApi.UnpinTuple(options);
 		err = JlTuple.LoadNew(proc, 0, err, out files);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>删除指定文件，无输出（原生 id 1564）。</summary>
@@ -24785,10 +25658,11 @@ public class JlOperatorSet
 	public static void DeleteFile(JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1564);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>探测文件是否存在，经 out 按 INTEGER 元组回布尔整数（原生 id 1565）。</summary>
@@ -24803,12 +25677,13 @@ public class JlOperatorSet
 	public static void FileExists(JlTuple fileName, out JlTuple fileExists)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1565);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out fileExists);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从 WriteObject 同族的对象文件读回图标对象，经 out 走新建裸句柄（原生 id 1566）。</summary>
@@ -24823,12 +25698,13 @@ public class JlOperatorSet
 	public static void ReadObject(out JlObject objectVal, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1566);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out objectVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把图标对象（含整段对象元组）以专有二进制格式写入文件，不改对象、无输出（原生 id 1567）。</summary>
@@ -24843,11 +25719,12 @@ public class JlOperatorSet
 	public static void WriteObject(JlObject objectVal, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1567);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objectVal);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(objectVal);
 	}
 
@@ -24863,12 +25740,13 @@ public class JlOperatorSet
 	public static void DeserializeObject(out JlObject objectVal, JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1568);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlObject.LoadNew(proc, 1, err, out objectVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把图标对象整体序列化进内存序列块，经 out 出承载序列结果的元组句柄（原生 id 1569）。</summary>
@@ -24883,11 +25761,12 @@ public class JlOperatorSet
 	public static void SerializeObject(JlObject objectVal, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1569);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objectVal);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objectVal);
 	}
 
@@ -24903,12 +25782,13 @@ public class JlOperatorSet
 	public static void DeserializeImage(out JlObject image, JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1570);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把图像序列化进内存序列块，经 out 出承载序列结果的元组句柄（原生 id 1571）。</summary>
@@ -24923,11 +25803,12 @@ public class JlOperatorSet
 	public static void SerializeImage(JlObject image, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1571);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -24943,12 +25824,13 @@ public class JlOperatorSet
 	public static void DeserializeRegion(out JlObject region, JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1572);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把区域序列化进内存序列块，经 out 出承载序列结果的元组句柄（原生 id 1573）。</summary>
@@ -24963,11 +25845,12 @@ public class JlOperatorSet
 	public static void SerializeRegion(JlObject region, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1573);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -24983,11 +25866,12 @@ public class JlOperatorSet
 	public static void WriteRegion(JlObject region, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1574);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(region);
 	}
 
@@ -25005,6 +25889,7 @@ public class JlOperatorSet
 	public static void WriteImage(JlObject image, JlTuple format, JlTuple fillColor, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1575);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, format);
 		JlNativeApi.Store(proc, 1, fillColor);
@@ -25013,7 +25898,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(format);
 		JlNativeApi.UnpinTuple(fillColor);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(image);
 	}
 
@@ -25041,6 +25926,7 @@ public class JlOperatorSet
 	public static void ReadSequence(out JlObject image, JlTuple headerSize, JlTuple sourceWidth, JlTuple sourceHeight, JlTuple startRow, JlTuple startColumn, JlTuple destWidth, JlTuple destHeight, JlTuple pixelType, JlTuple bitOrder, JlTuple byteOrder, JlTuple pad, JlTuple index, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1576);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, headerSize);
 		JlNativeApi.Store(proc, 1, sourceWidth);
 		JlNativeApi.Store(proc, 2, sourceHeight);
@@ -25070,7 +25956,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从 .hobj 区域文件读入区域，经 out 新建句柄（原生 id 1577）。</summary>
@@ -25085,12 +25971,13 @@ public class JlOperatorSet
 	public static void ReadRegion(out JlObject region, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1577);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out region);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按文件格式自动解析读入图像，经 out 新建句柄（原生 id 1578）。</summary>
@@ -25105,12 +25992,13 @@ public class JlOperatorSet
 	public static void ReadImage(out JlObject image, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1578);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlObject.LoadNew(proc, 1, err, out image);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -25125,12 +26013,13 @@ public class JlOperatorSet
 	public static void FwriteString(JlTuple fileHandle, JlTuple stringVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1580);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		JlNativeApi.Store(proc, 1, stringVal);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileHandle);
 		JlNativeApi.UnpinTuple(stringVal);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -25146,6 +26035,7 @@ public class JlOperatorSet
 	public static void FreadString(JlTuple fileHandle, out JlTuple outString, out JlTuple isEOF)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1582);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25153,7 +26043,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(fileHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out outString);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out isEOF);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从文件句柄指向的文本文件读入一个字符（原生 id 1583）。</summary>
@@ -25167,12 +26057,13 @@ public class JlOperatorSet
 	public static void FreadChar(JlTuple fileHandle, out JlTuple charVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1583);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out charVal);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>向文件句柄指向的文本文件写入换行并清空输出缓冲（原生 id 1584）。</summary>
@@ -25185,10 +26076,11 @@ public class JlOperatorSet
 	public static void FnewLine(JlTuple fileHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1584);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -25204,11 +26096,12 @@ public class JlOperatorSet
 	public static void TestClosedXld(JlObject XLD, out JlTuple isClosed)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1586);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isClosed);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25226,6 +26119,7 @@ public class JlOperatorSet
 	public static void GetGrayvalContourXld(JlObject image, JlObject contour, JlTuple interpolation, out JlTuple grayval)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1587);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, contour);
 		JlNativeApi.Store(proc, 0, interpolation);
@@ -25233,7 +26127,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlTuple.LoadNew(proc, 0, err, out grayval);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(contour);
 	}
@@ -25256,6 +26150,7 @@ public class JlOperatorSet
 	public static void MomentsAnyPointsXld(JlObject XLD, JlTuple mode, JlTuple area, JlTuple centerRow, JlTuple centerCol, JlTuple p, JlTuple q, out JlTuple m)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1588);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, area);
@@ -25272,7 +26167,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(p);
 		JlNativeApi.UnpinTuple(q);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out m);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25288,11 +26183,12 @@ public class JlOperatorSet
 	public static void EccentricityPointsXld(JlObject XLD, out JlTuple anisometry)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1589);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out anisometry);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25310,6 +26206,7 @@ public class JlOperatorSet
 	public static void EllipticAxisPointsXld(JlObject XLD, out JlTuple ra, out JlTuple rb, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1590);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25318,7 +26215,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ra);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rb);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25334,11 +26231,12 @@ public class JlOperatorSet
 	public static void OrientationPointsXld(JlObject XLD, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1591);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25356,6 +26254,7 @@ public class JlOperatorSet
 	public static void MomentsPointsXld(JlObject XLD, out JlTuple m11, out JlTuple m20, out JlTuple m02)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1592);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25364,7 +26263,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out m11);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out m20);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m02);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25382,6 +26281,7 @@ public class JlOperatorSet
 	public static void AreaCenterPointsXld(JlObject XLD, out JlTuple area, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1593);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25390,7 +26290,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out area);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25407,13 +26307,14 @@ public class JlOperatorSet
 	public static void TestSelfIntersectionXld(JlObject XLD, JlTuple closeXLD, out JlTuple doesIntersect)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1594);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, closeXLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(closeXLD);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out doesIntersect);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25432,6 +26333,7 @@ public class JlOperatorSet
 	public static void SelectXldPoint(JlObject XLDs, out JlObject destXLDs, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1595);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLDs);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -25440,7 +26342,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out destXLDs);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLDs);
 	}
 
@@ -25459,6 +26361,7 @@ public class JlOperatorSet
 	public static void TestXldPoint(JlObject XLD, JlTuple row, JlTuple column, out JlTuple isInside)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1596);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -25467,7 +26370,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isInside);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25488,6 +26391,7 @@ public class JlOperatorSet
 	public static void SelectShapeXld(JlObject XLD, out JlObject selectedXLD, JlTuple features, JlTuple operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1597);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, features);
 		JlNativeApi.Store(proc, 1, operation);
@@ -25500,7 +26404,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out selectedXLD);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25516,11 +26420,12 @@ public class JlOperatorSet
 	public static void OrientationXld(JlObject XLD, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1598);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25538,6 +26443,7 @@ public class JlOperatorSet
 	public static void EccentricityXld(JlObject XLD, out JlTuple anisometry, out JlTuple bulkiness, out JlTuple structureFactor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1599);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25546,7 +26452,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out anisometry);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out bulkiness);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out structureFactor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25562,11 +26468,12 @@ public class JlOperatorSet
 	public static void CompactnessXld(JlObject XLD, out JlTuple compactness)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1600);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out compactness);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25586,6 +26493,7 @@ public class JlOperatorSet
 	public static void DiameterXld(JlObject XLD, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2, out JlTuple diameter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1601);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25598,7 +26506,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out row2);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out column2);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out diameter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25614,11 +26522,12 @@ public class JlOperatorSet
 	public static void ConvexityXld(JlObject XLD, out JlTuple convexity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1602);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out convexity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25634,11 +26543,12 @@ public class JlOperatorSet
 	public static void CircularityXld(JlObject XLD, out JlTuple circularity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1603);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out circularity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25656,6 +26566,7 @@ public class JlOperatorSet
 	public static void EllipticAxisXld(JlObject XLD, out JlTuple ra, out JlTuple rb, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1604);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25664,7 +26575,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ra);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rb);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25684,6 +26595,7 @@ public class JlOperatorSet
 	public static void SmallestRectangle2Xld(JlObject XLD, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple length1, out JlTuple length2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1605);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25696,7 +26608,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out length1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25715,6 +26627,7 @@ public class JlOperatorSet
 	public static void SmallestRectangle1Xld(JlObject XLD, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1606);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25725,7 +26638,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column1);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out row2);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25743,6 +26656,7 @@ public class JlOperatorSet
 	public static void SmallestCircleXld(JlObject XLD, out JlTuple row, out JlTuple column, out JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1607);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25751,7 +26665,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25768,13 +26682,14 @@ public class JlOperatorSet
 	public static void ShapeTransXld(JlObject XLD, out JlObject XLDTrans, JlTuple type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1608);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(type);
 		err = JlObject.LoadNew(proc, 1, err, out XLDTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25790,11 +26705,12 @@ public class JlOperatorSet
 	public static void LengthXld(JlObject XLD, out JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1609);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out length);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25818,6 +26734,7 @@ public class JlOperatorSet
 	public static void MomentsAnyXld(JlObject XLD, JlTuple mode, JlTuple pointOrder, JlTuple area, JlTuple centerRow, JlTuple centerCol, JlTuple p, JlTuple q, out JlTuple m)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1610);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, pointOrder);
@@ -25836,7 +26753,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(p);
 		JlNativeApi.UnpinTuple(q);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out m);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25854,6 +26771,7 @@ public class JlOperatorSet
 	public static void MomentsXld(JlObject XLD, out JlTuple m11, out JlTuple m20, out JlTuple m02)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1611);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25862,7 +26780,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out m11);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out m20);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m02);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25881,6 +26799,7 @@ public class JlOperatorSet
 	public static void AreaCenterXld(JlObject XLD, out JlTuple area, out JlTuple row, out JlTuple column, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1612);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25891,7 +26810,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 3, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -25910,6 +26829,7 @@ public class JlOperatorSet
 	public static void MomentsRegionCentralInvar(JlObject regions, out JlTuple PSI1, out JlTuple PSI2, out JlTuple PSI3, out JlTuple PSI4)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1613);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25920,7 +26840,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out PSI2);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out PSI3);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out PSI4);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -25939,6 +26859,7 @@ public class JlOperatorSet
 	public static void MomentsRegionCentral(JlObject regions, out JlTuple i1, out JlTuple i2, out JlTuple i3, out JlTuple i4)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1614);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25949,7 +26870,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out i2);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out i3);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out i4);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -25968,6 +26889,7 @@ public class JlOperatorSet
 	public static void MomentsRegion3rdInvar(JlObject regions, out JlTuple m21, out JlTuple m12, out JlTuple m03, out JlTuple m30)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1615);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -25978,7 +26900,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out m12);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m03);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out m30);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -25997,6 +26919,7 @@ public class JlOperatorSet
 	public static void MomentsRegion3rd(JlObject regions, out JlTuple m21, out JlTuple m12, out JlTuple m03, out JlTuple m30)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1616);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26007,7 +26930,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out m12);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m03);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out m30);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26027,6 +26950,7 @@ public class JlOperatorSet
 	public static void SmallestRectangle2(JlObject regions, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple length1, out JlTuple length2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1617);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26039,7 +26963,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out length1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26058,6 +26982,7 @@ public class JlOperatorSet
 	public static void SmallestRectangle1(JlObject regions, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1618);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26068,7 +26993,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out column1);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out row2);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26086,6 +27011,7 @@ public class JlOperatorSet
 	public static void SmallestCircle(JlObject regions, out JlTuple row, out JlTuple column, out JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1619);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26094,7 +27020,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26113,6 +27039,7 @@ public class JlOperatorSet
 	public static void SelectShapeProto(JlObject regions, JlObject pattern, out JlObject selectedRegions, JlTuple feature, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1620);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, pattern);
 		JlNativeApi.Store(proc, 0, feature);
@@ -26124,7 +27051,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out selectedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(pattern);
 	}
@@ -26142,13 +27069,14 @@ public class JlOperatorSet
 	public static void RegionFeatures(JlObject regions, JlTuple features, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1621);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, features);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(features);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26168,6 +27096,7 @@ public class JlOperatorSet
 	public static void SelectShape(JlObject regions, out JlObject selectedRegions, JlTuple features, JlTuple operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1622);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, features);
 		JlNativeApi.Store(proc, 1, operation);
@@ -26180,7 +27109,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out selectedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26199,6 +27128,7 @@ public class JlOperatorSet
 	public static void RunlengthFeatures(JlObject regions, out JlTuple numRuns, out JlTuple KFactor, out JlTuple LFactor, out JlTuple meanLength, out JlTuple bytes)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1623);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26211,7 +27141,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out LFactor);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out meanLength);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out bytes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26230,6 +27160,7 @@ public class JlOperatorSet
 	public static void FindNeighbors(JlObject regions1, JlObject regions2, JlTuple maxDistance, out JlTuple regionIndex1, out JlTuple regionIndex2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1624);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.Store(proc, 0, maxDistance);
@@ -26239,7 +27170,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out regionIndex1);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out regionIndex2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26256,13 +27187,14 @@ public class JlOperatorSet
 	public static void MomentsRegion2ndRelInvar(JlObject regions, out JlTuple PHI1, out JlTuple PHI2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1625);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out PHI1);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out PHI2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26279,6 +27211,7 @@ public class JlOperatorSet
 	public static void MomentsRegion2ndInvar(JlObject regions, out JlTuple m11, out JlTuple m20, out JlTuple m02)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1626);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26287,7 +27220,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out m11);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out m20);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m02);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26307,6 +27240,7 @@ public class JlOperatorSet
 	public static void MomentsRegion2nd(JlObject regions, out JlTuple m11, out JlTuple m20, out JlTuple m02, out JlTuple ia, out JlTuple ib)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1627);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26319,7 +27253,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out m02);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out ia);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out ib);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26340,6 +27274,7 @@ public class JlOperatorSet
 	public static void DistanceRrMin(JlObject regions1, JlObject regions2, out JlTuple minDistance, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1628);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -26353,7 +27288,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out column1);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out row2);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26371,12 +27306,13 @@ public class JlOperatorSet
 	public static void DistanceRrMinDil(JlObject regions1, JlObject regions2, out JlTuple minDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1629);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out minDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26397,6 +27333,7 @@ public class JlOperatorSet
 	public static void DiameterRegion(JlObject regions, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2, out JlTuple diameter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1630);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26409,7 +27346,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out row2);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out column2);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out diameter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26427,6 +27364,7 @@ public class JlOperatorSet
 	public static void TestRegionPoint(JlObject regions, JlTuple row, JlTuple column, out JlTuple isInside)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1631);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -26435,7 +27373,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isInside);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26453,6 +27391,7 @@ public class JlOperatorSet
 	public static void GetRegionIndex(JlObject regions, JlTuple row, JlTuple column, out JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1632);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -26461,7 +27400,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out index);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26479,6 +27418,7 @@ public class JlOperatorSet
 	public static void SelectRegionPoint(JlObject regions, out JlObject destRegions, JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1633);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -26487,7 +27427,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlObject.LoadNew(proc, 1, err, out destRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26505,6 +27445,7 @@ public class JlOperatorSet
 	public static void SelectShapeStd(JlObject regions, out JlObject selectedRegions, JlTuple shape, JlTuple percent)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1634);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, shape);
 		JlNativeApi.Store(proc, 1, percent);
@@ -26513,7 +27454,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(shape);
 		JlNativeApi.UnpinTuple(percent);
 		err = JlObject.LoadNew(proc, 1, err, out selectedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26532,6 +27473,7 @@ public class JlOperatorSet
 	public static void HammingDistanceNorm(JlObject regions1, JlObject regions2, JlTuple norm, out JlTuple distance, out JlTuple similarity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1635);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.Store(proc, 0, norm);
@@ -26541,7 +27483,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(norm);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out distance);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out similarity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26560,6 +27502,7 @@ public class JlOperatorSet
 	public static void HammingDistance(JlObject regions1, JlObject regions2, out JlTuple distance, out JlTuple similarity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1636);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -26567,7 +27510,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out distance);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out similarity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26586,6 +27529,7 @@ public class JlOperatorSet
 	public static void Eccentricity(JlObject regions, out JlTuple anisometry, out JlTuple bulkiness, out JlTuple structureFactor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1637);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26594,7 +27538,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out anisometry);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out bulkiness);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out structureFactor);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26610,11 +27554,12 @@ public class JlOperatorSet
 	public static void EulerNumber(JlObject regions, out JlTuple eulerNumber)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1638);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out eulerNumber);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26630,11 +27575,12 @@ public class JlOperatorSet
 	public static void OrientationRegion(JlObject regions, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1639);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26652,6 +27598,7 @@ public class JlOperatorSet
 	public static void EllipticAxis(JlObject regions, out JlTuple ra, out JlTuple rb, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1640);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26660,7 +27607,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ra);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rb);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26679,6 +27626,7 @@ public class JlOperatorSet
 	public static void SelectRegionSpatial(JlObject regions1, JlObject regions2, JlTuple direction, out JlTuple regionIndex1, out JlTuple regionIndex2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1641);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.Store(proc, 0, direction);
@@ -26688,7 +27636,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(direction);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out regionIndex1);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out regionIndex2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26710,6 +27658,7 @@ public class JlOperatorSet
 	public static void SpatialRelation(JlObject regions1, JlObject regions2, JlTuple percent, out JlTuple regionIndex1, out JlTuple regionIndex2, out JlTuple relation1, out JlTuple relation2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1642);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions1);
 		JlNativeApi.Store(proc, 2, regions2);
 		JlNativeApi.Store(proc, 0, percent);
@@ -26723,7 +27672,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out regionIndex2);
 		err = JlTuple.LoadNew(proc, 2, err, out relation1);
 		err = JlTuple.LoadNew(proc, 3, err, out relation2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions1);
 		GC.KeepAlive(regions2);
 	}
@@ -26740,11 +27689,12 @@ public class JlOperatorSet
 	public static void Convexity(JlObject regions, out JlTuple convexity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1643);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out convexity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26760,11 +27710,12 @@ public class JlOperatorSet
 	public static void Contlength(JlObject regions, out JlTuple contLength)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1644);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out contLength);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26781,13 +27732,14 @@ public class JlOperatorSet
 	public static void ConnectAndHoles(JlObject regions, out JlTuple numConnected, out JlTuple numHoles)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1645);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out numConnected);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out numHoles);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26803,11 +27755,12 @@ public class JlOperatorSet
 	public static void Rectangularity(JlObject regions, out JlTuple rectangularity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1646);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rectangularity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26823,11 +27776,12 @@ public class JlOperatorSet
 	public static void Compactness(JlObject regions, out JlTuple compactness)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1647);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out compactness);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26843,11 +27797,12 @@ public class JlOperatorSet
 	public static void Circularity(JlObject regions, out JlTuple circularity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1648);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out circularity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26863,11 +27818,12 @@ public class JlOperatorSet
 	public static void AreaHoles(JlObject regions, out JlTuple area)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1649);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out area);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26885,6 +27841,7 @@ public class JlOperatorSet
 	public static void AreaCenter(JlObject regions, out JlTuple area, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1650);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26893,7 +27850,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out area);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26910,13 +27867,14 @@ public class JlOperatorSet
 	public static void RunlengthDistribution(JlObject region, out JlTuple foreground, out JlTuple background)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1651);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out foreground);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out background);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 	}
 
@@ -26935,6 +27893,7 @@ public class JlOperatorSet
 	public static void Roundness(JlObject regions, out JlTuple distance, out JlTuple sigma, out JlTuple roundness, out JlTuple sides)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1652);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26945,7 +27904,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out sigma);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out roundness);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out sides);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26964,6 +27923,7 @@ public class JlOperatorSet
 	public static void InnerRectangle1(JlObject regions, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1653);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -26974,7 +27934,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out column1);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out row2);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -26992,6 +27952,7 @@ public class JlOperatorSet
 	public static void InnerCircle(JlObject regions, out JlTuple row, out JlTuple column, out JlTuple radius)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1654);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -27000,7 +27961,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out radius);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -27023,6 +27984,7 @@ public class JlOperatorSet
 	public static void SelectLinesLongest(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple num, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1655);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -27042,7 +28004,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out colBeginOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out rowEndOut);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out colEndOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按特征把一组线段劈成满足与不满足两组，两组端点坐标共八个新建多值元组经 out 返回（原生 id 1656）。</summary>
@@ -27071,6 +28033,7 @@ public class JlOperatorSet
 	public static void PartitionLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, JlTuple operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut, out JlTuple failRowBOut, out JlTuple failColBOut, out JlTuple failRowEOut, out JlTuple failColEOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1656);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -27104,7 +28067,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.INTEGER, err, out failColBOut);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.INTEGER, err, out failRowEOut);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out failColEOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按长度等特征从一组线段中筛出满足条件的线段，其端点坐标以新建多值元组经 out 返回（原生 id 1657）。</summary>
@@ -27129,6 +28092,7 @@ public class JlOperatorSet
 	public static void SelectLines(JlTuple rowBeginIn, JlTuple colBeginIn, JlTuple rowEndIn, JlTuple colEndIn, JlTuple feature, JlTuple operation, JlTuple min, JlTuple max, out JlTuple rowBeginOut, out JlTuple colBeginOut, out JlTuple rowEndOut, out JlTuple colEndOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1657);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBeginIn);
 		JlNativeApi.Store(proc, 1, colBeginIn);
 		JlNativeApi.Store(proc, 2, rowEndIn);
@@ -27154,7 +28118,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out colBeginOut);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out rowEndOut);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out colEndOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由线段两端点坐标算出每条线的重心、欧氏长度与倾角，四个结果以新建多值元组经 out 返回（原生 id 1658）。</summary>
@@ -27175,6 +28139,7 @@ public class JlOperatorSet
 	public static void LinePosition(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd, out JlTuple rowCenter, out JlTuple colCenter, out JlTuple length, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1658);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBegin);
 		JlNativeApi.Store(proc, 1, colBegin);
 		JlNativeApi.Store(proc, 2, rowEnd);
@@ -27192,7 +28157,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colCenter);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out length);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由四条平行坐标元组表示的线段集合逐条求方向角，phi 以新建 DOUBLE 元组经 out 返回（原生 id 1659）。</summary>
@@ -27210,6 +28175,7 @@ public class JlOperatorSet
 	public static void LineOrientation(JlTuple rowBegin, JlTuple colBegin, JlTuple rowEnd, JlTuple colEnd, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1659);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rowBegin);
 		JlNativeApi.Store(proc, 1, colBegin);
 		JlNativeApi.Store(proc, 2, rowEnd);
@@ -27221,7 +28187,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rowEnd);
 		JlNativeApi.UnpinTuple(colEnd);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把轮廓点列（行/列平行数组）逼近成弧线-圆弧交替的段序列，十路段参数与类型序以新建元组经 out 返回（原生 id 1660）。</summary>
@@ -27246,6 +28212,7 @@ public class JlOperatorSet
 	public static void ApproxChainSimple(JlTuple row, JlTuple column, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1660);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27271,7 +28238,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out lineEndRow);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.INTEGER, err, out lineEndCol);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.INTEGER, err, out order);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>轮廓点列的弧/线逼近（可调参版）：高斯平滑与曲率阈值均可控，十路段参数与类型序以新建元组经 out 返回（原生 id 1661）。</summary>
@@ -27308,6 +28275,7 @@ public class JlOperatorSet
 	public static void ApproxChain(JlTuple row, JlTuple column, JlTuple minWidthCoord, JlTuple maxWidthCoord, JlTuple threshStart, JlTuple threshEnd, JlTuple threshStep, JlTuple minWidthSmooth, JlTuple maxWidthSmooth, JlTuple minWidthCurve, JlTuple maxWidthCurve, JlTuple weight1, JlTuple weight2, JlTuple weight3, out JlTuple arcCenterRow, out JlTuple arcCenterCol, out JlTuple arcAngle, out JlTuple arcBeginRow, out JlTuple arcBeginCol, out JlTuple lineBeginRow, out JlTuple lineBeginCol, out JlTuple lineEndRow, out JlTuple lineEndCol, out JlTuple order)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1661);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, minWidthCoord);
@@ -27357,7 +28325,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.INTEGER, err, out lineEndRow);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.INTEGER, err, out lineEndCol);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.INTEGER, err, out order);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -27384,6 +28352,7 @@ public class JlOperatorSet
 	public static void GenImageSurfaceSecondOrder(out JlObject imageSurface, JlTuple type, JlTuple alpha, JlTuple beta, JlTuple gamma, JlTuple delta, JlTuple epsilon, JlTuple zeta, JlTuple row, JlTuple column, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1664);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, alpha);
 		JlNativeApi.Store(proc, 2, beta);
@@ -27409,7 +28378,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageSurface);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>生成一阶多项式（倾斜平面）灰度曲面图像，新图像句柄经 out 返回（原生 id 1665）。</summary>
@@ -27431,6 +28400,7 @@ public class JlOperatorSet
 	public static void GenImageSurfaceFirstOrder(out JlObject imageSurface, JlTuple type, JlTuple alpha, JlTuple beta, JlTuple gamma, JlTuple row, JlTuple column, JlTuple width, JlTuple height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1665);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, type);
 		JlNativeApi.Store(proc, 1, alpha);
 		JlNativeApi.Store(proc, 2, beta);
@@ -27450,7 +28420,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(width);
 		JlNativeApi.UnpinTuple(height);
 		err = JlObject.LoadNew(proc, 1, err, out imageSurface);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>以指定种子像素沿全部阈值生长区域并逐阈值统计某形状特征，给出绝对与相对两条分布（原生 id 1666）。</summary>
@@ -27470,6 +28440,7 @@ public class JlOperatorSet
 	public static void ShapeHistoPoint(JlObject region, JlObject image, JlTuple feature, JlTuple row, JlTuple column, out JlTuple absoluteHisto, out JlTuple relativeHisto)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1666);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, feature);
@@ -27483,7 +28454,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, err, out absoluteHisto);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out relativeHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -27503,6 +28474,7 @@ public class JlOperatorSet
 	public static void ShapeHistoAll(JlObject region, JlObject image, JlTuple feature, out JlTuple absoluteHisto, out JlTuple relativeHisto)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1667);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, feature);
@@ -27512,7 +28484,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(feature);
 		err = JlTuple.LoadNew(proc, 0, err, out absoluteHisto);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out relativeHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -27531,6 +28503,7 @@ public class JlOperatorSet
 	public static void GrayFeatures(JlObject regions, JlObject image, JlTuple features, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1668);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, features);
@@ -27538,7 +28511,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(features);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27560,6 +28533,7 @@ public class JlOperatorSet
 	public static void SelectGray(JlObject regions, JlObject image, out JlObject selectedRegions, JlTuple features, JlTuple operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1669);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, features);
@@ -27573,7 +28547,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = JlObject.LoadNew(proc, 1, err, out selectedRegions);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27594,6 +28568,7 @@ public class JlOperatorSet
 	public static void MinMaxGray(JlObject regions, JlObject image, JlTuple percent, out JlTuple min, out JlTuple max, out JlTuple range)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1670);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, percent);
@@ -27605,7 +28580,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out min);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out max);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out range);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27624,6 +28599,7 @@ public class JlOperatorSet
 	public static void Intensity(JlObject regions, JlObject image, out JlTuple mean, out JlTuple deviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1671);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27631,7 +28607,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out mean);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out deviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27653,6 +28629,7 @@ public class JlOperatorSet
 	public static void GrayHistoRange(JlObject region, JlObject image, JlTuple min, JlTuple max, JlTuple numBins, out JlTuple histo, out JlTuple binSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1672);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, min);
@@ -27666,7 +28643,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numBins);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out histo);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out binSize);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -27685,13 +28662,14 @@ public class JlOperatorSet
 	public static void Histo2dim(JlObject regions, JlObject imageCol, JlObject imageRow, out JlObject histo2Dim)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1673);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, imageCol);
 		JlNativeApi.Store(proc, 3, imageRow);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out histo2Dim);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(imageCol);
 		GC.KeepAlive(imageRow);
@@ -27711,6 +28689,7 @@ public class JlOperatorSet
 	public static void GrayHistoAbs(JlObject region, JlObject image, JlTuple quantization, out JlTuple absoluteHisto)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1674);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, quantization);
@@ -27718,7 +28697,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(quantization);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out absoluteHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -27737,6 +28716,7 @@ public class JlOperatorSet
 	public static void GrayHisto(JlObject region, JlObject image, out JlTuple absoluteHisto, out JlTuple relativeHisto)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1675);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27744,7 +28724,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out absoluteHisto);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out relativeHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -27763,6 +28743,7 @@ public class JlOperatorSet
 	public static void EntropyGray(JlObject regions, JlObject image, out JlTuple entropy, out JlTuple anisotropy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1676);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27770,7 +28751,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out entropy);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out anisotropy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27795,6 +28776,7 @@ public class JlOperatorSet
 	public static void MomentsGrayPlane(JlObject regions, JlObject image, out JlTuple MRow, out JlTuple MCol, out JlTuple alpha, out JlTuple beta, out JlTuple mean)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1680);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27808,7 +28790,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out alpha);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out beta);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out mean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27826,12 +28808,13 @@ public class JlOperatorSet
 	public static void PlaneDeviation(JlObject regions, JlObject image, out JlTuple deviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1681);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out deviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27851,6 +28834,7 @@ public class JlOperatorSet
 	public static void EllipticAxisGray(JlObject regions, JlObject image, out JlTuple ra, out JlTuple rb, out JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1682);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27860,7 +28844,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out ra);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rb);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out phi);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27880,6 +28864,7 @@ public class JlOperatorSet
 	public static void AreaCenterGray(JlObject regions, JlObject image, out JlTuple area, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1683);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.InitOCT(proc, 0);
@@ -27889,7 +28874,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out area);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 		GC.KeepAlive(image);
 	}
@@ -27909,6 +28894,7 @@ public class JlOperatorSet
 	public static void GrayProjections(JlObject region, JlObject image, JlTuple mode, out JlTuple horProjection, out JlTuple vertProjection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1684);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, mode);
@@ -27918,7 +28904,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out horProjection);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out vertProjection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(image);
 	}
@@ -28048,6 +29034,7 @@ public class JlOperatorSet
 	public static void ConvertMapType(JlObject map, out JlObject mapConverted, JlTuple newType, JlTuple imageWidth)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1796);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, map);
 		JlNativeApi.Store(proc, 0, newType);
 		JlNativeApi.Store(proc, 1, imageWidth);
@@ -28056,7 +29043,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(newType);
 		JlNativeApi.UnpinTuple(imageWidth);
 		err = JlObject.LoadNew(proc, 1, err, out mapConverted);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(map);
 	}
 
@@ -28080,6 +29067,7 @@ public class JlOperatorSet
 	public static void VectorToPose(JlTuple worldX, JlTuple worldY, JlTuple worldZ, JlTuple imageRow, JlTuple imageColumn, JlTuple cameraParam, JlTuple method, JlTuple qualityType, out JlTuple pose, out JlTuple quality)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1797);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, worldX);
 		JlNativeApi.Store(proc, 1, worldY);
 		JlNativeApi.Store(proc, 2, worldZ);
@@ -28101,7 +29089,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(qualityType);
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
 		err = JlTuple.LoadNew(proc, 1, err, out quality);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由世界平面到像素的单应矩阵与相机内参矩阵反解平面刚体位姿，位姿以新建 JlTuple 经 out 交回。</summary>
@@ -28118,6 +29106,7 @@ public class JlOperatorSet
 	public static void ProjHomMat2dToPose(JlTuple homography, JlTuple cameraMatrix, JlTuple method, out JlTuple pose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1798);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, homography);
 		JlNativeApi.Store(proc, 1, cameraMatrix);
 		JlNativeApi.Store(proc, 2, method);
@@ -28127,7 +29116,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(cameraMatrix);
 		JlNativeApi.UnpinTuple(method);
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28153,6 +29142,7 @@ public class JlOperatorSet
 	public static void GetRectanglePose(JlObject contour, JlTuple cameraParam, JlTuple width, JlTuple height, JlTuple weightingMode, JlTuple clippingFactor, out JlTuple pose, out JlTuple covPose, out JlTuple error)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1803);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, width);
@@ -28171,7 +29161,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out covPose);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out error);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -28191,6 +29181,7 @@ public class JlOperatorSet
 	public static void GetCirclePose(JlObject contour, JlTuple cameraParam, JlTuple radius, JlTuple outputType, out JlTuple pose1, out JlTuple pose2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1804);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, radius);
@@ -28203,7 +29194,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(outputType);
 		err = JlTuple.LoadNew(proc, 0, err, out pose1);
 		err = JlTuple.LoadNew(proc, 1, err, out pose2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour);
 	}
 
@@ -28221,12 +29212,13 @@ public class JlOperatorSet
 	public static void MapImage(JlObject image, JlObject map, out JlObject imageMapped)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1806);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, map);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMapped);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(map);
 	}
@@ -28252,6 +29244,7 @@ public class JlOperatorSet
 	public static void GenImageToWorldPlaneMap(out JlObject map, JlTuple cameraParam, JlTuple worldPose, JlTuple widthIn, JlTuple heightIn, JlTuple widthMapped, JlTuple heightMapped, JlTuple scale, JlTuple mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1808);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, worldPose);
 		JlNativeApi.Store(proc, 2, widthIn);
@@ -28271,7 +29264,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(scale);
 		JlNativeApi.UnpinTuple(mapType);
 		err = JlObject.LoadNew(proc, 1, err, out map);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把输入图像反投并校正到世界系 z=0 平面，得到正射视图，结果经 out 走新建裸句柄。</summary>
@@ -28293,6 +29286,7 @@ public class JlOperatorSet
 	public static void ImageToWorldPlane(JlObject image, out JlObject imageWorld, JlTuple cameraParam, JlTuple worldPose, JlTuple width, JlTuple height, JlTuple scale, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1809);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, worldPose);
@@ -28309,7 +29303,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(scale);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out imageWorld);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -28328,6 +29322,7 @@ public class JlOperatorSet
 	public static void ContourToWorldPlaneXld(JlObject contours, out JlObject contoursTrans, JlTuple cameraParam, JlTuple worldPose, JlTuple scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, worldPose);
@@ -28338,7 +29333,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(worldPose);
 		JlNativeApi.UnpinTuple(scale);
 		err = JlObject.LoadNew(proc, 1, err, out contoursTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contours);
 	}
 
@@ -28362,6 +29357,7 @@ public class JlOperatorSet
 	public static void SetOriginPose(JlTuple poseIn, JlTuple DX, JlTuple DY, JlTuple DZ, out JlTuple poseNewOrigin)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1812);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, poseIn);
 		JlNativeApi.Store(proc, 1, DX);
 		JlNativeApi.Store(proc, 2, DY);
@@ -28373,7 +29369,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(DY);
 		JlNativeApi.UnpinTuple(DZ);
 		err = JlTuple.LoadNew(proc, 0, err, out poseNewOrigin);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28395,6 +29391,7 @@ public class JlOperatorSet
 	public static void GetPoseType(JlTuple pose, out JlTuple orderOfTransform, out JlTuple orderOfRotation, out JlTuple viewOfTransform)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1814);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pose);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -28404,7 +29401,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, err, out orderOfTransform);
 		err = JlTuple.LoadNew(proc, 1, err, out orderOfRotation);
 		err = JlTuple.LoadNew(proc, 2, err, out viewOfTransform);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 3D 位姿换成另一种表示类型（次序/旋转含义/视角三串），等价位姿经 out 以新建 JlTuple 交回。</summary>
@@ -28426,6 +29423,7 @@ public class JlOperatorSet
 	public static void ConvertPoseType(JlTuple poseIn, JlTuple orderOfTransform, JlTuple orderOfRotation, JlTuple viewOfTransform, out JlTuple poseOut)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, poseIn);
 		JlNativeApi.Store(proc, 1, orderOfTransform);
 		JlNativeApi.Store(proc, 2, orderOfRotation);
@@ -28437,7 +29435,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(orderOfRotation);
 		JlNativeApi.UnpinTuple(viewOfTransform);
 		err = JlTuple.LoadNew(proc, 0, err, out poseOut);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按平移+旋转向量加表示类型三件套拼出一个 3D 位姿，结果经 out 以新建 JlTuple 交回。</summary>
@@ -28463,6 +29461,7 @@ public class JlOperatorSet
 	public static void CreatePose(JlTuple transX, JlTuple transY, JlTuple transZ, JlTuple rotX, JlTuple rotY, JlTuple rotZ, JlTuple orderOfTransform, JlTuple orderOfRotation, JlTuple viewOfTransform, out JlTuple pose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, transX);
 		JlNativeApi.Store(proc, 1, transY);
 		JlNativeApi.Store(proc, 2, transZ);
@@ -28484,7 +29483,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(orderOfRotation);
 		JlNativeApi.UnpinTuple(viewOfTransform);
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28517,6 +29516,7 @@ public class JlOperatorSet
 	public static void GetLineOfSight(JlTuple row, JlTuple column, JlTuple cameraParam, out JlTuple PX, out JlTuple PY, out JlTuple PZ, out JlTuple QX, out JlTuple QY, out JlTuple QZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1824);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, cameraParam);
@@ -28536,7 +29536,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out QX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out QY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out QZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28561,6 +29561,7 @@ public class JlOperatorSet
 	public static void Project3dPoint(JlTuple x, JlTuple y, JlTuple z, JlTuple cameraParam, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1827);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, x);
 		JlNativeApi.Store(proc, 1, y);
 		JlNativeApi.Store(proc, 2, z);
@@ -28574,7 +29575,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(cameraParam);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28600,12 +29601,13 @@ public class JlOperatorSet
 	public static void DeserializePose(JlTuple serializedItemHandle, out JlTuple pose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1833);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, serializedItemHandle);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(serializedItemHandle);
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把一个 3D 位姿序列化为句柄型序列化项，经 out 以新建 JlTuple 交回其句柄。</summary>
@@ -28625,12 +29627,13 @@ public class JlOperatorSet
 	public static void SerializePose(JlTuple pose, out JlTuple serializedItemHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1834);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pose);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(pose);
 		err = JlTuple.LoadNew(proc, 0, err, out serializedItemHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>从文本文件读入一个 3D 位姿，以新建 JlTuple 经 out 交回其表示值。</summary>
@@ -28648,12 +29651,13 @@ public class JlOperatorSet
 	public static void ReadPose(JlTuple poseFile, out JlTuple pose)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1835);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, poseFile);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(poseFile);
 		err = JlTuple.LoadNew(proc, 0, err, out pose);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把以 JlTuple 承载的 3D 位姿按其自身格式写入文本文件，无输出出参。</summary>
@@ -28672,12 +29676,13 @@ public class JlOperatorSet
 	public static void WritePose(JlTuple pose, JlTuple poseFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1836);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pose);
 		JlNativeApi.Store(proc, 1, poseFile);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(pose);
 		JlNativeApi.UnpinTuple(poseFile);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -28771,6 +29776,7 @@ public class JlOperatorSet
 	public static void ControlIoInterface(JlTuple IOInterfaceName, JlTuple action, JlTuple argument, out JlTuple result)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1914);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, IOInterfaceName);
 		JlNativeApi.Store(proc, 1, action);
 		JlNativeApi.Store(proc, 2, argument);
@@ -28780,7 +29786,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(action);
 		JlNativeApi.UnpinTuple(argument);
 		err = JlTuple.LoadNew(proc, 0, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按查询项名向指定的 Vision I/O 设备接口查询信息，结果列表以新建 JlTuple 经 out 交回（仅此静态入口，无实例重载）。</summary>
@@ -28796,6 +29802,7 @@ public class JlOperatorSet
 	public static void QueryIoInterface(JlTuple IOInterfaceName, JlTuple query, out JlTuple result)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1915);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, IOInterfaceName);
 		JlNativeApi.Store(proc, 1, query);
 		JlNativeApi.InitOCT(proc, 0);
@@ -28803,7 +29810,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(IOInterfaceName);
 		JlNativeApi.UnpinTuple(query);
 		err = JlTuple.LoadNew(proc, 0, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28872,6 +29879,7 @@ public class JlOperatorSet
 	public static void FindNccModels(JlObject image, JlTuple modelIDs, JlTuple angleStart, JlTuple angleExtent, JlTuple minScore, JlTuple numMatches, JlTuple maxOverlap, JlTuple subPixel, JlTuple numLevels, out JlTuple row, out JlTuple column, out JlTuple angle, out JlTuple score, out JlTuple model)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1958);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, modelIDs);
 		JlNativeApi.Store(proc, 1, angleStart);
@@ -28900,7 +29908,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out angle);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out score);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out model);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -28918,12 +29926,13 @@ public class JlOperatorSet
 	public static void GetNccModelRegion(out JlObject modelRegion, JlTuple modelID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1961);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(modelID);
 		err = JlObject.LoadNew(proc, 1, err, out modelRegion);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -28948,6 +29957,7 @@ public class JlOperatorSet
 	public static void InterleaveChannels(JlObject multichannelImage, out JlObject interleavedImage, JlTuple pixelFormat, JlTuple rowBytes, JlTuple alpha)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1969);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multichannelImage);
 		JlNativeApi.Store(proc, 0, pixelFormat);
 		JlNativeApi.Store(proc, 1, rowBytes);
@@ -28958,7 +29968,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rowBytes);
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlObject.LoadNew(proc, 1, err, out interleavedImage);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multichannelImage);
 	}
 
@@ -28988,6 +29998,7 @@ public class JlOperatorSet
 	public static void SegmentImageMser(JlObject image, out JlObject MSERDark, out JlObject MSERLight, JlTuple polarity, JlTuple minArea, JlTuple maxArea, JlTuple delta, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1977);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, polarity);
 		JlNativeApi.Store(proc, 1, minArea);
@@ -29006,7 +30017,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out MSERDark);
 		err = JlObject.LoadNew(proc, 2, err, out MSERLight);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -29046,6 +30057,7 @@ public class JlOperatorSet
 	public static void DistanceCcMinPoints(JlObject contour1, JlObject contour2, JlTuple mode, out JlTuple distanceMin, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -29061,7 +30073,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column1);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out row2);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(contour1);
 		GC.KeepAlive(contour2);
 	}
@@ -29084,6 +30096,7 @@ public class JlOperatorSet
 	public static void HeightWidthRatio(JlObject regions, out JlTuple height, out JlTuple width, out JlTuple ratio)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2001);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -29092,7 +30105,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out height);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out width);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out ratio);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -29110,6 +30123,7 @@ public class JlOperatorSet
 	public static void HeightWidthRatioXld(JlObject XLD, out JlTuple height, out JlTuple width, out JlTuple ratio)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2002);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -29118,7 +30132,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out height);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out width);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out ratio);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -29136,6 +30150,7 @@ public class JlOperatorSet
 	public static void InsertObj(JlObject objects, JlObject objectsInsert, out JlObject objectsExtended, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2003);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 2, objectsInsert);
 		JlNativeApi.Store(proc, 0, index);
@@ -29143,7 +30158,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlObject.LoadNew(proc, 1, err, out objectsExtended);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 		GC.KeepAlive(objectsInsert);
 	}
@@ -29162,13 +30177,14 @@ public class JlOperatorSet
 	public static void RemoveObj(JlObject objects, out JlObject objectsReduced, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2005);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlObject.LoadNew(proc, 1, err, out objectsReduced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 	}
 
@@ -29186,6 +30202,7 @@ public class JlOperatorSet
 	public static void ReplaceObj(JlObject objects, JlObject objectsReplace, out JlObject replaced, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2006);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, objects);
 		JlNativeApi.Store(proc, 2, objectsReplace);
 		JlNativeApi.Store(proc, 0, index);
@@ -29193,7 +30210,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlObject.LoadNew(proc, 1, err, out replaced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(objects);
 		GC.KeepAlive(objectsReplace);
 	}
@@ -29212,6 +30229,7 @@ public class JlOperatorSet
 	public static void SetOperatorTimeout(JlTuple operatorName, JlTuple timeout, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2008);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, operatorName);
 		JlNativeApi.Store(proc, 1, timeout);
 		JlNativeApi.Store(proc, 2, mode);
@@ -29219,7 +30237,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(operatorName);
 		JlNativeApi.UnpinTuple(timeout);
 		JlNativeApi.UnpinTuple(mode);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -29243,12 +30261,13 @@ public class JlOperatorSet
 	public static void TupleIsSerializable(JlTuple tuple, out JlTuple isSerializable)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2018);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isSerializable);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>对元组逐元素判定可否序列化，输出与输入等长的 0/1 INTEGER 元组。</summary>
@@ -29263,12 +30282,13 @@ public class JlOperatorSet
 	public static void TupleIsSerializableElem(JlTuple tuple, out JlTuple isSerializableElem)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2019);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tuple);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isSerializableElem);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29284,12 +30304,13 @@ public class JlOperatorSet
 	public static void TupleSemType(JlTuple t, out JlTuple semType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2021);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out semType);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>取元组各元素各自挂载的语义类型标签，输出与输入等长的字符串元组。</summary>
@@ -29304,12 +30325,13 @@ public class JlOperatorSet
 	public static void TupleSemTypeElem(JlTuple t, out JlTuple semTypes)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2022);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, err, out semTypes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29363,6 +30385,7 @@ public class JlOperatorSet
 	public static void AreaIntersectionRectangle2(JlTuple rect1Row, JlTuple rect1Column, JlTuple rect1Phi, JlTuple rect1Length1, JlTuple rect1Length2, JlTuple rect2Row, JlTuple rect2Column, JlTuple rect2Phi, JlTuple rect2Length1, JlTuple rect2Length2, out JlTuple areaIntersection)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2053);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rect1Row);
 		JlNativeApi.Store(proc, 1, rect1Column);
 		JlNativeApi.Store(proc, 2, rect1Phi);
@@ -29386,7 +30409,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(rect2Length1);
 		JlNativeApi.UnpinTuple(rect2Length2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out areaIntersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29406,6 +30429,7 @@ public class JlOperatorSet
 	public static void GetShapeModelClutter(out JlObject clutterRegion, JlTuple modelID, JlTuple genParamName, out JlTuple genParamValue, out JlTuple homMat2D, out JlTuple clutterContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2055);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 1);
@@ -29419,7 +30443,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out homMat2D);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.INTEGER, err, out clutterContrast);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29439,6 +30463,7 @@ public class JlOperatorSet
 	public static void SetShapeModelClutter(JlObject clutterRegion, JlTuple modelID, JlTuple homMat2D, JlTuple clutterContrast, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2057);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, clutterRegion);
 		JlNativeApi.Store(proc, 0, modelID);
 		JlNativeApi.Store(proc, 1, homMat2D);
@@ -29451,7 +30476,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(clutterContrast);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(clutterRegion);
 	}
 
@@ -29470,6 +30495,7 @@ public class JlOperatorSet
 	public static void FreadBytes(JlTuple fileHandle, JlTuple numberOfBytes, out JlTuple readData, out JlTuple isEOF)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2059);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		JlNativeApi.Store(proc, 1, numberOfBytes);
 		JlNativeApi.InitOCT(proc, 0);
@@ -29479,7 +30505,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(numberOfBytes);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out readData);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.INTEGER, err, out isEOF);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 INTEGER 元组承载的字节序列写入二进制文件句柄，并回传实际写出的字节数。</summary>
@@ -29495,6 +30521,7 @@ public class JlOperatorSet
 	public static void FwriteBytes(JlTuple fileHandle, JlTuple dataToWrite, out JlTuple numberOfBytesWritten)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2060);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileHandle);
 		JlNativeApi.Store(proc, 1, dataToWrite);
 		JlNativeApi.InitOCT(proc, 0);
@@ -29502,7 +30529,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(fileHandle);
 		JlNativeApi.UnpinTuple(dataToWrite);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out numberOfBytesWritten);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29520,6 +30547,7 @@ public class JlOperatorSet
 	public static void ReadImageMetadata(JlTuple format, JlTuple tagName, JlTuple fileName, out JlTuple tagValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2062);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, format);
 		JlNativeApi.Store(proc, 1, tagName);
 		JlNativeApi.Store(proc, 2, fileName);
@@ -29529,7 +30557,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tagName);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out tagValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>给轮廓或多边形打"矩形度"形状因子，数值越大越接近矩形，按 DOUBLE 装载经 out 交回。</summary>
@@ -29544,11 +30572,12 @@ public class JlOperatorSet
 	public static void RectangularityXld(JlObject XLD, out JlTuple rectangularity)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2063);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, XLD);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rectangularity);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(XLD);
 	}
 
@@ -29568,12 +30597,13 @@ public class JlOperatorSet
 	public static void WatershedsMarker(JlObject image, JlObject markers, out JlObject basins)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2067);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, markers);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out basins);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(markers);
 	}
@@ -29592,6 +30622,7 @@ public class JlOperatorSet
 	public static void WriteImageMetadata(JlTuple format, JlTuple tagName, JlTuple tagValue, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2068);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, format);
 		JlNativeApi.Store(proc, 1, tagName);
 		JlNativeApi.Store(proc, 2, tagValue);
@@ -29601,7 +30632,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tagName);
 		JlNativeApi.UnpinTuple(tagValue);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>逐元素求元组各值的反双曲余弦 acosh(x)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29616,12 +30647,13 @@ public class JlOperatorSet
 	public static void TupleAcosh(JlTuple t, out JlTuple acosh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2069);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out acosh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的反双曲正弦 asinh(x)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29636,12 +30668,13 @@ public class JlOperatorSet
 	public static void TupleAsinh(JlTuple t, out JlTuple asinh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2070);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out asinh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的反双曲正切 atanh(x)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29656,12 +30689,13 @@ public class JlOperatorSet
 	public static void TupleAtanh(JlTuple t, out JlTuple atanh)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2071);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out atanh);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的实数立方根（∛x），结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29676,12 +30710,13 @@ public class JlOperatorSet
 	public static void TupleCbrt(JlTuple t, out JlTuple cbrt)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2072);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out cbrt);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的误差函数 erf(x)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29696,12 +30731,13 @@ public class JlOperatorSet
 	public static void TupleErf(JlTuple t, out JlTuple erf)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2073);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out erf);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的互补误差函数 erfc(x)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29716,12 +30752,13 @@ public class JlOperatorSet
 	public static void TupleErfc(JlTuple t, out JlTuple erfc)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2074);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out erfc);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的 10 的幂（10^x），结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29736,12 +30773,13 @@ public class JlOperatorSet
 	public static void TupleExp10(JlTuple t, out JlTuple exp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2075);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out exp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的 2 的幂（2^x），结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29756,12 +30794,13 @@ public class JlOperatorSet
 	public static void TupleExp2(JlTuple t, out JlTuple exp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2076);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out exp);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求两元组对应值的斜边 √(t1²+t2²)，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29777,6 +30816,7 @@ public class JlOperatorSet
 	public static void TupleHypot(JlTuple t1, JlTuple t2, out JlTuple hypot)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2077);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t1);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -29784,7 +30824,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(t1);
 		JlNativeApi.UnpinTuple(t2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out hypot);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值 Gamma 函数绝对值的自然对数，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29799,12 +30839,13 @@ public class JlOperatorSet
 	public static void TupleLgamma(JlTuple t, out JlTuple logGamma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2078);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out logGamma);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的以 2 为底对数，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29819,12 +30860,13 @@ public class JlOperatorSet
 	public static void TupleLog2(JlTuple t, out JlTuple log)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2079);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out log);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素求元组各值的 Gamma 函数值，结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -29839,12 +30881,13 @@ public class JlOperatorSet
 	public static void TupleTgamma(JlTuple t, out JlTuple gamma)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2080);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out gamma);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -29871,6 +30914,7 @@ public class JlOperatorSet
 	public static void CropRectangle2(JlObject image, out JlObject imagePart, JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, JlTuple alignToAxis, JlTuple interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2086);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -29889,7 +30933,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(alignToAxis);
 		JlNativeApi.UnpinTuple(interpolation);
 		err = JlObject.LoadNew(proc, 1, err, out imagePart);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -29966,6 +31010,7 @@ public class JlOperatorSet
 	public static void DistancePointLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2140);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -29987,7 +31032,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(point2Y);
 		JlNativeApi.UnpinTuple(point2Z);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>求 3D 点到由 Plücker 坐标定义的直线的距离，逐点结果以 DOUBLE 元组经 out 新建返回。</summary>
@@ -30010,6 +31055,7 @@ public class JlOperatorSet
 	public static void DistancePointPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2141);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -30031,7 +31077,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(lineMomentY);
 		JlNativeApi.UnpinTuple(lineMomentZ);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30058,6 +31104,7 @@ public class JlOperatorSet
 	public static void PlueckerLineToPointDirection(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple pointX, out JlTuple pointY, out JlTuple pointZ, out JlTuple directionX, out JlTuple directionY, out JlTuple directionZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2144);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, lineDirectionX);
 		JlNativeApi.Store(proc, 1, lineDirectionY);
 		JlNativeApi.Store(proc, 2, lineDirectionZ);
@@ -30083,7 +31130,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out directionX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out directionY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out directionZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把 Plücker 坐标表示的 3D 直线展开为线上两个点，六路 out 均为新建元组。</summary>
@@ -30108,6 +31155,7 @@ public class JlOperatorSet
 	public static void PlueckerLineToPoints(JlTuple lineDirectionX, JlTuple lineDirectionY, JlTuple lineDirectionZ, JlTuple lineMomentX, JlTuple lineMomentY, JlTuple lineMomentZ, out JlTuple point1X, out JlTuple point1Y, out JlTuple point1Z, out JlTuple point2X, out JlTuple point2Y, out JlTuple point2Z)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2145);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, lineDirectionX);
 		JlNativeApi.Store(proc, 1, lineDirectionY);
 		JlNativeApi.Store(proc, 2, lineDirectionZ);
@@ -30133,7 +31181,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out point2X);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out point2Y);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out point2Z);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>由 3D 直线上的"一点+方向向量"构造其 Plücker 坐标，六路 out 均为新建元组。</summary>
@@ -30158,6 +31206,7 @@ public class JlOperatorSet
 	public static void PointDirectionToPlueckerLine(JlTuple pointX, JlTuple pointY, JlTuple pointZ, JlTuple directionX, JlTuple directionY, JlTuple directionZ, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2146);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, pointX);
 		JlNativeApi.Store(proc, 1, pointY);
 		JlNativeApi.Store(proc, 2, pointZ);
@@ -30183,7 +31232,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out lineMomentX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out lineMomentY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30209,6 +31258,7 @@ public class JlOperatorSet
 	public static void PointsToPlueckerLine(JlTuple point1X, JlTuple point1Y, JlTuple point1Z, JlTuple point2X, JlTuple point2Y, JlTuple point2Z, out JlTuple lineDirectionX, out JlTuple lineDirectionY, out JlTuple lineDirectionZ, out JlTuple lineMomentX, out JlTuple lineMomentY, out JlTuple lineMomentZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2148);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, point1X);
 		JlNativeApi.Store(proc, 1, point1Y);
 		JlNativeApi.Store(proc, 2, point1Z);
@@ -30234,7 +31284,7 @@ public class JlOperatorSet
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out lineMomentX);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out lineMomentY);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out lineMomentZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30256,6 +31306,7 @@ public class JlOperatorSet
 	public static void EquHistoImageRect(JlObject image, out JlObject imageEquHisto, JlTuple mode, JlTuple maskWidth, JlTuple maskHeight, JlTuple maxContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2152);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, maskWidth);
@@ -30268,7 +31319,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(maskHeight);
 		JlNativeApi.UnpinTuple(maxContrast);
 		err = JlObject.LoadNew(proc, 1, err, out imageEquHisto);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -30285,6 +31336,7 @@ public class JlOperatorSet
 	public static void GetMeasureParam(JlTuple measureHandle, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2153);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, measureHandle);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30292,7 +31344,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(measureHandle);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用任意形状区域掩膜对图像做均值滤波，新图经 out 以新建句柄返回。</summary>
@@ -30308,12 +31360,13 @@ public class JlOperatorSet
 	public static void MeanImageShape(JlObject image, JlObject mask, out JlObject imageMean)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2154);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 2, mask);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlObject.LoadNew(proc, 1, err, out imageMean);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 		GC.KeepAlive(mask);
 	}
@@ -30331,6 +31384,7 @@ public class JlOperatorSet
 	public static void TupleJoin(JlTuple strings, JlTuple separators, out JlTuple joinedStrings)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2155);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, strings);
 		JlNativeApi.Store(proc, 1, separators);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30338,7 +31392,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(strings);
 		JlNativeApi.UnpinTuple(separators);
 		err = JlTuple.LoadNew(proc, 0, err, out joinedStrings);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30365,12 +31419,13 @@ public class JlOperatorSet
 	public static void TupleConstant(JlTuple name, out JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2168);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(name);
 		err = JlTuple.LoadNew(proc, 0, err, out value);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>逐元素判断元组各值是否为 NaN，结果以 INTEGER 布尔元组经 out 新建返回。</summary>
@@ -30385,12 +31440,13 @@ public class JlOperatorSet
 	public static void TupleIsNanElem(JlTuple t, out JlTuple isNaN)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2169);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, t);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(t);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isNaN);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30409,6 +31465,7 @@ public class JlOperatorSet
 	public static void AddImageBorder(JlObject image, out JlObject imageBorder, JlTuple size, JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2172);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, size);
 		JlNativeApi.Store(proc, 1, value);
@@ -30417,7 +31474,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(size);
 		JlNativeApi.UnpinTuple(value);
 		err = JlObject.LoadNew(proc, 1, err, out imageBorder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -30435,6 +31492,7 @@ public class JlOperatorSet
 	public static void ApplyDeepCountingModel(JlObject image, JlTuple deepCountingHandle, out JlTuple count, out JlTuple deepCountingResult)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2173);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.Store(proc, 0, deepCountingHandle);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30443,7 +31501,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(deepCountingHandle);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out count);
 		err = JlTuple.LoadNew(proc, 1, err, out deepCountingResult);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(image);
 	}
 
@@ -30460,6 +31518,7 @@ public class JlOperatorSet
 	public static void CreateDeepCountingModel(JlTuple genParamName, JlTuple genParamValue, out JlTuple deepCountingHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2174);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, genParamName);
 		JlNativeApi.Store(proc, 1, genParamValue);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30467,7 +31526,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, err, out deepCountingHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30484,6 +31543,7 @@ public class JlOperatorSet
 	public static void GetDeepCountingModelParam(JlTuple deepCountingHandle, JlTuple genParamName, out JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2176);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, deepCountingHandle);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30491,7 +31551,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(deepCountingHandle);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out genParamValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>用"图像+标注区域"的模板集为 Deep Counting 模型设置模板（原地完善模型，无输出参数）。</summary>
@@ -30506,11 +31566,12 @@ public class JlOperatorSet
 	public static void PrepareDeepCountingModel(JlObject templates, JlTuple deepCountingHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2177);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, templates);
 		JlNativeApi.Store(proc, 0, deepCountingHandle);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(deepCountingHandle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(templates);
 	}
 
@@ -30526,12 +31587,13 @@ public class JlOperatorSet
 	public static void ReadDeepCountingModel(JlTuple fileName, out JlTuple deepCountingHandle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2178);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = JlTuple.LoadNew(proc, 0, err, out deepCountingHandle);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>按"参数名→参数值"成对设置 Deep Counting 模型的选定参数（原地改模型状态，无输出参数）。</summary>
@@ -30547,6 +31609,7 @@ public class JlOperatorSet
 	public static void SetDeepCountingModelParam(JlTuple deepCountingHandle, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2179);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, deepCountingHandle);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -30554,7 +31617,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(deepCountingHandle);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	/// <summary>把 Deep Counting 计数模型写入文件（模型句柄以 JlTuple 数值形态传递，本调用无输出参数）。</summary>
@@ -30569,12 +31632,13 @@ public class JlOperatorSet
 	public static void WriteDeepCountingModel(JlTuple deepCountingHandle, JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2180);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, deepCountingHandle);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(deepCountingHandle);
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 
@@ -30593,6 +31657,7 @@ public class JlOperatorSet
 	public static void IntersectionRegionContourXld(JlObject region, JlObject contour, out JlObject contourIntersection, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2183);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.Store(proc, 2, contour);
 		JlNativeApi.Store(proc, 0, mode);
@@ -30600,7 +31665,7 @@ public class JlOperatorSet
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlObject.LoadNew(proc, 1, err, out contourIntersection);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(region);
 		GC.KeepAlive(contour);
 	}
@@ -30619,6 +31684,7 @@ public class JlOperatorSet
 	public static void TupleRepeat(JlTuple tuple, JlTuple num, out JlTuple result)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2184);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, num);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30626,7 +31692,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(num);
 		err = JlTuple.LoadNew(proc, 0, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>把元组的每个元素各自连续重复 num 次：(a,b,c) 重复 2 得 (a,a,b,b,c,c)，结果为新建元组。</summary>
@@ -30643,6 +31709,7 @@ public class JlOperatorSet
 	public static void TupleRepeatElem(JlTuple tuple, JlTuple num, out JlTuple result)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2185);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tuple);
 		JlNativeApi.Store(proc, 1, num);
 		JlNativeApi.InitOCT(proc, 0);
@@ -30650,7 +31717,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(tuple);
 		JlNativeApi.UnpinTuple(num);
 		err = JlTuple.LoadNew(proc, 0, err, out result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 	/// <summary>在字符串元组的每个元素内查找 before 子串并替换为 after，返回替换后的新字符串元组。</summary>
@@ -30668,6 +31735,7 @@ public class JlOperatorSet
 	public static void TupleStrReplace(JlTuple stringVal, JlTuple before, JlTuple after, out JlTuple replaced)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2186);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, stringVal);
 		JlNativeApi.Store(proc, 1, before);
 		JlNativeApi.Store(proc, 2, after);
@@ -30677,7 +31745,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(before);
 		JlNativeApi.UnpinTuple(after);
 		err = JlTuple.LoadNew(proc, 0, err, out replaced);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30699,6 +31767,7 @@ public class JlOperatorSet
 	public static void TestRegionPoints(JlObject regions, JlTuple row, JlTuple column, out JlTuple isInside)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2192);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -30707,7 +31776,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out isInside);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(regions);
 	}
 
@@ -30725,6 +31794,7 @@ public class JlOperatorSet
 	public static void TupleStrDistance(JlTuple string1, JlTuple string2, JlTuple mode, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2193);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, string1);
 		JlNativeApi.Store(proc, 1, string2);
 		JlNativeApi.Store(proc, 2, mode);
@@ -30734,7 +31804,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(string2);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30775,6 +31845,7 @@ public class JlOperatorSet
 	public static void GenImageWarpMap(out JlObject map, JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, JlTuple imageWidth, JlTuple imageHeight, JlTuple mapWidth, JlTuple mapHeight, JlTuple method, JlTuple mapType, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2208);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, row2);
@@ -30802,7 +31873,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlObject.LoadNew(proc, 1, err, out map);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
@@ -30829,6 +31900,7 @@ public class JlOperatorSet
 	public static void ConvolChannels(JlObject multichannelImage, out JlObject imageSmoothed, JlTuple filter, JlTuple border)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2219);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, multichannelImage);
 		JlNativeApi.Store(proc, 0, filter);
 		JlNativeApi.Store(proc, 1, border);
@@ -30837,7 +31909,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(filter);
 		JlNativeApi.UnpinTuple(border);
 		err = JlObject.LoadNew(proc, 1, err, out imageSmoothed);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(multichannelImage);
 	}
 
@@ -30858,6 +31930,7 @@ public class JlOperatorSet
 	public static void GenSavitzkyGolayFilter(JlTuple filterSize, JlTuple polynomialDegree, JlTuple derivative, out JlTuple filter)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2223);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, filterSize);
 		JlNativeApi.Store(proc, 1, polynomialDegree);
 		JlNativeApi.Store(proc, 2, derivative);
@@ -30867,7 +31940,7 @@ public class JlOperatorSet
 		JlNativeApi.UnpinTuple(polynomialDegree);
 		JlNativeApi.UnpinTuple(derivative);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out filter);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 	}
 
 
