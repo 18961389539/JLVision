@@ -71,4 +71,31 @@ public sealed class RuntimeContractTests
 			Assert.True(File.Exists(diagnostics.NativeLibraryPath));
 		}
 	}
+    /// <summary>Base-typed arrays are valid inputs even when their runtime array type is not JlHandle[].</summary>
+    [Fact]
+    public void ConcatArrayAcceptsBaseTypedHandleArrays()
+    {
+        using var first = new JlHandle();
+        using var second = new JlHandle();
+        JlHandleBase[] handles = { first, second };
+        using JlTuple result = JlHandleBase.ConcatArray(handles);
+        Assert.Equal(2, result.Length);
+        Assert.Equal(JlTupleType.JlANDLE, result.Type);
+    }
+
+    [Fact]
+    public void ConcatArrayRejectsNullArray()
+    {
+        Assert.Throws<ArgumentNullException>(() => JlHandleBase.ConcatArray(null!));
+    }
+
+    /// <summary>Empty handle self-assignment is safe without loading the native runtime.</summary>
+    [Fact]
+    public void EmptyHandleSelfAssignmentRemainsEmpty()
+    {
+        using var handle = new JlHandle();
+        handle.Handle = handle.Handle;
+        Assert.Equal(JlHandleBase.UNDEF, handle.Handle);
+    }
+
 }
