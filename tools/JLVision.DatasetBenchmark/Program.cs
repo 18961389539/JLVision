@@ -106,7 +106,9 @@ internal static class Program
             dataset.Acceptance?.MaxRepeatabilityStdDevMm is not null;
         bool anyAuditLimit = dataset.Acceptance?.MaxCalibrationFitErrorMm is not null ||
             dataset.Acceptance?.MaxCalibrationHoldoutErrorMm is not null ||
-            dataset.Acceptance?.MaxCalibrationHoldoutRmsMm is not null;
+            dataset.Acceptance?.MaxCalibrationHoldoutRmsMm is not null ||
+            dataset.Acceptance?.MinFitCalibrationGridCells is not null ||
+            dataset.Acceptance?.MinHoldoutCalibrationGridCells is not null;
         if ((mmGate || anyAuditLimit || dataset.CalibrationEvidence is not null) && (dataset.Calibration is null ||
             dataset.CalibrationEvidence is null ||
             dataset.Acceptance?.MaxCalibrationFitErrorMm is null ||
@@ -119,7 +121,9 @@ internal static class Program
             dataset.Acceptance.MaxCalibrationHoldoutErrorMm is double holdoutLimit &&
             dataset.Acceptance.MaxCalibrationHoldoutRmsMm is double holdoutRmsLimit
                 ? CalibrationEvidenceAudit.Evaluate(dataset.Calibration, dataset.CalibrationEvidence,
-                    fitLimit, holdoutLimit, holdoutRmsLimit) : null;
+                    fitLimit, holdoutLimit, holdoutRmsLimit,
+                    dataset.Acceptance.MinFitCalibrationGridCells,
+                    dataset.Acceptance.MinHoldoutCalibrationGridCells) : null;
 
         string Resolve(string file) => Path.GetFullPath(Path.IsPathRooted(file) ? file : Path.Combine(baseDir, file));
         JLVisionRuntime.Initialize();
