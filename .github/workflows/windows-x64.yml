@@ -30,8 +30,13 @@ jobs:
       - name: Build and test (Debug)
         run: dotnet test JLVisionLib.slnx --configuration Debug --no-restore --logger "trx;LogFileName=jlv-test-results.trx"
 
-      - name: Run bounded native stress baseline (Windows x64)
-        run: dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 400 --workers 4 --batches 4 --output artifacts/jlv-stress.json
+      - name: Compare serial and independent-parallel native throughput
+        shell: pwsh
+        run: |
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 3000 --workers 1 --width 320 --height 240 --batches 6 --output artifacts/jlv-stress-serial.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --iterations 3000 --workers 4 --width 320 --height 240 --batches 6 --output artifacts/jlv-stress-parallel.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
@@ -41,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jlv-stress-report
-          path: artifacts/jlv-stress.json
+          path: artifacts/jlv-stress-*.json
           if-no-files-found: warn
 
       - name: Upload test results
