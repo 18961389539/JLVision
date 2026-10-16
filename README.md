@@ -32,3 +32,5 @@ The tests demonstrate independent-worker operation only; concurrent access to on
 
 For offline Shape/NCC matching against labeled production images (positive/negative frames, optional position/angle tolerances), use [the labeled dataset benchmark](docs/native-reliability.md#labeled-production-image-validation-positive-and-negative-frames) and its [example manifest](tools/JLVision.DatasetBenchmark/example.dataset.json). Keep customer images outside the public repository.
 
+
+For industrial acceptance with independently measured pixel-to-mm calibration, minimum positive/negative sample counts, angle, detection-rate and repeatability gates, see [industrial vision acceptance protocol](docs/industrial-vision-acceptance.md). The example coefficients and acceptance values are illustrative only and are not real calibration results.
