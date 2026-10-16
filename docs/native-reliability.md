@@ -56,6 +56,28 @@ dotnet restore tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --
 dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
 ```
 
+## Shape/NCC model matching baseline
+
+CI generates a deterministic 8-bit grayscale BMP target and larger scene, then verifies each native model can be trained, locate the inserted target, and be disposed repeatedly. This provides **regression coverage**, not a claim that either matcher achieves a stated industrial accuracy.
+
+Run the standalone benchmark to separately measure model training and matching time, report detections, score trends, basic position offset (synthetic fixture only) and after-GC memory:
+
+```powershell
+dotnet run --project tools/JLVision.ModelBenchmark/JLVision.ModelBenchmark.csproj --configuration Debug -- --algorithm both --iterations 100 --output artifacts/models-synthetic.json
+```
+
+To benchmark against **your own real images** without adding them to the public repository, supply matching local paths. Use a cropped, representative template and a scene containing the same part:
+
+```powershell
+dotnet run --project tools/JLVision.ModelBenchmark/JLVision.ModelBenchmark.csproj --configuration Debug -- --algorithm both --iterations 100 --template "C:\\vision-data\\template.bmp" --scene "C:\\vision-data\\scene.bmp" --output artifacts/models-real.json
+```
+
+The same command supports `--algorithm ncc` or `--algorithm shape`. Both are timed independently. Each iteration **recreates and disposes the model**, deliberately stressing the model lifecycle; it is **not** representative of a production line that trains once and only matches on each frame. For sustained match-only performance, use a separate benchmark once trained model reuse and its ownership contract are established.
+
+For real image paths, matching must be checked by a commissioning engineer against independently measured row/column/angle ground truth. This tool does not report calibrated mm error; the synthetic offset is a pixel-distance diagnostic only. Model origin/pose convention can differ from the geometric image center. Failure to find a target produces a nonzero exit code; no positive detection is silently treated as a good localization result.
+
+The workflow publishes model measurements under the `jlv-model-benchmark` artifact. For field-quality acceptance, prepare controlled datasets covering part changes, lighting drift, blur, rotation, occlusion and negative examples, then specify tolerances independently of these smoke tests.
+
 ## Before approving production release
 
 1. Establish a repeatable serial baseline, then test independent concurrency at 2/4/8 workers.
