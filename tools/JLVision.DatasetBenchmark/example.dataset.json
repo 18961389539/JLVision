@@ -8,7 +8,9 @@
       "expectedPresent": true,
       "expectedRow": 98.0,
       "expectedColumn": 134.0,
-      "tolerancePixels": 3.0
+      "tolerancePixels": 3.0,
+      "expectedAngleRad": 0.0,
+      "toleranceAngleRad": 0.1
     },
     {
       "file": "images/part_absent_001.bmp",
