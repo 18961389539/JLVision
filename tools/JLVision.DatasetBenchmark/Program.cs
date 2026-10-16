@@ -160,6 +160,10 @@ internal static class Program
                     double? col = found ? cols[0].D : null;
                     double? angle = found ? angles[0].D : null;
                     double? score = found ? scores[0].D : null;
+                    if (found && (!double.IsFinite(row!.Value) || !double.IsFinite(col!.Value) ||
+                                  !double.IsFinite(angle!.Value) || !double.IsFinite(score!.Value) ||
+                                  score.Value < dataset.MinScore || score.Value > 1.0))
+                        throw new InvalidDataException("Native matcher returned nonfinite coordinates or an invalid score.");
                     double? error = null;
                     if (row.HasValue && col.HasValue && frame.ExpectedRow.HasValue)
                     {
@@ -207,6 +211,9 @@ internal static class Program
                 acceptance = analysis,
                 frames = set.Length,
                 correct = set.Count(r => r.Accepted),
+                annotatedWorldMatches = set.Count(r => r.ExpectedPresent && r.PositionErrorMm.HasValue),
+                unverifiedWorldMatches = set.Count(r => r.ExpectedPresent && r.Detected && !r.PositionErrorMm.HasValue),
+                annotatedAngleMatches = set.Count(r => r.ExpectedPresent && r.AngleErrorDeg.HasValue),
                 truePositive = set.Count(r => r.ExpectedPresent && r.Detected),
                 trueNegative = set.Count(r => !r.ExpectedPresent && !r.Detected),
                 falsePositive = set.Count(r => !r.ExpectedPresent && r.Detected),
@@ -229,6 +236,7 @@ internal static class Program
             minScore = dataset.MinScore,
             calibration = dataset.Calibration,
             acceptance = dataset.Acceptance,
+            allAlgorithmsPassed = summary.All(x => x.acceptancePassed),
             summary,
             frames = results
         }, new JsonSerializerOptions { WriteIndented = true }));
