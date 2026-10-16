@@ -43,6 +43,9 @@ jobs:
       - name: Benchmark synthetic NCC and Shape model lifecycle (Windows x64)
         run: dotnet run --project tools/JLVision.ModelBenchmark/JLVision.ModelBenchmark.csproj --configuration Debug -- --algorithm both --iterations 8 --output artifacts/model-benchmark.json
 
+      - name: Validate labeled Shape/NCC positive and negative fixture dataset
+        run: dotnet run --project tools/JLVision.DatasetBenchmark/JLVision.DatasetBenchmark.csproj --configuration Debug -- --algorithm both --output artifacts/model-dataset.json
+
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
 
@@ -51,6 +54,14 @@ jobs:
 
       - name: Execute independent NuGet consumer (Release)
         run: dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+
+      - name: Upload labeled vision dataset report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-model-dataset
+          path: artifacts/model-dataset.json
+          if-no-files-found: warn
 
       - name: Upload Shape and NCC benchmark report
         if: always()
