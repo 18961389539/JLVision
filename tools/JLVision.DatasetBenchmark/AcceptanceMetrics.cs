@@ -178,13 +178,13 @@ internal static class VisionAcceptance
             {
                 // Require ground truth for ALL positive frames (including missed targets).
                 bool annotated = positives > 0 && data.Where(s => s.ExpectedPresent)
-                    .All(s => s.PositionErrorMm.HasValue || !s.Detected);
+                    .All(s => s.Detected && s.PositionErrorMm.HasValue);
                 Add("positionErrorMm", annotated && tp > 0 ? maximumMm : null, maxMm, "mm");
             }
             if (criteria.MaxAngleErrorDeg is double maxAngle)
             {
                 bool annotated = positives > 0 && data.Where(s => s.ExpectedPresent)
-                    .All(s => s.AngleErrorDeg.HasValue || !s.Detected);
+                    .All(s => s.Detected && s.AngleErrorDeg.HasValue);
                 Add("angleErrorDeg", annotated && tp > 0 ? maximumAngle : null, maxAngle, "deg");
             }
             if (criteria.MaxRepeatabilityStdDevMm is double maxRepeat)
@@ -192,7 +192,8 @@ internal static class VisionAcceptance
                 // Every declared repeat group needs at least two valid detections.
                 double? observed = grouped.Length > 0 &&
                     repeatStats.Length == grouped.Length &&
-                    grouped.All(g => g.Count() >= 2)
+                    grouped.All(g => g.Count() >= 2 && g.All(s => s.ExpectedPresent &&
+                        s.Detected && s.Xmm.HasValue && s.Ymm.HasValue))
                     ? repeatStats.Max(s => s.StdDevMm) : null;
                 Add("repeatabilityStdDevMm", observed, maxRepeat, "mm");
             }
