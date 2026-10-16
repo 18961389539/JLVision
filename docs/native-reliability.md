@@ -17,7 +17,7 @@ dotnet test JLVisionLib.slnx --configuration Debug
 
 The `NativeReliabilityTests` cases deliberately create independent native image, region and tuple instances for every worker. They test concurrent *independent* workloads, not concurrent mutation of the same object. An invalid tuple-index operation is followed by a valid one to check recovery.
 
-The Windows x64 GitHub Actions pipeline executes **two bounded, comparable 3,000-operation workloads** (one worker and four independent workers, both 320×240) and publishes `jlv-stress-report` containing separate `jlv-stress-serial.json` and `jlv-stress-parallel.json` artifacts. Compare operation throughput and P95/P99 only on the **same runner** and use repeated runs for reliable trends. Native-process memory and latency values remain diagnostic rather than machine-dependent pass/fail thresholds.
+The Windows x64 GitHub Actions pipeline executes **two bounded, comparable 3,000-operation workloads** (one worker and four independent workers, both 320×240), plus a 2-second timed-mode sanity check. It publishes `jlv-stress-report` containing separate `jlv-stress-serial.json`, `jlv-stress-parallel.json` and `jlv-stress-timed.json` artifacts. Compare operation throughput and P95/P99 only on the **same runner** and use repeated runs for reliable trends. Native-process memory and latency values remain diagnostic rather than machine-dependent pass/fail thresholds.
 
 ## Longer local stress runs
 
@@ -45,6 +45,16 @@ The runner exits nonzero on incorrect image dimensions, failed native image/regi
 - `errors`: the first failures with operation indexes.
 
 Because native allocators can retain pools and memory managers behave differently, a nonzero private-byte delta is **not by itself a leak**. Treat monotonically rising post-GC memory over repeated, comparable runs as an investigation signal. Compare runs on the same machine, image dimensions, worker count, warmup settings, and runtime version.
+
+## Validating the distributed Release NuGet package
+
+The CI pipeline also restores a **separate consumer application** from the freshly generated `artifacts/JLVisionLib.1.0.0.nupkg`, rather than referencing the repository project directly. This checks that the public managed APIs and the bundled `JLVisionCore.dll` work after packaging and Release obfuscation:
+
+```powershell
+dotnet pack JLVisionLib.csproj --configuration Release --output artifacts
+dotnet restore tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --source ./artifacts
+dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+```
 
 ## Before approving production release
 
