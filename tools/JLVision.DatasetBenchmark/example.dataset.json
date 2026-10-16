@@ -1,7 +1,24 @@
 {
-  "_note": "Illustrative paths and coordinates only. Replace with annotated customer images, not the synthetic fixture.",
+  "_note": "ILLUSTRATIVE ONLY. Replace the image files, annotations, thresholds and affine coefficients with independently measured production data. The affine coefficients below are NOT a real camera calibration.",
   "template": "images/template.bmp",
   "minScore": 0.65,
+  "calibration": {
+    "xFromColumn": 0.05,
+    "xFromRow": 0.0,
+    "xOffset": 0.0,
+    "yFromColumn": 0.0,
+    "yFromRow": 0.05,
+    "yOffset": 0.0
+  },
+  "acceptance": {
+    "minPositiveFrames": 100,
+    "minNegativeFrames": 50,
+    "maxPositionErrorMm": 0.1,
+    "maxAngleErrorDeg": 1.0,
+    "maxP95MatchMs": 100.0,
+    "maxMissRate": 0.01,
+    "maxFalsePositiveRate": 0.01
+  },
   "frames": [
     {
       "file": "images/part_present_001.bmp",
@@ -9,6 +26,8 @@
       "expectedRow": 98.0,
       "expectedColumn": 134.0,
       "tolerancePixels": 3.0,
+      "expectedXmm": 6.7,
+      "expectedYmm": 4.9,
       "expectedAngleRad": 0.0,
       "toleranceAngleRad": 0.1
     },
