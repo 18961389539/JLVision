@@ -53,4 +53,54 @@ public sealed class NativeSmokeTests
         }
     }
 
+    [Fact]
+    public void ImageAndRegionGeneratedWrappersSurviveRepeatedNativeCalls()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+            RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        {
+            return;
+        }
+
+        JLVisionRuntime.Initialize();
+        for (int i = 0; i < 16; i++)
+        {
+            using var image = new JlImage(JlImageType.Byte, 64, 48);
+            image.GetImageSize(out int width, out int height);
+            Assert.Equal(64, width);
+            Assert.Equal(48, height);
+
+            using var threshold = image.Threshold(0, 255);
+            Assert.True(threshold.IsInitialized());
+
+            using var rectangle = new JlRegion(5.0, 6.0, 15.0, 16.0);
+            int area = rectangle.AreaCenter(out double row, out double column);
+            Assert.True(area > 0);
+            Assert.InRange(row, 4.0, 16.0);
+            Assert.InRange(column, 5.0, 17.0);
+        }
+    }
+
+    [Fact]
+    public void OperatorFacadeCanBeCalledRepeatedlyWithoutLeakingCallState()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+            RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        {
+            return;
+        }
+
+        JLVisionRuntime.Initialize();
+        using var input = new JlTuple(-12, 14);
+        for (int i = 0; i < 24; i++)
+        {
+            JlOperatorSet.TupleAbs(input, out JlTuple result);
+            using (result)
+            {
+                Assert.Equal(12, result[0].I);
+                Assert.Equal(14, result[1].I);
+            }
+        }
+    }
+
 }
