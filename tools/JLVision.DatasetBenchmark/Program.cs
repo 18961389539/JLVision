@@ -107,7 +107,7 @@ internal static class Program
         bool anyAuditLimit = dataset.Acceptance?.MaxCalibrationFitErrorMm is not null ||
             dataset.Acceptance?.MaxCalibrationHoldoutErrorMm is not null ||
             dataset.Acceptance?.MaxCalibrationHoldoutRmsMm is not null;
-        if ((mmGate || anyAuditLimit) && (dataset.Calibration is null ||
+        if ((mmGate || anyAuditLimit || dataset.CalibrationEvidence is not null) && (dataset.Calibration is null ||
             dataset.CalibrationEvidence is null ||
             dataset.Acceptance?.MaxCalibrationFitErrorMm is null ||
             dataset.Acceptance.MaxCalibrationHoldoutErrorMm is null ||
