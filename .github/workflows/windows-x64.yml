@@ -37,6 +37,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --iterations 3000 --workers 4 --width 320 --height 240 --batches 6 --output artifacts/jlv-stress-parallel.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --duration-seconds 2 --workers 2 --width 160 --height 120 --batches 2 --output artifacts/jlv-stress-timed.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
