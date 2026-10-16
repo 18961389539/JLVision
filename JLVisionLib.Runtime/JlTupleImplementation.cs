@@ -254,6 +254,7 @@ internal abstract class JlTupleImplementation
 				{
 					pinHandle.Free();
 				}
+				JlNativeProcedureScope.NoteUnpin(this);
 			}
 		}
 	}
