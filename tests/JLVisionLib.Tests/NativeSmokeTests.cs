@@ -28,4 +28,29 @@ public sealed class NativeSmokeTests
             Assert.True(image.IsInitialized());
         }
     }
+    [Fact]
+    public void InvalidTupleOperationCanBeRepeatedWithoutBreakingNextCall()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+            RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        {
+            return;
+        }
+
+        JLVisionRuntime.Initialize();
+        using var source = new JlTuple(11, 22);
+        using var invalidIndex = new JlTuple(-1);
+        for (int i = 0; i < 24; i++)
+        {
+            Assert.ThrowsAny<Exception>(() =>
+            {
+                using var unexpected = source.TupleSelect(invalidIndex);
+            });
+
+            using var result = source.TupleAbs();
+            Assert.Equal(2, result.Length);
+            Assert.Equal(11, result[0].I);
+        }
+    }
+
 }
