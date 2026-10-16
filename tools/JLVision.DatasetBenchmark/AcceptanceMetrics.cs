@@ -42,6 +42,9 @@ internal sealed class AcceptanceCriteria
     public double? MaxMissRate { get; set; }
     public double? MaxFalsePositiveRate { get; set; }
     public double? MaxRepeatabilityStdDevMm { get; set; }
+    public double? MaxCalibrationFitErrorMm { get; set; }
+    public double? MaxCalibrationHoldoutErrorMm { get; set; }
+    public double? MaxCalibrationHoldoutRmsMm { get; set; }
     public int? MinPositiveFrames { get; set; }
     public int? MinNegativeFrames { get; set; }
 
@@ -56,7 +59,10 @@ internal sealed class AcceptanceCriteria
             (nameof(MaxPositionErrorMm), MaxPositionErrorMm),
             (nameof(MaxAngleErrorDeg), MaxAngleErrorDeg),
             (nameof(MaxP95MatchMs), MaxP95MatchMs),
-            (nameof(MaxRepeatabilityStdDevMm), MaxRepeatabilityStdDevMm)
+            (nameof(MaxRepeatabilityStdDevMm), MaxRepeatabilityStdDevMm),
+            (nameof(MaxCalibrationFitErrorMm), MaxCalibrationFitErrorMm),
+            (nameof(MaxCalibrationHoldoutErrorMm), MaxCalibrationHoldoutErrorMm),
+            (nameof(MaxCalibrationHoldoutRmsMm), MaxCalibrationHoldoutRmsMm)
         })
         {
             if (value.HasValue && (!double.IsFinite(value.Value) || value.Value < 0))
