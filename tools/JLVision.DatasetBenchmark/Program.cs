@@ -3,11 +3,14 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using JLVisionLib;
 using JLVisionLib.Tests;
+using JLVisionLib.Validation;
 
 internal sealed class DatasetSpec
 {
     public string Template { get; set; } = string.Empty;
     public double MinScore { get; set; } = 0.35;
+    public PlanarAffineCalibration? Calibration { get; set; }
+    public AcceptanceCriteria? Acceptance { get; set; }
     public List<DatasetFrame> Frames { get; set; } = new();
 }
 
@@ -20,6 +23,9 @@ internal sealed class DatasetFrame
     public double TolerancePixels { get; set; } = 5.0;
     public double? ExpectedAngleRad { get; set; }
     public double ToleranceAngleRad { get; set; } = 0.10;
+    public double? ExpectedXmm { get; set; }
+    public double? ExpectedYmm { get; set; }
+    public string? RepeatGroup { get; set; }
 }
 
 internal static class Program
@@ -27,7 +33,9 @@ internal static class Program
     private sealed record FrameResult(
         string Algorithm, string Filename, bool ExpectedPresent, bool Detected, bool Accepted,
         int MatchCount, double MatchMs, double? Row, double? Column, double? Angle,
-        double? Score, double? PixelError, double? AngleErrorRad);
+        double? Score, double? PixelError, double? AngleErrorRad,
+        double? Xmm, double? Ymm, double? PositionErrorMm, double? AngleErrorDeg,
+        string? RepeatGroup);
 
     private static int Main(string[] args)
     {
@@ -62,6 +70,7 @@ internal static class Program
             dataset = new DatasetSpec
             {
                 Template = synthetic!.TemplatePath,
+                Acceptance = new AcceptanceCriteria { MaxMissRate = 0, MaxFalsePositiveRate = 0 },
                 Frames = new List<DatasetFrame>
                 {
                     new() { File = synthetic.ScenePath, ExpectedPresent = true },
@@ -81,8 +90,14 @@ internal static class Program
         if (dataset.Frames is null || dataset.Frames.Count == 0 ||
             string.IsNullOrWhiteSpace(dataset.Template))
             throw new InvalidDataException("Manifest requires template and at least one frame.");
-        if (dataset.MinScore <= 0 || dataset.MinScore > 1)
-            throw new InvalidDataException("MinScore must be in (0, 1].");
+        if (dataset.MinScore <= 0 || dataset.MinScore > 1 || !double.IsFinite(dataset.MinScore))
+            throw new InvalidDataException("MinScore must be finite and in (0, 1].");
+        dataset.Calibration?.Validate();
+        dataset.Acceptance?.Validate();
+        if (dataset.Acceptance?.MaxPositionErrorMm is not null && dataset.Calibration is null)
+            throw new InvalidDataException("Millimeter accuracy gate requires independently measured planar affine calibration.");
+        if (dataset.Acceptance?.MaxRepeatabilityStdDevMm is not null && dataset.Calibration is null)
+            throw new InvalidDataException("Millimeter repeatability gate requires planar affine calibration.");
 
         string Resolve(string file) => Path.GetFullPath(Path.IsPathRooted(file) ? file : Path.Combine(baseDir, file));
         JLVisionRuntime.Initialize();
@@ -107,7 +122,12 @@ internal static class Program
                 if (string.IsNullOrWhiteSpace(frame.File) || frame.TolerancePixels < 0 ||
                     frame.ExpectedRow.HasValue != frame.ExpectedColumn.HasValue ||
                     !frame.ExpectedPresent.HasValue || frame.ToleranceAngleRad < 0 ||
-                    (frame.ExpectedAngleRad.HasValue && !frame.ExpectedPresent.Value))
+                    !double.IsFinite(frame.TolerancePixels) || !double.IsFinite(frame.ToleranceAngleRad) ||
+                    frame.ExpectedXmm.HasValue != frame.ExpectedYmm.HasValue ||
+                    (frame.ExpectedAngleRad.HasValue && !frame.ExpectedPresent.Value) ||
+                    ((frame.ExpectedRow.HasValue || frame.ExpectedXmm.HasValue) && !frame.ExpectedPresent.Value) ||
+                    new double?[] { frame.ExpectedRow, frame.ExpectedColumn, frame.ExpectedAngleRad,
+                        frame.ExpectedXmm, frame.ExpectedYmm }.Any(v => v.HasValue && !double.IsFinite(v.Value)))
                     throw new InvalidDataException("Each frame requires a file, explicit expectedPresent, nonnegative tolerances and complete coordinate pairs.");
 
                 using var image = new JlImage(Resolve(frame.File));
@@ -150,13 +170,23 @@ internal static class Program
                     double? angleError = angle.HasValue && frame.ExpectedAngleRad.HasValue
                         ? Math.Abs(Math.Atan2(Math.Sin(angle.Value - frame.ExpectedAngleRad.Value),
                             Math.Cos(angle.Value - frame.ExpectedAngleRad.Value))) : null;
+                    (double Xmm, double Ymm)? measuredMm = row.HasValue && col.HasValue &&
+                        dataset.Calibration is not null
+                            ? dataset.Calibration.Transform(row.Value, col.Value) : null;
+                    double? mmError = measuredMm.HasValue && frame.ExpectedXmm.HasValue
+                        ? Math.Sqrt(Math.Pow(measuredMm.Value.Xmm - frame.ExpectedXmm.Value, 2) +
+                                    Math.Pow(measuredMm.Value.Ymm - frame.ExpectedYmm!.Value, 2))
+                        : null;
+                    double? angleErrorDegrees = angleError.HasValue ? angleError.Value * 180.0 / Math.PI : null;
                     bool expected = frame.ExpectedPresent.Value;
                     bool accepted = expected == found &&
                         (!expected || !error.HasValue || error.Value <= frame.TolerancePixels) &&
                         (!expected || !angleError.HasValue || angleError.Value <= frame.ToleranceAngleRad);
                     results.Add(new FrameResult(kind, Path.GetFileName(frame.File),
                         expected, found, accepted, rows.Length,
-                        matchMs, row, col, angle, score, error, angleError));
+                        matchMs, row, col, angle, score, error, angleError,
+                        measuredMm?.Xmm, measuredMm?.Ymm, mmError, angleErrorDegrees,
+                        frame.RepeatGroup));
                     Console.WriteLine($"{kind} {Path.GetFileName(frame.File)}: found={found} score={score:F3}, time={matchMs:F2} ms, accepted={accepted}");
                 }
             }
@@ -166,9 +196,15 @@ internal static class Program
         {
             FrameResult[] set = results.Where(r => r.Algorithm == name).ToArray();
             double[] timings = set.Select(r => r.MatchMs).OrderBy(v => v).ToArray();
+            AlgorithmAcceptance analysis = VisionAcceptance.Analyze(set.Select(x =>
+                new FrameMeasurement(x.ExpectedPresent, x.Detected, x.MatchMs,
+                    x.PositionErrorMm, x.AngleErrorDeg, x.RepeatGroup, x.Xmm, x.Ymm))
+                .ToArray(), dataset.Acceptance);
             return new
             {
                 algorithm = name,
+                acceptancePassed = analysis.Passed && set.All(x => x.Accepted),
+                acceptance = analysis,
                 frames = set.Length,
                 correct = set.Count(r => r.Accepted),
                 truePositive = set.Count(r => r.ExpectedPresent && r.Detected),
@@ -191,12 +227,15 @@ internal static class Program
             syntheticFixture = synthetic is not null,
             datasetFrameCount = dataset.Frames.Count,
             minScore = dataset.MinScore,
+            calibration = dataset.Calibration,
+            acceptance = dataset.Acceptance,
             summary,
             frames = results
         }, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"Dataset report: {fullOutput}");
 
-        return results.All(r => r.Accepted) ? 0 : 2;
+        return results.All(r => r.Accepted) &&
+            summary.All(r => r.acceptancePassed) ? 0 : 2;
     }
 
     private static string? FindOption(string[] args, string name)
