@@ -83,10 +83,11 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D()
 	{
 		IntPtr proc = JlNativeApi.PreCall(287);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -198,11 +199,12 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void ReadWorldFile(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(22);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -224,13 +226,14 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlXLDCont ProjectiveTransContourXld(JlXLDCont contours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(47);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 		return obj;
@@ -250,13 +253,14 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlXLDPoly AffineTransPolygonXld(JlXLDPoly polygons)
 	{
 		IntPtr proc = JlNativeApi.PreCall(48);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, polygons);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlXLDPoly.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(polygons);
 		return obj;
@@ -280,13 +284,14 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlXLDCont AffineTransContourXld(JlXLDCont contours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(49);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 		return obj;
@@ -312,11 +317,12 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		{
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		IntPtr proc = JlNativeApi.PreCall(234);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -337,12 +343,13 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public byte[] SerializeHomMat2d()
 	{
 		IntPtr proc = JlNativeApi.PreCall(235);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -385,6 +392,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	{
 		JlTuple tupleValue = JlData.ConcatArray(homMatrices2D);
 		IntPtr proc = JlNativeApi.PreCall(254);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, numImages);
 		JlNativeApi.StoreI(proc, 1, referenceImage);
 		JlNativeApi.Store(proc, 2, mappingSource);
@@ -413,7 +421,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rows);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out cols);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out error);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return SplitArray(data);
 	}
 
@@ -440,6 +448,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	{
 		JlTuple tupleValue = JlData.ConcatArray(homMatrices2D);
 		IntPtr proc = JlNativeApi.PreCall(254);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, numImages);
 		JlNativeApi.StoreI(proc, 1, referenceImage);
 		JlNativeApi.Store(proc, 2, mappingSource);
@@ -468,7 +477,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out rows);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out cols);
 		err = JlNativeApi.LoadD(proc, 3, err, out error);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return SplitArray(data);
 	}
 
@@ -518,6 +527,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public double VectorToProjHomMat2dDistortion(JlTuple points1Row, JlTuple points1Col, JlTuple points2Row, JlTuple points2Col, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, int imageWidth, int imageHeight, string method, out double error)
 	{
 		IntPtr proc = JlNativeApi.PreCall(259);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, points1Row);
 		JlNativeApi.Store(proc, 1, points1Col);
 		JlNativeApi.Store(proc, 2, points2Row);
@@ -548,7 +558,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = Load(proc, 0, err);
 		err = JlNativeApi.LoadD(proc, 1, err, out var doubleValue);
 		err = JlNativeApi.LoadD(proc, 2, err, out error);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -579,6 +589,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void HomVectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple pw, JlTuple qx, JlTuple qy, JlTuple qw, string method)
 	{
 		IntPtr proc = JlNativeApi.PreCall(260);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, pw);
@@ -595,7 +606,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qy);
 		JlNativeApi.UnpinTuple(qw);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -631,6 +642,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlTuple VectorToProjHomMat2d(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy, string method, JlTuple covXX1, JlTuple covYY1, JlTuple covXY1, JlTuple covXX2, JlTuple covYY2, JlTuple covXY2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(261);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -657,7 +669,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(covXY2);
 		err = Load(proc, 0, err);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out var result);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return result;
 	}
@@ -685,6 +697,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public double HomMat2dToAffinePar(out double sy, out double phi, out double theta, out double tx, out double ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(262);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -700,7 +713,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 3, err, out theta);
 		err = JlNativeApi.LoadD(proc, 4, err, out tx);
 		err = JlNativeApi.LoadD(proc, 5, err, out ty);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -729,6 +742,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorAngleToRigid(JlTuple row1, JlTuple column1, JlTuple angle1, JlTuple row2, JlTuple column2, JlTuple angle2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(263);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
 		JlNativeApi.Store(proc, 2, angle1);
@@ -744,7 +758,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column2);
 		JlNativeApi.UnpinTuple(angle2);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -765,6 +779,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorAngleToRigid(double row1, double column1, double angle1, double row2, double column2, double angle2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(263);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, column1);
 		JlNativeApi.StoreD(proc, 2, angle1);
@@ -774,7 +789,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -804,6 +819,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void PointLineToHomMat2d(string transformationType, JlTuple px, JlTuple py, JlTuple l1x, JlTuple l1y, JlTuple l2x, JlTuple l2y)
 	{
 		IntPtr proc = JlNativeApi.PreCall(264);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, transformationType);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -820,7 +836,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(l2x);
 		JlNativeApi.UnpinTuple(l2y);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -852,6 +868,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorToRigid(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(265);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -863,7 +880,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -889,6 +906,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorToSimilarity(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(266);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -900,7 +918,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -926,6 +944,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorToAniso(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(267);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -937,7 +956,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -963,6 +982,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorToHomMat2d(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(268);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, px);
 		JlNativeApi.Store(proc, 1, py);
 		JlNativeApi.Store(proc, 2, qx);
@@ -974,7 +994,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1005,6 +1025,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void ProjectiveTransPixel(JlTuple row, JlTuple col, out JlTuple rowTrans, out JlTuple colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(269);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, col);
@@ -1016,7 +1037,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(col);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowTrans);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1035,6 +1056,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void ProjectiveTransPixel(double row, double col, out double rowTrans, out double colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(269);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, col);
@@ -1044,7 +1066,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		err = JlNativeApi.LoadD(proc, 0, err, out rowTrans);
 		err = JlNativeApi.LoadD(proc, 1, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1072,6 +1094,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlTuple ProjectiveTransPoint2d(JlTuple px, JlTuple py, JlTuple pw, out JlTuple qy, out JlTuple qw)
 	{
 		IntPtr proc = JlNativeApi.PreCall(270);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -1087,7 +1110,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var result);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out qy);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out qw);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return result;
 	}
@@ -1109,6 +1132,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public double ProjectiveTransPoint2d(double px, double py, double pw, out double qy, out double qw)
 	{
 		IntPtr proc = JlNativeApi.PreCall(270);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, px);
 		JlNativeApi.StoreD(proc, 2, py);
@@ -1121,7 +1145,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
 		err = JlNativeApi.LoadD(proc, 1, err, out qy);
 		err = JlNativeApi.LoadD(proc, 2, err, out qw);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -1148,6 +1172,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void AffineTransPixel(JlTuple row, JlTuple col, out JlTuple rowTrans, out JlTuple colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(271);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, col);
@@ -1159,7 +1184,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(col);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowTrans);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1178,6 +1203,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void AffineTransPixel(double row, double col, out double rowTrans, out double colTrans)
 	{
 		IntPtr proc = JlNativeApi.PreCall(271);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, col);
@@ -1187,7 +1213,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		err = JlNativeApi.LoadD(proc, 0, err, out rowTrans);
 		err = JlNativeApi.LoadD(proc, 1, err, out colTrans);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1212,6 +1238,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlTuple AffineTransPoint2d(JlTuple px, JlTuple py, out JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(272);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -1223,7 +1250,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(py);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var result);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out qy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return result;
 	}
@@ -1243,6 +1270,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public double AffineTransPoint2d(double px, double py, out double qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(272);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, px);
 		JlNativeApi.StoreD(proc, 2, py);
@@ -1252,7 +1280,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
 		err = JlNativeApi.LoadD(proc, 1, err, out qy);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -1273,12 +1301,13 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public double HomMat2dDeterminant()
 	{
 		IntPtr proc = JlNativeApi.PreCall(273);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -1299,12 +1328,13 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dTranspose()
 	{
 		IntPtr proc = JlNativeApi.PreCall(274);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1328,12 +1358,13 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dInvert()
 	{
 		IntPtr proc = JlNativeApi.PreCall(275);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1357,6 +1388,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dCompose(JlHomMat2D homMat2DRight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(276);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, homMat2DRight);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1364,7 +1396,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(homMat2DRight);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1387,6 +1419,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dReflectLocal(JlTuple px, JlTuple py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -1396,7 +1429,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1414,6 +1447,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dReflectLocal(double px, double py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(277);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, px);
 		JlNativeApi.StoreD(proc, 2, py);
@@ -1421,7 +1455,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1447,6 +1481,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dReflect(JlTuple px, JlTuple py, JlTuple qx, JlTuple qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, px);
 		JlNativeApi.Store(proc, 2, py);
@@ -1460,7 +1495,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(qx);
 		JlNativeApi.UnpinTuple(qy);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1480,6 +1515,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dReflect(double px, double py, double qx, double qy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(278);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, px);
 		JlNativeApi.StoreD(proc, 2, py);
@@ -1489,7 +1525,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1512,6 +1548,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dSlantLocal(JlTuple theta, string axis)
 	{
 		IntPtr proc = JlNativeApi.PreCall(279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, theta);
 		JlNativeApi.StoreS(proc, 2, axis);
@@ -1520,7 +1557,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(theta);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1538,6 +1575,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dSlantLocal(double theta, string axis)
 	{
 		IntPtr proc = JlNativeApi.PreCall(279);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, theta);
 		JlNativeApi.StoreS(proc, 2, axis);
@@ -1545,7 +1583,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1570,6 +1608,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dSlant(JlTuple theta, string axis, JlTuple px, JlTuple py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(280);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, theta);
 		JlNativeApi.StoreS(proc, 2, axis);
@@ -1582,7 +1621,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1602,6 +1641,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dSlant(double theta, string axis, double px, double py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(280);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, theta);
 		JlNativeApi.StoreS(proc, 2, axis);
@@ -1611,7 +1651,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1633,6 +1673,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dRotateLocal(JlTuple phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(281);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, phi);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1640,7 +1681,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(phi);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1657,13 +1698,14 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dRotateLocal(double phi)
 	{
 		IntPtr proc = JlNativeApi.PreCall(281);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, phi);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1689,6 +1731,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dRotate(JlTuple phi, JlTuple px, JlTuple py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(282);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, phi);
 		JlNativeApi.Store(proc, 2, px);
@@ -1700,7 +1743,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1719,6 +1762,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dRotate(double phi, double px, double py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(282);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, phi);
 		JlNativeApi.StoreD(proc, 2, px);
@@ -1727,7 +1771,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1750,6 +1794,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dScaleLocal(JlTuple sx, JlTuple sy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(283);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, sx);
 		JlNativeApi.Store(proc, 2, sy);
@@ -1759,7 +1804,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(sx);
 		JlNativeApi.UnpinTuple(sy);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1777,6 +1822,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dScaleLocal(double sx, double sy)
 	{
 		IntPtr proc = JlNativeApi.PreCall(283);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, sx);
 		JlNativeApi.StoreD(proc, 2, sy);
@@ -1784,7 +1830,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1809,6 +1855,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dScale(JlTuple sx, JlTuple sy, JlTuple px, JlTuple py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(284);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, sx);
 		JlNativeApi.Store(proc, 2, sy);
@@ -1822,7 +1869,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(px);
 		JlNativeApi.UnpinTuple(py);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1842,6 +1889,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dScale(double sx, double sy, double px, double py)
 	{
 		IntPtr proc = JlNativeApi.PreCall(284);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, sx);
 		JlNativeApi.StoreD(proc, 2, sy);
@@ -1851,7 +1899,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1874,6 +1922,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dTranslateLocal(JlTuple tx, JlTuple ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(285);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, tx);
 		JlNativeApi.Store(proc, 2, ty);
@@ -1883,7 +1932,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(tx);
 		JlNativeApi.UnpinTuple(ty);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1901,6 +1950,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dTranslateLocal(double tx, double ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(285);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, tx);
 		JlNativeApi.StoreD(proc, 2, ty);
@@ -1908,7 +1958,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1931,6 +1981,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dTranslate(JlTuple tx, JlTuple ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(286);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, tx);
 		JlNativeApi.Store(proc, 2, ty);
@@ -1940,7 +1991,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(tx);
 		JlNativeApi.UnpinTuple(ty);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1958,6 +2009,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D HomMat2dTranslate(double tx, double ty)
 	{
 		IntPtr proc = JlNativeApi.PreCall(286);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, tx);
 		JlNativeApi.StoreD(proc, 2, ty);
@@ -1965,7 +2017,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1988,10 +2040,11 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void HomMat2dIdentity()
 	{
 		IntPtr proc = JlNativeApi.PreCall(287);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2044,6 +2097,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D VectorToEssentialMatrix(JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlHomMat2D camMat2, string method, out JlTuple covEMat, out JlTuple error, out JlTuple x, out JlTuple y, out JlTuple z, out JlTuple covXYZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(352);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 10);
 		JlNativeApi.Store(proc, 0, rows1);
 		JlNativeApi.Store(proc, 1, cols1);
@@ -2084,7 +2138,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out y);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out z);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out covXYZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2115,6 +2169,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D VectorToEssentialMatrix(JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlTuple covRR1, JlTuple covRC1, JlTuple covCC1, JlTuple covRR2, JlTuple covRC2, JlTuple covCC2, JlHomMat2D camMat2, string method, out JlTuple covEMat, out double error, out JlTuple x, out JlTuple y, out JlTuple z, out JlTuple covXYZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(352);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 10);
 		JlNativeApi.Store(proc, 0, rows1);
 		JlNativeApi.Store(proc, 1, cols1);
@@ -2155,7 +2210,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out y);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out z);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out covXYZ);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2211,6 +2266,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D MatchEssentialMatrixRansac(JlImage image1, JlImage image2, JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlHomMat2D camMat2, string grayMatchMethod, int maskSize, int rowMove, int colMove, int rowTolerance, int colTolerance, JlTuple rotation, JlTuple matchThreshold, string estimationMethod, JlTuple distanceThreshold, int randSeed, out JlTuple covEMat, out JlTuple error, out JlTuple points1, out JlTuple points2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(356);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 4);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
@@ -2250,7 +2306,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out error);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out points1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out points2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
@@ -2299,6 +2355,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlHomMat2D MatchEssentialMatrixRansac(JlImage image1, JlImage image2, JlTuple rows1, JlTuple cols1, JlTuple rows2, JlTuple cols2, JlHomMat2D camMat2, string grayMatchMethod, int maskSize, int rowMove, int colMove, int rowTolerance, int colTolerance, double rotation, int matchThreshold, string estimationMethod, double distanceThreshold, int randSeed, out JlTuple covEMat, out double error, out JlTuple points1, out JlTuple points2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(356);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 4);
 		JlNativeApi.Store(proc, 1, image1);
 		JlNativeApi.Store(proc, 2, image2);
@@ -2335,7 +2392,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 2, err, out error);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.INTEGER, err, out points1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.INTEGER, err, out points2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image1);
 		GC.KeepAlive(image2);
@@ -2363,6 +2420,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlRegion ProjectiveTransRegion(JlRegion regions, string interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(477);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.StoreS(proc, 1, interpolation);
@@ -2370,7 +2428,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlRegion.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(regions);
 		return obj;
@@ -2397,6 +2455,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlRegion AffineTransRegion(JlRegion region, string interpolate)
 	{
 		IntPtr proc = JlNativeApi.PreCall(478);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.StoreS(proc, 1, interpolate);
@@ -2404,7 +2463,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlRegion.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(region);
 		return obj;
@@ -2434,6 +2493,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlImage ProjectiveTransImageSize(JlImage image, string interpolation, int width, int height, string transformDomain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1540);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreS(proc, 1, interpolation);
@@ -2444,7 +2504,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2473,6 +2533,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlImage ProjectiveTransImage(JlImage image, string interpolation, string adaptImageSize, string transformDomain)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1541);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreS(proc, 1, interpolation);
@@ -2482,7 +2543,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2511,6 +2572,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlImage AffineTransImageSize(JlImage image, string interpolation, int width, int height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1542);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreS(proc, 1, interpolation);
@@ -2520,7 +2582,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2548,6 +2610,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public JlImage AffineTransImage(JlImage image, string interpolation, string adaptImageSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1543);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreS(proc, 1, interpolation);
@@ -2556,7 +2619,7 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2581,11 +2644,12 @@ public class JlHomMat2D : JlData, ISerializable, ICloneable
 	public void VectorFieldToHomMat2d(JlImage vectorField)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1551);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, vectorField);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(vectorField);
 	}

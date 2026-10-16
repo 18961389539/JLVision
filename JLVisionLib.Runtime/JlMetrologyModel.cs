@@ -109,11 +109,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlMetrologyModel(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(777);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -140,10 +141,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlMetrologyModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(798);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -287,6 +289,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetMetrologyObjectResultContour(JlTuple index, JlTuple instance, double resolution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(768);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, instance);
@@ -296,7 +299,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(instance);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -335,6 +338,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetMetrologyObjectResultContour(int index, string instance, double resolution)
 	{
 		IntPtr proc = JlNativeApi.PreCall(768);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, index);
 		JlNativeApi.StoreS(proc, 2, instance);
@@ -342,7 +346,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -373,6 +377,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void AlignMetrologyModel(JlTuple row, JlTuple column, JlTuple angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(769);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -381,7 +386,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(angle);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -404,12 +409,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void AlignMetrologyModel(double row, double column, double angle)
 	{
 		IntPtr proc = JlNativeApi.PreCall(769);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
 		JlNativeApi.StoreD(proc, 3, angle);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -450,6 +456,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectGeneric(JlTuple shape, JlTuple shapeParam, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(770);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, shape);
 		JlNativeApi.Store(proc, 2, shapeParam);
@@ -470,7 +477,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -501,6 +508,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectGeneric(string shape, JlTuple shapeParam, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(770);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, shape);
 		JlNativeApi.Store(proc, 2, shapeParam);
@@ -516,7 +524,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -543,12 +551,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyModelParam(string genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(771);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -575,12 +584,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyModelParam(string genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(772);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -603,11 +613,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyModelParam(string genParamName, string genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(772);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.StoreS(proc, 2, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -633,11 +644,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(773);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -660,11 +672,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public byte[] SerializeMetrologyModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(774);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -699,6 +712,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void TransformMetrologyObject(JlTuple index, JlTuple row, JlTuple column, JlTuple phi, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(775);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, row);
@@ -711,7 +725,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(phi);
 		JlNativeApi.UnpinTuple(mode);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -736,6 +750,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void TransformMetrologyObject(string index, double row, double column, double phi, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(775);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.StoreD(proc, 2, row);
@@ -743,7 +758,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.StoreD(proc, 4, phi);
 		JlNativeApi.StoreS(proc, 5, mode);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -767,10 +782,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void WriteMetrologyModel(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(776);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -793,11 +809,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(777);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -827,13 +844,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int CopyMetrologyModel(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(778);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -851,12 +869,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int CopyMetrologyModel(string index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(778);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -885,13 +904,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple CopyMetrologyObject(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(779);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -916,12 +936,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int CopyMetrologyObject(string index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(779);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -944,13 +965,14 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectNumInstances(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(780);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -985,12 +1007,13 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public double GetMetrologyObjectNumInstances(int index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(780);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -1020,6 +1043,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectResult(JlTuple index, JlTuple instance, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(781);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, instance);
@@ -1032,7 +1056,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1068,6 +1092,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectResult(int index, string instance, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(781);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, index);
 		JlNativeApi.StoreS(proc, 2, instance);
@@ -1078,7 +1103,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1115,6 +1140,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetMetrologyObjectMeasures(JlTuple index, string transition, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(782);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.StoreS(proc, 2, transition);
@@ -1126,7 +1152,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1158,6 +1184,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetMetrologyObjectMeasures(string index, string transition, out JlTuple row, out JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(782);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.StoreS(proc, 2, transition);
@@ -1168,7 +1195,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out column);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1199,10 +1226,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ApplyMetrologyModel(JlImage image)
 	{
 		IntPtr proc = JlNativeApi.PreCall(783);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1229,11 +1257,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectIndices()
 	{
 		IntPtr proc = JlNativeApi.PreCall(784);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1260,11 +1289,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ResetMetrologyObjectFuzzyParam(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(785);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1286,10 +1316,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ResetMetrologyObjectFuzzyParam(string index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(785);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1315,11 +1346,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ResetMetrologyObjectParam(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(786);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1340,10 +1372,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ResetMetrologyObjectParam(string index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(786);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1372,6 +1405,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectFuzzyParam(JlTuple index, JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(787);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1380,7 +1414,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1405,6 +1439,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectFuzzyParam(string index, JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(787);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1412,7 +1447,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1440,6 +1475,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectParam(JlTuple index, JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(788);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1448,7 +1484,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1473,6 +1509,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMetrologyObjectParam(string index, JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(788);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1480,7 +1517,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1508,6 +1545,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyObjectFuzzyParam(JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(789);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1516,7 +1554,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1540,6 +1578,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyObjectFuzzyParam(string index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(789);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1547,7 +1586,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1574,6 +1613,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyObjectParam(JlTuple index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(790);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1582,7 +1622,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1606,6 +1646,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyObjectParam(string index, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(790);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		JlNativeApi.Store(proc, 2, genParamName);
@@ -1613,7 +1654,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1649,6 +1690,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectRectangle2Measure(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(791);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -1675,7 +1717,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1715,6 +1757,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectRectangle2Measure(double row, double column, double phi, double length1, double length2, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(791);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
@@ -1732,7 +1775,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1768,6 +1811,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectLineMeasure(JlTuple rowBegin, JlTuple columnBegin, JlTuple rowEnd, JlTuple columnEnd, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(792);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, rowBegin);
 		JlNativeApi.Store(proc, 2, columnBegin);
@@ -1792,7 +1836,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1831,6 +1875,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectLineMeasure(double rowBegin, double columnBegin, double rowEnd, double columnEnd, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(792);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, rowBegin);
 		JlNativeApi.StoreD(proc, 2, columnBegin);
@@ -1847,7 +1892,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1884,6 +1929,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectEllipseMeasure(JlTuple row, JlTuple column, JlTuple phi, JlTuple radius1, JlTuple radius2, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(793);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -1910,7 +1956,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -1951,6 +1997,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectEllipseMeasure(double row, double column, double phi, double radius1, double radius2, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(793);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
@@ -1968,7 +2015,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -2003,6 +2050,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectCircleMeasure(JlTuple row, JlTuple column, JlTuple radius, JlTuple measureLength1, JlTuple measureLength2, JlTuple measureSigma, JlTuple measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(794);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -2025,7 +2073,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -2063,6 +2111,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public int AddMetrologyObjectCircleMeasure(double row, double column, double radius, double measureLength1, double measureLength2, double measureSigma, double measureThreshold, JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(794);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
@@ -2078,7 +2127,7 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -2100,9 +2149,10 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ClearMetrologyModel()
 	{
 		IntPtr proc = JlNativeApi.PreCall(795);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2127,11 +2177,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ClearMetrologyObject(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(796);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2153,10 +2204,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void ClearMetrologyObject(string index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(796);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, index);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2180,11 +2232,12 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	public void SetMetrologyModelImageSize(int width, int height)
 	{
 		IntPtr proc = JlNativeApi.PreCall(797);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, width);
 		JlNativeApi.StoreI(proc, 2, height);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2208,10 +2261,11 @@ public class JlMetrologyModel : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(798);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 }

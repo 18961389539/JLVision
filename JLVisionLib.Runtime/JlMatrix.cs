@@ -175,11 +175,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(819);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -204,6 +205,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix(int rows, int columns, JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(873);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, rows);
 		JlNativeApi.StoreI(proc, 1, columns);
 		JlNativeApi.Store(proc, 2, value);
@@ -211,7 +213,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(value);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -236,13 +238,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix(int rows, int columns, double value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(873);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, rows);
 		JlNativeApi.StoreI(proc, 1, columns);
 		JlNativeApi.StoreD(proc, 2, value);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -522,11 +525,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(817);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -553,11 +557,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public byte[] SerializeMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(818);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -582,11 +587,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(819);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -610,11 +616,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void WriteMatrix(string fileFormat, string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(820);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, fileFormat);
 		JlNativeApi.StoreS(proc, 2, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -644,6 +651,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix OrthogonalDecomposeMatrix(string decompositionType, string outputMatricesType, string computeOrthogonal, out JlMatrix matrixTriangularID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(821);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, decompositionType);
 		JlNativeApi.StoreS(proc, 2, outputMatricesType);
@@ -653,7 +661,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
 		err = LoadNew(proc, 1, err, out matrixTriangularID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -682,6 +690,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix DecomposeMatrix(string matrixType, out JlMatrix matrix2ID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(822);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.InitOCT(proc, 0);
@@ -689,7 +698,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
 		err = LoadNew(proc, 1, err, out matrix2ID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -721,6 +730,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix SvdMatrix(string SVDType, string computeSingularVectors, out JlMatrix matrixSID, out JlMatrix matrixVID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(823);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, SVDType);
 		JlNativeApi.StoreS(proc, 2, computeSingularVectors);
@@ -731,7 +741,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
 		err = LoadNew(proc, 1, err, out matrixSID);
 		err = LoadNew(proc, 2, err, out matrixVID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -767,6 +777,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void GeneralizedEigenvaluesGeneralMatrix(JlMatrix matrixBID, string computeEigenvectors, out JlMatrix eigenvaluesRealID, out JlMatrix eigenvaluesImagID, out JlMatrix eigenvectorsRealID, out JlMatrix eigenvectorsImagID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(824);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.StoreS(proc, 2, computeEigenvectors);
@@ -779,7 +790,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		err = LoadNew(proc, 1, err, out eigenvaluesImagID);
 		err = LoadNew(proc, 2, err, out eigenvectorsRealID);
 		err = LoadNew(proc, 3, err, out eigenvectorsImagID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -811,6 +822,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix GeneralizedEigenvaluesSymmetricMatrix(JlMatrix matrixBID, string computeEigenvectors, out JlMatrix eigenvectorsID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(825);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.StoreS(proc, 2, computeEigenvectors);
@@ -819,7 +831,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
 		err = LoadNew(proc, 1, err, out eigenvectorsID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -853,6 +865,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void EigenvaluesGeneralMatrix(string computeEigenvectors, out JlMatrix eigenvaluesRealID, out JlMatrix eigenvaluesImagID, out JlMatrix eigenvectorsRealID, out JlMatrix eigenvectorsImagID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(826);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, computeEigenvectors);
 		JlNativeApi.InitOCT(proc, 0);
@@ -864,7 +877,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		err = LoadNew(proc, 1, err, out eigenvaluesImagID);
 		err = LoadNew(proc, 2, err, out eigenvectorsRealID);
 		err = LoadNew(proc, 3, err, out eigenvectorsImagID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -892,6 +905,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix EigenvaluesSymmetricMatrix(string computeEigenvectors, out JlMatrix eigenvectorsID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(827);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, computeEigenvectors);
 		JlNativeApi.InitOCT(proc, 0);
@@ -899,7 +913,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
 		err = LoadNew(proc, 1, err, out eigenvectorsID);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -929,6 +943,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix SolveMatrix(string matrixLHSType, double epsilon, JlMatrix matrixRHSID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(828);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixLHSType);
 		JlNativeApi.StoreD(proc, 2, epsilon);
@@ -936,7 +951,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixRHSID);
 		return obj;
@@ -962,12 +977,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public double DeterminantMatrix(string matrixType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(829);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -992,11 +1008,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void InvertMatrixMod(string matrixType, double epsilon)
 	{
 		IntPtr proc = JlNativeApi.PreCall(830);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.StoreD(proc, 2, epsilon);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1022,13 +1039,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix InvertMatrix(string matrixType, double epsilon)
 	{
 		IntPtr proc = JlNativeApi.PreCall(831);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.StoreD(proc, 2, epsilon);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1051,9 +1069,10 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void TransposeMatrixMod()
 	{
 		IntPtr proc = JlNativeApi.PreCall(832);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1077,11 +1096,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix TransposeMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(833);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1107,12 +1127,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix MaxMatrix(string maxType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(834);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, maxType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1138,12 +1159,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix MinMatrix(string minType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(835);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, minType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1168,12 +1190,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void PowMatrixMod(string matrixType, JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(836);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, power);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(power);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1197,11 +1220,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void PowMatrixMod(string matrixType, double power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(836);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.StoreD(proc, 2, power);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1227,6 +1251,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix PowMatrix(string matrixType, JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(837);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.Store(proc, 2, power);
@@ -1234,7 +1259,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(power);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1261,13 +1286,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix PowMatrix(string matrixType, double power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(837);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, matrixType);
 		JlNativeApi.StoreD(proc, 2, power);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1293,10 +1319,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void PowElementMatrixMod(JlMatrix matrixExpID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(838);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixExpID);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixExpID);
 	}
@@ -1324,12 +1351,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix PowElementMatrix(JlMatrix matrixExpID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(839);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixExpID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixExpID);
 		return obj;
@@ -1354,11 +1382,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void PowScalarElementMatrixMod(JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(840);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, power);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(power);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1381,10 +1410,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void PowScalarElementMatrixMod(double power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(840);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, power);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1407,13 +1437,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix PowScalarElementMatrix(JlTuple power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(841);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, power);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(power);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1437,12 +1468,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix PowScalarElementMatrix(double power)
 	{
 		IntPtr proc = JlNativeApi.PreCall(841);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, power);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1465,9 +1497,10 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SqrtMatrixMod()
 	{
 		IntPtr proc = JlNativeApi.PreCall(842);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1489,11 +1522,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix SqrtMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(843);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1516,9 +1550,10 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void AbsMatrixMod()
 	{
 		IntPtr proc = JlNativeApi.PreCall(844);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1540,11 +1575,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix AbsMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(845);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1567,12 +1603,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public double NormMatrix(string normType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(846);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, normType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -1597,12 +1634,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix MeanMatrix(string meanType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(847);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, meanType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1627,12 +1665,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix SumMatrix(string sumType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(848);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, sumType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1658,10 +1697,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void DivElementMatrixMod(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(849);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -1687,12 +1727,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix DivElementMatrix(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(850);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -1719,10 +1760,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void MultElementMatrixMod(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(851);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -1748,12 +1790,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix MultElementMatrix(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(852);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -1778,11 +1821,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void ScaleMatrixMod(JlTuple factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(853);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, factor);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(factor);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1805,10 +1849,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void ScaleMatrixMod(double factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(853);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, factor);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1831,13 +1876,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix ScaleMatrix(JlTuple factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(854);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, factor);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(factor);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1861,12 +1907,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix ScaleMatrix(double factor)
 	{
 		IntPtr proc = JlNativeApi.PreCall(854);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, factor);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1892,10 +1939,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SubMatrixMod(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(855);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -1921,12 +1969,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix SubMatrix(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(856);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -1954,10 +2003,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void AddMatrixMod(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(857);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -1983,12 +2033,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix AddMatrix(JlMatrix matrixBID)
 	{
 		IntPtr proc = JlNativeApi.PreCall(858);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -2016,11 +2067,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void MultMatrixMod(JlMatrix matrixBID, string multType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(859);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.StoreS(proc, 2, multType);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 	}
@@ -2047,13 +2099,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix MultMatrix(JlMatrix matrixBID, string multType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(860);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixBID);
 		JlNativeApi.StoreS(proc, 2, multType);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixBID);
 		return obj;
@@ -2079,13 +2132,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void GetSizeMatrix(out int rows, out int columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(861);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out rows);
 		err = JlNativeApi.LoadI(proc, 1, err, out columns);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2109,13 +2163,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix RepeatMatrix(int rows, int columns)
 	{
 		IntPtr proc = JlNativeApi.PreCall(862);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, rows);
 		JlNativeApi.StoreI(proc, 2, columns);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2138,11 +2193,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix CopyMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(863);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2168,11 +2224,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetDiagonalMatrix(JlMatrix vectorID, int diagonal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(864);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, vectorID);
 		JlNativeApi.StoreI(proc, 2, diagonal);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(vectorID);
 	}
@@ -2197,12 +2254,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix GetDiagonalMatrix(int diagonal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(865);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, diagonal);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2230,12 +2288,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetSubMatrix(JlMatrix matrixSubID, int row, int column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(866);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, matrixSubID);
 		JlNativeApi.StoreI(proc, 2, row);
 		JlNativeApi.StoreI(proc, 3, column);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 		GC.KeepAlive(matrixSubID);
 	}
@@ -2262,6 +2321,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlMatrix GetSubMatrix(int row, int column, int rowsSub, int columnsSub)
 	{
 		IntPtr proc = JlNativeApi.PreCall(867);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, row);
 		JlNativeApi.StoreI(proc, 2, column);
@@ -2270,7 +2330,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out JlMatrix obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2294,11 +2354,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetFullMatrix(JlTuple values)
 	{
 		IntPtr proc = JlNativeApi.PreCall(868);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, values);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(values);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2321,10 +2382,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetFullMatrix(double values)
 	{
 		IntPtr proc = JlNativeApi.PreCall(868);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, values);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2348,11 +2410,12 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlTuple GetFullMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(869);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2378,6 +2441,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetValueMatrix(JlTuple row, JlTuple column, JlTuple value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(870);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -2386,7 +2450,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		JlNativeApi.UnpinTuple(value);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2411,12 +2475,13 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void SetValueMatrix(int row, int column, double value)
 	{
 		IntPtr proc = JlNativeApi.PreCall(870);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, row);
 		JlNativeApi.StoreI(proc, 2, column);
 		JlNativeApi.StoreD(proc, 3, value);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2440,6 +2505,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public JlTuple GetValueMatrix(JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(871);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
@@ -2448,7 +2514,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2472,13 +2538,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public double GetValueMatrix(int row, int column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(871);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreI(proc, 1, row);
 		JlNativeApi.StoreI(proc, 2, column);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return doubleValue;
 	}
@@ -2501,10 +2568,11 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	{
 		JlTuple hTuple = JlHandleBase.ConcatArray(matrixID);
 		IntPtr proc = JlNativeApi.PreCall(872);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, hTuple);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(hTuple);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(matrixID);
 	}
 
@@ -2522,9 +2590,10 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	public void ClearMatrix()
 	{
 		IntPtr proc = JlNativeApi.PreCall(872);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -2549,6 +2618,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(873);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, rows);
 		JlNativeApi.StoreI(proc, 1, columns);
 		JlNativeApi.Store(proc, 2, value);
@@ -2556,7 +2626,7 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(value);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2581,13 +2651,14 @@ public class JlMatrix : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(873);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreI(proc, 0, rows);
 		JlNativeApi.StoreI(proc, 1, columns);
 		JlNativeApi.StoreD(proc, 2, value);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 }

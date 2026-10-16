@@ -109,6 +109,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlPose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, transX);
 		JlNativeApi.StoreD(proc, 1, transY);
 		JlNativeApi.StoreD(proc, 2, transZ);
@@ -121,7 +122,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -268,6 +269,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	{
 		JlTuple tupleValue = JlData.ConcatArray(poses);
 		IntPtr proc = JlNativeApi.PreCall(220);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tupleValue);
 		JlNativeApi.Store(proc, 1, weights);
 		JlNativeApi.StoreS(proc, 2, mode);
@@ -282,7 +284,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(sigmaR);
 		err = LoadNew(proc, 0, err, out var obj);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out quality);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return obj;
 	}
 
@@ -315,6 +317,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	{
 		JlTuple tupleValue = JlData.ConcatArray(poses);
 		IntPtr proc = JlNativeApi.PreCall(220);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tupleValue);
 		JlNativeApi.Store(proc, 1, weights);
 		JlNativeApi.StoreS(proc, 2, mode);
@@ -327,7 +330,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(weights);
 		err = LoadNew(proc, 0, err, out var obj);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out quality);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return obj;
 	}
 
@@ -355,12 +358,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 	{
 		JlTuple tupleValue = JlData.ConcatArray(pose);
 		IntPtr proc = JlNativeApi.PreCall(226);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tupleValue);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(tupleValue);
 		err = JlTuple.LoadNew(proc, 0, err, out var data);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return SplitArray(data);
 	}
 
@@ -381,12 +385,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlPose PoseInvert()
 	{
 		IntPtr proc = JlNativeApi.PreCall(226);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -414,6 +419,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		data = poseRight;
 		JlTuple tupleValue2 = JlData.ConcatArray(data);
 		IntPtr proc = JlNativeApi.PreCall(227);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, tupleValue);
 		JlNativeApi.Store(proc, 1, tupleValue2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -421,7 +427,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(tupleValue);
 		JlNativeApi.UnpinTuple(tupleValue2);
 		err = JlTuple.LoadNew(proc, 0, err, out var data2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return SplitArray(data2);
 	}
 
@@ -444,6 +450,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlPose PoseCompose(JlPose poseRight)
 	{
 		IntPtr proc = JlNativeApi.PreCall(227);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, poseRight);
 		JlNativeApi.InitOCT(proc, 0);
@@ -451,7 +458,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(poseRight);
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -509,6 +516,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public static JlPose[] CreateCamPoseLookAtPoint(JlTuple camPosX, JlTuple camPosY, JlTuple camPosZ, JlTuple lookAtX, JlTuple lookAtY, JlTuple lookAtZ, JlTuple refPlaneNormal, JlTuple camRoll)
 	{
 		IntPtr proc = JlNativeApi.PreCall(995);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, camPosX);
 		JlNativeApi.Store(proc, 1, camPosY);
 		JlNativeApi.Store(proc, 2, camPosZ);
@@ -528,7 +536,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(refPlaneNormal);
 		JlNativeApi.UnpinTuple(camRoll);
 		err = JlTuple.LoadNew(proc, 0, err, out var data);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return SplitArray(data);
 	}
 
@@ -557,6 +565,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public void CreateCamPoseLookAtPoint(double camPosX, double camPosY, double camPosZ, double lookAtX, double lookAtY, double lookAtZ, JlTuple refPlaneNormal, double camRoll)
 	{
 		IntPtr proc = JlNativeApi.PreCall(995);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, camPosX);
 		JlNativeApi.StoreD(proc, 1, camPosY);
 		JlNativeApi.StoreD(proc, 2, camPosZ);
@@ -569,7 +578,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(refPlaneNormal);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -605,6 +614,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlXLDCont ContourToWorldPlaneXld(JlXLDCont contours, JlTuple cameraParam, JlTuple scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, cameraParam);
@@ -615,7 +625,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(cameraParam);
 		JlNativeApi.UnpinTuple(scale);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 		return obj;
@@ -645,6 +655,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlXLDCont ContourToWorldPlaneXld(JlXLDCont contours, JlTuple cameraParam, string scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 1, contours);
 		JlNativeApi.Store(proc, 0, cameraParam);
@@ -654,7 +665,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(cameraParam);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours);
 		return obj;
@@ -681,6 +692,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlPose SetOriginPose(double DX, double DY, double DZ)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1812);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, DX);
 		JlNativeApi.StoreD(proc, 2, DY);
@@ -689,7 +701,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -716,6 +728,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public string GetPoseType(out string orderOfRotation, out string viewOfTransform)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1814);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -725,7 +738,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		err = JlNativeApi.LoadS(proc, 0, err, out var stringValue);
 		err = JlNativeApi.LoadS(proc, 1, err, out orderOfRotation);
 		err = JlNativeApi.LoadS(proc, 2, err, out viewOfTransform);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return stringValue;
 	}
@@ -758,6 +771,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public JlPose ConvertPoseType(string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, orderOfTransform);
 		JlNativeApi.StoreS(proc, 2, orderOfRotation);
@@ -766,7 +780,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -804,6 +818,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public void CreatePose(double transX, double transY, double transZ, double rotX, double rotY, double rotZ, string orderOfTransform, string orderOfRotation, string viewOfTransform)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, transX);
 		JlNativeApi.StoreD(proc, 1, transY);
 		JlNativeApi.StoreD(proc, 2, transZ);
@@ -816,7 +831,7 @@ public class JlPose : JlData, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -847,11 +862,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 		{
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		IntPtr proc = JlNativeApi.PreCall(1833);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -872,12 +888,13 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public byte[] SerializePose()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1834);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -900,11 +917,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public void ReadPose(string poseFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1835);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, poseFile);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -926,11 +944,12 @@ public class JlPose : JlData, ISerializable, ICloneable
 	public void WritePose(string poseFile)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1836);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, poseFile);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
