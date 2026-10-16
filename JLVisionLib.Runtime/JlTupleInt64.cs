@@ -42,6 +42,7 @@ internal class JlTupleInt64 : JlTupleImplementation
 				pinHandle = GCHandle.Alloc(l, GCHandleType.Pinned);
 			}
 			pinCount++;
+			JlNativeProcedureScope.NotePin(this);
 		}
 	}
 
