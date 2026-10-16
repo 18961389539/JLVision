@@ -14,10 +14,12 @@ internal sealed class DatasetSpec
 internal sealed class DatasetFrame
 {
     public string File { get; set; } = string.Empty;
-    public bool ExpectedPresent { get; set; }
+    public bool? ExpectedPresent { get; set; }
     public double? ExpectedRow { get; set; }
     public double? ExpectedColumn { get; set; }
     public double TolerancePixels { get; set; } = 5.0;
+    public double? ExpectedAngleRad { get; set; }
+    public double ToleranceAngleRad { get; set; } = 0.10;
 }
 
 internal static class Program
@@ -25,7 +27,7 @@ internal static class Program
     private sealed record FrameResult(
         string Algorithm, string Filename, bool ExpectedPresent, bool Detected, bool Accepted,
         int MatchCount, double MatchMs, double? Row, double? Column, double? Angle,
-        double? Score, double? PixelError);
+        double? Score, double? PixelError, double? AngleErrorRad);
 
     private static int Main(string[] args)
     {
@@ -103,8 +105,10 @@ internal static class Program
             foreach (DatasetFrame frame in dataset.Frames)
             {
                 if (string.IsNullOrWhiteSpace(frame.File) || frame.TolerancePixels < 0 ||
-                    frame.ExpectedRow.HasValue != frame.ExpectedColumn.HasValue)
-                    throw new InvalidDataException("Each frame needs file, nonnegative tolerance, and a complete expected row/column pair.");
+                    frame.ExpectedRow.HasValue != frame.ExpectedColumn.HasValue ||
+                    !frame.ExpectedPresent.HasValue || frame.ToleranceAngleRad < 0 ||
+                    (frame.ExpectedAngleRad.HasValue && !frame.ExpectedPresent.Value))
+                    throw new InvalidDataException("Each frame requires a file, explicit expectedPresent, nonnegative tolerances and complete coordinate pairs.");
 
                 using var image = new JlImage(Resolve(frame.File));
                 long matchStart = Stopwatch.GetTimestamp();
@@ -143,11 +147,16 @@ internal static class Program
                         double dc = col.Value - frame.ExpectedColumn!.Value;
                         error = Math.Sqrt(dr * dr + dc * dc);
                     }
-                    bool accepted = frame.ExpectedPresent == found &&
-                        (!frame.ExpectedPresent || !error.HasValue || error.Value <= frame.TolerancePixels);
+                    double? angleError = angle.HasValue && frame.ExpectedAngleRad.HasValue
+                        ? Math.Abs(Math.Atan2(Math.Sin(angle.Value - frame.ExpectedAngleRad.Value),
+                            Math.Cos(angle.Value - frame.ExpectedAngleRad.Value))) : null;
+                    bool expected = frame.ExpectedPresent.Value;
+                    bool accepted = expected == found &&
+                        (!expected || !error.HasValue || error.Value <= frame.TolerancePixels) &&
+                        (!expected || !angleError.HasValue || angleError.Value <= frame.ToleranceAngleRad);
                     results.Add(new FrameResult(kind, Path.GetFileName(frame.File),
-                        frame.ExpectedPresent, found, accepted, rows.Length,
-                        matchMs, row, col, angle, score, error));
+                        expected, found, accepted, rows.Length,
+                        matchMs, row, col, angle, score, error, angleError));
                     Console.WriteLine($"{kind} {Path.GetFileName(frame.File)}: found={found} score={score:F3}, time={matchMs:F2} ms, accepted={accepted}");
                 }
             }
