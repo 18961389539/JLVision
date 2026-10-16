@@ -105,13 +105,14 @@ internal sealed class JlSerializationBuffer : JlHandle
 	private IntPtr GetSerializedItemPtr(out int size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(403);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadIP(proc, 0, err, out var intPtrValue);
 		err = JlNativeApi.LoadI(proc, 1, err, out size);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intPtrValue;
 	}
@@ -120,13 +121,14 @@ internal sealed class JlSerializationBuffer : JlHandle
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(404);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreIP(proc, 0, pointer);
 		JlNativeApi.StoreI(proc, 1, size);
 		JlNativeApi.StoreS(proc, 2, copy);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 }
