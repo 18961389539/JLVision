@@ -24,6 +24,9 @@ jobs:
       - name: Audit native operator lifetime scopes
         run: pwsh ./tools/audit-native-scopes.ps1
 
+      - name: Audit synthetic affine calibration evidence (managed only)
+        run: dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --output artifacts/calibration-evidence-demo.json
+
       - name: Restore
         run: dotnet restore JLVisionLib.slnx
 
@@ -54,6 +57,14 @@ jobs:
 
       - name: Execute independent NuGet consumer (Release)
         run: dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+
+      - name: Upload synthetic calibration evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-calibration-audit-demo
+          path: artifacts/calibration-evidence-demo.json
+          if-no-files-found: warn
 
       - name: Upload labeled vision dataset report
         if: always()
