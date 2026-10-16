@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\JLVisionLib.csproj" />
     <Compile Include="..\..\tools\JLVision.DatasetBenchmark\AcceptanceMetrics.cs" Link="AcceptanceMetrics.cs" />
+    <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationEvidenceAudit.cs" Link="CalibrationEvidenceAudit.cs" />
   </ItemGroup>
   <!-- Ensure native smoke tests exercise the packaged x64 runtime, not a missing-DLL path. -->
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
