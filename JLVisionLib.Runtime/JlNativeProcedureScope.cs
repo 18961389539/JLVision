@@ -119,7 +119,7 @@ internal sealed class JlNativeProcedureScope : IDisposable
         finally
         {
             // Destroy the native procedure before unpinning any arrays used by it.
-            foreach (KeyValuePair<JlTupleImplementation, int> pin in pins)
+            foreach (KeyValuePair<JlTupleImplementation, int> pin in new List<KeyValuePair<JlTupleImplementation, int>>(pins))
             {
                 for (int i = 0; i < pin.Value; i++)
                 {
