@@ -42,9 +42,15 @@ internal sealed class AcceptanceCriteria
     public double? MaxMissRate { get; set; }
     public double? MaxFalsePositiveRate { get; set; }
     public double? MaxRepeatabilityStdDevMm { get; set; }
+    public int? MinPositiveFrames { get; set; }
+    public int? MinNegativeFrames { get; set; }
 
     public void Validate()
     {
+        if ((MinPositiveFrames.HasValue && MinPositiveFrames.Value < 1) ||
+            (MinNegativeFrames.HasValue && MinNegativeFrames.Value < 1))
+            throw new ArgumentException("Minimum dataset population must be at least one frame.");
+
         foreach (var (name, value) in new[]
         {
             (nameof(MaxPositionErrorMm), MaxPositionErrorMm),
@@ -170,6 +176,12 @@ internal static class VisionAcceptance
                     observed.HasValue && double.IsFinite(observed.Value) && observed.Value <= max,
                     observed, max, unit));
 
+            if (criteria.MinPositiveFrames is int minPos)
+                checks.Add(new AcceptanceCheck("minPositiveFrames", positives >= minPos,
+                    positives, minPos, "frames"));
+            if (criteria.MinNegativeFrames is int minNeg)
+                checks.Add(new AcceptanceCheck("minNegativeFrames", negatives >= minNeg,
+                    negatives, minNeg, "frames"));
             if (criteria.MaxMissRate is double maxMiss) Add("missRate", missRate, maxMiss, "fraction");
             if (criteria.MaxFalsePositiveRate is double maxFalse) Add("falsePositiveRate", falsePositiveRate, maxFalse, "fraction");
             if (criteria.MaxP95MatchMs is double maxP95) Add("p95MatchMs",
