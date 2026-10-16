@@ -1,0 +1,18 @@
+{
+  "_note": "Illustrative paths and coordinates only. Replace with annotated customer images, not the synthetic fixture.",
+  "template": "images/template.bmp",
+  "minScore": 0.65,
+  "frames": [
+    {
+      "file": "images/part_present_001.bmp",
+      "expectedPresent": true,
+      "expectedRow": 98.0,
+      "expectedColumn": 134.0,
+      "tolerancePixels": 3.0
+    },
+    {
+      "file": "images/part_absent_001.bmp",
+      "expectedPresent": false
+    }
+  ]
+}
