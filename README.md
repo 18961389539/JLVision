@@ -29,3 +29,6 @@ dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuratio
 ```
 
 The tests demonstrate independent-worker operation only; concurrent access to one mutable image, region or tuple instance has not been certified thread-safe.
+
+For offline Shape/NCC matching against labeled production images (positive/negative frames, optional position/angle tolerances), use [the labeled dataset benchmark](docs/native-reliability.md#labeled-production-image-validation-positive-and-negative-frames) and its [example manifest](tools/JLVision.DatasetBenchmark/example.dataset.json). Keep customer images outside the public repository.
+
