@@ -40,6 +40,9 @@ jobs:
           dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --duration-seconds 2 --workers 2 --width 160 --height 120 --batches 2 --output artifacts/jlv-stress-timed.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+      - name: Benchmark synthetic NCC and Shape model lifecycle (Windows x64)
+        run: dotnet run --project tools/JLVision.ModelBenchmark/JLVision.ModelBenchmark.csproj --configuration Debug -- --algorithm both --iterations 8 --output artifacts/model-benchmark.json
+
       - name: Package (Release)
         run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
 
@@ -48,6 +51,14 @@ jobs:
 
       - name: Execute independent NuGet consumer (Release)
         run: dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+
+      - name: Upload Shape and NCC benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-model-benchmark
+          path: artifacts/model-benchmark.json
+          if-no-files-found: warn
 
       - name: Upload native stress report
         if: always()
