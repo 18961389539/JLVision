@@ -96,9 +96,10 @@ The manifest contains:
 - `template`: image for model training; resolved relative to the manifest location unless absolute
 - `minScore`: the minimum model matching score (greater than 0, at most 1)
 - `frames[].file`: positive and negative scene images
-- `frames[].expectedPresent`: expected target presence; controls missed/false-positive classification
+- `frames[].expectedPresent`: **required explicit boolean** target-presence label; controls missed/false-positive classification
 - Optional paired `expectedRow` and `expectedColumn`: **model reference-point** ground truth in image pixels, not automatically the bounding-box center
 - Optional `tolerancePixels`: allowed Euclidean position error in pixels (default 5)
+- Optional paired `expectedAngleRad` and `toleranceAngleRad`: target orientation in radians and angular error allowance (default 0.10 rad); angular error is wrapped across the ±π boundary
 
 Output includes per-frame detection, score, angle, latency and annotated position error, plus per-algorithm TP/TN/FP/FN, localization failures and P50/P95 search times. The process exits nonzero when an annotation fails. This is an **offline software-only** metric. Calibrated millimeter accuracy requires independently established image-to-world geometry, operator-verified annotations and an actual production-image dataset. Do not commit confidential production images to the public repository.
 
