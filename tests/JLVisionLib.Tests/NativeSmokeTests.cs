@@ -70,7 +70,7 @@ public sealed class NativeSmokeTests
             Assert.Equal(64, width);
             Assert.Equal(48, height);
 
-            using var threshold = image.Threshold(0, 255);
+            using var threshold = image.Threshold(0.0, 255.0);
             Assert.True(threshold.IsInitialized());
 
             using var rectangle = new JlRegion(5.0, 6.0, 15.0, 16.0);
