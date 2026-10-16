@@ -135,7 +135,15 @@ internal class JlTupleDouble : JlTupleImplementation
 	protected override void StoreData(IntPtr proc, IntPtr tuple)
 	{
 		PinTuple();
-		JlNativeApi.SetDArrPtr(tuple, d, iLength);
+		try
+		{
+			JlNativeApi.JlCkP(proc, JlNativeApi.SetDArrPtr(tuple, d, iLength));
+		}
+		catch
+		{
+			UnpinTuple();
+			throw;
+		}
 	}
 
 	internal static int Load(IntPtr tuple, out JlTupleDouble data)
