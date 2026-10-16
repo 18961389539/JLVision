@@ -192,12 +192,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont(JlRegion regions, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(70);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, regions);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(regions);
 	}
@@ -225,6 +226,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont(JlTuple row, JlTuple col)
 	{
 		IntPtr proc = JlNativeApi.PreCall(72);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.InitOCT(proc, 1);
@@ -232,7 +234,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(col);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -380,6 +382,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCotangentialContoursXld(double fitClippingLength, JlTuple fitLength, double maxTangAngle, double maxDist, double maxDistPerp, double maxOverlap, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(0);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, fitClippingLength);
 		JlNativeApi.Store(proc, 1, fitLength);
@@ -392,7 +395,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fitLength);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -426,6 +429,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCotangentialContoursXld(double fitClippingLength, double fitLength, double maxTangAngle, double maxDist, double maxDistPerp, double maxOverlap, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(0);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, fitClippingLength);
 		JlNativeApi.StoreD(proc, 1, fitLength);
@@ -437,7 +441,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -477,6 +481,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(4);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, cols);
 		JlNativeApi.Store(proc, 2, knots);
@@ -493,7 +498,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(maxError);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -525,6 +530,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(4);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, rows);
 		JlNativeApi.Store(proc, 1, cols);
 		JlNativeApi.StoreS(proc, 2, knots);
@@ -537,7 +543,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(rows);
 		JlNativeApi.UnpinTuple(cols);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -564,12 +570,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont Union2ClosedContoursXld(JlXLDCont contours2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(6);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours2);
 		return obj;
@@ -600,12 +607,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SymmDifferenceClosedContoursXld(JlXLDCont contours2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(8);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours2);
 		return obj;
@@ -637,12 +645,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont DifferenceClosedContoursXld(JlXLDCont sub)
 	{
 		IntPtr proc = JlNativeApi.PreCall(10);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, sub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(sub);
 		return obj;
@@ -673,12 +682,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont IntersectionClosedContoursXld(JlXLDCont contours2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(12);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contours2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contours2);
 		return obj;
@@ -716,6 +726,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCocircularContoursXld(JlTuple maxArcAngleDiff, JlTuple maxArcOverlap, JlTuple maxTangentAngle, JlTuple maxDist, JlTuple maxRadiusDiff, JlTuple maxCenterDist, string mergeSmallContours, int iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(13);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, maxArcAngleDiff);
 		JlNativeApi.Store(proc, 1, maxArcOverlap);
@@ -734,7 +745,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(maxRadiusDiff);
 		JlNativeApi.UnpinTuple(maxCenterDist);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -769,6 +780,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCocircularContoursXld(double maxArcAngleDiff, double maxArcOverlap, double maxTangentAngle, double maxDist, double maxRadiusDiff, double maxCenterDist, string mergeSmallContours, int iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(13);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxArcAngleDiff);
 		JlNativeApi.StoreD(proc, 1, maxArcOverlap);
@@ -781,7 +793,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -815,6 +827,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont CropContoursXld(JlTuple row1, JlTuple col1, JlTuple row2, JlTuple col2, string closeContours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(14);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, col1);
@@ -828,7 +841,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row2);
 		JlNativeApi.UnpinTuple(col2);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -860,6 +873,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont CropContoursXld(double row1, double col1, double row2, double col2, string closeContours)
 	{
 		IntPtr proc = JlNativeApi.PreCall(14);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, col1);
@@ -869,7 +883,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -901,6 +915,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(15);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.Store(proc, 2, size);
@@ -911,7 +926,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(col);
 		JlNativeApi.UnpinTuple(size);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -939,6 +954,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(15);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, col);
 		JlNativeApi.StoreD(proc, 2, size);
@@ -946,7 +962,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -978,6 +994,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SortContoursXld(string sortMode, string order, string rowOrCol)
 	{
 		IntPtr proc = JlNativeApi.PreCall(16);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, sortMode);
 		JlNativeApi.StoreS(proc, 1, order);
@@ -985,7 +1002,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1027,6 +1044,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont MergeContLineScanXld(JlXLDCont prevConts, out JlXLDCont prevMergedConts, int imageHeight, JlTuple margin, string mergeBorder, int maxImagesCont)
 	{
 		IntPtr proc = JlNativeApi.PreCall(17);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, prevConts);
 		JlNativeApi.StoreI(proc, 0, imageHeight);
@@ -1039,7 +1057,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(margin);
 		err = LoadNew(proc, 1, err, out var obj);
 		err = LoadNew(proc, 2, err, out prevMergedConts);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(prevConts);
 		return obj;
@@ -1072,6 +1090,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont MergeContLineScanXld(JlXLDCont prevConts, out JlXLDCont prevMergedConts, int imageHeight, double margin, string mergeBorder, int maxImagesCont)
 	{
 		IntPtr proc = JlNativeApi.PreCall(17);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, prevConts);
 		JlNativeApi.StoreI(proc, 0, imageHeight);
@@ -1083,7 +1102,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
 		err = LoadNew(proc, 2, err, out prevMergedConts);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(prevConts);
 		return obj;
@@ -1113,11 +1132,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(20);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1145,10 +1165,11 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void WriteContourXldArcInfo(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(21);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1178,6 +1199,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont GenParallelContourXld(string mode, JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(23);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, distance);
@@ -1185,7 +1207,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(distance);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1214,13 +1236,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont GenParallelContourXld(string mode, double distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(23);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreD(proc, 1, distance);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1255,6 +1278,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(24);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -1268,7 +1292,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1297,6 +1321,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(24);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, phi);
@@ -1305,7 +1330,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1337,6 +1362,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple DistRectangle2ContourPointsXld(int clippingEndPoints, double row, double column, double phi, double length1, double length2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(25);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, clippingEndPoints);
 		JlNativeApi.StoreD(proc, 1, row);
@@ -1347,7 +1373,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1388,6 +1414,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitRectangle2ContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int iterations, double clippingFactor, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple length1, out JlTuple length2, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(26);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1408,7 +1435,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out length1);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out length2);
 		err = JlTuple.LoadNew(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1448,6 +1475,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitRectangle2ContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int iterations, double clippingFactor, out double row, out double column, out double phi, out double length1, out double length2, out string pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(26);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1468,7 +1496,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 3, err, out length1);
 		err = JlNativeApi.LoadD(proc, 4, err, out length2);
 		err = JlNativeApi.LoadS(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1503,6 +1531,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SegmentContourAttribXld(JlTuple attribute, string operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(27);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, attribute);
 		JlNativeApi.StoreS(proc, 1, operation);
@@ -1514,7 +1543,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1550,6 +1579,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SegmentContourAttribXld(string attribute, string operation, double min, double max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(27);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, attribute);
 		JlNativeApi.StoreS(proc, 1, operation);
@@ -1558,7 +1588,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1591,6 +1621,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SegmentContoursXld(string mode, int smoothCont, double maxLineDist1, double maxLineDist2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(28);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreI(proc, 1, smoothCont);
@@ -1599,7 +1630,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -1640,6 +1671,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitCircleContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int iterations, double clippingFactor, out JlTuple row, out JlTuple column, out JlTuple radius, out JlTuple startPhi, out JlTuple endPhi, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(29);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1660,7 +1692,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out startPhi);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out endPhi);
 		err = JlTuple.LoadNew(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1697,6 +1729,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitCircleContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int iterations, double clippingFactor, out double row, out double column, out double radius, out double startPhi, out double endPhi, out string pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(29);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1717,7 +1750,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 3, err, out startPhi);
 		err = JlNativeApi.LoadD(proc, 4, err, out endPhi);
 		err = JlNativeApi.LoadS(proc, 5, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1757,6 +1790,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitLineContourXld(string algorithm, int maxNumPoints, int clippingEndPoints, int iterations, double clippingFactor, out JlTuple rowBegin, out JlTuple colBegin, out JlTuple rowEnd, out JlTuple colEnd, out JlTuple nr, out JlTuple nc, out JlTuple dist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(30);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1778,7 +1812,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out nr);
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out nc);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out dist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1816,6 +1850,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitLineContourXld(string algorithm, int maxNumPoints, int clippingEndPoints, int iterations, double clippingFactor, out double rowBegin, out double colBegin, out double rowEnd, out double colEnd, out double nr, out double nc, out double dist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(30);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1837,7 +1872,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 4, err, out nr);
 		err = JlNativeApi.LoadD(proc, 5, err, out nc);
 		err = JlNativeApi.LoadD(proc, 6, err, out dist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1870,6 +1905,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple DistEllipseContourPointsXld(string distanceMode, int clippingEndPoints, double row, double column, double phi, double radius1, double radius2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(31);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, distanceMode);
 		JlNativeApi.StoreI(proc, 1, clippingEndPoints);
@@ -1881,7 +1917,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1921,6 +1957,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistEllipseContourXld(string mode, int maxNumPoints, int clippingEndPoints, double row, double column, double phi, double radius1, double radius2, out JlTuple minDist, out JlTuple maxDist, out JlTuple avgDist, out JlTuple sigmaDist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(32);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1939,7 +1976,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out maxDist);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out avgDist);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out sigmaDist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1977,6 +2014,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistEllipseContourXld(string mode, int maxNumPoints, int clippingEndPoints, double row, double column, double phi, double radius1, double radius2, out double minDist, out double maxDist, out double avgDist, out double sigmaDist)
 	{
 		IntPtr proc = JlNativeApi.PreCall(32);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -1995,7 +2033,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 1, err, out maxDist);
 		err = JlNativeApi.LoadD(proc, 2, err, out avgDist);
 		err = JlNativeApi.LoadD(proc, 3, err, out sigmaDist);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2040,6 +2078,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitEllipseContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int vossTabSize, int iterations, double clippingFactor, out JlTuple row, out JlTuple column, out JlTuple phi, out JlTuple radius1, out JlTuple radius2, out JlTuple startPhi, out JlTuple endPhi, out JlTuple pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(33);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -2065,7 +2104,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out startPhi);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out endPhi);
 		err = JlTuple.LoadNew(proc, 7, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2106,6 +2145,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void FitEllipseContourXld(string algorithm, int maxNumPoints, double maxClosureDist, int clippingEndPoints, int vossTabSize, int iterations, double clippingFactor, out double row, out double column, out double phi, out double radius1, out double radius2, out double startPhi, out double endPhi, out string pointOrder)
 	{
 		IntPtr proc = JlNativeApi.PreCall(33);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, algorithm);
 		JlNativeApi.StoreI(proc, 1, maxNumPoints);
@@ -2131,7 +2171,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 5, err, out startPhi);
 		err = JlNativeApi.LoadD(proc, 6, err, out endPhi);
 		err = JlNativeApi.LoadS(proc, 7, err, out pointOrder);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2169,6 +2209,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(34);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, radius);
@@ -2185,7 +2226,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(endPhi);
 		JlNativeApi.UnpinTuple(pointOrder);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2217,6 +2258,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(34);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, radius);
@@ -2227,7 +2269,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2269,6 +2311,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(35);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -2289,7 +2332,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(endPhi);
 		JlNativeApi.UnpinTuple(pointOrder);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2323,6 +2366,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(35);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, phi);
@@ -2335,7 +2379,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -2365,13 +2409,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont AddNoiseWhiteContourXld(int numRegrPoints, double amp)
 	{
 		IntPtr proc = JlNativeApi.PreCall(36);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, numRegrPoints);
 		JlNativeApi.StoreD(proc, 1, amp);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2403,6 +2448,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDPoly GenPolygonsXld(string type, JlTuple alpha)
 	{
 		IntPtr proc = JlNativeApi.PreCall(45);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, type);
 		JlNativeApi.Store(proc, 1, alpha);
@@ -2410,7 +2456,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(alpha);
 		err = JlXLDPoly.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2439,13 +2485,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDPoly GenPolygonsXld(string type, double alpha)
 	{
 		IntPtr proc = JlNativeApi.PreCall(45);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, type);
 		JlNativeApi.StoreD(proc, 1, alpha);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlXLDPoly.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2476,13 +2523,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ProjectiveTransContourXld(JlHomMat2D homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(47);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2514,13 +2562,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont AffineTransContourXld(JlHomMat2D homMat2D)
 	{
 		IntPtr proc = JlNativeApi.PreCall(49);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, homMat2D);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(homMat2D);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2550,11 +2599,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont CloseContoursXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(50);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2588,6 +2638,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ClipEndPointsContoursXld(string mode, JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(51);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, length);
@@ -2595,7 +2646,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(length);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2625,13 +2676,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ClipEndPointsContoursXld(string mode, double length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(51);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreD(proc, 1, length);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2664,6 +2716,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ClipContoursXld(int row1, int column1, int row2, int column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(52);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, row1);
 		JlNativeApi.StoreI(proc, 1, column1);
@@ -2672,7 +2725,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2706,6 +2759,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont LocalMaxContoursXld(JlImage image, JlTuple minPercent, int minDiff, int distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(53);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.Store(proc, 0, minPercent);
@@ -2715,7 +2769,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(minPercent);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2747,6 +2801,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont LocalMaxContoursXld(JlImage image, int minPercent, int minDiff, int distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(53);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, image);
 		JlNativeApi.StoreI(proc, 0, minPercent);
@@ -2755,7 +2810,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -2798,6 +2853,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionStraightContoursHistoXld(out JlXLDCont selectedContours, int refLineStartRow, int refLineStartColumn, int refLineEndRow, int refLineEndColumn, int width, int maxWidth, int filterSize, out JlTuple histoValues)
 	{
 		IntPtr proc = JlNativeApi.PreCall(54);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, refLineStartRow);
 		JlNativeApi.StoreI(proc, 1, refLineStartColumn);
@@ -2813,7 +2869,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = LoadNew(proc, 1, err, out var obj);
 		err = LoadNew(proc, 2, err, out selectedContours);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out histoValues);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2848,6 +2904,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionStraightContoursXld(double maxDist, double maxDiff, double percent, string mode, JlTuple iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(55);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxDist);
 		JlNativeApi.StoreD(proc, 1, maxDiff);
@@ -2858,7 +2915,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(iterations);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2889,6 +2946,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionStraightContoursXld(double maxDist, double maxDiff, double percent, string mode, string iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(55);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxDist);
 		JlNativeApi.StoreD(proc, 1, maxDiff);
@@ -2898,7 +2956,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2937,6 +2995,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCollinearContoursExtXld(double maxDistAbs, double maxDistRel, double maxShift, double maxAngle, double maxOverlap, double maxRegrError, double maxCosts, double weightDist, double weightShift, double weightAngle, double weightLink, double weightRegr, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(56);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxDistAbs);
 		JlNativeApi.StoreD(proc, 1, maxDistRel);
@@ -2954,7 +3013,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -2985,6 +3044,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionCollinearContoursXld(double maxDistAbs, double maxDistRel, double maxShift, double maxAngle, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(57);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxDistAbs);
 		JlNativeApi.StoreD(proc, 1, maxDistRel);
@@ -2994,7 +3054,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3022,6 +3082,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont UnionAdjacentContoursXld(double maxDistAbs, double maxDistRel, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(58);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, maxDistAbs);
 		JlNativeApi.StoreD(proc, 1, maxDistRel);
@@ -3029,7 +3090,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3059,6 +3120,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SelectContoursXld(string feature, double min1, double max1, double min2, double max2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(59);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, feature);
 		JlNativeApi.StoreD(proc, 1, min1);
@@ -3068,7 +3130,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3107,6 +3169,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple GetRegressParamsXld(out JlTuple nx, out JlTuple ny, out JlTuple dist, out JlTuple fpx, out JlTuple fpy, out JlTuple lpx, out JlTuple lpy, out JlTuple mean, out JlTuple deviation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(60);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
@@ -3129,7 +3192,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out lpy);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out mean);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out deviation);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3156,13 +3219,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont RegressContoursXld(string mode, int iterations)
 	{
 		IntPtr proc = JlNativeApi.PreCall(61);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreI(proc, 1, iterations);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3189,6 +3253,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple GetContourAngleXld(string angleMode, string calcMode, int lookaround)
 	{
 		IntPtr proc = JlNativeApi.PreCall(62);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, angleMode);
 		JlNativeApi.StoreS(proc, 1, calcMode);
@@ -3196,7 +3261,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3222,12 +3287,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont SmoothContoursXld(int numRegrPoints)
 	{
 		IntPtr proc = JlNativeApi.PreCall(63);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, numRegrPoints);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3250,11 +3316,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple ContourPointNumXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(64);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3278,11 +3345,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple QueryContourGlobalAttribsXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(65);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3307,13 +3375,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple GetContourGlobalAttribXld(JlTuple name)
 	{
 		IntPtr proc = JlNativeApi.PreCall(66);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(name);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3339,12 +3408,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple GetContourGlobalAttribXld(string name)
 	{
 		IntPtr proc = JlNativeApi.PreCall(66);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3369,11 +3439,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple QueryContourAttribsXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(67);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3399,12 +3470,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple GetContourAttribXld(string name)
 	{
 		IntPtr proc = JlNativeApi.PreCall(68);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3428,13 +3500,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void GetContourXld(out JlTuple row, out JlTuple col)
 	{
 		IntPtr proc = JlNativeApi.PreCall(69);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out row);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out col);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -3461,6 +3534,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(71);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.Store(proc, 2, radius);
@@ -3472,7 +3546,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(radius);
 		JlNativeApi.UnpinTuple(samplingInterval);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -3499,6 +3573,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(71);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.Store(proc, 2, radius);
@@ -3509,7 +3584,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(col);
 		JlNativeApi.UnpinTuple(radius);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -3533,6 +3608,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(72);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, col);
 		JlNativeApi.InitOCT(proc, 1);
@@ -3540,7 +3616,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(col);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -3564,12 +3640,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ObjDiff(JlXLDCont objectsSub)
 	{
 		IntPtr proc = JlNativeApi.PreCall(558);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objectsSub);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objectsSub);
 		return obj;
@@ -3596,13 +3673,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont CopyObj(int index, int numObj)
 	{
 		IntPtr proc = JlNativeApi.PreCall(568);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, index);
 		JlNativeApi.StoreI(proc, 1, numObj);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3626,12 +3704,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ConcatObj(JlXLDCont objects2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(569);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objects2);
 		return obj;
@@ -3657,13 +3736,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectObj(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(572);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3688,12 +3768,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectObj(int index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(572);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3719,6 +3800,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public int CompareObj(JlXLDCont objects2, JlTuple epsilon)
 	{
 		IntPtr proc = JlNativeApi.PreCall(573);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.Store(proc, 0, epsilon);
@@ -3726,7 +3808,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(epsilon);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objects2);
 		return intValue;
@@ -3754,13 +3836,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public int CompareObj(JlXLDCont objects2, double epsilon)
 	{
 		IntPtr proc = JlNativeApi.PreCall(573);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.StoreD(proc, 0, epsilon);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objects2);
 		return intValue;
@@ -3786,12 +3869,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public int TestEqualObj(JlXLDCont objects2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(576);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objects2);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objects2);
 		return intValue;
@@ -3818,12 +3902,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlRegion GenRegionContourXld(string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(582);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlRegion.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3863,6 +3948,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateAnisoShapeModelXld(JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleRMin, double scaleRMax, JlTuple scaleRStep, double scaleCMin, double scaleCMax, JlTuple scaleCStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -3885,7 +3971,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleCStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3929,6 +4015,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateAnisoShapeModelXld(int numLevels, double angleStart, double angleExtent, double angleStep, double scaleRMin, double scaleRMax, double scaleRStep, double scaleCMin, double scaleCMax, double scaleCStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(892);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -3946,7 +4033,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -3983,6 +4070,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateScaledShapeModelXld(JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, double scaleMin, double scaleMax, JlTuple scaleStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -4001,7 +4089,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(scaleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4040,6 +4128,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateScaledShapeModelXld(int numLevels, double angleStart, double angleExtent, double angleStep, double scaleMin, double scaleMax, double scaleStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(893);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -4054,7 +4143,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4091,6 +4180,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateShapeModelXld(JlTuple numLevels, double angleStart, double angleExtent, JlTuple angleStep, JlTuple optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -4105,7 +4195,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(angleStep);
 		JlNativeApi.UnpinTuple(optimization);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4137,6 +4227,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlShapeModel CreateShapeModelXld(int numLevels, double angleStart, double angleExtent, double angleStep, string optimization, string metric, int minContrast)
 	{
 		IntPtr proc = JlNativeApi.PreCall(894);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, numLevels);
 		JlNativeApi.StoreD(proc, 1, angleStart);
@@ -4148,7 +4239,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlShapeModel.LoadNew(proc, 0, err, out JlShapeModel obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4187,6 +4278,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlImage GenGridRectificationMap(JlImage image, out JlXLDCont meshes, int gridSpacing, JlTuple rotation, JlTuple row, JlTuple column, string mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1107);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 2);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreI(proc, 0, gridSpacing);
@@ -4202,7 +4294,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column);
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
 		err = LoadNew(proc, 2, err, out meshes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -4237,6 +4329,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlImage GenGridRectificationMap(JlImage image, out JlXLDCont meshes, int gridSpacing, string rotation, JlTuple row, JlTuple column, string mapType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1107);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 2);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreI(proc, 0, gridSpacing);
@@ -4251,7 +4344,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column);
 		err = JlImage.LoadNew(proc, 1, err, out var obj);
 		err = LoadNew(proc, 2, err, out meshes);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return obj;
@@ -4280,13 +4373,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont DistanceContoursXld(JlXLDCont contourTo, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1300);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contourTo);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contourTo);
 		return obj;
@@ -4313,6 +4407,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple DistanceCcMin(JlXLDCont contour2, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1301);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -4320,7 +4415,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 		return tuple;
@@ -4348,13 +4443,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public double DistanceCcMin(JlXLDCont contour2, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1301);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out var doubleValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 		return doubleValue;
@@ -4384,6 +4480,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceCc(JlXLDCont contour2, JlTuple mode, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1302);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -4393,7 +4490,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(mode);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 	}
@@ -4421,6 +4518,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceCc(JlXLDCont contour2, string mode, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1302);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.StoreS(proc, 0, mode);
@@ -4429,7 +4527,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 	}
@@ -4459,6 +4557,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceSc(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1303);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -4473,7 +4572,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4501,6 +4600,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceSc(double row1, double column1, double row2, double column2, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1303);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, column1);
@@ -4511,7 +4611,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4540,6 +4640,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceLc(JlTuple row1, JlTuple column1, JlTuple row2, JlTuple column2, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1304);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, row1);
 		JlNativeApi.Store(proc, 1, column1);
@@ -4554,7 +4655,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column2);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4582,6 +4683,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistanceLc(double row1, double column1, double row2, double column2, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1304);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, row1);
 		JlNativeApi.StoreD(proc, 1, column1);
@@ -4592,7 +4694,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4619,6 +4721,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistancePc(JlTuple row, JlTuple column, out JlTuple distanceMin, out JlTuple distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1305);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -4629,7 +4732,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(column);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out distanceMin);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4655,6 +4758,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void DistancePc(double row, double column, out double distanceMin, out double distanceMax)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1305);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
@@ -4663,7 +4767,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadD(proc, 0, err, out distanceMin);
 		err = JlNativeApi.LoadD(proc, 1, err, out distanceMax);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -4692,11 +4796,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1552);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -4723,11 +4828,12 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new byte[] SerializeXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1553);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -4753,6 +4859,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1556);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
@@ -4763,7 +4870,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(genParamValue);
 		err = Load(proc, 1, err);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4790,6 +4897,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1556);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.StoreD(proc, 2, genParamValue);
@@ -4798,7 +4906,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 1, err);
 		err = JlNativeApi.LoadS(proc, 0, err, out var stringValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return stringValue;
 	}
@@ -4822,10 +4930,11 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public void WriteContourXldDxf(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1557);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -4849,6 +4958,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectXldPoint(JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1595);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
@@ -4857,7 +4967,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4884,13 +4994,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectXldPoint(double row, double column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1595);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4920,6 +5031,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectShapeXld(JlTuple features, string operation, JlTuple min, JlTuple max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1597);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, features);
 		JlNativeApi.StoreS(proc, 1, operation);
@@ -4931,7 +5043,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(min);
 		JlNativeApi.UnpinTuple(max);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4959,6 +5071,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont SelectShapeXld(string features, string operation, double min, double max)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1597);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, features);
 		JlNativeApi.StoreS(proc, 1, operation);
@@ -4967,7 +5080,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -4993,12 +5106,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont ShapeTransXld(string type)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1608);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreS(proc, 0, type);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -5029,6 +5143,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ContourToWorldPlaneXld(JlTuple cameraParam, JlPose worldPose, JlTuple scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, worldPose);
@@ -5039,7 +5154,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(worldPose);
 		JlNativeApi.UnpinTuple(scale);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -5068,6 +5183,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ContourToWorldPlaneXld(JlTuple cameraParam, JlPose worldPose, string scale)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, cameraParam);
 		JlNativeApi.Store(proc, 1, worldPose);
@@ -5077,7 +5193,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(cameraParam);
 		JlNativeApi.UnpinTuple(worldPose);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -5112,6 +5228,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlTuple DistanceCcMinPoints(JlXLDCont contour2, JlTuple mode, out JlTuple row1, out JlTuple column1, out JlTuple row2, out JlTuple column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.Store(proc, 0, mode);
@@ -5127,7 +5244,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out column1);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out row2);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 		return tuple;
@@ -5161,6 +5278,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public double DistanceCcMinPoints(JlXLDCont contour2, string mode, out double row1, out double column1, out double row2, out double column2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1996);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, contour2);
 		JlNativeApi.StoreS(proc, 0, mode);
@@ -5175,7 +5293,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		err = JlNativeApi.LoadD(proc, 2, err, out column1);
 		err = JlNativeApi.LoadD(proc, 3, err, out row2);
 		err = JlNativeApi.LoadD(proc, 4, err, out column2);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour2);
 		return doubleValue;
@@ -5202,13 +5320,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont InsertObj(JlXLDCont objectsInsert, int index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2003);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objectsInsert);
 		JlNativeApi.StoreI(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objectsInsert);
 		return obj;
@@ -5233,13 +5352,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont RemoveObj(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2005);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -5264,12 +5384,13 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public new JlXLDCont RemoveObj(int index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2005);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.StoreI(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -5296,6 +5417,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ReplaceObj(JlXLDCont objectsReplace, JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2006);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objectsReplace);
 		JlNativeApi.Store(proc, 0, index);
@@ -5303,7 +5425,7 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objectsReplace);
 		return obj;
@@ -5331,13 +5453,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont ReplaceObj(JlXLDCont objectsReplace, int index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2006);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 1);
 		JlNativeApi.Store(proc, 2, objectsReplace);
 		JlNativeApi.StoreI(proc, 0, index);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(objectsReplace);
 		return obj;
@@ -5367,13 +5490,14 @@ public class JlXLDCont : JlXLD, ISerializable, ICloneable
 	public JlXLDCont IntersectionRegionContourXld(JlRegion region, string mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2183);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 2);
 		JlNativeApi.Store(proc, 1, region);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(region);
 		return obj;
