@@ -157,7 +157,7 @@ public sealed class ShapeAndNccModelTests
         using (nccColumns)
         using (nccAngles)
         using (nccScores)
-            Assert.Empty(nccRows.DArr);
+            Assert.Equal(0, nccRows.Length);
 
         shape.FindShapeModel(negative, -0.10, 0.20, 0.80, 1, 0.5, "least_squares", 0, 0.8,
             out JlTuple shapeRows, out JlTuple shapeColumns, out JlTuple shapeAngles, out JlTuple shapeScores);
@@ -165,7 +165,7 @@ public sealed class ShapeAndNccModelTests
         using (shapeColumns)
         using (shapeAngles)
         using (shapeScores)
-            Assert.Empty(shapeRows.DArr);
+            Assert.Equal(0, shapeRows.Length);
     }
 
 }
