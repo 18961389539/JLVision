@@ -16,3 +16,16 @@ using JlImage image = new JlImage(JlImageType.Byte, 640, 480);
 Call `JLVisionRuntime.TryInitialize(out JlRuntimeDiagnostics diagnostics)` during application startup when a non-throwing runtime check is preferred.
 
 The public string overloads remain available for compatibility. Typed option overloads are provided for common image, pose, model, and transformation operations.
+
+
+## Native reliability and performance validation
+
+The Windows x64 CI workflow checks generated native procedure lifetime scopes, runs managed/native tests, compares serial and independent-worker throughput, and validates the **built Release NuGet package** in a separate consumer process.
+
+For multi-hour, single-process stress testing and interpretation of JSON metrics, see [native reliability testing](docs/native-reliability.md). For example:
+
+```powershell
+dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --duration-seconds 3600 --workers 4 --batches 60 --width 640 --height 480 --output artifacts/stress-one-hour.json
+```
+
+The tests demonstrate independent-worker operation only; concurrent access to one mutable image, region or tuple instance has not been certified thread-safe.
