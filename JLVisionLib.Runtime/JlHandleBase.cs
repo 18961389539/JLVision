@@ -88,15 +88,32 @@ public class JlHandleBase : IDisposable
 
 	private void SetHandleInternal(IntPtr handle, bool copy)
 	{
-		ClearHandleInternal();
-		if (suppressedFinalization)
+		// Replacing an owned handle with itself must not release its last native reference.
+		if (mHandle == handle)
+		{
+			return;
+		}
+
+		// Acquire the replacement before releasing the old reference. If copying fails,
+		// this object retains its original, valid handle.
+		IntPtr replacement = (copy && handle != UNDEF) ? JlNativeApi.CopyHandle(handle) : handle;
+		try
+		{
+			ClearHandleInternal();
+		}
+		catch
+		{
+			if (copy && replacement != UNDEF)
+			{
+				JlNativeApi.ClearHandle(replacement);
+			}
+			throw;
+		}
+		mHandle = replacement;
+		if (suppressedFinalization && replacement != UNDEF)
 		{
 			suppressedFinalization = false;
 			GC.ReRegisterForFinalize(this);
-		}
-		if (handle != UNDEF)
-		{
-			mHandle = (copy ? JlNativeApi.CopyHandle(handle) : handle);
 		}
 	}
 
@@ -333,7 +350,23 @@ public class JlHandleBase : IDisposable
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static JlTuple ConcatArray(JlHandleBase[] handles)
 	{
-		return new JlTuple(handles as JlHandle[]);
+		if (handles == null)
+		{
+			throw new ArgumentNullException(nameof(handles));
+		}
+
+		// Arrays declared as JlHandleBase[] cannot be cast to JlHandle[], even when
+		// every element is a JlHandle. Preserve the element order and null entries.
+		JlHandle[] items = new JlHandle[handles.Length];
+		for (int i = 0; i < handles.Length; i++)
+		{
+			if (handles[i] != null && !(handles[i] is JlHandle))
+			{
+				throw new ArgumentException("All non-null elements must be JlHandle instances.", nameof(handles));
+			}
+			items[i] = (JlHandle)handles[i];
+		}
+		return new JlTuple(items);
 	}
 
 	/// <summary>
