@@ -141,4 +141,42 @@ public sealed class AcceptanceMetricsTests
         Assert.False(VisionAcceptance.Analyze(frames,
             new AcceptanceCriteria { MaxFalsePositiveRate = 0 }).Passed);
     }
+    [Fact]
+    public void MinimumPopulationGateRejectsTinyPerfectDatasets()
+    {
+        FrameMeasurement[] data =
+        {
+            new(true, true, 1, null, null, null, null, null),
+            new(false, false, 1, null, null, null, null, null)
+        };
+        var report = VisionAcceptance.Analyze(data, new AcceptanceCriteria
+        {
+            MinPositiveFrames = 100,
+            MinNegativeFrames = 50,
+            MaxMissRate = 0,
+            MaxFalsePositiveRate = 0
+        });
+        Assert.Equal(4, report.Checks.Length);
+        Assert.False(report.Passed);
+        Assert.True(report.Checks.Single(c => c.Criterion == "missRate").Passed);
+        Assert.False(report.Checks.Single(c => c.Criterion == "minPositiveFrames").Passed);
+    }
+
+    [Fact]
+    public void MissedFrameFailsMillimeterAcceptanceEvenWithOtherAnnotatedMatches()
+    {
+        FrameMeasurement[] data =
+        {
+            new(true, true, 1, 0.02, 0.2, null, 1, 1),
+            new(true, false, 1, null, null, null, null, null)
+        };
+        var report = VisionAcceptance.Analyze(data, new AcceptanceCriteria
+        {
+            MaxPositionErrorMm = 0.1,
+            MaxAngleErrorDeg = 1
+        });
+        Assert.False(report.Passed);
+        Assert.All(report.Checks, c => Assert.False(c.Passed));
+    }
+
 }
