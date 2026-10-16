@@ -55,6 +55,24 @@ dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.c
 
 
 
+## 2.2 标定点空间覆盖、超限点与热力图
+
+配置 `calibrationEvidence.imageRegion` 为真实评测区域（`minRow/maxRow/minColumn/maxColumn`）。**它不是从标定点的最小外接矩形自动推断的**，否则未验证的视野边缘会被排除。必须保证所有标定点与独立验证点处于此区域内。
+
+程序将图像区域划分为固定 **3×3 网格**，统计 `fit` 和 `holdout` 两类测量点在每格的样本数和最大径向残差。可在 `acceptance` 中设置 `minFitCalibrationGridCells` 与 `minHoldoutCalibrationGridCells`（有效范围 1–9），覆盖率不足会使审计失败。指标表示**有测量样本的网格数**，不代表网格内所有像素都完成了精度验证。
+
+同时标记超出 `maxCalibrationFitErrorMm` 或 `maxCalibrationHoldoutErrorMm` 的实际测量点，保留点序号、图像坐标、X/Y 偏差、径向误差及其限值。**不会自动剔除异常点、重拟合矩阵或美化均方根结果。**
+
+`JLVision.CalibrationAudit` 可以输出 JSON 和 SVG：
+
+```powershell
+dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest "C:\\vision-dataset\\dataset.json" --output artifacts/calibration-audit.json --heatmap artifacts/calibration-residual.svg
+```
+
+SVG 为*采样点残差区域图*：只有包含独立验证点的网格才根据实测最大残差显示颜色；无验证点的区域明确显示灰色 **NO HOLDOUT**。空白区不做插值，不能因此宣称该区域误差为 0。圆点标记拟合/独立验证点，红色圈标记超限点。可直接用浏览器打开 SVG 并查看每个点的误差提示。
+
+CI 自动生成 `jlv-calibration-audit-demo`（JSON 和 SVG），但这些是**纯合成的演示数据**，不是相机实际视野的误差热力图。
+
 ## 3. 质量指标与门禁
 
 配置位于清单的 `acceptance`：
