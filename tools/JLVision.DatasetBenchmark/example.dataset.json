@@ -20,7 +20,9 @@
     "maxFalsePositiveRate": 0.01,
     "maxCalibrationFitErrorMm": 0.02,
     "maxCalibrationHoldoutErrorMm": 0.05,
-    "maxCalibrationHoldoutRmsMm": 0.03
+    "maxCalibrationHoldoutRmsMm": 0.03,
+    "minFitCalibrationGridCells": 5,
+    "minHoldoutCalibrationGridCells": 3
   },
   "frames": [
     {
@@ -93,6 +95,12 @@
         "xmm": 3.75,
         "ymm": 2.5
       }
-    ]
+    ],
+    "imageRegion": {
+      "minRow": 0,
+      "maxRow": 100,
+      "minColumn": 0,
+      "maxColumn": 100
+    }
   }
 }
