@@ -1,39 +1,98 @@
 {
-  "_note": "ILLUSTRATIVE ONLY. Replace the image files, annotations, thresholds and affine coefficients with independently measured production data. The affine coefficients below are NOT a real camera calibration.",
+  "_note": "ILLUSTRATION ONLY: all pixel/world correspondences, thresholds and coefficients below are synthetic placeholders, not a measured calibration or production acceptance result. Do not commit customer images.",
   "template": "images/template.bmp",
   "minScore": 0.65,
   "calibration": {
     "xFromColumn": 0.05,
-    "xFromRow": 0.0,
-    "xOffset": 0.0,
-    "yFromColumn": 0.0,
+    "xFromRow": 0,
+    "xOffset": 0,
+    "yFromColumn": 0,
     "yFromRow": 0.05,
-    "yOffset": 0.0
+    "yOffset": 0
   },
   "acceptance": {
     "minPositiveFrames": 100,
     "minNegativeFrames": 50,
     "maxPositionErrorMm": 0.1,
-    "maxAngleErrorDeg": 1.0,
-    "maxP95MatchMs": 100.0,
+    "maxAngleErrorDeg": 1,
+    "maxP95MatchMs": 100,
     "maxMissRate": 0.01,
-    "maxFalsePositiveRate": 0.01
+    "maxFalsePositiveRate": 0.01,
+    "maxCalibrationFitErrorMm": 0.02,
+    "maxCalibrationHoldoutErrorMm": 0.05,
+    "maxCalibrationHoldoutRmsMm": 0.03
   },
   "frames": [
     {
       "file": "images/part_present_001.bmp",
       "expectedPresent": true,
-      "expectedRow": 98.0,
-      "expectedColumn": 134.0,
-      "tolerancePixels": 3.0,
+      "expectedRow": 98,
+      "expectedColumn": 134,
+      "tolerancePixels": 3,
       "expectedXmm": 6.7,
       "expectedYmm": 4.9,
-      "expectedAngleRad": 0.0,
+      "expectedAngleRad": 0,
       "toleranceAngleRad": 0.1
     },
     {
       "file": "images/part_absent_001.bmp",
       "expectedPresent": false
     }
-  ]
+  ],
+  "calibrationEvidence": {
+    "calibrationId": "DEMO-NOT-MEASURED",
+    "measurementMethod": "SYNTHETIC EXAMPLE ONLY - replace with independently measured reference coordinates",
+    "fitPoints": [
+      {
+        "row": 0,
+        "column": 0,
+        "xmm": 0,
+        "ymm": 0
+      },
+      {
+        "row": 0,
+        "column": 100,
+        "xmm": 5,
+        "ymm": 0
+      },
+      {
+        "row": 100,
+        "column": 0,
+        "xmm": 0,
+        "ymm": 5
+      },
+      {
+        "row": 100,
+        "column": 100,
+        "xmm": 5,
+        "ymm": 5
+      },
+      {
+        "row": 50,
+        "column": 25,
+        "xmm": 1.25,
+        "ymm": 2.5
+      }
+    ],
+    "validationPoints": [
+      {
+        "row": 25,
+        "column": 50,
+        "xmm": 2.5,
+        "ymm": 1.25
+      },
+      {
+        "row": 75,
+        "column": 50,
+        "xmm": 2.5,
+        "ymm": 3.75
+      },
+      {
+        "row": 50,
+        "column": 75,
+        "xmm": 3.75,
+        "ymm": 2.5
+      }
+    ]
+  }
 }
