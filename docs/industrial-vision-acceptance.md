@@ -45,6 +45,16 @@ Y_mm = yFromColumn * column + yFromRow * row + yOffset
 
 本仓库 `example.dataset.json` 中拟合/验证点和世界坐标全部是**人为合成的格式示例**，不构成设备实际校准记录，也不能用于签发 ±0.1 mm 认证报告。
 
+标定证据也可以**独立验证**，不需要工业相机、原生图像库或 Windows。只需 .NET 8 SDK 和带 `calibration` / `calibrationEvidence` / `acceptance` 的 JSON 清单：
+
+```powershell
+dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest "C:\\vision-dataset\\dataset.json" --output artifacts/calibration-audit.json
+```
+
+工具输出各训练点、独立验证点的残差、最大偏差、RMS 和通过/失败状态；验证不通过返回非零退出码。它**不会重算拟合矩阵**，只审核现场传入的矩阵是否与记录的独立测量点一致。GitHub Actions 的示例验证使用合成数据，只证明审计代码可用。
+
+
+
 ## 3. 质量指标与门禁
 
 配置位于清单的 `acceptance`：
