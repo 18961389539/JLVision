@@ -1,0 +1,31 @@
+using System.Runtime.InteropServices;
+using JLVisionLib;
+using Xunit;
+
+namespace JLVisionLib.Tests;
+
+/// <summary>Exercise the bundled native runtime on supported Windows x64 runners.</summary>
+public sealed class NativeSmokeTests
+{
+    [Fact]
+    public void WindowsX64CanInitializeAndReleaseImages()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+            RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        {
+            return;
+        }
+
+        JlRuntimeDiagnostics diagnostics = JLVisionRuntime.Initialize();
+        Assert.Equal(JlRuntimeStatus.Ready, diagnostics.Status);
+        Assert.True(File.Exists(diagnostics.NativeLibraryPath));
+
+        // Repeated native allocations catch packaging/entry-point mistakes and
+        // basic lifetime regressions without assuming algorithm result values.
+        for (int i = 0; i < 32; i++)
+        {
+            using var image = new JlImage(JlImageType.Byte, 64, 48);
+            Assert.True(image.IsInitialized());
+        }
+    }
+}
