@@ -980,7 +980,7 @@ public class JlNativeApi
 	{
 		if (IsFailure(err))
 		{
-			PostCall(proc, err);
+			JlNativeProcedureScope.CompleteFailedCall(proc, err);
 		}
 	}
 }
