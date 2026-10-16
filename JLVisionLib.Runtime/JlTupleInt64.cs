@@ -143,17 +143,25 @@ internal class JlTupleInt64 : JlTupleImplementation
 	protected override void StoreData(IntPtr proc, IntPtr tuple)
 	{
 		PinTuple();
-		if (!JlNativeApi.isPlatform64)
+		try
 		{
-			JlNativeApi.JlCkP(proc, JlNativeApi.CreateElementsOfType(tuple, base.Length, JlTupleType.INTEGER));
-			for (int i = 0; i < base.Length; i++)
+			if (!JlNativeApi.isPlatform64)
 			{
-				JlNativeApi.SetL(tuple, i, l[i]);
+				JlNativeApi.JlCkP(proc, JlNativeApi.CreateElementsOfType(tuple, base.Length, JlTupleType.INTEGER));
+				for (int i = 0; i < base.Length; i++)
+				{
+					JlNativeApi.JlCkP(proc, JlNativeApi.SetL(tuple, i, l[i]));
+				}
+			}
+			else
+			{
+				JlNativeApi.JlCkP(proc, JlNativeApi.SetLArrPtr(tuple, l, iLength));
 			}
 		}
-		else
+		catch
 		{
-			JlNativeApi.SetLArrPtr(tuple, l, iLength);
+			UnpinTuple();
+			throw;
 		}
 	}
 
