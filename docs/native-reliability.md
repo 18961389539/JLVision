@@ -78,6 +78,32 @@ For real image paths, matching must be checked by a commissioning engineer again
 
 The workflow publishes model measurements under the `jlv-model-benchmark` artifact. For field-quality acceptance, prepare controlled datasets covering part changes, lighting drift, blur, rotation, occlusion and negative examples, then specify tolerances independently of these smoke tests.
 
+## Labeled production-image validation (positive and negative frames)
+
+For model **reuse across frames**, use `JLVision.DatasetBenchmark` rather than the training-lifecycle benchmark. By default it generates a positive and a blank negative BMP fixture, trains each model once, then checks both frames.
+
+```powershell
+dotnet run --project tools/JLVision.DatasetBenchmark/JLVision.DatasetBenchmark.csproj --configuration Debug -- --algorithm both --output artifacts/model-dataset.json
+```
+
+To assess **private, real image samples**, copy `tools/JLVision.DatasetBenchmark/example.dataset.json` to a local folder, replace the example paths and annotation coordinates, and execute:
+
+```powershell
+dotnet run --project tools/JLVision.DatasetBenchmark/JLVision.DatasetBenchmark.csproj --configuration Debug -- --manifest "C:\\vision-dataset\\dataset.json" --algorithm both --output artifacts/model-dataset-real.json
+```
+
+The manifest contains:
+- `template`: image for model training; resolved relative to the manifest location unless absolute
+- `minScore`: the minimum model matching score (greater than 0, at most 1)
+- `frames[].file`: positive and negative scene images
+- `frames[].expectedPresent`: expected target presence; controls missed/false-positive classification
+- Optional paired `expectedRow` and `expectedColumn`: **model reference-point** ground truth in image pixels, not automatically the bounding-box center
+- Optional `tolerancePixels`: allowed Euclidean position error in pixels (default 5)
+
+Output includes per-frame detection, score, angle, latency and annotated position error, plus per-algorithm TP/TN/FP/FN, localization failures and P50/P95 search times. The process exits nonzero when an annotation fails. This is an **offline software-only** metric. Calibrated millimeter accuracy requires independently established image-to-world geometry, operator-verified annotations and an actual production-image dataset. Do not commit confidential production images to the public repository.
+
+CI checks only the small synthetic positive/negative set and publishes a `jlv-model-dataset` artifact; it cannot certify performance on unprovided customer data.
+
 ## Before approving production release
 
 1. Establish a repeatable serial baseline, then test independent concurrency at 2/4/8 workers.
