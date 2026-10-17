@@ -31,7 +31,7 @@ jobs:
         shell: pwsh
         run: |
           $html = Get-Content artifacts/recognition-dataset.synthetic.html -Raw
-          foreach ($marker in @('SYNTHETIC DEMONSTRATION', 'Wilson 95% upper bound', 'By algorithm', 'By condition', 'Real field accuracy certified:')) {
+          foreach ($marker in @('SYNTHETIC DEMONSTRATION', 'Wilson 95% upper bound', 'By algorithm', 'By condition', 'Frame diagnostics', 'Real field accuracy certified:')) {
             if (-not $html.Contains($marker)) { throw "Recognition HTML missing marker: $marker" }
           }
       - name: Upload synthetic acceptance report
