@@ -173,4 +173,28 @@ public sealed class CalibrationFollowUpAndHistoryTests
         Assert.Throws<ArgumentException>(() =>
             CalibrationHistoryAnalysis.Analyze(new[] { a, b, sameId }, .05, .05));
     }
+    [Fact]
+    public void SvgLabelsSuggestedPointsAsNotMeasured()
+    {
+        var evidence = Evidence("demo");
+        var audit = CalibrationEvidenceAudit.Evaluate(Calibration(), evidence,
+            .02, .05, .05);
+        string svg = CalibrationHeatmapSvg.Render(audit, .05);
+        Assert.Contains("SUGGESTED, NOT MEASURED", svg);
+        Assert.Contains("Suggested next point (not measured)", svg);
+        Assert.Contains("GRAY = UNVERIFIED", svg);
+        Assert.Equal(3, audit.Spatial!.HoldoutOccupiedCells);
+    }
+
+    [Fact]
+    public void HistoryRejectsNegativeOrNonFiniteRegressionLimits()
+    {
+        var a = Snapshot("a", 1, 0);
+        var b = Snapshot("b", 2, .02);
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CalibrationHistoryAnalysis.Compare(a, b, -.01, .1));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CalibrationHistoryAnalysis.Compare(a, b, .1, double.NaN));
+    }
+
 }
