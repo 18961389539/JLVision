@@ -175,7 +175,7 @@ small{{display:block;color:#9fb0ca;margin-bottom:12px}}strong{{font-size:27px}}
 <article><small>Net holdout max residual change</small><strong>{fmt(peak)} mm</strong></article>
 <article><small>Net holdout RMS residual change</small><strong>{fmt(rms)} mm</strong></article>
 <article><small>History quality gate</small><strong class="status">{label}</strong></article></div>
-{chart}{details}
+{summary}{chart}{details}
 <article><small>Optional continuous trend gate</small><strong>{html.escape(gate_message)}</strong></article>
 <footer>Values represent independently supplied calibration holdout measurements,
 not robot picking accuracy. Missing historical series are deliberately not plotted. Streak counts are diagnostics only.
