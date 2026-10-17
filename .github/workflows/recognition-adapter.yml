@@ -1,0 +1,20 @@
+name: Recognition adapters (managed + native-image bridge)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  managed-barcode-decoders:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Execute Code128 QR and DataMatrix positive/negative tests
+        run: dotnet run --project tests/JLVisionLib.Recognition.Smoke/JLVisionLib.Recognition.Smoke.csproj --configuration Debug -- --windows-native-bridge
