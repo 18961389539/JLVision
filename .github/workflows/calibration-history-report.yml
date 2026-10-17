@@ -23,7 +23,8 @@ jobs:
           set +e
           python tools/calibration-history-report.py \
             --input tools/fixtures/calibration-history.synthetic.json \
-            --output artifacts/calibration-history-report.html
+            --output artifacts/calibration-history-report.html \
+            --max-consecutive-degrading-steps 2
           code=$?
           set -e
           test "$code" -eq 2
