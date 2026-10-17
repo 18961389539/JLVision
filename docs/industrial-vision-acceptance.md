@@ -85,7 +85,7 @@ SVG 用**琥珀色虚线十字**表示建议采样点，并明确标注 *SUGGEST
 dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest "C:\\calibration\\current.json" --baseline "C:\\calibration\\baseline.json" --max-peak-increase-mm 0.02 --max-rms-increase-mm 0.01 --output artifacts/calibration-compare.json
 ```
 
-两份清单都须提供严格先后顺序的 `recordedUtc`、不同的 `calibrationEvidence.calibrationId`、相同 `imageRegion`、相同 `measurementMethod`，以及**完全一致的独立参考点的像素坐标与世界位置真值**。变化太大或证据不一致时，拒绝“直接可比”的结论。比较结果记录最大独立验证残差及 RMS 的变化（mm），并根据显式容差判定是否退化；注意它反映的是*同一参考测量集合下给定标定矩阵的变化*，而非任何环境下机器人的抓取精度。
+两份清单都须提供严格先后顺序的 `recordedUtc`、不同的 `calibrationEvidence.calibrationId`、相同 `imageRegion`、相同 `measurementMethod`，以及**完全一致的独立参考点的像素坐标与世界位置真值**。变化太大或证据不一致时，拒绝“直接可比”的结论。拟合点集合若不同，报告中的拟合残差差值记为 `null`，防止把不一致的训练样本当作直接可比的数据。比较结果记录最大独立验证残差及 RMS 的变化（mm），并根据显式容差判定是否退化；注意它反映的是*同一参考测量集合下给定标定矩阵的变化*，而非任何环境下机器人的抓取精度。
 
 ### 多版本趋势
 
