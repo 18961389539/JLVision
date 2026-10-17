@@ -83,6 +83,35 @@ def svg_trend(points):
     return f'<svg role="img" aria-label="Cumulative calibration residual changes relative to baseline" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">' + "".join(lines) + '</svg>'
 
 
+def gate_status(payload):
+    history = payload.get("history")
+    if not isinstance(history, dict):
+        raise ValueError("History is required")
+    versions = prop(history, "versions", "Versions")
+    if not isinstance(versions, int) or isinstance(versions, bool) or versions < 2:
+        raise ValueError("At least two history versions are required")
+    regression = prop(history, "regressionDetected", "RegressionDetected")
+    if not isinstance(regression, bool):
+        raise ValueError("History regression verdict is required")
+    trend = trend_data(history, versions)
+    limit = payload.get("maxConsecutiveDegradingSteps")
+    if limit is not None and (isinstance(limit, bool) or not isinstance(limit, int) or limit < 1):
+        raise ValueError("maxConsecutiveDegradingSteps must be positive")
+    if limit is not None and trend is None:
+        raise ValueError("Consecutive gate requires history steps")
+    issues = []
+    result = payload.get("result")
+    if not isinstance(result, dict) or not isinstance(prop(result, "passed", "Passed"), bool):
+        issues.append("Current calibration audit pass/fail evidence missing")
+    elif not prop(result, "passed", "Passed"):
+        issues.append("Current calibration audit failed")
+    if regression:
+        issues.append("Historical calibration regression detected")
+    if limit is not None and trend[2] >= limit:
+        issues.append(f"Consecutive degradation limit reached: {trend[2]} >= {limit}")
+    return issues
+
+
 def render(payload):
     history = payload.get("history")
     if not isinstance(history, dict):
@@ -120,6 +149,13 @@ def render(payload):
     gate_message = ("CONTINUOUS DEGRADATION LIMIT REACHED" if streak_exceeded else
                     "Continuous trend gate disabled" if limit is None else
                     "Continuous trend gate within limit")
+    issues = gate_status(payload)
+    verdict = "REVIEW REQUIRED" if issues else "AUDIT GATES PASSED"
+    issue_items = "".join("<li>" + html.escape(reason) + "</li>" for reason in issues)
+    evidence_label = "SYNTHETIC DEMO ONLY" if "SYNTHETIC" in str(calibration_id).upper() else "EVIDENCE SOURCE NOT INDEPENDENTLY VERIFIED"
+    summary = ('<article><small>Field acceptance summary · ' + html.escape(evidence_label) +
+               '</small><strong>' + verdict + '</strong><ul>' + issue_items +
+               '</ul><p>Passing software gates alone is not robot picking acceptance.</p></article>')
     label = "REGRESSION" if regression else "NO REGRESSION DETECTED"
     status = "#f87171" if regression else "#4ade80"
     # Display source facts only. No fabricated timeseries when historical points are absent.
