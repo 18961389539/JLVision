@@ -11,5 +11,7 @@
     <Compile Include="../JLVision.DatasetBenchmark/CalibrationEvidenceAudit.cs" Link="CalibrationEvidenceAudit.cs" />
     <Compile Include="../JLVision.DatasetBenchmark/CalibrationSpatialDiagnostics.cs" Link="CalibrationSpatialDiagnostics.cs" />
     <Compile Include="../JLVision.DatasetBenchmark/CalibrationHeatmapSvg.cs" Link="CalibrationHeatmapSvg.cs" />
+    <Compile Include="../JLVision.DatasetBenchmark/CalibrationFollowUpPlanner.cs" Link="CalibrationFollowUpPlanner.cs" />
+    <Compile Include="../JLVision.DatasetBenchmark/CalibrationHistoryAnalysis.cs" Link="CalibrationHistoryAnalysis.cs" />
   </ItemGroup>
 </Project>
