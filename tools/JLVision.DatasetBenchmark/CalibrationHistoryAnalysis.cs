@@ -15,7 +15,7 @@ internal sealed record CalibrationSnapshot(DateTimeOffset RecordedUtc,
 internal sealed record CalibrationVersionDelta(
     string BaselineId, string CurrentId,
     double HoldoutMaxChangeMm, double HoldoutRmsChangeMm,
-    double FitMaxChangeMm, int HoldoutGridCellChange,
+    double? FitMaxChangeMm, int HoldoutGridCellChange,
     bool RegressionDetected, string[] Reasons);
 
 internal sealed record CalibrationHistoryResult(
@@ -39,10 +39,15 @@ internal static class CalibrationHistoryAnalysis
             reasons.Add("held-out maximum residual increased beyond limit");
         if (rmsChange > maxRmsIncreaseMm + 1e-12)
             reasons.Add("held-out RMS residual increased beyond limit");
+        // Fit datasets can change between calibrations. Their errors cannot
+        // be compared unless the physical fit correspondences are identical.
+        double? fitDelta = SameCorrespondences(
+            baseline.Evidence.FitPoints, current.Evidence.FitPoints)
+            ? current.Audit.Fit.MaxMm - baseline.Audit.Fit.MaxMm : null;
         return new CalibrationVersionDelta(
             baseline.Audit.CalibrationId, current.Audit.CalibrationId,
             peakChange, rmsChange,
-            current.Audit.Fit.MaxMm - baseline.Audit.Fit.MaxMm,
+            fitDelta,
             current.Audit.Spatial!.HoldoutOccupiedCells -
                 baseline.Audit.Spatial!.HoldoutOccupiedCells,
             reasons.Count > 0, reasons.ToArray());
@@ -109,19 +114,22 @@ internal static class CalibrationHistoryAnalysis
         // The same independent physical reference measurements must be used
         // to assess calibration drift. Different targets would change apparent
         // residuals without proving a change in calibration quality.
-        var referenceA = baseline.Evidence.ValidationPoints.OrderBy(x => x.Row)
-            .ThenBy(x => x.Column).ToArray();
-        var referenceB = current.Evidence.ValidationPoints.OrderBy(x => x.Row)
-            .ThenBy(x => x.Column).ToArray();
-        if (referenceA.Length != referenceB.Length)
-            throw new ArgumentException("Cannot compare different holdout reference point counts.");
-        for (int i = 0; i < referenceA.Length; ++i)
-        {
-            CalibrationPoint x = referenceA[i], y = referenceB[i];
-            if (x.Row != y.Row || x.Column != y.Column ||
-                x.Xmm != y.Xmm || x.Ymm != y.Ymm)
-                throw new ArgumentException(
-                    "Reference holdout correspondences differ; compare only identical independently measured points.");
-        }
+        if (!SameCorrespondences(baseline.Evidence.ValidationPoints,
+            current.Evidence.ValidationPoints))
+            throw new ArgumentException(
+                "Reference holdout correspondences differ; compare only identical independently measured points.");
     }
+    private static bool SameCorrespondences(
+        IReadOnlyList<CalibrationPoint> left, IReadOnlyList<CalibrationPoint> right)
+    {
+        if (left.Count != right.Count) return false;
+        var a = left.OrderBy(p => p.Row).ThenBy(p => p.Column).ToArray();
+        var b = right.OrderBy(p => p.Row).ThenBy(p => p.Column).ToArray();
+        for (int i = 0; i < a.Length; ++i)
+            if (a[i].Row != b[i].Row || a[i].Column != b[i].Column ||
+                a[i].Xmm != b[i].Xmm || a[i].Ymm != b[i].Ymm)
+                return false;
+        return true;
+    }
+
 }
