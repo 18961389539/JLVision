@@ -111,6 +111,15 @@ def render(payload):
                    str(streak) + ' transitions (diagnostic, not a separate acceptance gate)</small>' +
                    '<div class="overflow"><table><thead><tr><th>Version</th><th>Peak Δ mm</th><th>RMS Δ mm</th><th>Gate</th></tr></thead><tbody>' +
                    cells + '</tbody></table></div></article>')
+    limit = payload.get("maxConsecutiveDegradingSteps")
+    if limit is not None and (isinstance(limit, bool) or not isinstance(limit, int) or limit < 1):
+        raise ValueError("maxConsecutiveDegradingSteps must be a positive integer")
+    if limit is not None and trend is None:
+        raise ValueError("Consecutive trend gate requires history steps")
+    streak_exceeded = limit is not None and trend[2] >= limit
+    gate_message = ("CONTINUOUS DEGRADATION LIMIT REACHED" if streak_exceeded else
+                    "Continuous trend gate disabled" if limit is None else
+                    "Continuous trend gate within limit")
     label = "REGRESSION" if regression else "NO REGRESSION DETECTED"
     status = "#f87171" if regression else "#4ade80"
     # Display source facts only. No fabricated timeseries when historical points are absent.
@@ -130,6 +139,8 @@ small{{display:block;color:#9fb0ca;margin-bottom:12px}}strong{{font-size:27px}}
 <article><small>Net holdout max residual change</small><strong>{fmt(peak)} mm</strong></article>
 <article><small>Net holdout RMS residual change</small><strong>{fmt(rms)} mm</strong></article>
 <article><small>History quality gate</small><strong class="status">{label}</strong></article></div>
+{chart}{details}
+<article><small>Optional continuous trend gate</small><strong>{html.escape(gate_message)}</strong></article>
 <footer>Values represent independently supplied calibration holdout measurements,
 not robot picking accuracy. Missing historical series are deliberately not plotted. Streak counts are diagnostics only.
 A passing synthetic demonstration does not certify real-world ±0.1 mm accuracy.</footer>
@@ -140,12 +151,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--max-consecutive-degrading-steps", type=int)
     args = parser.parse_args()
     payload = json.loads(args.input.read_text(encoding="utf-8"))
+    if args.max_consecutive_degrading_steps is not None:
+        payload["maxConsecutiveDegradingSteps"] = args.max_consecutive_degrading_steps
     report = render(payload)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(report, encoding="utf-8")
     print(args.output)
+    if args.max_consecutive_degrading_steps is not None and "CONTINUOUS DEGRADATION LIMIT REACHED" in report:
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
