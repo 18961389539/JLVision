@@ -134,6 +134,48 @@ class RecognitionHtmlTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.render(p)
 
+    def test_failed_frames_show_diagnostics_without_decoded_customer_data(self):
+        p = report()
+        p["verdict"] = "REVIEW_REQUIRED"
+        p["reasons"] = ["One wrong read"]
+        p["frames"] = [
+            {"id": "frame-<script>alert(1)</script>",
+             "kind": "ocr", "condition": "reflection",
+             "expectedPresent": True, "detected": True,
+             "accepted": False, "misread": True,
+             "elapsedMs": 12.5, "errorType": None,
+             "decodedText": "CUSTOMER-SECRET-123"},
+            {"id": "other", "kind": "barcode1d", "condition": "blur",
+             "expectedPresent": False, "detected": True,
+             "accepted": False, "misread": False,
+             "elapsedMs": 8.2, "errorType": None},
+            {"id": "broken", "kind": "datacode2d", "condition": "low-light",
+             "expectedPresent": True, "detected": False,
+             "accepted": False, "misread": False,
+             "elapsedMs": 1.1, "errorType": "InvalidDataException"},
+        ]
+        content = renderer.render(p)
+        self.assertIn("Frame diagnostics", content)
+        self.assertIn("WRONG CONTENT / EXTRA SYMBOL", content)
+        self.assertIn("FALSE POSITIVE", content)
+        self.assertIn("DECODER ERROR", content)
+        self.assertIn("frame-&lt;script&gt;", content)
+        self.assertNotIn("CUSTOMER-SECRET-123", content)
+        self.assertNotIn("<script>", content)
+
+    def test_invalid_frame_elapsed_or_labels_rejected(self):
+        p = report()
+        p["frames"] = [{"id": "1", "kind": "ocr", "condition": "normal",
+                        "expectedPresent": True, "detected": False,
+                        "accepted": False, "misread": False,
+                        "elapsedMs": float("nan"), "errorType": None}]
+        with self.assertRaises(ValueError):
+            renderer.render(p)
+        p["frames"][0]["elapsedMs"] = 4.2
+        p["frames"][0]["expectedPresent"] = "false"
+        with self.assertRaises(ValueError):
+            renderer.render(p)
+
     def test_contradictory_success_with_failures_rejected(self):
         p = report()
         p["reasons"] = ["No"]
