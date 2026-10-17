@@ -1,0 +1,22 @@
+name: Recognition dataset acceptance
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  labeled-recognition-dataset:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build recognition dataset benchmark and test harness
+        run: dotnet build tests/JLVision.RecognitionBenchmark.Smoke/JLVision.RecognitionBenchmark.Smoke.csproj --configuration Debug
+      - name: Test exact OCR/barcode ground-truth evaluation and synthetic end-to-end decoder
+        run: dotnet run --project tests/JLVision.RecognitionBenchmark.Smoke/JLVision.RecognitionBenchmark.Smoke.csproj --configuration Debug --no-build
