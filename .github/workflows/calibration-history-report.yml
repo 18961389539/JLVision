@@ -20,12 +20,16 @@ jobs:
         run: python tools/test-calibration-history-report.py
       - name: Render synthetic history HTML
         run: |
+          set +e
           python tools/calibration-history-report.py \
             --input tools/fixtures/calibration-history.synthetic.json \
             --output artifacts/calibration-history-report.html
+          code=$?
+          set -e
+          test "$code" -eq 2
       - name: Verify report content
         run: |
-          python -c "from pathlib import Path; s=Path('artifacts/calibration-history-report.html').read_text(); assert 'REGRESSION' in s; assert '+0.01000 mm' in s; assert 'SYNTHETIC-DEMO-NOT-MEASURED' in s"
+          python -c "from pathlib import Path; s=Path('artifacts/calibration-history-report.html').read_text(); assert 'REGRESSION' in s; assert '+0.01000 mm' in s; assert 'SYNTHETIC-DEMO-NOT-MEASURED' in s; assert 'REVIEW REQUIRED' in s"
       - name: Upload HTML audit report
         if: always()
         uses: actions/upload-artifact@v4
