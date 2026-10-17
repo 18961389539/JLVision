@@ -74,6 +74,42 @@ bounds checks, and (Windows) the `JlImage` bridge. This does not establish indus
 production-image benchmarks with positive/negative labels and real P95 latency
 before product release.
 
+### Optional managed OCR adapter
+
+`JLVisionLib.Ocr.Tesseract` adds `JlOcr` using the separately
+maintained Tesseract .NET 5.2.0 wrapper. It restores **functional OCR** through
+an independent backend, **not** the deleted native `JlOCR*` implementations.
+
+The application must supply a local directory containing `eng.traineddata`
+(or other matching language models). This data is NOT committed to the
+repository or bundled in the library. Deploy the matching native dependencies
+and the Visual C++ runtime required by the Tesseract package.
+
+```csharp
+using JLVisionLib;
+using JLVisionLib.Recognition;
+using JLVisionLib.Recognition.TesseractBackend;
+
+using var image = new JlImage(@"C:\vision\label.png"); // byte grayscale only
+using var ocr = new JlOcr(@"C:\vision\tessdata", "eng");
+JlOcrResult text = ocr.Recognize(image,
+    new JlRecognitionRoi(50, 25, 400, 120), JlOcrPageMode.SingleLine);
+Console.WriteLine($"{text.Text} (mean confidence: {text.Confidence:P1})");
+```
+
+`JlOcr` also accepts tightly packed Gray8 bytes, validates ROI bounds,
+converts the grayscale data into an in-memory indexed BMP, and processes
+without creating temporary customer-image files. The OCR engine is owned
+by the caller and serialized by a lock during recognition; use independently
+constructed engines to parallelize across workers. The numeric confidence
+is Tesseract's mean confidence, **not** an industrial pass/fail threshold.
+
+The optional Windows OCR workflow downloads the English language model
+from the official tessdata_fast repository into the CI runner's temporary
+directory and tests generated high-contrast text. Synthetic OCR success
+does not prove recognition accuracy on reflective/low-contrast labels,
+custom industrial fonts, orientation changes or production images.
+
 ### Why original native wrappers were not recreated
 
 `JLVisionCore.dll` contains static name strings mentioning barcode, DataMatrix
