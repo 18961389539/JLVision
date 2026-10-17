@@ -84,7 +84,7 @@ public sealed record RecognitionMetrics(
 
 public sealed record RecognitionBenchmarkReport(
     int SchemaVersion, string DatasetId, string SourceType, string DeclaredSoftwareCommit,
-    string ManifestSha256, string Verdict, bool RealFieldAccuracyCertified,
+    string ManifestSha256, RecognitionLimits Acceptance, string Verdict, bool RealFieldAccuracyCertified,
     RecognitionMetrics Overall, Dictionary<string, RecognitionMetrics> ByKind,
     Dictionary<string, RecognitionMetrics> ByCondition,
     Dictionary<string, RecognitionMetrics> ByKindCondition, List<string> Reasons,
@@ -213,7 +213,7 @@ public static class RecognitionEvaluator
             dataset.SourceType == "synthetic" ? "SYNTHETIC_SOFTWARE_GATES_PASSED" :
             "SOFTWARE_GATES_PASSED_HUMAN_REVIEW_REQUIRED";
         return new RecognitionBenchmarkReport(1, dataset.DatasetId, dataset.SourceType,
-            dataset.SoftwareCommit, manifestSha256, verdict, false, overall,
+            dataset.SoftwareCommit, manifestSha256, limits, verdict, false, overall,
             byKind, byCondition, byKindCondition, reasons, values);
     }
 
