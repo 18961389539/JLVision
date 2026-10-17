@@ -7,6 +7,7 @@ The declared provenance and identities remain claims needing independent checkin
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
 from datetime import datetime
@@ -71,7 +72,7 @@ def evaluate(pack, root):
     errors = []
     inventory = []
     root = root.resolve()
-    if not isinstance(pack, dict) or pack.get("schemaVersion") != 1:
+    if not isinstance(pack, dict) or type(pack.get("schemaVersion")) is not int or pack["schemaVersion"] != 1:
         return {"status": "REVIEW_REQUIRED", "issues": ["Unsupported evidence schema"],
                 "files": [], "scope": "Evidence completeness only; human approval required"}
     for name in IDENTITY:
@@ -140,7 +141,7 @@ def evaluate(pack, root):
             acceptance = ds.get("acceptance")
             for key in CRITERIA:
                 check = value(acceptance, key)
-                if not isinstance(check, (float, int)) or isinstance(check, bool) or check < 0:
+                if not isinstance(check, (float, int)) or isinstance(check, bool) or not math.isfinite(check) or check < (1 if key.startswith("min") else 0):
                     errors.append("Missing or invalid dataset acceptance criterion: " + key)
             results = ds.get("summary")
             if not isinstance(results, list) or not results:
