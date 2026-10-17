@@ -106,6 +106,15 @@ try
     Check(!pass.RealFieldAccuracyCertified, "no field certification");
     Check(pass.Overall.TruePositive == 3 && pass.Overall.TrueNegative == 3, "TP/TN");
     Check(Math.Abs(pass.Overall.P95Ms - 6) < 0.001, "nearest-rank P95");
+    Check(pass.ByKindCondition.ContainsKey("barcode1d|normal") &&
+          pass.ByKindCondition.ContainsKey("datacode2d|blank"), "algorithm-condition coverage");
+
+    dataset.Frames[0].ExpectedFormat = "QR_CODE";
+    bool rejectedFormat = false;
+    try { RecognitionEvaluator.Validate(dataset); }
+    catch (InvalidDataException) { rejectedFormat = true; }
+    Check(rejectedFormat, "a QR label cannot be assigned to a 1D reader");
+    dataset.Frames[0].ExpectedFormat = "CODE_128";
 
     var wrong = baseObserv.ToList();
     wrong[2] = Observ(dataset.Frames[2], true, false, true, 3);
@@ -129,6 +138,18 @@ try
     var underpowered = RecognitionEvaluator.Evaluate(dataset, baseObserv, "");
     Check(underpowered.Reasons.Any(r => r.Contains("insufficient")), "minimum population gate");
     dataset.Acceptance.MinPositivePerKind = 1;
+
+    // Each algorithm must be represented in every REQUIRED condition.
+    dataset.Frames[3].Condition = "normal";
+    dataset.Frames[5].Condition = "normal";
+    var missingConditionObservations = dataset.Frames.Select((f, i) =>
+        Observ(f, f.ExpectedPresent!.Value, f.ExpectedPresent.Value, false, i + 1)).ToList();
+    var missingCondition = RecognitionEvaluator.Evaluate(dataset, missingConditionObservations, "");
+    Check(missingCondition.Reasons.Any(r =>
+          r.Contains("Missing required algorithm-condition combination: datacode2d|blank")),
+          "missing per-algorithm scenario must fail closed");
+    dataset.Frames[3].Condition = "blank";
+    dataset.Frames[5].Condition = "blank";
 
     // Actual JlImage -> ZXing barcode pipeline and JSON report, using synthetic BMPs.
     string project = Path.Combine(Directory.GetCurrentDirectory(), "tools",
@@ -159,6 +180,11 @@ try
         "real decoder must read Code128, QR and DataMatrix");
     Check(rootElement.GetProperty("overall").GetProperty("trueNegative").GetInt32() == 3,
         "negative images must have no detections");
+    Check(rootElement.GetProperty("byKindCondition").GetProperty("barcode1d|normal")
+        .GetProperty("truePositive").GetInt32() == 1, "per-kind condition results");
+    var artifactDirectory = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
+    Directory.CreateDirectory(artifactDirectory);
+    File.Copy(output, Path.Combine(artifactDirectory, "recognition-dataset.synthetic.json"), true);
     Console.WriteLine("PASS recognition metrics, failure gates, dataset execution and explicit synthetic labeling.");
 }
 finally
