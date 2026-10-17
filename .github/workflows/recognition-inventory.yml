@@ -1,0 +1,47 @@
+name: Recognition capability inventory
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recognition-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test source and native evidence boundaries
+        run: python tools/test-recognition-inventory.py
+      - name: Inspect bundled native DLL without loading it
+        run: |
+          python tools/audit-recognition-inventory.py \
+            --root . \
+            --native Libs/JLVisionCore.dll \
+            --output artifacts/recognition-inventory.json \
+            --markdown artifacts/recognition-inventory.md
+      - name: Verify classification remains honest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('artifacts/recognition-inventory.json').read_text(encoding='utf-8'))
+          assert result['native']['inspected']
+          assert result['requiresRuntimeValidation']
+          assert not result['modifiesRuntime']
+          for family in result['families'].values():
+              assert family['fullWorkflowVerified'] is False
+          PY
+      - name: Upload recognition audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-recognition-inventory
+          path: |
+            artifacts/recognition-inventory.json
+            artifacts/recognition-inventory.md
+          if-no-files-found: error
