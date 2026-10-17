@@ -37,6 +37,8 @@ internal sealed record CalibrationAuditResult(string CalibrationId, string Measu
     bool Passed, string[] Reasons)
 {
     public CalibrationSpatialReport? Spatial { get; init; }
+    public CalibrationNextPoint[] SuggestedValidationPoints { get; init; } =
+        Array.Empty<CalibrationNextPoint>();
 }
 
 internal static class CalibrationEvidenceAudit
@@ -101,7 +103,12 @@ internal static class CalibrationEvidenceAudit
             reasons.Add("holdout spatial coverage below minimum occupied cells");
 
         return new CalibrationAuditResult(evidence.CalibrationId!, evidence.MeasurementMethod!,
-            fit, holdout, reasons.Count == 0, reasons.ToArray()) { Spatial = spatial };
+            fit, holdout, reasons.Count == 0, reasons.ToArray())
+        {
+            Spatial = spatial,
+            SuggestedValidationPoints = CalibrationFollowUpPlanner.Suggest(
+                spatial, evidence.FitPoints, evidence.ValidationPoints)
+        };
     }
 
     private static CalibrationResidualSummary Summarize(
