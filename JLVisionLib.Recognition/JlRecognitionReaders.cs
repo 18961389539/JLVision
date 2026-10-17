@@ -10,6 +10,9 @@ public sealed record JlRecognitionHit(string Text, string Format, JlRecognitionP
 
 public sealed record JlRecognitionPoint(float Column, float Row);
 
+/// <summary>Integer image ROI: column/row origin and width/height in pixels.</summary>
+public readonly record struct JlRecognitionRoi(int Column, int Row, int Width, int Height);
+
 /// <summary>
 /// Functional managed barcode recovery adapter backed by ZXing.Net, NOT JLVisionCore's
 /// unverified native barcode model. A fresh reader is created per call for thread isolation.
@@ -29,6 +32,14 @@ public sealed class JlBarCode
 
     public IReadOnlyList<JlRecognitionHit> FindGray8(byte[] pixels, int width, int height) =>
         JlRecognitionDecoder.DecodeBytes(pixels, width, height, Formats);
+
+    /// <summary>Search a specified ROI; returned points use original image coordinates.</summary>
+    public IReadOnlyList<JlRecognitionHit> Find(JlImage image, JlRecognitionRoi roi) =>
+        JlRecognitionDecoder.DecodeImage(image, Formats, roi);
+
+    /// <summary>Search a specified ROI; returned points use original image coordinates.</summary>
+    public IReadOnlyList<JlRecognitionHit> FindGray8(byte[] pixels, int width, int height, JlRecognitionRoi roi) =>
+        JlRecognitionDecoder.DecodeBytes(pixels, width, height, Formats, roi);
 }
 
 /// <summary>
@@ -53,7 +64,8 @@ internal static class JlRecognitionDecoder
 {
     private const int MaxPixels = 100_000_000;
 
-    internal static IReadOnlyList<JlRecognitionHit> DecodeImage(JlImage image, IList<BarcodeFormat> formats)
+    internal static IReadOnlyList<JlRecognitionHit> DecodeImage(
+        JlImage image, IList<BarcodeFormat> formats, JlRecognitionRoi? roi = null)
     {
         ArgumentNullException.ThrowIfNull(image);
         // Validate the image is single-channel. GetImagePointer1 otherwise silently
@@ -76,16 +88,36 @@ internal static class JlRecognitionDecoder
         var copy = new byte[count];
         Marshal.Copy(ptr, copy, 0, count);
         GC.KeepAlive(image);
-        return DecodeBytes(copy, width, height, formats);
+        return DecodeBytes(copy, width, height, formats, roi);
     }
 
     internal static IReadOnlyList<JlRecognitionHit> DecodeBytes(
-        byte[] pixels, int width, int height, IList<BarcodeFormat> formats)
+        byte[] pixels, int width, int height, IList<BarcodeFormat> formats,
+        JlRecognitionRoi? roi = null)
     {
         ArgumentNullException.ThrowIfNull(pixels);
         int count = ValidateSize(width, height);
         if (pixels.Length != count)
             throw new ArgumentException($"Expected exactly {count} Gray8 bytes, received {pixels.Length}.", nameof(pixels));
+
+        // Validate ROI *before* invoking a decoder, including integer-overflow safety.
+        // An ROI is an explicit crop, not just a post-decode result filter.
+        int localWidth = width;
+        int localHeight = height;
+        int originColumn = 0, originRow = 0;
+        if (roi is JlRecognitionRoi region)
+        {
+            ValidateRoi(region, width, height);
+            originColumn = region.Column;
+            originRow = region.Row;
+            localWidth = region.Width;
+            localHeight = region.Height;
+            var crop = new byte[checked(localWidth * localHeight)];
+            for (int row = 0; row < localHeight; row++)
+                Buffer.BlockCopy(pixels, (originRow + row) * width + originColumn,
+                    crop, row * localWidth, localWidth);
+            pixels = crop;
+        }
 
         // A new decoder is used each time; no mutable ZXing reader is shared across threads.
         var reader = new BarcodeReaderGeneric
@@ -97,15 +129,15 @@ internal static class JlRecognitionDecoder
                 PossibleFormats = new List<BarcodeFormat>(formats)
             }
         };
-        var results = reader.DecodeMultiple(pixels, width, height, RGBLuminanceSource.BitmapFormat.Gray8);
+        var results = reader.DecodeMultiple(pixels, localWidth, localHeight, RGBLuminanceSource.BitmapFormat.Gray8);
         if (results == null || results.Length == 0)
         {
-            var single = reader.Decode(pixels, width, height, RGBLuminanceSource.BitmapFormat.Gray8);
+            var single = reader.Decode(pixels, localWidth, localHeight, RGBLuminanceSource.BitmapFormat.Gray8);
             return single == null
                 ? Array.Empty<JlRecognitionHit>()
-                : new[] { Convert(single) };
+                : new[] { Convert(single, originColumn, originRow) };
         }
-        return results.Select(Convert).ToArray();
+        return results.Select(result => Convert(result, originColumn, originRow)).ToArray();
     }
 
     private static int ValidateSize(int width, int height)
@@ -118,8 +150,18 @@ internal static class JlRecognitionDecoder
         return (int)area;
     }
 
-    private static JlRecognitionHit Convert(Result result) =>
+    private static void ValidateRoi(JlRecognitionRoi roi, int imageWidth, int imageHeight)
+    {
+        if (roi.Column < 0 || roi.Row < 0 || roi.Width <= 0 || roi.Height <= 0
+            || roi.Column > imageWidth - roi.Width
+            || roi.Row > imageHeight - roi.Height)
+            throw new ArgumentOutOfRangeException(nameof(roi),
+                "ROI must be positive and entirely within the original image.");
+    }
+
+    private static JlRecognitionHit Convert(Result result, int columnOffset, int rowOffset) =>
         new(result.Text, result.BarcodeFormat.ToString(),
-            result.ResultPoints?.Select(x => new JlRecognitionPoint(x.X, x.Y)).ToArray()
+            result.ResultPoints?.Select(x =>
+                new JlRecognitionPoint(x.X + columnOffset, x.Y + rowOffset)).ToArray()
                 ?? Array.Empty<JlRecognitionPoint>());
 }
