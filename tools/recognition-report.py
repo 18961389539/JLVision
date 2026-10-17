@@ -116,6 +116,58 @@ def table_block(title, entries):
         '</table></div></section>')
 
 
+def frame_diagnostics(rows):
+    """Show first 100 failing/uncertain frame IDs without copying decoded text."""
+    if rows is None:
+        return '<section><h2>Frame diagnostics</h2><p>Frame details were not supplied.</p></section>'
+    if not isinstance(rows, list):
+        raise ValueError("Invalid frame observation collection")
+    failing = []
+    for record in rows:
+        if not isinstance(record, dict) or not all(
+                isinstance(record.get(key), str) for key in ("id", "kind", "condition")):
+            raise ValueError("Invalid frame observation identity")
+        if any(type(record.get(key)) is not bool for key in
+               ("expectedPresent", "detected", "accepted", "misread")):
+            raise ValueError("Invalid frame observation labels")
+        elapsed = finite(record.get("elapsedMs"), "frame elapsedMs")
+        if elapsed < 0:
+            raise ValueError("Negative frame elapsed time")
+        if record.get("errorType") is not None and not isinstance(record["errorType"], str):
+            raise ValueError("Invalid frame error type")
+        error = record.get("errorType")
+        if error:
+            status = "DECODER ERROR"
+        elif record["expectedPresent"] and record["accepted"]:
+            continue
+        elif record["expectedPresent"] and record["misread"]:
+            status = "WRONG CONTENT / EXTRA SYMBOL"
+        elif record["expectedPresent"]:
+            status = "NOT CORRECTLY READ"
+        elif record["detected"]:
+            status = "FALSE POSITIVE"
+        else:
+            continue
+        failing.append(
+            f'<tr><th scope="row">{esc(record["id"])}</th>'
+            f'<td>{esc(record["kind"])}</td>'
+            f'<td>{esc(record["condition"])}</td>'
+            f'<td>{esc(status)}</td><td>{elapsed:.2f}</td>'
+            f'<td>{esc(error) if error else "—"}</td></tr>')
+    rendered = "".join(failing[:100])
+    extra = len(failing) - 100
+    message = ("No per-frame failures observed. Review sample coverage and "
+               "uncertainty intervals before any release.") if not failing else (
+               f"{len(failing)} failing frame(s) found; shown {min(len(failing), 100)}."
+               + (f" {extra} further rows omitted." if extra > 0 else ""))
+    return (f'<section><h2>Frame diagnostics</h2><p>{esc(message)}</p>'
+            '<p class="note">Identifiers and error types only; no recognized label '
+            'strings or customer image pixels are embedded.</p>'
+            '<div class="scroller"><table><thead><tr><th>Frame ID</th><th>Algorithm</th>'
+            '<th>Condition</th><th>Outcome</th><th>ms</th><th>Error type</th>'
+            f'</tr></thead><tbody>{rendered}</tbody></table></div></section>')
+
+
 def render(report):
     if not isinstance(report, dict) or type(report.get("schemaVersion")) is not int or report["schemaVersion"] != 1:
         raise ValueError("Unsupported recognition benchmark schema")
@@ -189,6 +241,7 @@ def render(report):
         table_block("By algorithm", report.get("byKind")),
         table_block("By condition", report.get("byCondition")),
         table_block("By algorithm × condition", report.get("byKindCondition"))))
+    diagnostics = frame_diagnostics(report.get("frames"))
     summary_bound = rates["miss"]
     confidence_note = ("No positive samples to estimate miss rate" if summary_bound is None else
                        f"Observed miss rate {percent(summary_bound[0])}, Wilson 95% upper bound {percent(summary_bound[2])} "
@@ -236,6 +289,7 @@ code{{background:#22334b;color:#e0eefe;padding:2px 5px;border-radius:4px;overflo
 correlated failures and annotation bias invalidate that assumption. CI bounds describe statistical
 uncertainty, not guaranteed field error rates.</p></section>
 {sections}
+{diagnostics}
 <section><h2>Configured acceptance thresholds</h2>
 <p>Wilson upper 95% bounds enforced: <b>{"YES" if strict else "NO (point-estimate gates only)"}</b></p>
 <dl>{"".join(threshold_parts)}</dl>
