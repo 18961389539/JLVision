@@ -109,6 +109,23 @@ class CalibrationHistoryReportTests(unittest.TestCase):
             "history": {"versions": 2, "regressionDetected": True}})
         self.assertIn("Historical calibration regression detected", issues)
 
+    def test_summary_is_visible_in_rendered_html(self):
+        rendered = report.render({
+            "result": {"calibrationId": "SYNTHETIC-DEMO", "passed": False},
+            "history": {"versions": 2, "regressionDetected": False}
+        })
+        self.assertIn("REVIEW REQUIRED", rendered)
+        self.assertIn("Current calibration audit failed", rendered)
+        self.assertIn("SYNTHETIC DEMO ONLY", rendered)
+
+    def test_passing_summary_is_not_field_certification(self):
+        rendered = report.render({
+            "result": {"calibrationId": "v2", "passed": True},
+            "history": {"versions": 2, "regressionDetected": False}
+        })
+        self.assertIn("AUDIT GATES PASSED", rendered)
+        self.assertIn("not robot picking acceptance", rendered)
+
     def test_nonfinite_is_not_passed_through(self):
         self.assertEqual(report.fmt(float("nan")), "N/A")
 
