@@ -44,6 +44,22 @@ Callers must not dispose or mutate the image concurrently. All results contain
 text, symbology and result points (not guaranteed to exist for every type).
 No confidence score or original HALCON-style symbol region is invented.
 
+### ROI / original-image coordinates
+
+```csharp
+// ROI is column(X), row(Y), width and height in ORIGINAL image pixels.
+var roi = new JlRecognitionRoi(Column: 120, Row: 80, Width: 360, Height: 240);
+var hits = new JlDataCode2D().Find(image, roi);
+// ResultPoints are translated back into the original full-image coordinates.
+```
+
+The ROI is **cropped before** decoding (not a result filter). Invalid,
+out-of-bounds, zero-sized, and integer-overflowing ROIs are rejected. The same
+ROI overload is available for `FindGray8(byte[], width, height, roi)`.
+An ROI provides an explicit search area but does **not** automatically carry
+camera calibration, robot coordinates, a match-confidence score or a quality
+certificate. Keep the entire crop and sufficient quiet zone around barcodes.
+
 ### Build and test
 
 ```powershell
@@ -53,8 +69,8 @@ dotnet run --project tests/JLVisionLib.Recognition.Smoke/JLVisionLib.Recognition
 ```
 
 The synthetic smoke tests generate Code128, QR and DataMatrix, exercise blank
-images, format isolation, buffer-size protection, and (Windows) the `JlImage`
-bridge. This does not establish industrial decoding rate on real labels. Use
+images, format isolation, buffer-size protection, ROI coordinate offsets and
+bounds checks, and (Windows) the `JlImage` bridge. This does not establish industrial decoding rate on real labels. Use
 production-image benchmarks with positive/negative labels and real P95 latency
 before product release.
 
