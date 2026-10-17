@@ -73,6 +73,51 @@ per-condition positive/negative counts. Rates with zero denominators are
 not silently accepted: minimum-sample gates determine whether a bucket
 with no positive/negative samples is permitted.
 
+## 95% uncertainty intervals and optional conservative gate
+
+Every overall/algorithm/condition/algorithm×condition metric reports a
+**two-sided Wilson score 95% interval** for correct-read, miss, misread and
+false-positive proportions. The interval has `events`, `trials`,
+`estimate`, `lower95` and `upper95`. When a denominator is zero, the
+estimate and interval fields are `null` (displayed as N/A), never 0%.
+
+By default, the existing software acceptance gate uses **observed point
+estimates**, plus explicit minimum sample counts and processing-error checks.
+To also require that each error-rate **Wilson upper 95% bound** stays below
+the configured maximum, add to the manifest:
+
+```json
+"acceptance": {
+  "requireWilsonUpper95": true
+}
+```
+
+This is intentionally stricter: every required algorithm, condition and
+algorithm×condition bucket must contain **both positive and negative** images.
+For example, zero misses among 10 independently labeled positives still has
+a two-sided 95% Wilson upper bound of about **27.8%**. Zero observed errors
+is therefore not statistical proof of a zero true error rate. On a roughly
+1% upper-bound goal with zero observed errors, hundreds of independent trials
+are needed. The minimums and threshold policy should be approved by quality
+engineering, with attention to correlated frames, selection bias, and multiple
+comparisons. The Wilson interval is not a guarantee of real-world error rates.
+
+### Visual HTML acceptance report
+
+The same JSON can be rendered **offline** as a static, self-contained HTML
+acceptance report with a high-level verdict, configurable gates,
+algorithm/condition matrices, Wilson interval bars, P95, sample counts and
+traceability. No customer images, recognized customer text, external scripts,
+remote fonts or network resources are embedded.
+
+```powershell
+python tools/recognition-report.py --input "D:\\vision-acceptance\\benchmark.json" --output "D:\\vision-acceptance\\benchmark.html"
+```
+
+The generated HTML is a review artifact, **not a signed certificate**.
+The `sourceType` / commit are user-declared and require independent
+verification, and `realFieldAccuracyCertified` remains false.
+
 Zero misread and false-positive thresholds are **example policy**, not a
 statistical proof of a true zero field error rate. For meaningful claims,
 choose adequate sample sizes and confidence bounds with quality engineers.
