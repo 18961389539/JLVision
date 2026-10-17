@@ -73,6 +73,32 @@ SVG 为*采样点残差区域图*：只有包含独立验证点的网格才根�
 
 CI 自动生成 `jlv-calibration-audit-demo`（JSON 和 SVG），但这些是**纯合成的演示数据**，不是相机实际视野的误差热力图。
 
+## 2.3 下一批验证点推荐与标定版本退化分析
+
+在明确给出的 `imageRegion` 中，审计 JSON 的 `result.suggestedValidationPoints` 会列出下一批可供工程师检查的图像坐标，**优先推荐尚无独立验证样本的网格**，随后推荐覆盖较少的网格。每条推荐包含候选 `row/column`、格号、当前拟合/验证点数及推荐原因；如果候选离已有拟合/验证点过近，会尝试同一网格内其他位置。这些只是采样建议，实际工件能否移动到该坐标、成像是否清晰，需要调试人员自行确认。
+
+SVG 用**琥珀色虚线十字**表示建议采样点，并明确标注 *SUGGESTED, NOT MEASURED*。建议点不会自动纳入误差、覆盖网格数或精度合格结论；必须真正采样、独立测量世界位置并加入验证数据后，才可再次审计。
+
+### 两个版本对比
+
+```powershell
+dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest "C:\\calibration\\current.json" --baseline "C:\\calibration\\baseline.json" --max-peak-increase-mm 0.02 --max-rms-increase-mm 0.01 --output artifacts/calibration-compare.json
+```
+
+两份清单都须提供严格先后顺序的 `recordedUtc`、不同的 `calibrationEvidence.calibrationId`、相同 `imageRegion`、相同 `measurementMethod`，以及**完全一致的独立参考点的像素坐标与世界位置真值**。变化太大或证据不一致时，拒绝“直接可比”的结论。比较结果记录最大独立验证残差及 RMS 的变化（mm），并根据显式容差判定是否退化；注意它反映的是*同一参考测量集合下给定标定矩阵的变化*，而非任何环境下机器人的抓取精度。
+
+### 多版本趋势
+
+`--history` 接收历史清单索引 JSON，格式为 `{"snapshots":[{"manifest":"version-1.json"},{"manifest":"version-2.json"}]}`，历史文件相对索引文件所在路径解析；`--manifest` 指定当前最新版本，按此顺序自动拼接。必须有至少 1 个历史版本、至多 100 个；历史版本时间严格递增、标定 ID 不重复、对照集合一致：
+
+```powershell
+dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest "C:\\calibration\\current.json" --history "C:\\calibration\\history.json" --max-peak-increase-mm 0.02 --max-rms-increase-mm 0.01 --output artifacts/calibration-history.json
+```
+
+报告包含各相邻版本变化、首尾累计变化、最大单次上升量及退化步骤数。**连续小幅恶化即使每一步没超过阈值，若累计越线仍判失败**，进程返回状态码 `2`。比较门限须显式填写，不能把未知工程容差默认当 0 或自动推算。文件仅包含过去已测的版本，不是持续监控后台任务。
+
+CI 使用 `example-version1.dataset.json`、`example-version2.dataset.json`、`example.dataset.json` 的日期化**人工合成**证据，验证正常趋势和更严格容差下必定返回失败；不会自动将这套演示结果标记成真实产线退化记录。
+
 ## 3. 质量指标与门禁
 
 配置位于清单的 `acceptance`：
