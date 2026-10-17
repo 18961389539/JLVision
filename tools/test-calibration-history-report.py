@@ -76,6 +76,25 @@ class CalibrationHistoryReportTests(unittest.TestCase):
         self.assertNotIn("<script>", rendered)
         self.assertIn("&lt;script&gt;", rendered)
 
+    def test_consecutive_gate_triggered(self):
+        sample = {"history": {"versions": 3, "regressionDetected": False,
+            "netHoldoutMaxChangeMm": 0.03, "netHoldoutRmsChangeMm": 0.02,
+            "steps": [
+                {"holdoutMaxChangeMm": 0.01, "holdoutRmsChangeMm": 0.01, "regressionDetected": False},
+                {"holdoutMaxChangeMm": 0.02, "holdoutRmsChangeMm": 0.01, "regressionDetected": False}]},
+            "maxConsecutiveDegradingSteps": 2}
+        self.assertIn("CONTINUOUS DEGRADATION LIMIT REACHED", report.render(sample))
+
+    def test_missing_steps_with_gate_rejected(self):
+        with self.assertRaises(ValueError):
+            report.render({"history": {"versions": 2, "regressionDetected": False},
+                           "maxConsecutiveDegradingSteps": 2})
+
+    def test_invalid_gate_rejected(self):
+        with self.assertRaises(ValueError):
+            report.render({"history": {"versions": 2, "regressionDetected": False},
+                           "maxConsecutiveDegradingSteps": 0})
+
     def test_nonfinite_is_not_passed_through(self):
         self.assertEqual(report.fmt(float("nan")), "N/A")
 
