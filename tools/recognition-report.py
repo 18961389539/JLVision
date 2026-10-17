@@ -43,6 +43,17 @@ def interval(record, key):
         raise ValueError("Invalid Wilson interval bounds: " + key)
     if abs(estimate - events / trials) > 1e-8:
         raise ValueError("Wilson estimate does not match counts: " + key)
+    # Recompute the fixed two-sided 95% Wilson interval; the HTML must not
+    # silently present manipulated or incompatible bounds as evidence.
+    z = 1.959963984540054
+    z2 = z * z
+    divisor = 1 + z2 / trials
+    center = (estimate + z2 / (2 * trials)) / divisor
+    half = z / divisor * math.sqrt(
+        estimate * (1 - estimate) / trials + z2 / (4 * trials * trials))
+    expected_low, expected_high = max(0, center - half), min(1, center + half)
+    if abs(lower - expected_low) > 1e-6 or abs(upper - expected_high) > 1e-6:
+        raise ValueError("Wilson confidence interval does not match event counts: " + key)
     return estimate, lower, upper
 
 
