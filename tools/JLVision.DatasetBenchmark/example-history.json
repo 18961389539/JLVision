@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic history index: listed manifests predate the current --manifest version.",
+  "snapshots": [
+    {
+      "manifest": "example-version1.dataset.json"
+    },
+    {
+      "manifest": "example-version2.dataset.json"
+    }
+  ]
+}
