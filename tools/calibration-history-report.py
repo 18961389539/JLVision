@@ -22,6 +22,67 @@ def fmt(value):
     return "N/A" if number is None else f"{number:+.5f}"
 
 
+def prop(record, camel, pascal, default=None):
+    return record.get(camel, record.get(pascal, default))
+
+
+def trend_data(history, versions):
+    steps = prop(history, "steps", "Steps")
+    if steps is None:
+        return None
+    if not isinstance(steps, list) or len(steps) != versions - 1:
+        raise ValueError("History steps must match compared versions")
+    peak, rms = 0.0, 0.0
+    points = [(peak, rms)]
+    streak = best_streak = 0
+    rows = []
+    for step in steps:
+        if not isinstance(step, dict):
+            raise ValueError("Invalid history step")
+        dp = safe_number(prop(step, "holdoutMaxChangeMm", "HoldoutMaxChangeMm"))
+        dr = safe_number(prop(step, "holdoutRmsChangeMm", "HoldoutRmsChangeMm"))
+        regressed = prop(step, "regressionDetected", "RegressionDetected")
+        if dp is None or dr is None or not isinstance(regressed, bool):
+            raise ValueError("Incomplete historical step")
+        peak += dp
+        rms += dr
+        points.append((peak, rms))
+        streak = streak + 1 if dp > 0 and dr > 0 else 0
+        best_streak = max(best_streak, streak)
+        rows.append((str(prop(step, "baselineId", "BaselineId", "?")),
+                     str(prop(step, "currentId", "CurrentId", "?")), dp, dr, regressed))
+    for key, total in (("netHoldoutMaxChangeMm", peak), ("netHoldoutRmsChangeMm", rms)):
+        expected = safe_number(prop(history, key, key[0].upper() + key[1:]))
+        if expected is None or abs(expected - total) > 1e-7:
+            raise ValueError("Historical steps disagree with cumulative result")
+    return points, rows, best_streak
+
+
+def svg_trend(points):
+    # Chart represents changes relative to the baseline (zero), NOT absolute residuals.
+    width, height = 760, 220
+    values = [v for pair in points for v in pair] + [0.0]
+    lo, hi = min(values), max(values)
+    if hi == lo:
+        hi, lo = hi + 0.001, lo - 0.001
+    pad = (hi - lo) * 0.15
+    lo -= pad
+    hi += pad
+    def x(i):
+        return 52 + i * (width - 80) / (len(points) - 1)
+    def y(value):
+        return 14 + (hi - value) * (height - 43) / (hi - lo)
+    lines = [f'<line x1="52" y1="{y(0):.2f}" x2="{width-28}" y2="{y(0):.2f}" stroke="#7b8aa5" stroke-dasharray="5 5"/>']
+    for index, color, label in ((0, "#68b4ff", "Peak"), (1, "#f4ba69", "RMS")):
+        coords = " ".join(f"{x(i):.2f},{y(point[index]):.2f}" for i, point in enumerate(points))
+        lines.append(f'<polyline fill="none" stroke="{color}" stroke-width="3" points="{coords}"/>')
+        for i, point in enumerate(points):
+            lines.append(f'<circle cx="{x(i):.2f}" cy="{y(point[index]):.2f}" r="4" fill="{color}"><title>{label} version {i+1}: {point[index]:+.5f} mm</title></circle>')
+    for i in range(len(points)):
+        lines.append(f'<text x="{x(i):.2f}" y="215" fill="#b8c7dc" font-size="12" text-anchor="middle">V{i+1}</text>')
+    return f'<svg role="img" aria-label="Cumulative calibration residual changes relative to baseline" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">' + "".join(lines) + '</svg>'
+
+
 def render(payload):
     history = payload.get("history")
     if not isinstance(history, dict):
@@ -36,6 +97,20 @@ def render(payload):
     calibration_id = calibration.get("CalibrationId", calibration.get("calibrationId", "unknown"))
     peak = history.get("NetHoldoutMaxChangeMm", history.get("netHoldoutMaxChangeMm"))
     rms = history.get("NetHoldoutRmsChangeMm", history.get("netHoldoutRmsChangeMm"))
+    trend = trend_data(history, versions)
+    chart = ""
+    details = ""
+    if trend is not None:
+        points, rows, streak = trend
+        chart = '<article><small>Holdout residual change relative to V1 (mm) · blue: peak, amber: RMS</small>' + svg_trend(points) + '</article>'
+        cells = "".join('<tr><td>' + html.escape(a) + ' → ' + html.escape(b) +
+                        '</td><td>' + fmt(dp) + '</td><td>' + fmt(dr) +
+                        '</td><td>' + ('REGRESSION' if flag else 'OK') + '</td></tr>'
+                        for a, b, dp, dr, flag in rows)
+        details = ('<article><small>Longest consecutive increases in both peak and RMS: ' +
+                   str(streak) + ' transitions (diagnostic, not a separate acceptance gate)</small>' +
+                   '<div class="overflow"><table><thead><tr><th>Version</th><th>Peak Δ mm</th><th>RMS Δ mm</th><th>Gate</th></tr></thead><tbody>' +
+                   cells + '</tbody></table></div></article>')
     label = "REGRESSION" if regression else "NO REGRESSION DETECTED"
     status = "#f87171" if regression else "#4ade80"
     # Display source facts only. No fabricated timeseries when historical points are absent.
@@ -48,7 +123,7 @@ main{{max-width:950px;margin:6vh auto;padding:30px}}h1{{font-size:clamp(26px,4vw
 .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:28px 0}}
 article{{background:#162237;border:1px solid #34435b;border-radius:16px;padding:24px}}
 small{{display:block;color:#9fb0ca;margin-bottom:12px}}strong{{font-size:27px}}
-.status{{color:{status}}}footer{{color:#a4b5ce;line-height:1.6}}
+.status{{color:{status}}}.overflow{{overflow-x:auto}}table{{width:100%;border-collapse:collapse}}td,th{{padding:12px;border-bottom:1px solid #34435b;text-align:left;white-space:nowrap}}svg{{width:100%;height:auto}}footer{{color:#a4b5ce;line-height:1.6}}
 </style><main><p>JLVISION · CALIBRATION QUALITY</p><h1>Calibration history audit</h1>
 <p>Calibration ID: {html.escape(str(calibration_id))}</p>
 <div class="grid"><article><small>Compared versions</small><strong>{versions}</strong></article>
@@ -56,7 +131,7 @@ small{{display:block;color:#9fb0ca;margin-bottom:12px}}strong{{font-size:27px}}
 <article><small>Net holdout RMS residual change</small><strong>{fmt(rms)} mm</strong></article>
 <article><small>History quality gate</small><strong class="status">{label}</strong></article></div>
 <footer>Values represent independently supplied calibration holdout measurements,
-not robot picking accuracy. Missing historical series are deliberately not plotted.
+not robot picking accuracy. Missing historical series are deliberately not plotted. Streak counts are diagnostics only.
 A passing synthetic demonstration does not certify real-world ±0.1 mm accuracy.</footer>
 </main></html>"""
 
