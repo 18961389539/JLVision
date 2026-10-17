@@ -32,12 +32,15 @@ class FieldEvidenceTests(unittest.TestCase):
         data = {
             "result": {"CalibrationId": "cal-v2", "Passed": True,
                        "Fit": {"Count": 5}, "Holdout": {"Count": 3}},
-            "history": {"LastId": "cal-v2", "RegressionDetected": False},
+            "history": {"LastId": "cal-v2", "RegressionDetected": False,
+                        "Versions": 2,
+                        "Steps": [{"BaselineId": "cal-v1", "CurrentId": "cal-v2",
+                                   "RegressionDetected": False}]},
         }
         ds = {
             "syntheticFixture": False, "allAlgorithmsPassed": True,
             "datasetFrameCount": 6,
-            "calibrationAudit": {"CalibrationId": "cal-v2"},
+            "calibrationAudit": {"CalibrationId": "cal-v2", "Passed": True},
             "acceptance": {key: (1 if key.startswith("min") else 0.1) for key in audit.CRITERIA},
             "summary": [{"algorithm": "shape", "acceptancePassed": True,
                          "truePositive": 4, "trueNegative": 2, "annotatedWorldMatches": 4}],
@@ -99,6 +102,16 @@ class FieldEvidenceTests(unittest.TestCase):
         self.pack["evidenceFiles"]["datasetBenchmark"]["sha256"] = hashlib.sha256(contents).hexdigest()
         issues = audit.evaluate(self.pack, self.root)["issues"]
         self.assertIn("Dataset uses synthetic or unverified fixture", issues)
+
+    def test_incomplete_history_rejected(self):
+        path = self.root / "calibrationAudit.json"
+        record = json.loads(path.read_text())
+        record["history"]["Steps"] = []
+        data = json.dumps(record).encode()
+        path.write_bytes(data)
+        self.pack["evidenceFiles"]["calibrationAudit"]["sha256"] = hashlib.sha256(data).hexdigest()
+        self.assertIn("Calibration history version steps are missing or incomplete",
+                      audit.evaluate(self.pack, self.root)["issues"])
 
     def test_markdown_does_not_claim_certification(self):
         result = audit.evaluate(self.pack, self.root)
