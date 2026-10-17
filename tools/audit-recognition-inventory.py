@@ -88,6 +88,7 @@ def audit(root, native_path):
         native_size = native_path.stat().st_size
         native_hash = sha256(native_path)
         native_bytes = native_path.read_bytes()
+    native_lower = native_bytes.lower() if native_bytes is not None else None
     families = {}
     for name, spec in FAMILIES.items():
         matched_methods = [m for m in spec["methods"] if m in methods]
@@ -100,7 +101,7 @@ def audit(root, native_path):
             for term in spec["binary_terms"]:
                 raw = term.encode("ascii")
                 hints[term] = {
-                    "ascii": raw.lower() in native_bytes.lower(),
+                    "ascii": raw.lower() in native_lower,
                     "utf16le": term.encode("utf-16le") in native_bytes,
                 }
         families[name] = {
