@@ -11,8 +11,11 @@ managed classes were removed.
 
 - `tools/audit-recognition-inventory.py` inspects current public C# method
   signatures, removal-rule scripts and the bundled DLL's static name strings.
-- `tools/JLVision.RecognitionProbe` queries the native `HLILogicalName`
-  registry **without executing an operator** on Windows x64.
+- A trial call to the native `HLILogicalName` registry using a range of
+  unverified operator indices caused a Windows `AccessViolationException`.
+  The experimental runtime probe and its CI were **removed**. Do not enumerate
+  unknown indices until the native vendor contract, valid index range and ABI
+  are verified. The failure does not establish any fault in barcode/OCR itself.
 - The presence of a string or native logical name **does not establish** the
   correct argument slots, memory ownership, native license rights or reliable
   recognition with customer images. Missing names do not prove absence.
@@ -20,8 +23,9 @@ managed classes were removed.
 
 ## Recovery decision sequence
 
-1. Determine which native operator names/IDs actually exist and whether the
-   DLL's ABI corresponds to current interop `HLICreateProcedure` and IO slots.
+1. Confirm the valid native operator-name query contract and index bounds
+   from an authoritative ABI description **before any runtime introspection**.
+   Use the static inventory for preliminary hints only.
 2. For each operator, confirm its complete input/output slot contract and
    explicit ownership rules from authoritative SDK/header/source evidence.
    **Never guess an operator ID or signature from a string hit.**
@@ -43,5 +47,6 @@ Neither certifies feature completeness, redistribution terms, runtime thread
 safety or industrial reading accuracy. Do not merge unverified restored
 wrappers into the public stable API.
 
-Current inventory and native registry outputs are published as GitHub Actions
-artifacts in the Draft PR. `main` is unchanged.
+Only the static inventory JSON/Markdown is published as GitHub Actions
+artifacts. The experimental registry output was not produced because the
+unsafe range scan crashed, and its workflow was removed. `main` is unchanged.
