@@ -95,6 +95,20 @@ class CalibrationHistoryReportTests(unittest.TestCase):
             report.render({"history": {"versions": 2, "regressionDetected": False},
                            "maxConsecutiveDegradingSteps": 0})
 
+    def test_audit_summary_missing_evidence_fails_closed(self):
+        issues = report.gate_status({"history": {"versions": 2, "regressionDetected": False}})
+        self.assertIn("Current calibration audit pass/fail evidence missing", issues)
+
+    def test_audit_summary_can_pass_with_explicit_evidence(self):
+        issues = report.gate_status({"result": {"passed": True},
+            "history": {"versions": 2, "regressionDetected": False}})
+        self.assertEqual([], issues)
+
+    def test_audit_summary_regression_blocks_pass(self):
+        issues = report.gate_status({"result": {"passed": True},
+            "history": {"versions": 2, "regressionDetected": True}})
+        self.assertIn("Historical calibration regression detected", issues)
+
     def test_nonfinite_is_not_passed_through(self):
         self.assertEqual(report.fmt(float("nan")), "N/A")
 
