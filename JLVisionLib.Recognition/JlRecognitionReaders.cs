@@ -58,6 +58,14 @@ public sealed class JlDataCode2D
 
     public IReadOnlyList<JlRecognitionHit> FindGray8(byte[] pixels, int width, int height) =>
         JlRecognitionDecoder.DecodeBytes(pixels, width, height, Formats);
+
+    /// <summary>Search an ROI; returned points use original image coordinates.</summary>
+    public IReadOnlyList<JlRecognitionHit> Find(JlImage image, JlRecognitionRoi roi) =>
+        JlRecognitionDecoder.DecodeImage(image, Formats, roi);
+
+    /// <summary>Search an ROI; returned points use original image coordinates.</summary>
+    public IReadOnlyList<JlRecognitionHit> FindGray8(byte[] pixels, int width, int height, JlRecognitionRoi roi) =>
+        JlRecognitionDecoder.DecodeBytes(pixels, width, height, Formats, roi);
 }
 
 internal static class JlRecognitionDecoder
