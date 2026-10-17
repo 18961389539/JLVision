@@ -1,4 +1,6 @@
 using JLVisionLib.Recognition;
+using JLVisionLib;
+using System.Runtime.InteropServices;
 using ZXing;
 using ZXing.Common;
 
@@ -56,6 +58,23 @@ threw = false;
 try { twoD.FindGray8(new byte[1], int.MaxValue, int.MaxValue); }
 catch (ArgumentOutOfRangeException) { threw = true; }
 if (!threw) throw new Exception("Oversized image was accepted.");
+
+if (args.Contains("--windows-native-bridge"))
+{
+    if (!OperatingSystem.IsWindows() || RuntimeInformation.ProcessArchitecture != Architecture.X64)
+        throw new PlatformNotSupportedException("Native JlImage bridge test needs Windows x64.");
+    var pinned = GCHandle.Alloc(qr, GCHandleType.Pinned);
+    try
+    {
+        using var image = new JlImage();
+        // Copy the pinned buffer into runtime-owned memory before unpinning it.
+        image.GenImage1Rect(pinned.AddrOfPinnedObject(), 256, 256,
+            256, 8, 8, "true", IntPtr.Zero);
+        AssertContains(twoD.Find(image), "JLVISION-QR-42", "QR_CODE");
+    }
+    finally { pinned.Free(); }
+    Console.WriteLine("PASS native JlImage Gray8 bridge");
+}
 
 Console.WriteLine("PASS format isolation, empty image and input validation");
 Console.WriteLine("Managed recognition smoke: ALL PASSED. Not a native DLL barcode/OCR certification.");
