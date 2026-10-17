@@ -92,6 +92,13 @@ class RecognitionHtmlTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             renderer.render(p)
 
+    def test_plausible_but_forged_confidence_bound_rejected(self):
+        p = report()
+        # This is superficially within [0,1], but not the actual Wilson bound.
+        p["overall"]["uncertainty"]["miss"]["upper95"] = 0.01
+        with self.assertRaises(ValueError):
+            renderer.render(p)
+
     def test_missing_n_is_explicitly_na(self):
         p = report()
         m = metrics(p=2, n=0)
