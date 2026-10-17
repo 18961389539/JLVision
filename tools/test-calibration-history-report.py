@@ -38,6 +38,44 @@ class CalibrationHistoryReportTests(unittest.TestCase):
         self.assertIn("&lt;script&gt;", html)
         self.assertNotIn("<script>", html)
 
+    def test_step_chart_and_streak(self):
+        rendered = report.render({
+            "history": {"versions": 3, "regressionDetected": True,
+                        "netHoldoutMaxChangeMm": 0.03,
+                        "netHoldoutRmsChangeMm": 0.012,
+                        "steps": [
+                            {"baselineId": "v1", "currentId": "v2",
+                             "holdoutMaxChangeMm": 0.01, "holdoutRmsChangeMm": 0.004,
+                             "regressionDetected": False},
+                            {"baselineId": "v2", "currentId": "v3",
+                             "holdoutMaxChangeMm": 0.02, "holdoutRmsChangeMm": 0.008,
+                             "regressionDetected": True}]}})
+        self.assertIn("<svg", rendered)
+        self.assertIn("2 transitions", rendered)
+        self.assertIn("v2 → v3", rendered)
+
+    def test_wrong_step_count_rejected(self):
+        with self.assertRaises(ValueError):
+            report.render({"history": {"versions": 3, "regressionDetected": False,
+                                       "steps": []}})
+
+    def test_inconsistent_cumulative_delta_rejected(self):
+        with self.assertRaises(ValueError):
+            report.render({"history": {"versions": 2, "regressionDetected": False,
+                "netHoldoutMaxChangeMm": 0.2, "netHoldoutRmsChangeMm": 0,
+                "steps": [{"holdoutMaxChangeMm": 0.1, "holdoutRmsChangeMm": 0,
+                           "regressionDetected": False}]}})
+
+    def test_step_label_escaped(self):
+        rendered = report.render({"history": {"versions": 2,
+            "regressionDetected": False, "netHoldoutMaxChangeMm": 0,
+            "netHoldoutRmsChangeMm": 0, "steps": [{
+                "baselineId": "<script>", "currentId": "v2",
+                "holdoutMaxChangeMm": 0, "holdoutRmsChangeMm": 0,
+                "regressionDetected": False}]}})
+        self.assertNotIn("<script>", rendered)
+        self.assertIn("&lt;script&gt;", rendered)
+
     def test_nonfinite_is_not_passed_through(self):
         self.assertEqual(report.fmt(float("nan")), "N/A")
 
