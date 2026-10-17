@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "sourceType": "field",
+  "datasetId": "REPLACE-FIELD-DATASET-ID",
+  "softwareCommit": "0000000000000000000000000000000000000000",
+  "acceptance": {
+    "minPositivePerKind": 30,
+    "minNegativePerKind": 30,
+    "minPositivePerCondition": 5,
+    "minNegativePerCondition": 5,
+    "maxMissRate": 0.01,
+    "maxMisreadRate": 0,
+    "maxFalsePositiveRate": 0,
+    "maxP95Ms": 120,
+    "requiredKinds": [
+      "barcode1d",
+      "datacode2d",
+      "ocr"
+    ],
+    "requiredConditions": [
+      "normal",
+      "low-light",
+      "rotation",
+      "blur",
+      "reflection"
+    ]
+  },
+  "frames": [
+    {
+      "id": "REPLACE-barcode-positive-001",
+      "file": "images/barcode-positive-001.bmp",
+      "kind": "barcode1d",
+      "condition": "normal",
+      "expectedPresent": true,
+      "expectedText": "REPLACE-VERIFIED-128",
+      "expectedFormat": "CODE_128",
+      "roi": {
+        "column": 50,
+        "row": 40,
+        "width": 360,
+        "height": 120
+      }
+    },
+    {
+      "id": "REPLACE-barcode-negative-001",
+      "file": "images/barcode-negative-001.bmp",
+      "kind": "barcode1d",
+      "condition": "normal",
+      "expectedPresent": false,
+      "expectedText": null,
+      "expectedFormat": null
+    },
+    {
+      "id": "REPLACE-datamatrix-positive-001",
+      "file": "images/dm-positive-001.bmp",
+      "kind": "datacode2d",
+      "condition": "low-light",
+      "expectedPresent": true,
+      "expectedText": "REPLACE-VERIFIED-DM",
+      "expectedFormat": "DATA_MATRIX"
+    },
+    {
+      "id": "REPLACE-qr-negative-001",
+      "file": "images/qr-negative-001.bmp",
+      "kind": "datacode2d",
+      "condition": "low-light",
+      "expectedPresent": false
+    },
+    {
+      "id": "REPLACE-ocr-positive-001",
+      "file": "images/ocr-positive-001.bmp",
+      "kind": "ocr",
+      "condition": "rotation",
+      "expectedPresent": true,
+      "expectedText": "REPLACE-VERIFIED-OCR"
+    },
+    {
+      "id": "REPLACE-ocr-negative-001",
+      "file": "images/ocr-negative-001.bmp",
+      "kind": "ocr",
+      "condition": "rotation",
+      "expectedPresent": false
+    }
+  ]
+}
