@@ -152,9 +152,13 @@ public sealed class CalibrationFollowUpAndHistoryTests
         Assert.Throws<ArgumentException>(() =>
             CalibrationHistoryAnalysis.Compare(first, second, .05, .05));
         second.Evidence.ImageRegion.MaxColumn -= 1;
-        second.Evidence.MeasurementMethod = "different fixture";
+        var changedMethodEvidence = Evidence("v2");
+        changedMethodEvidence.MeasurementMethod = "different fixture";
+        var changedMethod = new CalibrationSnapshot(second.RecordedUtc,
+            changedMethodEvidence, CalibrationEvidenceAudit.Evaluate(
+                Calibration(.02), changedMethodEvidence, .2, .2, .2));
         Assert.Throws<ArgumentException>(() =>
-            CalibrationHistoryAnalysis.Compare(first, second, .05, .05));
+            CalibrationHistoryAnalysis.Compare(first, changedMethod, .05, .05));
     }
 
     [Fact]
