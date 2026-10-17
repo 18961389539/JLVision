@@ -197,4 +197,16 @@ public sealed class CalibrationFollowUpAndHistoryTests
             CalibrationHistoryAnalysis.Compare(a, b, .1, double.NaN));
     }
 
+    [Fact]
+    public void FitErrorDeltaIsOmittedWhenTrainingReferencesDiffer()
+    {
+        var a = Snapshot("v1", 1, 0);
+        var b = Snapshot("v2", 2, .02);
+        // Changing fit correspondences does not invalidate held-out comparison.
+        b.Evidence.FitPoints[0].Xmm += .001;
+        var delta = CalibrationHistoryAnalysis.Compare(a, b, .05, .05);
+        Assert.Null(delta.FitMaxChangeMm);
+        Assert.False(delta.RegressionDetected);
+    }
+
 }
