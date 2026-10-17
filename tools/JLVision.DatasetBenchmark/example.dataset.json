@@ -1,11 +1,11 @@
 {
-  "_note": "ILLUSTRATION ONLY: all pixel/world correspondences, thresholds and coefficients below are synthetic placeholders, not a measured calibration or production acceptance result. Do not commit customer images.",
+  "_note": "Synthetic example only: 0.01 mm X-offset relative to artificial reference correspondences, deliberately showing small version drift; NOT field measurement.",
   "template": "images/template.bmp",
   "minScore": 0.65,
   "calibration": {
     "xFromColumn": 0.05,
     "xFromRow": 0,
-    "xOffset": 0,
+    "xOffset": 0.01,
     "yFromColumn": 0,
     "yFromRow": 0.05,
     "yOffset": 0
