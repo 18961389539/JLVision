@@ -139,7 +139,11 @@ public static class RecognitionEvaluator
                 value.ExpectedPresent != frame.ExpectedPresent ||
                 !double.IsFinite(value.ElapsedMs) || value.ElapsedMs < 0 ||
                 value.Accepted && (!value.ExpectedPresent || !value.Detected) ||
-                value.Misread && (!value.ExpectedPresent || !value.Detected || value.Accepted))
+                value.Misread && (!value.ExpectedPresent || !value.Detected || value.Accepted) ||
+                value.Detected != (value.ResultCount > 0) || value.ResultCount < 0 ||
+                value.Accepted && value.ResultCount != 1 ||
+                value.ExpectedPresent && value.Detected && !value.Accepted && !value.Misread ||
+                value.ErrorType is not null && value.Accepted)
                 throw new InvalidDataException("An observation contradicts its immutable ground truth.");
         }
 
@@ -182,9 +186,9 @@ public static class RecognitionEvaluator
     {
         if (m.Positive < minPositive || m.Negative < minNegative)
             reasons.Add($"{label}: insufficient labeled positive/negative samples ({m.Positive}/{m.Negative}; require {minPositive}/{minNegative})");
-        if (m.MissRate > l.MaxMissRate) reasons.Add(label + ": miss rate exceeds limit");
-        if (m.MisreadRate > l.MaxMisreadRate) reasons.Add(label + ": misread rate exceeds limit");
-        if (m.FalsePositiveRate > l.MaxFalsePositiveRate) reasons.Add(label + ": false-positive rate exceeds limit");
+        if (m.Positive > 0 && m.MissRate > l.MaxMissRate) reasons.Add(label + ": miss rate exceeds limit");
+        if (m.Positive > 0 && m.MisreadRate > l.MaxMisreadRate) reasons.Add(label + ": misread rate exceeds limit");
+        if (m.Negative > 0 && m.FalsePositiveRate > l.MaxFalsePositiveRate) reasons.Add(label + ": false-positive rate exceeds limit");
         if (m.P95Ms > l.MaxP95Ms) reasons.Add(label + ": P95 latency exceeds limit");
         if (m.ProcessingErrors > 0) reasons.Add(label + ": processing errors found");
     }
