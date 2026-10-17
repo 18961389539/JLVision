@@ -22,6 +22,8 @@
     <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationEvidenceAudit.cs" Link="CalibrationEvidenceAudit.cs" />
     <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationSpatialDiagnostics.cs" Link="CalibrationSpatialDiagnostics.cs" />
     <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationHeatmapSvg.cs" Link="CalibrationHeatmapSvg.cs" />
+    <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationFollowUpPlanner.cs" Link="CalibrationFollowUpPlanner.cs" />
+    <Compile Include="..\..\tools\JLVision.DatasetBenchmark\CalibrationHistoryAnalysis.cs" Link="CalibrationHistoryAnalysis.cs" />
   </ItemGroup>
   <!-- Ensure native smoke tests exercise the packaged x64 runtime, not a missing-DLL path. -->
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
