@@ -106,7 +106,8 @@ comparisons. The Wilson interval is not a guarantee of real-world error rates.
 
 The same JSON can be rendered **offline** as a static, self-contained HTML
 acceptance report with a high-level verdict, configurable gates,
-algorithm/condition matrices, Wilson interval bars, P95, sample counts and
+algorithm/condition matrices, Wilson interval bars, P95, sample counts,
+privacy-preserving failed-frame diagnostics (IDs and error categories only), and
 traceability. No customer images, recognized customer text, external scripts,
 remote fonts or network resources are embedded.
 
