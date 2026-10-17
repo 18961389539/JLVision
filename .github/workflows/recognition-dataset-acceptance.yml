@@ -20,3 +20,10 @@ jobs:
         run: dotnet build tests/JLVision.RecognitionBenchmark.Smoke/JLVision.RecognitionBenchmark.Smoke.csproj --configuration Debug
       - name: Test exact OCR/barcode ground-truth evaluation and synthetic end-to-end decoder
         run: dotnet run --project tests/JLVision.RecognitionBenchmark.Smoke/JLVision.RecognitionBenchmark.Smoke.csproj --configuration Debug --no-build
+      - name: Upload synthetic acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-recognition-dataset-synthetic-demo
+          path: artifacts/recognition-dataset.synthetic.json
+          if-no-files-found: warn
