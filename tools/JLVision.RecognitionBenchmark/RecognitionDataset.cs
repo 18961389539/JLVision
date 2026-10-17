@@ -35,6 +35,8 @@ public sealed class RecognitionLimits
     public double MaxMisreadRate { get; set; }
     public double MaxFalsePositiveRate { get; set; }
     public double MaxP95Ms { get; set; }
+    /// <summary>Optional, stricter gate: compare Wilson 95% upper bounds against configured error-rate limits.</summary>
+    public bool RequireWilsonUpper95 { get; set; }
     public List<string> RequiredKinds { get; set; } = new();
     public List<string> RequiredConditions { get; set; } = new();
 
@@ -64,10 +66,21 @@ public sealed record RecognitionObservation(
     bool Detected, bool Accepted, bool Misread, double ElapsedMs,
     int ResultCount, string ImageSha256, string? ErrorType = null);
 
+/// <summary>Wilson score 95% interval for a binomial proportion; null bounds mean no denominator.</summary>
+public sealed record RecognitionRateInterval(
+    int Events, int Trials, double? Estimate, double? Lower95, double? Upper95);
+
+public sealed record RecognitionUncertainty(
+    RecognitionRateInterval CorrectRead,
+    RecognitionRateInterval Miss,
+    RecognitionRateInterval Misread,
+    RecognitionRateInterval FalsePositive);
+
 public sealed record RecognitionMetrics(
     int Total, int Positive, int Negative, int TruePositive, int FalseNegative,
     int TrueNegative, int FalsePositive, int Misread, int ProcessingErrors,
-    double MissRate, double MisreadRate, double FalsePositiveRate, double P95Ms);
+    double MissRate, double MisreadRate, double FalsePositiveRate, double P95Ms,
+    RecognitionUncertainty Uncertainty);
 
 public sealed record RecognitionBenchmarkReport(
     int SchemaVersion, string DatasetId, string SourceType, string DeclaredSoftwareCommit,
@@ -212,6 +225,22 @@ public static class RecognitionEvaluator
         if (m.Positive > 0 && m.MissRate > l.MaxMissRate) reasons.Add(label + ": miss rate exceeds limit");
         if (m.Positive > 0 && m.MisreadRate > l.MaxMisreadRate) reasons.Add(label + ": misread rate exceeds limit");
         if (m.Negative > 0 && m.FalsePositiveRate > l.MaxFalsePositiveRate) reasons.Add(label + ": false-positive rate exceeds limit");
+        if (l.RequireWilsonUpper95)
+        {
+            // Enforce a nonempty denominator for every checked bucket; a missing
+            // observation group is not a statistically meaningful zero-error rate.
+            if (m.Positive == 0 || m.Negative == 0)
+                reasons.Add(label + ": Wilson bound requires both positive and negative samples");
+            else
+            {
+                if (m.Uncertainty.Miss.Upper95!.Value > l.MaxMissRate)
+                    reasons.Add(label + ": Wilson upper 95% miss rate exceeds limit");
+                if (m.Uncertainty.Misread.Upper95!.Value > l.MaxMisreadRate)
+                    reasons.Add(label + ": Wilson upper 95% misread rate exceeds limit");
+                if (m.Uncertainty.FalsePositive.Upper95!.Value > l.MaxFalsePositiveRate)
+                    reasons.Add(label + ": Wilson upper 95% false-positive rate exceeds limit");
+            }
+        }
         if (m.P95Ms > l.MaxP95Ms) reasons.Add(label + ": P95 latency exceeds limit");
         if (m.ProcessingErrors > 0) reasons.Add(label + ": processing errors found");
     }
@@ -232,6 +261,31 @@ public static class RecognitionEvaluator
         return new RecognitionMetrics(values.Count, p, n, tp, fn, n - fp, fp, wrong, errors,
             p == 0 ? 1 : (double)fn / p,
             p == 0 ? 1 : (double)wrong / p,
-            n == 0 ? 1 : (double)fp / n, p95);
+            n == 0 ? 1 : (double)fp / n, p95,
+            new RecognitionUncertainty(
+                WilsonInterval(tp, p), WilsonInterval(fn, p),
+                WilsonInterval(wrong, p), WilsonInterval(fp, n)));
     }
+    /// <summary>
+    /// Two-sided 95% Wilson score interval for independent Bernoulli trials.
+    /// This quantifies sampling uncertainty but DOES NOT correct for correlated
+    /// frames, mislabeled data, source selection bias or shifting production conditions.
+    /// </summary>
+    public static RecognitionRateInterval WilsonInterval(int events, int trials)
+    {
+        if (trials < 0 || events < 0 || events > trials)
+            throw new ArgumentOutOfRangeException(nameof(events), "Expected 0 <= events <= trials.");
+        if (trials == 0)
+            return new RecognitionRateInterval(0, 0, null, null, null);
+        const double z = 1.959963984540054;
+        double proportion = (double)events / trials;
+        double z2 = z * z;
+        double divisor = 1 + z2 / trials;
+        double center = (proportion + z2 / (2 * trials)) / divisor;
+        double half = z / divisor * Math.Sqrt(
+            proportion * (1 - proportion) / trials + z2 / (4.0 * trials * trials));
+        return new RecognitionRateInterval(events, trials, proportion,
+            Math.Max(0, center - half), Math.Min(1, center + half));
+    }
+
 }
