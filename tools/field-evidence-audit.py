@@ -125,8 +125,22 @@ def evaluate(pack, root):
             history = audit.get("history")
             if not isinstance(history, dict) or value(history, "regressionDetected") is not False:
                 errors.append("Historical calibration regression or history is unavailable")
-            if isinstance(history, dict) and value(history, "lastId") != pack.get("calibrationId"):
-                errors.append("History current version ID mismatch")
+            if isinstance(history, dict):
+                if value(history, "lastId") != pack.get("calibrationId"):
+                    errors.append("History current version ID mismatch")
+                versions = value(history, "versions")
+                steps = value(history, "steps")
+                if (type(versions) is not int or versions < 2 or
+                        not isinstance(steps, list) or len(steps) != versions - 1):
+                    errors.append("Calibration history version steps are missing or incomplete")
+                else:
+                    for index, step in enumerate(steps):
+                        if (not isinstance(step, dict) or
+                                not isinstance(value(step, "regressionDetected"), bool) or
+                                not isinstance(value(step, "baselineId"), str) or
+                                not isinstance(value(step, "currentId"), str)):
+                            errors.append("Invalid history transition " + str(index + 1))
+                            break
         except (ValueError, OSError, AttributeError, TypeError) as exc:
             errors.append("Invalid calibration audit JSON: " + str(exc))
     if "datasetBenchmark" in verified:
@@ -138,6 +152,8 @@ def evaluate(pack, root):
                 errors.append("Dataset algorithm acceptance failed")
             if value(ds.get("calibrationAudit"), "calibrationId") != pack.get("calibrationId"):
                 errors.append("Dataset calibration ID mismatch")
+            if value(ds.get("calibrationAudit"), "passed") is not True:
+                errors.append("Dataset embedded calibration audit is not explicitly passed")
             acceptance = ds.get("acceptance")
             for key in CRITERIA:
                 check = value(acceptance, key)
