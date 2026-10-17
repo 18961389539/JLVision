@@ -17,7 +17,9 @@ jobs:
         with:
           python-version: '3.11'
       - name: Unit tests
-        run: python tools/test-calibration-history-report.py
+        run: |
+          python tools/test-calibration-history-report.py
+          python tools/test-field-evidence-audit.py
       - name: Render synthetic history HTML
         run: |
           set +e
@@ -30,11 +32,33 @@ jobs:
           test "$code" -eq 2
       - name: Verify report content
         run: |
-          python -c "from pathlib import Path; s=Path('artifacts/calibration-history-report.html').read_text(); assert 'REGRESSION' in s; assert '+0.01000 mm' in s; assert 'SYNTHETIC-DEMO-NOT-MEASURED' in s; assert 'REVIEW REQUIRED' in s"
+          python - <<'PY'
+          from pathlib import Path
+          html = Path("artifacts/calibration-history-report.html").read_text(encoding="utf-8")
+          labels = ("REGRESSION", "+0.01000 mm", "SYNTHETIC-DEMO-NOT-MEASURED", "REVIEW REQUIRED")
+          missing = [label for label in labels if label not in html]
+          print("Calibration HTML size:", len(html), "Missing labels:", missing)
+          if missing:
+              raise SystemExit("Calibration history HTML assertion failed: " + repr(missing))
+          PY
+      - name: Reject incomplete synthetic field evidence
+        run: |
+          set +e
+          python tools/field-evidence-audit.py \
+            --manifest docs/field-evidence-manifest.template.json \
+            --output artifacts/field-evidence-demo.json \
+            --markdown artifacts/field-evidence-demo.md
+          code=$?
+          set -e
+          test "$code" -eq 2
+          python -c "import json; from pathlib import Path; a=json.loads(Path('artifacts/field-evidence-demo.json').read_text()); assert a['status']=='REVIEW_REQUIRED'; assert a['robotAccuracyCertified'] is False; assert a['issues']"
       - name: Upload HTML audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jlv-calibration-history-report-demo
-          path: artifacts/calibration-history-report.html
+          path: |
+            artifacts/calibration-history-report.html
+            artifacts/field-evidence-demo.json
+            artifacts/field-evidence-demo.md
           if-no-files-found: warn
