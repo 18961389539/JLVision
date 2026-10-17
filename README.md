@@ -18,6 +18,18 @@ Call `JLVisionRuntime.TryInitialize(out JlRuntimeDiagnostics diagnostics)` durin
 The public string overloads remain available for compatibility. Typed option overloads are provided for common image, pose, model, and transformation operations.
 
 
+## Managed 1D and 2D code recognition adapter
+
+For functional Code128, Code39, EAN, QR and DataMatrix decoding without
+guessing unverified native operator indices, build the **optional**
+`JLVisionLib.Recognition` project (ZXing.Net 0.16.11).
+
+This restores the high-level `JlBarCode` and `JlDataCode2D` API entry
+points under `JLVisionLib.Recognition`, including Gray8 and `JlImage` inputs.
+It **does not** restore the original native DLL recognition procedures or OCR.
+See [recognition adapter](docs/recognition-adapter.md) and
+[recognition native recovery plan](docs/recognition-recovery-plan.md).
+
 ## Native reliability and performance validation
 
 The Windows x64 CI workflow checks generated native procedure lifetime scopes, runs managed/native tests, compares serial and independent-worker throughput, and validates the **built Release NuGet package** in a separate consumer process.
