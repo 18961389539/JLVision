@@ -1,0 +1,35 @@
+name: Calibration history HTML report
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calibration-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests
+        run: python tools/test-calibration-history-report.py
+      - name: Render synthetic history HTML
+        run: |
+          python tools/calibration-history-report.py \
+            --input tools/fixtures/calibration-history.synthetic.json \
+            --output artifacts/calibration-history-report.html
+      - name: Verify report content
+        run: |
+          python -c "from pathlib import Path; s=Path('artifacts/calibration-history-report.html').read_text(); assert 'REGRESSION' in s; assert '+0.01000 mm' in s; assert 'SYNTHETIC-DEMO-NOT-MEASURED' in s"
+      - name: Upload HTML audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-calibration-history-report-demo
+          path: artifacts/calibration-history-report.html
+          if-no-files-found: warn
