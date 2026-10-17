@@ -53,3 +53,27 @@ python tools/calibration-history-report.py --input artifacts/audit.json --output
 ```
 
 注意：第二条命令的阈值是人为选择的**示例**，须依据工艺和计量能力审批；退出码 `2` 表示报告门禁要求人工复核，`0` 表示当前已提供的软件证据满足这些门禁，并不表示机器人系统整体验收通过。
+
+## 5. 机器可读的证据包（离线审核）
+
+在工位本地建立证据目录，复制 `docs/field-evidence-manifest.template.json` 并填写所有现场信息。使用以下五类附件：
+
+- `calibrationAudit`：标定审计 JSON（含独立验证点、history 结论）
+- `datasetBenchmark`：真实图像数据集算法验收 JSON
+- `rawMetrology`：外部计量设备导出的原始测量记录
+- `robotPickTrials`：机器人实际抓取试验记录
+- `soakTestLog`：长时间运行及稳定性日志
+
+每类附件提供**相对于清单目录的路径和 SHA256**。清单不得用指向父目录的路径或符号链接逃逸证据目录；修改任何附件后必须重新计算摘要。
+
+```powershell
+python tools/field-evidence-audit.py --manifest "C:\\field-evidence\\manifest.json" --output "C:\\field-evidence\\audit-result.json" --markdown "C:\\field-evidence\\review.md"
+```
+
+输出 `audit-result.json` 包含机器状态、错误原因、文件校验和及附件大小，`review.md` 列出待补证据、人工复核签署栏。
+
+- 退出码 **0**：仅表示 `READY_FOR_HUMAN_REVIEW`（机器检验的证据完整，可交给质量人员人工审核），**不是设备合格证**。
+- 退出码 **2**：`REVIEW_REQUIRED`（缺失证据、哈希不一致、标定回退、算法门禁不通过、非现场或合成数据等）。
+- 退出码 **1**：清单 JSON 不合法、CLI 输入或文件系统错误。
+
+程序无法验证文件记录是否来自真实设备、测量工具的校准证书是否有效、独立标注的真伪，以及机器人最终实际抓取精度。必须由独立审核人员结合原始记录、物理计量和系统级试验做最终放行。不得将客户原始图像或计量数据提交到公共 GitHub 仓库。
