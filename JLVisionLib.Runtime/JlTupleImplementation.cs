@@ -245,16 +245,18 @@ internal abstract class JlTupleImplementation
 
 	internal void UnpinTuple()
 	{
-		Monitor.Enter(this);
-		if (pinCount > 0)
+		lock (this)
 		{
-			pinCount--;
-			if (pinCount == 0)
+			if (pinCount > 0)
 			{
-				pinHandle.Free();
+				pinCount--;
+				if (pinCount == 0)
+				{
+					pinHandle.Free();
+				}
+				JlNativeProcedureScope.NoteUnpin(this);
 			}
 		}
-		Monitor.Exit(this);
 	}
 
 	protected abstract Array CreateArray(int size);

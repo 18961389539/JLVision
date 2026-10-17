@@ -1,0 +1,126 @@
+name: Windows x64 validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Audit native operator lifetime scopes
+        run: pwsh ./tools/audit-native-scopes.ps1
+
+      - name: Audit synthetic affine calibration evidence and draw measured residual map
+        run: dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --output artifacts/calibration-evidence-demo.json --heatmap artifacts/calibration-evidence-demo.svg
+
+      - name: Compare synthetic calibration versions and history (managed only)
+        shell: pwsh
+        run: |
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --baseline tools/JLVision.DatasetBenchmark/example-version1.dataset.json --max-peak-increase-mm 0.015 --max-rms-increase-mm 0.015 --output artifacts/calibration-version-comparison-demo.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.015 --max-rms-increase-mm 0.015 --output artifacts/calibration-history-demo.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # The same synthetic drift MUST be rejected under a stricter threshold.
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.001 --max-rms-increase-mm 0.001 --output artifacts/calibration-drift-rejection-demo.json
+          if ($LASTEXITCODE -ne 2) { throw "Expected quality-gate failure (exit 2) when synthetic drift exceeds threshold; actual exit: $LASTEXITCODE" }
+          # GitHub Actions PowerShell propagates LASTEXITCODE from the final external command.
+          # Quality-gate rejection is expected here, so reset it after asserting exit code 2.
+          $global:LASTEXITCODE = 0
+
+      - name: Restore
+        run: dotnet restore JLVisionLib.slnx
+
+      - name: Build and test (Debug)
+        run: dotnet test JLVisionLib.slnx --configuration Debug --no-restore --logger "trx;LogFileName=jlv-test-results.trx"
+
+      - name: Compare serial and independent-parallel native throughput
+        shell: pwsh
+        run: |
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug -- --iterations 3000 --workers 1 --width 320 --height 240 --batches 6 --output artifacts/jlv-stress-serial.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --iterations 3000 --workers 4 --width 320 --height 240 --batches 6 --output artifacts/jlv-stress-parallel.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.Stress/JLVision.Stress.csproj --configuration Debug --no-build -- --duration-seconds 2 --workers 2 --width 160 --height 120 --batches 2 --output artifacts/jlv-stress-timed.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Benchmark synthetic NCC and Shape model lifecycle (Windows x64)
+        run: dotnet run --project tools/JLVision.ModelBenchmark/JLVision.ModelBenchmark.csproj --configuration Debug -- --algorithm both --iterations 8 --output artifacts/model-benchmark.json
+
+      - name: Validate labeled Shape/NCC positive and negative fixture dataset
+        run: dotnet run --project tools/JLVision.DatasetBenchmark/JLVision.DatasetBenchmark.csproj --configuration Debug -- --algorithm both --output artifacts/model-dataset.json
+
+      - name: Package (Release)
+        run: dotnet pack JLVisionLib.csproj --configuration Release --no-restore --output artifacts
+
+      - name: Restore independent NuGet consumer from local Release package
+        run: dotnet restore tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --source ./artifacts
+
+      - name: Execute independent NuGet consumer (Release)
+        run: dotnet run --project tests/JLVisionLib.PackageSmoke/JLVisionLib.PackageSmoke.csproj --configuration Release --no-restore
+
+      - name: Upload synthetic calibration evidence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-calibration-audit-demo
+          path: |
+            artifacts/calibration-evidence-demo.json
+            artifacts/calibration-evidence-demo.svg
+            artifacts/calibration-version-comparison-demo.json
+            artifacts/calibration-history-demo.json
+            artifacts/calibration-drift-rejection-demo.json
+          if-no-files-found: warn
+
+      - name: Upload labeled vision dataset report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-model-dataset
+          path: artifacts/model-dataset.json
+          if-no-files-found: warn
+
+      - name: Upload Shape and NCC benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-model-benchmark
+          path: artifacts/model-benchmark.json
+          if-no-files-found: warn
+
+      - name: Upload native stress report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-stress-report
+          path: artifacts/jlv-stress-*.json
+          if-no-files-found: warn
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
+
+      - name: Upload NuGet package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jlv-nuget
+          path: artifacts/*.nupkg
+          if-no-files-found: error

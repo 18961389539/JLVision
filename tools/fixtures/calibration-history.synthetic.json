@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "result": {
+    "calibrationId": "SYNTHETIC-DEMO-NOT-MEASURED"
+  },
+  "history": {
+    "versions": 3,
+    "firstId": "SYNTHETIC-v1",
+    "lastId": "SYNTHETIC-v3",
+    "netHoldoutMaxChangeMm": 0.01,
+    "netHoldoutRmsChangeMm": 0.005,
+    "worstStepHoldoutMaxIncreaseMm": 0.008,
+    "worstStepHoldoutRmsIncreaseMm": 0.004,
+    "degradingSteps": 2,
+    "regressionDetected": true,
+    "steps": [
+      {
+        "baselineId": "SYNTHETIC-v1",
+        "currentId": "SYNTHETIC-v2",
+        "holdoutMaxChangeMm": 0.002,
+        "holdoutRmsChangeMm": 0.001,
+        "regressionDetected": false
+      },
+      {
+        "baselineId": "SYNTHETIC-v2",
+        "currentId": "SYNTHETIC-v3",
+        "holdoutMaxChangeMm": 0.008,
+        "holdoutRmsChangeMm": 0.004,
+        "regressionDetected": true
+      }
+    ]
+  }
+}

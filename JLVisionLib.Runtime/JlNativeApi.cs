@@ -177,9 +177,14 @@ public class JlNativeApi
 	internal static int GetSerializedSize(byte[] header, out ulong size)
 	{
 		GCHandle gCHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
-		int result = HLIGetSerializedSize(gCHandle.AddrOfPinnedObject(), out size);
-		gCHandle.Free();
-		return result;
+		try
+		{
+			return HLIGetSerializedSize(gCHandle.AddrOfPinnedObject(), out size);
+		}
+		finally
+		{
+			gCHandle.Free();
+		}
 	}
 
 	[DllImport("JLVisionCore", CallingConvention = CallingConvention.Cdecl, EntryPoint = "HLILock")]
@@ -238,10 +243,15 @@ public class JlNativeApi
 	internal static string GetErrorMessage(int err)
 	{
 		IntPtr intPtr = Marshal.AllocHGlobal(1024);
-		HLIGetErrorMessage(err, intPtr);
-		string result = FromNativeEncoding(intPtr, force_utf8: false);
-		Marshal.FreeHGlobal(intPtr);
-		return result;
+		try
+		{
+			HLIGetErrorMessage(err, intPtr);
+			return FromNativeEncoding(intPtr, force_utf8: false);
+		}
+		finally
+		{
+			Marshal.FreeHGlobal(intPtr);
+		}
 	}
 
 	/// <summary>调用前置：按算子索引 procIndex 创建算子实例并返回其句柄，创建失败时抛出 JlOperatorException。</summary>
@@ -261,17 +271,35 @@ public class JlNativeApi
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void PostCall(IntPtr proc, int procResult)
 	{
-		int procIndex = GetProcIndex(proc);
-		HLIClearAllIOCT(proc);
-		int err = DestroyProcedure(proc, procResult);
+		int procIndex = -1;
+		int clearResult = Jl_MSG_OK;
+		int destroyResult = Jl_MSG_OK;
+		try
+		{
+			procIndex = GetProcIndex(proc);
+		}
+		finally
+		{
+			// Always destroy the procedure, even when index lookup or IO cleanup fails.
+			try
+			{
+				clearResult = HLIClearAllIOCT(proc);
+			}
+			finally
+			{
+				destroyResult = DestroyProcedure(proc, procResult);
+			}
+		}
 		if (procIndex >= 0)
 		{
-			JlOperatorException.throwOperator(err, procIndex);
+			JlOperatorException.throwOperator(clearResult, procIndex);
+			JlOperatorException.throwOperator(destroyResult, procIndex);
 			JlOperatorException.throwOperator(procResult, procIndex);
 		}
 		else
 		{
-			JlOperatorException.throwOperator(err, "Unknown");
+			JlOperatorException.throwOperator(clearResult, "Unknown");
+			JlOperatorException.throwOperator(destroyResult, "Unknown");
 			JlOperatorException.throwOperator(procResult, "Unknown");
 		}
 	}
@@ -285,9 +313,10 @@ public class JlNativeApi
 	internal static void ClearObject(IntPtr key)
 	{
 		IntPtr proc = PreCall(570);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		int procResult = CallProcedure(proc);
-		PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 	}
 
 	[DllImport("JLVisionCore", CallingConvention = CallingConvention.Cdecl)]
@@ -296,6 +325,7 @@ public class JlNativeApi
 	internal static IntPtr CopyObject(IntPtr key)
 	{
 		IntPtr proc = PreCall(568);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		StoreI(proc, 0, 1);
 		StoreI(proc, 1, -1);
@@ -304,7 +334,7 @@ public class JlNativeApi
 		{
 			num = GetOutputObject(proc, 1, out key);
 		}
-		PostCall(proc, num);
+		nativeCall.Complete(num);
 		return key;
 	}
 
@@ -312,6 +342,7 @@ public class JlNativeApi
 	{
 		JlTuple tuple = "object";
 		IntPtr proc = PreCall(579);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlCkP(proc, SetInputObject(proc, 1, key));
 		InitOCT(proc, 0);
 		int num = CallProcedure(proc);
@@ -319,7 +350,7 @@ public class JlNativeApi
 		{
 			num = JlTuple.LoadNew(proc, 0, num, out tuple);
 		}
-		PostCall(proc, num);
+		nativeCall.Complete(num);
 		if (tuple.Length <= 0)
 		{
 			return "any";
@@ -557,9 +588,14 @@ public class JlNativeApi
 			dotnet_string = "";
 		}
 		IntPtr intPtr = ToNativeGlobalEncoding(dotnet_string, force_utf8);
-		int result = HLISetS(tuple, index, intPtr);
-		Marshal.FreeHGlobal(intPtr);
-		return result;
+		try
+		{
+			return HLISetS(tuple, index, intPtr);
+		}
+		finally
+		{
+			Marshal.FreeHGlobal(intPtr);
+		}
 	}
 
 	internal static int SetIP(IntPtr tuple, int index, IntPtr intPtrValue)
@@ -576,7 +612,7 @@ public class JlNativeApi
 	public static void StoreI(IntPtr proc, int parIndex, int intValue)
 	{
 		JlCkP(proc, CreateInputTuple(proc, parIndex, 1, JlTupleType.INTEGER, out var tuple));
-		SetI(tuple, 0, intValue);
+		JlCkP(proc, SetI(tuple, 0, intValue));
 	}
 
 	/// <summary>为算子 proc 的第 parIndex 个输入参数创建单元素 INTEGER 元组并写入 long 值。</summary>
@@ -584,7 +620,7 @@ public class JlNativeApi
 	public static void StoreL(IntPtr proc, int parIndex, long longValue)
 	{
 		JlCkP(proc, CreateInputTuple(proc, parIndex, 1, JlTupleType.INTEGER, out var tuple));
-		SetL(tuple, 0, longValue);
+		JlCkP(proc, SetL(tuple, 0, longValue));
 	}
 
 	/// <summary>为算子 proc 的第 parIndex 个输入参数创建单元素 DOUBLE 元组并写入 double 值。</summary>
@@ -592,7 +628,7 @@ public class JlNativeApi
 	public static void StoreD(IntPtr proc, int parIndex, double doubleValue)
 	{
 		JlCkP(proc, CreateInputTuple(proc, parIndex, 1, JlTupleType.DOUBLE, out var tuple));
-		SetD(tuple, 0, doubleValue);
+		JlCkP(proc, SetD(tuple, 0, doubleValue));
 	}
 
 	/// <summary>为算子 proc 的第 parIndex 个输入参数创建单元素 STRING 元组并写入字符串（null 视为空串，ANSI 编码）。</summary>
@@ -620,7 +656,7 @@ public class JlNativeApi
 	public static void StoreIP(IntPtr proc, int parIndex, IntPtr intPtrValue)
 	{
 		JlCkP(proc, CreateInputTuple(proc, parIndex, 1, JlTupleType.INTEGER, out var tuple));
-		SetIP(tuple, 0, intPtrValue);
+		JlCkP(proc, SetIP(tuple, 0, intPtrValue));
 	}
 
 	/// <summary>把托管 JlTuple 存为算子第 parIndex 个输入参数；null 时存入空元组。</summary>
@@ -947,7 +983,7 @@ public class JlNativeApi
 	{
 		if (IsFailure(err))
 		{
-			PostCall(proc, err);
+			JlNativeProcedureScope.CompleteFailedCall(proc, err);
 		}
 	}
 }

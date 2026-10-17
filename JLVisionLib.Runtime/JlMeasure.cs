@@ -133,6 +133,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlMeasure(JlTuple centerRow, JlTuple centerCol, JlTuple radius, JlTuple angleStart, JlTuple angleExtent, JlTuple annulusRadius, int width, int height, string interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, centerRow);
 		JlNativeApi.Store(proc, 1, centerCol);
 		JlNativeApi.Store(proc, 2, radius);
@@ -151,7 +152,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(angleExtent);
 		JlNativeApi.UnpinTuple(annulusRadius);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -189,6 +190,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlMeasure(double centerRow, double centerCol, double radius, double angleStart, double angleExtent, double annulusRadius, int width, int height, string interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, centerRow);
 		JlNativeApi.StoreD(proc, 1, centerCol);
 		JlNativeApi.StoreD(proc, 2, radius);
@@ -201,7 +203,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -236,6 +238,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlMeasure(JlTuple row, JlTuple column, JlTuple phi, JlTuple length1, JlTuple length2, int width, int height, string interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -252,7 +255,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -291,6 +294,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlMeasure(double row, double column, double phi, double length1, double length2, int width, int height, string interpolation)
 	{
 		IntPtr proc = JlNativeApi.PreCall(816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, phi);
@@ -302,7 +306,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -440,11 +444,12 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public byte[] SerializeMeasure()
 	{
 		IntPtr proc = JlNativeApi.PreCall(799);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -473,11 +478,12 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(800);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -502,10 +508,11 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void WriteMeasure(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(801);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -530,11 +537,12 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(802);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -570,6 +578,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void MeasureThresh(JlImage image, double sigma, double threshold, string select, out JlTuple rowThresh, out JlTuple columnThresh, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(803);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -582,7 +591,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out rowThresh);
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out columnThresh);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -604,9 +613,10 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void CloseMeasure()
 	{
 		IntPtr proc = JlNativeApi.PreCall(804);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -637,12 +647,13 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlTuple MeasureProjection(JlImage image)
 	{
 		IntPtr proc = JlNativeApi.PreCall(805);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 		return tuple;
@@ -668,10 +679,11 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void ResetFuzzyMeasure(string setType)
 	{
 		IntPtr proc = JlNativeApi.PreCall(806);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, setType);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -723,6 +735,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void FuzzyMeasurePairing(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, string pairing, int numPairs, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowPairCenter, out JlTuple columnPairCenter, out JlTuple fuzzyScore, out JlTuple intraDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(809);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -752,7 +765,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out columnPairCenter);
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out intraDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -801,6 +814,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void FuzzyMeasurePairs(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple rowEdgeCenter, out JlTuple columnEdgeCenter, out JlTuple fuzzyScore, out JlTuple intraDistance, out JlTuple interDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(810);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -830,7 +844,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 8, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 9, JlTupleType.DOUBLE, err, out intraDistance);
 		err = JlTuple.LoadNew(proc, 10, JlTupleType.DOUBLE, err, out interDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -871,6 +885,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void FuzzyMeasurePos(JlImage image, double sigma, double ampThresh, double fuzzyThresh, string transition, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple fuzzyScore, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(811);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -888,7 +903,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out amplitude);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out fuzzyScore);
 		err = JlTuple.LoadNew(proc, 4, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -934,6 +949,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void MeasurePairs(JlImage image, double sigma, double threshold, string transition, string select, out JlTuple rowEdgeFirst, out JlTuple columnEdgeFirst, out JlTuple amplitudeFirst, out JlTuple rowEdgeSecond, out JlTuple columnEdgeSecond, out JlTuple amplitudeSecond, out JlTuple intraDistance, out JlTuple interDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(812);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -957,7 +973,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 5, JlTupleType.DOUBLE, err, out amplitudeSecond);
 		err = JlTuple.LoadNew(proc, 6, JlTupleType.DOUBLE, err, out intraDistance);
 		err = JlTuple.LoadNew(proc, 7, JlTupleType.DOUBLE, err, out interDistance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -999,6 +1015,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void MeasurePos(JlImage image, double sigma, double threshold, string transition, string select, out JlTuple rowEdge, out JlTuple columnEdge, out JlTuple amplitude, out JlTuple distance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(813);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, image);
 		JlNativeApi.StoreD(proc, 1, sigma);
@@ -1014,7 +1031,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		err = JlTuple.LoadNew(proc, 1, JlTupleType.DOUBLE, err, out columnEdge);
 		err = JlTuple.LoadNew(proc, 2, JlTupleType.DOUBLE, err, out amplitude);
 		err = JlTuple.LoadNew(proc, 3, JlTupleType.DOUBLE, err, out distance);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(image);
 	}
@@ -1049,13 +1066,14 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void TranslateMeasure(JlTuple row, JlTuple column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(814);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, row);
 		JlNativeApi.Store(proc, 2, column);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(row);
 		JlNativeApi.UnpinTuple(column);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1076,11 +1094,12 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public void TranslateMeasure(double row, double column)
 	{
 		IntPtr proc = JlNativeApi.PreCall(814);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreD(proc, 1, row);
 		JlNativeApi.StoreD(proc, 2, column);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -1119,6 +1138,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, centerRow);
 		JlNativeApi.Store(proc, 1, centerCol);
 		JlNativeApi.Store(proc, 2, radius);
@@ -1137,7 +1157,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(angleExtent);
 		JlNativeApi.UnpinTuple(annulusRadius);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1166,6 +1186,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(815);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, centerRow);
 		JlNativeApi.StoreD(proc, 1, centerCol);
 		JlNativeApi.StoreD(proc, 2, radius);
@@ -1178,7 +1199,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1215,6 +1236,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, row);
 		JlNativeApi.Store(proc, 1, column);
 		JlNativeApi.Store(proc, 2, phi);
@@ -1231,7 +1253,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.UnpinTuple(length1);
 		JlNativeApi.UnpinTuple(length2);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1259,6 +1281,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(816);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreD(proc, 0, row);
 		JlNativeApi.StoreD(proc, 1, column);
 		JlNativeApi.StoreD(proc, 2, phi);
@@ -1270,7 +1293,7 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -1298,13 +1321,14 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMeasureParam(JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2153);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1326,12 +1350,13 @@ public class JlMeasure : JlHandle, ISerializable, ICloneable
 	public JlTuple GetMeasureParam(string genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2153);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}

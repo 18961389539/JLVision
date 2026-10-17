@@ -134,11 +134,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlXLDDistTrans(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1292);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -170,6 +171,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlXLDDistTrans(JlXLDCont contour, string mode, JlTuple maxDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1299);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, maxDistance);
@@ -177,7 +179,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour);
 	}
@@ -206,13 +208,14 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlXLDDistTrans(JlXLDCont contour, string mode, double maxDistance)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1299);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreD(proc, 1, maxDistance);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour);
 	}
@@ -349,9 +352,10 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public void ClearDistanceTransformXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1290);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -384,12 +388,13 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlXLDCont ApplyDistanceTransformXld(JlXLDCont contour)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1291);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour);
 		return obj;
@@ -417,11 +422,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1292);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreS(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 
@@ -451,11 +457,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1293);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -483,11 +490,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public byte[] SerializeDistanceTransformXld()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1294);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -515,10 +523,11 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public void WriteDistanceTransformXld(string fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1295);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -545,13 +554,14 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public void SetDistanceTransformXldParam(JlTuple genParamName, JlTuple genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1296);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.Store(proc, 2, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		JlNativeApi.UnpinTuple(genParamValue);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -579,11 +589,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public void SetDistanceTransformXldParam(string genParamName, string genParamValue)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1296);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.StoreS(proc, 2, genParamValue);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -611,13 +622,14 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlTuple GetDistanceTransformXldParam(JlTuple genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1297);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(genParamName);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -644,12 +656,13 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlTuple GetDistanceTransformXldParam(string genParamName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(1297);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.StoreS(proc, 1, genParamName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -674,11 +687,12 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	public JlXLDCont GetDistanceTransformXldContour()
 	{
 		IntPtr proc = JlNativeApi.PreCall(1298);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlXLDCont.LoadNew(proc, 1, err, out var obj);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return obj;
 	}
@@ -707,6 +721,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1299);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.Store(proc, 1, maxDistance);
@@ -714,7 +729,7 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(maxDistance);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour);
 	}
@@ -743,13 +758,14 @@ public class JlXLDDistTrans : JlHandle, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(1299);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 1, contour);
 		JlNativeApi.StoreS(proc, 0, mode);
 		JlNativeApi.StoreD(proc, 1, maxDistance);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(contour);
 	}

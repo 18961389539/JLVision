@@ -1,0 +1,107 @@
+{
+  "_note": "Synthetic history fixture only. Reuses identical world reference points for software comparison; not a recorded physical calibration.",
+  "template": "images/template.bmp",
+  "minScore": 0.65,
+  "calibration": {
+    "xFromColumn": 0.05,
+    "xFromRow": 0,
+    "xOffset": 0,
+    "yFromColumn": 0,
+    "yFromRow": 0.05,
+    "yOffset": 0
+  },
+  "acceptance": {
+    "minPositiveFrames": 100,
+    "minNegativeFrames": 50,
+    "maxPositionErrorMm": 0.1,
+    "maxAngleErrorDeg": 1,
+    "maxP95MatchMs": 100,
+    "maxMissRate": 0.01,
+    "maxFalsePositiveRate": 0.01,
+    "maxCalibrationFitErrorMm": 0.02,
+    "maxCalibrationHoldoutErrorMm": 0.05,
+    "maxCalibrationHoldoutRmsMm": 0.03,
+    "minFitCalibrationGridCells": 5,
+    "minHoldoutCalibrationGridCells": 3
+  },
+  "frames": [
+    {
+      "file": "images/part_present_001.bmp",
+      "expectedPresent": true,
+      "expectedRow": 98,
+      "expectedColumn": 134,
+      "tolerancePixels": 3,
+      "expectedXmm": 6.7,
+      "expectedYmm": 4.9,
+      "expectedAngleRad": 0,
+      "toleranceAngleRad": 0.1
+    },
+    {
+      "file": "images/part_absent_001.bmp",
+      "expectedPresent": false
+    }
+  ],
+  "calibrationEvidence": {
+    "calibrationId": "DEMO-VERSION1-NOT-MEASURED",
+    "measurementMethod": "SYNTHETIC EXAMPLE ONLY - replace with independently measured reference coordinates",
+    "fitPoints": [
+      {
+        "row": 0,
+        "column": 0,
+        "xmm": 0,
+        "ymm": 0
+      },
+      {
+        "row": 0,
+        "column": 100,
+        "xmm": 5,
+        "ymm": 0
+      },
+      {
+        "row": 100,
+        "column": 0,
+        "xmm": 0,
+        "ymm": 5
+      },
+      {
+        "row": 100,
+        "column": 100,
+        "xmm": 5,
+        "ymm": 5
+      },
+      {
+        "row": 50,
+        "column": 25,
+        "xmm": 1.25,
+        "ymm": 2.5
+      }
+    ],
+    "validationPoints": [
+      {
+        "row": 25,
+        "column": 50,
+        "xmm": 2.5,
+        "ymm": 1.25
+      },
+      {
+        "row": 75,
+        "column": 50,
+        "xmm": 2.5,
+        "ymm": 3.75
+      },
+      {
+        "row": 50,
+        "column": 75,
+        "xmm": 3.75,
+        "ymm": 2.5
+      }
+    ],
+    "imageRegion": {
+      "minRow": 0,
+      "maxRow": 100,
+      "minColumn": 0,
+      "maxColumn": 100
+    }
+  },
+  "recordedUtc": "2026-10-01T00:00:00Z"
+}

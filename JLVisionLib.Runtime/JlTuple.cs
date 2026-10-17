@@ -710,6 +710,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleUnion(JlTuple set2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(95);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -717,7 +718,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(set2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -743,6 +744,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIntersection(JlTuple set2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(96);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -750,7 +752,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(set2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -776,6 +778,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleDifference(JlTuple set2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(97);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -783,7 +786,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(set2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -808,6 +811,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSymmdiff(JlTuple set2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(98);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, set2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -815,7 +819,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(set2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -839,12 +843,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsStringElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(99);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -868,12 +873,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsRealElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(100);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -896,12 +902,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsIntElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(101);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -927,12 +934,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleTypeElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(102);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -954,12 +962,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsMixed()
 	{
 		IntPtr proc = JlNativeApi.PreCall(103);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -981,12 +990,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsString()
 	{
 		IntPtr proc = JlNativeApi.PreCall(104);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1008,12 +1018,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsReal()
 	{
 		IntPtr proc = JlNativeApi.PreCall(105);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1035,12 +1046,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsInt()
 	{
 		IntPtr proc = JlNativeApi.PreCall(106);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1062,12 +1074,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleType()
 	{
 		IntPtr proc = JlNativeApi.PreCall(107);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1095,6 +1108,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleHistoRange(JlTuple min, JlTuple max, JlTuple numBins, out JlTuple binSize)
 	{
 		IntPtr proc = JlNativeApi.PreCall(108);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, min);
 		JlNativeApi.Store(proc, 2, max);
@@ -1108,7 +1122,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(numBins);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
 		err = LoadNew(proc, 1, JlTupleType.DOUBLE, err, out binSize);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1132,6 +1146,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRegexpSelect(JlTuple expression)
 	{
 		IntPtr proc = JlNativeApi.PreCall(109);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1139,7 +1154,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(expression);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1162,6 +1177,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRegexpTest(JlTuple expression)
 	{
 		IntPtr proc = JlNativeApi.PreCall(110);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1169,7 +1185,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(expression);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1194,6 +1210,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRegexpReplace(JlTuple expression, JlTuple replace)
 	{
 		IntPtr proc = JlNativeApi.PreCall(111);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.Store(proc, 2, replace);
@@ -1203,7 +1220,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(expression);
 		JlNativeApi.UnpinTuple(replace);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1228,6 +1245,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRegexpMatch(JlTuple expression)
 	{
 		IntPtr proc = JlNativeApi.PreCall(112);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, expression);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1235,7 +1253,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(expression);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1259,12 +1277,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public static JlTuple TupleRand(JlTuple length)
 	{
 		IntPtr proc = JlNativeApi.PreCall(113);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(length);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -1275,12 +1294,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	private JlTuple TupleLengthOp()
 	{
 		IntPtr proc = JlNativeApi.PreCall(114);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1302,12 +1322,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSgn()
 	{
 		IntPtr proc = JlNativeApi.PreCall(115);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1331,6 +1352,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMax2(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(116);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1338,7 +1360,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1361,6 +1383,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMin2(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(117);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1368,7 +1391,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1392,12 +1415,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMax()
 	{
 		IntPtr proc = JlNativeApi.PreCall(118);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1418,12 +1442,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMin()
 	{
 		IntPtr proc = JlNativeApi.PreCall(119);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1445,12 +1470,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleCumul()
 	{
 		IntPtr proc = JlNativeApi.PreCall(120);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1474,6 +1500,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSelectRank(JlTuple rankIndex)
 	{
 		IntPtr proc = JlNativeApi.PreCall(121);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, rankIndex);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1481,7 +1508,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(rankIndex);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1503,12 +1530,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMedian()
 	{
 		IntPtr proc = JlNativeApi.PreCall(122);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1529,12 +1557,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSum()
 	{
 		IntPtr proc = JlNativeApi.PreCall(123);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1555,12 +1584,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMean()
 	{
 		IntPtr proc = JlNativeApi.PreCall(124);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1582,12 +1612,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleDeviation()
 	{
 		IntPtr proc = JlNativeApi.PreCall(125);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1608,12 +1639,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleUniq()
 	{
 		IntPtr proc = JlNativeApi.PreCall(126);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1638,6 +1670,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFindLast(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(127);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1645,7 +1678,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1670,6 +1703,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFindFirst(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(128);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1677,7 +1711,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1702,6 +1736,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFind(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(129);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1709,7 +1744,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1733,12 +1768,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSortIndex()
 	{
 		IntPtr proc = JlNativeApi.PreCall(130);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1760,12 +1796,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSort()
 	{
 		IntPtr proc = JlNativeApi.PreCall(131);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1787,12 +1824,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleInverse()
 	{
 		IntPtr proc = JlNativeApi.PreCall(132);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1808,6 +1846,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	private JlTuple TupleConcatOp(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(133);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1815,7 +1854,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1839,6 +1878,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSelectRange(JlTuple leftindex, JlTuple rightindex)
 	{
 		IntPtr proc = JlNativeApi.PreCall(134);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, leftindex);
 		JlNativeApi.Store(proc, 2, rightindex);
@@ -1848,7 +1888,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(leftindex);
 		JlNativeApi.UnpinTuple(rightindex);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1871,6 +1911,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLastN(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(135);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1878,7 +1919,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1901,6 +1942,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFirstN(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(136);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -1908,7 +1950,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1933,6 +1975,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleInsert(JlTuple index, JlTuple insertTuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(137);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, insertTuple);
@@ -1942,7 +1985,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(insertTuple);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -1968,6 +2011,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleReplace(JlTuple index, JlTuple replaceTuple)
 	{
 		IntPtr proc = JlNativeApi.PreCall(138);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.Store(proc, 2, replaceTuple);
@@ -1977,7 +2021,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(index);
 		JlNativeApi.UnpinTuple(replaceTuple);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2001,6 +2045,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRemove(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(139);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2008,7 +2053,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2033,6 +2078,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSelectMask(JlTuple mask)
 	{
 		IntPtr proc = JlNativeApi.PreCall(140);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, mask);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2040,7 +2086,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(mask);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2064,6 +2110,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSelect(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(141);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2071,7 +2118,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2096,6 +2143,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrBitSelect(JlTuple index)
 	{
 		IntPtr proc = JlNativeApi.PreCall(142);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, index);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2103,7 +2151,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(index);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2128,6 +2176,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public static JlTuple TupleGenSequence(JlTuple start, JlTuple end, JlTuple step)
 	{
 		IntPtr proc = JlNativeApi.PreCall(143);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, start);
 		JlNativeApi.Store(proc, 1, end);
 		JlNativeApi.Store(proc, 2, step);
@@ -2137,7 +2186,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(end);
 		JlNativeApi.UnpinTuple(step);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -2160,6 +2209,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public static JlTuple TupleGenConst(JlTuple length, JlTuple constVal)
 	{
 		IntPtr proc = JlNativeApi.PreCall(144);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, length);
 		JlNativeApi.Store(proc, 1, constVal);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2167,7 +2217,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(length);
 		JlNativeApi.UnpinTuple(constVal);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -2190,12 +2240,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleEnvironment()
 	{
 		IntPtr proc = JlNativeApi.PreCall(145);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2219,6 +2270,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSplit(JlTuple separator)
 	{
 		IntPtr proc = JlNativeApi.PreCall(146);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, separator);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2226,7 +2278,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(separator);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2250,6 +2302,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSubstr(JlTuple position1, JlTuple position2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(147);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, position1);
 		JlNativeApi.Store(proc, 2, position2);
@@ -2259,7 +2312,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(position1);
 		JlNativeApi.UnpinTuple(position2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2283,6 +2336,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrLastN(JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(148);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, position);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2290,7 +2344,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(position);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2312,6 +2366,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrFirstN(JlTuple position)
 	{
 		IntPtr proc = JlNativeApi.PreCall(149);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, position);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2319,7 +2374,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(position);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2343,6 +2398,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrrchr(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(150);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2350,7 +2406,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2375,6 +2431,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrchr(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(151);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2382,7 +2439,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2407,6 +2464,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrrstr(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(152);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2414,7 +2472,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2439,6 +2497,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrstr(JlTuple toFind)
 	{
 		IntPtr proc = JlNativeApi.PreCall(153);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, toFind);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2446,7 +2505,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(toFind);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2470,12 +2529,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrlen()
 	{
 		IntPtr proc = JlNativeApi.PreCall(154);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2503,6 +2563,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLessEqualElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(155);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2510,7 +2571,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2537,6 +2598,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLessElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(156);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2544,7 +2606,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2569,6 +2631,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleGreaterEqualElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(157);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2576,7 +2639,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2601,6 +2664,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleGreaterElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(158);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2608,7 +2672,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2633,6 +2697,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleNotEqualElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(159);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2640,7 +2705,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2665,6 +2730,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleEqualElem(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(160);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2672,7 +2738,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2697,6 +2763,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLessEqual(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(161);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2704,7 +2771,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2729,6 +2796,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLess(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(162);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2736,7 +2804,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2761,6 +2829,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleGreaterEqual(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(163);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2768,7 +2837,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2793,6 +2862,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleGreater(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(164);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2800,7 +2870,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2825,6 +2895,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleNotEqual(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(165);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2832,7 +2903,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2857,6 +2928,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleEqual(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(166);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2864,7 +2936,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2886,12 +2958,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleNot()
 	{
 		IntPtr proc = JlNativeApi.PreCall(167);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2915,6 +2988,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleXor(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(168);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2922,7 +2996,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2946,6 +3020,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleOr(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(169);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2953,7 +3028,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -2977,6 +3052,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAnd(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(170);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -2984,7 +3060,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3006,12 +3082,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleBnot()
 	{
 		IntPtr proc = JlNativeApi.PreCall(171);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3035,6 +3112,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleBxor(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(172);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3042,7 +3120,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3066,6 +3144,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleBor(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(173);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3073,7 +3152,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3097,6 +3176,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleBand(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(174);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3104,7 +3184,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3129,6 +3209,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRsh(JlTuple shift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(175);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, shift);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3136,7 +3217,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(shift);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3161,6 +3242,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLsh(JlTuple shift)
 	{
 		IntPtr proc = JlNativeApi.PreCall(176);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, shift);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3168,7 +3250,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(shift);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3190,12 +3272,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleChrt()
 	{
 		IntPtr proc = JlNativeApi.PreCall(177);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3217,12 +3300,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleOrds()
 	{
 		IntPtr proc = JlNativeApi.PreCall(178);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3244,12 +3328,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleChr()
 	{
 		IntPtr proc = JlNativeApi.PreCall(179);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3271,12 +3356,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleOrd()
 	{
 		IntPtr proc = JlNativeApi.PreCall(180);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3299,6 +3385,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleString(JlTuple format)
 	{
 		IntPtr proc = JlNativeApi.PreCall(181);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, format);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3306,7 +3393,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(format);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3328,12 +3415,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsNumber()
 	{
 		IntPtr proc = JlNativeApi.PreCall(182);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3355,12 +3443,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleNumber()
 	{
 		IntPtr proc = JlNativeApi.PreCall(183);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3382,12 +3471,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRound()
 	{
 		IntPtr proc = JlNativeApi.PreCall(184);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3409,12 +3499,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleInt()
 	{
 		IntPtr proc = JlNativeApi.PreCall(185);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3436,12 +3527,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleReal()
 	{
 		IntPtr proc = JlNativeApi.PreCall(186);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3465,6 +3557,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLdexp(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(187);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3472,7 +3565,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3496,6 +3589,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFmod(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(188);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3503,7 +3597,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3527,6 +3621,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleMod(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(189);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3534,7 +3629,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3556,12 +3651,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleCeil()
 	{
 		IntPtr proc = JlNativeApi.PreCall(190);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3583,12 +3679,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFloor()
 	{
 		IntPtr proc = JlNativeApi.PreCall(191);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3613,6 +3710,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TuplePow(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(192);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3620,7 +3718,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3642,12 +3740,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLog10()
 	{
 		IntPtr proc = JlNativeApi.PreCall(193);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3669,12 +3768,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLog()
 	{
 		IntPtr proc = JlNativeApi.PreCall(194);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3696,12 +3796,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleExp()
 	{
 		IntPtr proc = JlNativeApi.PreCall(195);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3723,12 +3824,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleTanh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(196);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3750,12 +3852,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleCosh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(197);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3777,12 +3880,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSinh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(198);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3804,12 +3908,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRad()
 	{
 		IntPtr proc = JlNativeApi.PreCall(199);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3831,12 +3936,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleDeg()
 	{
 		IntPtr proc = JlNativeApi.PreCall(200);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3861,6 +3967,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAtan2(JlTuple x)
 	{
 		IntPtr proc = JlNativeApi.PreCall(201);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, x);
 		JlNativeApi.InitOCT(proc, 0);
@@ -3868,7 +3975,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(x);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3890,12 +3997,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAtan()
 	{
 		IntPtr proc = JlNativeApi.PreCall(202);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3918,12 +4026,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAcos()
 	{
 		IntPtr proc = JlNativeApi.PreCall(203);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3946,12 +4055,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAsin()
 	{
 		IntPtr proc = JlNativeApi.PreCall(204);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -3973,12 +4083,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleTan()
 	{
 		IntPtr proc = JlNativeApi.PreCall(205);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4000,12 +4111,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleCos()
 	{
 		IntPtr proc = JlNativeApi.PreCall(206);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4027,12 +4139,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSin()
 	{
 		IntPtr proc = JlNativeApi.PreCall(207);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4054,12 +4167,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleFabs()
 	{
 		IntPtr proc = JlNativeApi.PreCall(208);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4081,12 +4195,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSqrt()
 	{
 		IntPtr proc = JlNativeApi.PreCall(209);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4107,12 +4222,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAbs()
 	{
 		IntPtr proc = JlNativeApi.PreCall(210);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4133,12 +4249,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleNeg()
 	{
 		IntPtr proc = JlNativeApi.PreCall(211);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4162,6 +4279,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleDiv(JlTuple q2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(212);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, q2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4169,7 +4287,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(q2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4185,6 +4303,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	private JlTuple TupleMultOp(JlTuple p2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(213);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, p2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4192,7 +4311,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(p2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4208,6 +4327,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	private JlTuple TupleSubOp(JlTuple d2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(214);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, d2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4215,7 +4335,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(d2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4231,6 +4351,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	private JlTuple TupleAddOp(JlTuple s2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(215);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, s2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4238,7 +4359,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(s2);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4262,11 +4383,12 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	{
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItemHandle);
 		IntPtr proc = JlNativeApi.PreCall(216);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(buffer);
 		return tuple;
 	}
@@ -4287,12 +4409,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public byte[] SerializeTuple()
 	{
 		IntPtr proc = JlNativeApi.PreCall(217);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -4313,12 +4436,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public void WriteTuple(JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(218);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, fileName);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(fileName);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -4339,12 +4463,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public static JlTuple ReadTuple(JlTuple fileName)
 	{
 		IntPtr proc = JlNativeApi.PreCall(219);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, fileName);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(fileName);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -4363,10 +4488,11 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public void ClearHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2011);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -4387,12 +4513,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2016);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4415,12 +4542,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsHandleElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2017);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4440,12 +4568,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsSerializable()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2018);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4467,12 +4596,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsSerializableElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2019);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4494,12 +4624,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsValidHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2020);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4519,12 +4650,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSemType()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2021);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4545,12 +4677,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleSemTypeElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2022);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4571,12 +4704,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAcosh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2069);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4597,12 +4731,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAsinh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2070);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4623,12 +4758,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleAtanh()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2071);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4649,12 +4785,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleCbrt()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2072);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4675,12 +4812,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleErf()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2073);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4701,12 +4839,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleErfc()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2074);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4727,12 +4866,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleExp10()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2075);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4752,12 +4892,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleExp2()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2076);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4780,6 +4921,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleHypot(JlTuple t2)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2077);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, t2);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4787,7 +4929,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(t2);
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4808,12 +4950,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLgamma()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2078);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4834,12 +4977,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleLog2()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2079);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4860,12 +5004,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleTgamma()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2080);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.DOUBLE, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4887,6 +5032,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleJoin(JlTuple separators)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2155);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, separators);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4894,7 +5040,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(separators);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4916,12 +5062,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public static JlTuple TupleConstant(JlTuple name)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2168);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.Store(proc, 0, name);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		JlNativeApi.UnpinTuple(name);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		return tuple;
 	}
 
@@ -4941,12 +5088,13 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleIsNanElem()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2169);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		UnpinTuple();
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4968,6 +5116,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRepeat(JlTuple num)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2184);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, num);
 		JlNativeApi.InitOCT(proc, 0);
@@ -4975,7 +5124,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(num);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -4997,6 +5146,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleRepeatElem(JlTuple num)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2185);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, num);
 		JlNativeApi.InitOCT(proc, 0);
@@ -5004,7 +5154,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		UnpinTuple();
 		JlNativeApi.UnpinTuple(num);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -5027,6 +5177,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrReplace(JlTuple before, JlTuple after)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2186);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, before);
 		JlNativeApi.Store(proc, 2, after);
@@ -5036,7 +5187,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(before);
 		JlNativeApi.UnpinTuple(after);
 		err = LoadNew(proc, 0, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -5060,6 +5211,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 	public JlTuple TupleStrDistance(JlTuple string2, JlTuple mode)
 	{
 		IntPtr proc = JlNativeApi.PreCall(2193);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.Store(proc, 1, string2);
 		JlNativeApi.Store(proc, 2, mode);
@@ -5069,7 +5221,7 @@ public class JlTuple : ISerializable, ICloneable, IDisposable
 		JlNativeApi.UnpinTuple(string2);
 		JlNativeApi.UnpinTuple(mode);
 		err = LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}

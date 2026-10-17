@@ -60,13 +60,15 @@ internal class JlTupleDouble : JlTupleImplementation
 
 	internal override void PinTuple()
 	{
-		Monitor.Enter(this);
-		if (pinCount == 0)
+		lock (this)
 		{
-			pinHandle = GCHandle.Alloc(d, GCHandleType.Pinned);
+			if (pinCount == 0)
+			{
+				pinHandle = GCHandle.Alloc(d, GCHandleType.Pinned);
+			}
+			pinCount++;
+			JlNativeProcedureScope.NotePin(this);
 		}
-		pinCount++;
-		Monitor.Exit(this);
 	}
 
 	public override JlTupleElements GetElement(int index, JlTuple parent)
@@ -134,7 +136,15 @@ internal class JlTupleDouble : JlTupleImplementation
 	protected override void StoreData(IntPtr proc, IntPtr tuple)
 	{
 		PinTuple();
-		JlNativeApi.SetDArrPtr(tuple, d, iLength);
+		try
+		{
+			JlNativeApi.JlCkP(proc, JlNativeApi.SetDArrPtr(tuple, d, iLength));
+		}
+		catch
+		{
+			UnpinTuple();
+			throw;
+		}
 	}
 
 	internal static int Load(IntPtr tuple, out JlTupleDouble data)

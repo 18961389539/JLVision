@@ -1,0 +1,37 @@
+{
+  "_note": "TEMPLATE ONLY. Not field evidence; must never be used as certification. Do not commit customer data or raw images to a public repository.",
+  "schemaVersion": 1,
+  "sourceType": "template",
+  "stationId": "REPLACE-STATION",
+  "partNumber": "REPLACE-PART",
+  "calibrationId": "REPLACE-CAL-VERSION",
+  "cameraConfigId": "REPLACE-CAMERA-CONFIG",
+  "softwareCommit": "REPLACE-EXACT-GIT-SHA",
+  "metrologyMethod": "REPLACE-INDEPENDENT-MEASUREMENT-METHOD",
+  "metrologyInstrumentId": "REPLACE-TRACKABLE-INSTRUMENT-ID",
+  "metrologyCertificateId": "REPLACE-VALID-CERTIFICATE-ID",
+  "recordedUtc": "2026-10-17T00:00:00Z",
+  "engineerId": "REPLACE-ENGINEER-ID",
+  "evidenceFiles": {
+    "calibrationAudit": {
+      "path": "calibrationAudit.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "datasetBenchmark": {
+      "path": "datasetBenchmark.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "rawMetrology": {
+      "path": "rawMetrology.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "robotPickTrials": {
+      "path": "robotPickTrials.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "soakTestLog": {
+      "path": "soakTestLog.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}

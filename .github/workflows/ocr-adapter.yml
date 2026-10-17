@@ -1,0 +1,32 @@
+name: Optional Tesseract OCR compatibility
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ocr-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Download English traineddata for CI only
+        shell: pwsh
+        run: |
+          $dataDir = Join-Path $env:RUNNER_TEMP 'jlv-ocr-tessdata'
+          New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
+          $dest = Join-Path $dataDir 'eng.traineddata'
+          Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/eng.traineddata' -OutFile $dest
+          if ((Get-Item $dest).Length -lt 1000000) { throw 'Downloaded OCR language model is suspiciously small' }
+          "JLV_OCR_TESSDATA=$dataDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Test actual rendered OCR text, ROI and JlImage bridge
+        shell: pwsh
+        run: |
+          dotnet run --project tests/JLVisionLib.Ocr.Smoke/JLVisionLib.Ocr.Smoke.csproj --configuration Debug -- "$env:JLV_OCR_TESSDATA"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

@@ -35,13 +35,15 @@ internal class JlTupleInt32 : JlTupleImplementation
 
 	internal override void PinTuple()
 	{
-		Monitor.Enter(this);
-		if (pinCount == 0)
+		lock (this)
 		{
-			pinHandle = GCHandle.Alloc(i, GCHandleType.Pinned);
+			if (pinCount == 0)
+			{
+				pinHandle = GCHandle.Alloc(i, GCHandleType.Pinned);
+			}
+			pinCount++;
+			JlNativeProcedureScope.NotePin(this);
 		}
-		pinCount++;
-		Monitor.Exit(this);
 	}
 
 	public JlTupleInt32(int i)
@@ -137,17 +139,25 @@ internal class JlTupleInt32 : JlTupleImplementation
 	protected override void StoreData(IntPtr proc, IntPtr tuple)
 	{
 		PinTuple();
-		if (JlNativeApi.isPlatform64)
+		try
 		{
-			JlNativeApi.JlCkP(proc, JlNativeApi.CreateElementsOfType(tuple, base.Length, JlTupleType.INTEGER));
-			for (int i = 0; i < base.Length; i++)
+			if (JlNativeApi.isPlatform64)
 			{
-				JlNativeApi.SetI(tuple, i, this.i[i]);
+				JlNativeApi.JlCkP(proc, JlNativeApi.CreateElementsOfType(tuple, base.Length, JlTupleType.INTEGER));
+				for (int i = 0; i < base.Length; i++)
+				{
+					JlNativeApi.JlCkP(proc, JlNativeApi.SetI(tuple, i, this.i[i]));
+				}
+			}
+			else
+			{
+				JlNativeApi.JlCkP(proc, JlNativeApi.SetIArrPtr(tuple, this.i, iLength));
 			}
 		}
-		else
+		catch
 		{
-			JlNativeApi.SetIArrPtr(tuple, this.i, iLength);
+			UnpinTuple();
+			throw;
 		}
 	}
 

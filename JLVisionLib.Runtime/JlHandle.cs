@@ -231,9 +231,10 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	public void ClearHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2011);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		int procResult = JlNativeApi.CallProcedure(proc);
-		JlNativeApi.PostCall(proc, procResult);
+		nativeCall.Complete(procResult);
 		GC.KeepAlive(this);
 	}
 
@@ -262,12 +263,13 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(2012);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		using JlSerializationBuffer buffer = new JlSerializationBuffer(serializedItem);
 		JlNativeApi.Store(proc, 0, buffer);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		GC.KeepAlive(buffer);
 	}
@@ -297,11 +299,12 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	public byte[] SerializeHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2015);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		byte[] data = JlSerializationBuffer.LoadBytes(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return data;
 	}
@@ -326,11 +329,12 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	public int TupleIsSerializable()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2018);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadI(proc, 0, err, out var intValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intValue;
 	}
@@ -356,11 +360,12 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	public JlTuple TupleIsValidHandle()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2020);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlTuple.LoadNew(proc, 0, JlTupleType.INTEGER, err, out var tuple);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return tuple;
 	}
@@ -385,11 +390,12 @@ public class JlHandle : JlHandleBase, ISerializable, ICloneable
 	public string TupleSemType()
 	{
 		IntPtr proc = JlNativeApi.PreCall(2021);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadS(proc, 0, err, out var stringValue);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return stringValue;
 	}

@@ -84,16 +84,19 @@ internal sealed class JlSerializationBuffer : JlHandle
 		{
 			throw new JlException("Input stream is no serialized Vision object");
 		}
-		if (size > 2415918079u)
+		// Reject excessively large or malformed lengths before narrowing to int.
+		const ulong MaxSerializedPayloadBytes = 256UL * 1024 * 1024;
+		if (size > MaxSerializedPayloadBytes || size > int.MaxValue - 16)
 		{
 			throw new JlException("Input stream too large");
 		}
-		byte[] array2 = binaryReader.ReadBytes((int)size);
-		if (array2.Length < (int)size || JlNativeApi.IsFailure(JlNativeApi.GetSerializedSize(array, out size)))
+		int payloadSize = checked((int)size);
+		byte[] array2 = binaryReader.ReadBytes(payloadSize);
+		if (array2.Length != payloadSize)
 		{
 			throw new JlException("Unexpected end of serialization data");
 		}
-		byte[] array3 = new byte[(int)size + 16];
+		byte[] array3 = new byte[checked(payloadSize + 16)];
 		array.CopyTo(array3, 0);
 		array2.CopyTo(array3, 16);
 		return array3;
@@ -102,13 +105,14 @@ internal sealed class JlSerializationBuffer : JlHandle
 	private IntPtr GetSerializedItemPtr(out int size)
 	{
 		IntPtr proc = JlNativeApi.PreCall(403);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		Store(proc, 0);
 		JlNativeApi.InitOCT(proc, 0);
 		JlNativeApi.InitOCT(proc, 1);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = JlNativeApi.LoadIP(proc, 0, err, out var intPtrValue);
 		err = JlNativeApi.LoadI(proc, 1, err, out size);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 		return intPtrValue;
 	}
@@ -117,13 +121,14 @@ internal sealed class JlSerializationBuffer : JlHandle
 	{
 		Dispose();
 		IntPtr proc = JlNativeApi.PreCall(404);
+		using var nativeCall = JlNativeProcedureScope.Begin(proc);
 		JlNativeApi.StoreIP(proc, 0, pointer);
 		JlNativeApi.StoreI(proc, 1, size);
 		JlNativeApi.StoreS(proc, 2, copy);
 		JlNativeApi.InitOCT(proc, 0);
 		int err = JlNativeApi.CallProcedure(proc);
 		err = Load(proc, 0, err);
-		JlNativeApi.PostCall(proc, err);
+		nativeCall.Complete(err);
 		GC.KeepAlive(this);
 	}
 }
