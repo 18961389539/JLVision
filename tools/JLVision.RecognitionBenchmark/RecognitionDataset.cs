@@ -73,13 +73,18 @@ public sealed record RecognitionBenchmarkReport(
     int SchemaVersion, string DatasetId, string SourceType, string DeclaredSoftwareCommit,
     string ManifestSha256, string Verdict, bool RealFieldAccuracyCertified,
     RecognitionMetrics Overall, Dictionary<string, RecognitionMetrics> ByKind,
-    Dictionary<string, RecognitionMetrics> ByCondition, List<string> Reasons,
+    Dictionary<string, RecognitionMetrics> ByCondition,
+    Dictionary<string, RecognitionMetrics> ByKindCondition, List<string> Reasons,
     IReadOnlyList<RecognitionObservation> Frames);
 
 public static class RecognitionEvaluator
 {
     public static readonly HashSet<string> AllowedKinds =
         new(StringComparer.Ordinal) { "barcode1d", "datacode2d", "ocr" };
+    private static readonly HashSet<string> OneDimensionalFormats =
+        new(StringComparer.Ordinal) { "CODE_128", "CODE_39", "CODE_93", "EAN_13", "EAN_8", "UPC_A", "UPC_E", "ITF", "CODABAR" };
+    private static readonly HashSet<string> TwoDimensionalFormats =
+        new(StringComparer.Ordinal) { "QR_CODE", "DATA_MATRIX" };
 
     public static void Validate(RecognitionDataset dataset)
     {
@@ -110,6 +115,10 @@ public static class RecognitionEvaluator
                     throw new InvalidDataException("Barcode positives require expectedFormat.");
                 if (frame.Kind == "ocr" && frame.ExpectedFormat is not null)
                     throw new InvalidDataException("OCR uses text, not a barcode format.");
+                if (frame.Kind == "barcode1d" && !OneDimensionalFormats.Contains(frame.ExpectedFormat!))
+                    throw new InvalidDataException("Invalid 1D code expectedFormat.");
+                if (frame.Kind == "datacode2d" && !TwoDimensionalFormats.Contains(frame.ExpectedFormat!))
+                    throw new InvalidDataException("Invalid 2D code expectedFormat.");
             }
             else if (frame.ExpectedText is not null || frame.ExpectedFormat is not null)
                 throw new InvalidDataException("Negative frames must not declare expectedText or expectedFormat.");
@@ -150,6 +159,8 @@ public static class RecognitionEvaluator
         RecognitionMetrics overall = Metrics(values);
         var byKind = values.GroupBy(x => x.Kind).ToDictionary(x => x.Key, x => Metrics(x), StringComparer.Ordinal);
         var byCondition = values.GroupBy(x => x.Condition).ToDictionary(x => x.Key, x => Metrics(x), StringComparer.Ordinal);
+        var byKindCondition = values.GroupBy(x => x.Kind + "|" + x.Condition)
+            .ToDictionary(x => x.Key, x => Metrics(x), StringComparer.Ordinal);
         var reasons = new List<string>();
         var limits = dataset.Acceptance!;
         foreach (string kind in limits.RequiredKinds)
@@ -171,6 +182,18 @@ public static class RecognitionEvaluator
             Gate(m, "condition " + condition, limits, reasons,
                 limits.MinPositivePerCondition, limits.MinNegativePerCondition);
         }
+        foreach (string kind in limits.RequiredKinds)
+        foreach (string condition in limits.RequiredConditions)
+        {
+            string key = kind + "|" + condition;
+            if (!byKindCondition.TryGetValue(key, out var bucket))
+            {
+                reasons.Add("Missing required algorithm-condition combination: " + key);
+                continue;
+            }
+            Gate(bucket, key, limits, reasons,
+                limits.MinPositivePerCondition, limits.MinNegativePerCondition);
+        }
         if (overall.ProcessingErrors > 0)
             reasons.Add("There are decoder errors; software gates fail closed.");
         string verdict = reasons.Count > 0 ? "REVIEW_REQUIRED" :
@@ -178,7 +201,7 @@ public static class RecognitionEvaluator
             "SOFTWARE_GATES_PASSED_HUMAN_REVIEW_REQUIRED";
         return new RecognitionBenchmarkReport(1, dataset.DatasetId, dataset.SourceType,
             dataset.SoftwareCommit, manifestSha256, verdict, false, overall,
-            byKind, byCondition, reasons, values);
+            byKind, byCondition, byKindCondition, reasons, values);
     }
 
     private static void Gate(RecognitionMetrics m, string label, RecognitionLimits l,
