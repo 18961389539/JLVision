@@ -37,6 +37,9 @@ jobs:
           # The same synthetic drift MUST be rejected under a stricter threshold.
           dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.001 --max-rms-increase-mm 0.001 --output artifacts/calibration-drift-rejection-demo.json
           if ($LASTEXITCODE -ne 2) { throw "Expected quality-gate failure (exit 2) when synthetic drift exceeds threshold; actual exit: $LASTEXITCODE" }
+          # GitHub Actions PowerShell propagates LASTEXITCODE from the final external command.
+          # Quality-gate rejection is expected here, so reset it after asserting exit code 2.
+          $global:LASTEXITCODE = 0
 
       - name: Restore
         run: dotnet restore JLVisionLib.slnx
