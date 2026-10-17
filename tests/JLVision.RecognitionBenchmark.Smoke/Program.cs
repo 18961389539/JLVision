@@ -106,6 +106,33 @@ try
     Check(!pass.RealFieldAccuracyCertified, "no field certification");
     Check(pass.Overall.TruePositive == 3 && pass.Overall.TrueNegative == 3, "TP/TN");
     Check(Math.Abs(pass.Overall.P95Ms - 6) < 0.001, "nearest-rank P95");
+
+    // Wilson score CIs: zero observed errors never imply a zero population rate.
+    var zeroOfTen = RecognitionEvaluator.WilsonInterval(0, 10);
+    var tenOfTen = RecognitionEvaluator.WilsonInterval(10, 10);
+    var middle = RecognitionEvaluator.WilsonInterval(5, 10);
+    var noSample = RecognitionEvaluator.WilsonInterval(0, 0);
+    Check(Math.Abs(zeroOfTen.Upper95!.Value - 0.2775328) < 0.0001, "0/10 upper Wilson");
+    Check(Math.Abs(tenOfTen.Lower95!.Value - 0.7224672) < 0.0001, "10/10 lower Wilson");
+    Check(Math.Abs(middle.Lower95!.Value - (1 - middle.Upper95!.Value)) < 1e-10,
+        "Wilson symmetric around one half");
+    Check(noSample.Estimate is null && noSample.Lower95 is null && noSample.Upper95 is null,
+        "No denominator must produce undefined confidence interval");
+    bool invalidBinomial = false;
+    try { RecognitionEvaluator.WilsonInterval(2, 1); }
+    catch (ArgumentOutOfRangeException) { invalidBinomial = true; }
+    Check(invalidBinomial, "impossible binomial counts rejected");
+    Check(pass.Overall.Uncertainty.Miss.Trials == 3 &&
+          pass.Overall.Uncertainty.Miss.Upper95 > 0.5,
+          "small synthetic samples must expose wide uncertainty bounds");
+
+    // Optional *conservative* gate treats nonzero statistical uncertainty
+    // as a failure even with perfect observed measurements.
+    dataset.Acceptance!.RequireWilsonUpper95 = true;
+    var confidenceGate = RecognitionEvaluator.Evaluate(dataset, baseObserv, "");
+    Check(confidenceGate.Reasons.Any(x => x.Contains("Wilson upper 95% miss rate")),
+        "strict uncertainty gate should reject the six-frame demo");
+    dataset.Acceptance.RequireWilsonUpper95 = false;
     Check(pass.ByKindCondition.ContainsKey("barcode1d|normal") &&
           pass.ByKindCondition.ContainsKey("datacode2d|blank"), "algorithm-condition coverage");
 
@@ -180,6 +207,9 @@ try
         "real decoder must read Code128, QR and DataMatrix");
     Check(rootElement.GetProperty("overall").GetProperty("trueNegative").GetInt32() == 3,
         "negative images must have no detections");
+    var uncertainty = rootElement.GetProperty("overall").GetProperty("uncertainty");
+    Check(uncertainty.GetProperty("miss").GetProperty("upper95").GetDouble() > 0.5,
+        "report must expose conservative 95% bounds alongside observed zero errors");
     Check(rootElement.GetProperty("byKindCondition").GetProperty("barcode1d|normal")
         .GetProperty("truePositive").GetInt32() == 1, "per-kind condition results");
     var artifactDirectory = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
