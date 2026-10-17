@@ -73,6 +73,14 @@ internal static class CalibrationHeatmapSvg
         Mark(audit.Fit.Residuals, "Fit", "#0284c7", false);
         Mark(audit.Holdout.Residuals, "Holdout", "#7c3aed", true);
 
+        // Proposed NEXT measurements are guidance, never proof of observed accuracy.
+        // Small dashed amber crosshairs cannot be mistaken for measured holdout points.
+        foreach (CalibrationNextPoint proposal in audit.SuggestedValidationPoints)
+        {
+            double x = X(proposal.Column), y = Y(proposal.Row);
+            Append($"<path d=\"M {N(x-7)} {N(y)} H {N(x+7)} M {N(x)} {N(y-7)} V {N(y+7)}\" stroke=\"#b45309\" stroke-width=\"2\" stroke-dasharray=\"3,2\" fill=\"none\"><title>SUGGESTED, NOT MEASURED: row={N(proposal.Row)}, column={N(proposal.Column)}, cell {proposal.GridRow+1}-{proposal.GridColumn+1}</title></path>");
+        }
+
         foreach (CalibrationOutlier outlier in spatial.Outliers)
         {
             Append($"<circle cx=\"{N(X(outlier.Column))}\" cy=\"{N(Y(outlier.Row))}\" r=\"11\" stroke=\"#dc2626\" stroke-width=\"3\" fill=\"none\"><title>{Escape(outlier.Population)} #{outlier.PointIndex + 1}: over limit {N(outlier.RadialErrorMm)} &gt; {N(outlier.LimitMm)} mm</title></circle>");
@@ -101,6 +109,8 @@ internal static class CalibrationHeatmapSvg
         Append("<text x=\"780\" y=\"550\" font-family=\"Segoe UI, sans-serif\" font-size=\"14\" fill=\"#334155\">Independent holdout</text>");
         Append("<circle cx=\"754\" cy=\"580\" r=\"11\" stroke=\"#dc2626\" stroke-width=\"3\" fill=\"none\"/>");
         Append("<text x=\"780\" y=\"585\" font-family=\"Segoe UI, sans-serif\" font-size=\"14\" fill=\"#334155\">Residual outlier</text>");
+        Append("<path d=\"M 746 618 H 763 M 754 610 V 626\" stroke=\"#b45309\" stroke-width=\"2\" stroke-dasharray=\"3,2\"/>");
+        Append("<text x=\"780\" y=\"622\" font-family=\"Segoe UI, sans-serif\" font-size=\"14\" fill=\"#334155\">Suggested next point (not measured)</text>");
         Append("<text x=\"60\" y=\"669\" font-family=\"Segoe UI, sans-serif\" font-size=\"14\" font-weight=\"600\" fill=\"#b91c1c\">GRAY = UNVERIFIED. No interpolation. Synthetic example data are not a real calibration certificate.</text>");
         Append("</svg>");
         return sb.ToString();
