@@ -25,8 +25,10 @@ guessing unverified native operator indices, build the **optional**
 `JLVisionLib.Recognition` project (ZXing.Net 0.16.11).
 
 This restores the high-level `JlBarCode` and `JlDataCode2D` API entry
-points under `JLVisionLib.Recognition`, including Gray8 and `JlImage` inputs.
-It **does not** restore the original native DLL recognition procedures or OCR.
+points under `JLVisionLib.Recognition`, including Gray8, ROI, and `JlImage` inputs.
+A **separate optional** `JLVisionLib.Ocr.Tesseract` assembly adds functional
+`JlOcr` recognition with an externally provisioned Tesseract language model.
+Neither adapter restores the original native DLL recognition procedures.
 See [recognition adapter](docs/recognition-adapter.md) and
 [recognition native recovery plan](docs/recognition-recovery-plan.md).
 
