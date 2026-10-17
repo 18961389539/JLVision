@@ -34,6 +34,9 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.015 --max-rms-increase-mm 0.015 --output artifacts/calibration-history-demo.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # The same synthetic drift MUST be rejected under a stricter threshold.
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.001 --max-rms-increase-mm 0.001 --output artifacts/calibration-drift-rejection-demo.json
+          if ($LASTEXITCODE -ne 2) { throw "Expected quality-gate failure (exit 2) when synthetic drift exceeds threshold; actual exit: $LASTEXITCODE" }
 
       - name: Restore
         run: dotnet restore JLVisionLib.slnx
@@ -76,6 +79,7 @@ jobs:
             artifacts/calibration-evidence-demo.svg
             artifacts/calibration-version-comparison-demo.json
             artifacts/calibration-history-demo.json
+            artifacts/calibration-drift-rejection-demo.json
           if-no-files-found: warn
 
       - name: Upload labeled vision dataset report
