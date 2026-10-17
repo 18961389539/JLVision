@@ -32,6 +32,16 @@ Neither adapter restores the original native DLL recognition procedures.
 See [recognition adapter](docs/recognition-adapter.md) and
 [recognition native recovery plan](docs/recognition-recovery-plan.md).
 
+## Industrial recognition dataset acceptance
+
+Use [the recognition dataset benchmark](docs/recognition-dataset-acceptance.md)
+for per-frame, externally labeled Code128/QR/DataMatrix/OCR evaluation with
+exact string and symbology matching, miss/misread/false-positive gates,
+per-algorithm/per-condition sample coverage, P95 latency and SHA256 input
+traceability. The [manifest template](docs/recognition-dataset-manifest.template.json)
+is **not** a real dataset. Synthetic CI success does not establish an
+industrial reading-rate claim.
+
 ## Native reliability and performance validation
 
 The Windows x64 CI workflow checks generated native procedure lifetime scopes, runs managed/native tests, compares serial and independent-worker throughput, and validates the **built Release NuGet package** in a separate consumer process.
