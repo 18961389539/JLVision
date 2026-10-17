@@ -27,6 +27,14 @@ jobs:
       - name: Audit synthetic affine calibration evidence and draw measured residual map
         run: dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --output artifacts/calibration-evidence-demo.json --heatmap artifacts/calibration-evidence-demo.svg
 
+      - name: Compare synthetic calibration versions and history (managed only)
+        shell: pwsh
+        run: |
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --baseline tools/JLVision.DatasetBenchmark/example-version1.dataset.json --max-peak-increase-mm 0.015 --max-rms-increase-mm 0.015 --output artifacts/calibration-version-comparison-demo.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet run --project tools/JLVision.CalibrationAudit/JLVision.CalibrationAudit.csproj -- --manifest tools/JLVision.DatasetBenchmark/example.dataset.json --history tools/JLVision.DatasetBenchmark/example-history.json --max-peak-increase-mm 0.015 --max-rms-increase-mm 0.015 --output artifacts/calibration-history-demo.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Restore
         run: dotnet restore JLVisionLib.slnx
 
@@ -66,6 +74,8 @@ jobs:
           path: |
             artifacts/calibration-evidence-demo.json
             artifacts/calibration-evidence-demo.svg
+            artifacts/calibration-version-comparison-demo.json
+            artifacts/calibration-history-demo.json
           if-no-files-found: warn
 
       - name: Upload labeled vision dataset report
